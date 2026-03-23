@@ -9,6 +9,28 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.0.1] — 2026-03-24
+
+### Added
+
+- `crates/ferro_ta_core/README.md` is now shipped with the published Rust crate, and
+  `ferro_ta_core` metadata now points documentation to docs.rs.
+
+### Fixed
+
+- CI has been modularized into focused workflow files (`ci-rust.yml`,
+  `ci-python.yml`, `ci-wasm.yml`, `ci-docs.yml`) while keeping the release
+  publishing jobs in `CI.yml` for PyPI and crates.io trusted-publisher
+  compatibility.
+- The `ci-complete` gate no longer fails successful runs because of an escaped
+  shell variable, and the release SBOM job now uses a valid `anchore/sbom-action`
+  version.
+- The npm publish workflow now uses GitHub OIDC trusted publishing, installs
+  the `wasm32-unknown-unknown` target, and no longer depends on an `NPM_TOKEN`
+  secret.
+- The WASM npm package now removes the generated `pkg/.gitignore` during
+  `prepack`, so the published tarball includes the built `pkg/` artifacts.
+
 ## [1.0.0] — 2026-03-23  *(initial stable release)*
 
 ### Performance
@@ -252,5 +274,6 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ---
 
-[Unreleased]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/pratikbhadane24/ferro-ta/releases/tag/v1.0.0

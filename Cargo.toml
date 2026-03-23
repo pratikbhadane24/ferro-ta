@@ -5,7 +5,7 @@ resolver = "2"
 
 [package]
 name = "ferro_ta"
-version = "1.0.0"
+version = "1.0.1"
 edition = "2021"
 license = "MIT"
 publish = false
@@ -23,7 +23,7 @@ ndarray = "0.16"
 rayon = "1.10"
 log = "0.4"
 pyo3-log = "0.12"
-ferro_ta_core = { path = "crates/ferro_ta_core", version = "1.0.0" }
+ferro_ta_core = { path = "crates/ferro_ta_core", version = "1.0.1" }
 
 [dev-dependencies]
 criterion = { version = "0.8", features = ["html_reports"] }

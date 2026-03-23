@@ -1,0 +1,127 @@
+name: CI Python
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint (ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Run ruff check via uv
+        run: uv run --with ruff ruff check python/ tests/
+      - name: Run ruff format check via uv
+        run: uv run --with ruff ruff format --check python/ tests/
+
+  typecheck:
+    name: Type checking (mypy + pyright)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Run mypy on ferro_ta via uv
+        run: uv run --with mypy --with numpy mypy python/ferro_ta --ignore-missing-imports --no-error-summary
+
+      - name: Run pyright on ferro_ta via uv
+        run: uv run --with pyright pyright python/ferro_ta
+
+  test:
+    name: Test (ubuntu-latest / Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install maturin and test dependencies
+        run: |
+          pip install maturin numpy pytest pytest-cov pandas polars hypothesis pyyaml
+
+      - name: Build and install ferro_ta (dev mode)
+        run: |
+          maturin build --release --out dist
+          pip install dist/*.whl
+
+      - name: Run unit tests with coverage
+        run: pytest tests/unit/ tests/integration/ -v --cov=ferro_ta --cov-report=xml --cov-report=term-missing --cov-fail-under=65
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v7
+        if: matrix.python-version == '3.12'
+        with:
+          name: coverage-python-${{ matrix.python-version }}
+          path: coverage.xml
+
+  benchmark-vs-talib:
+    name: Benchmark vs TA-Lib
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install TA-Lib C library (Ubuntu)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential curl
+          curl -sL https://sourceforge.net/projects/ta-lib/files/ta-lib/0.4.0/ta-lib-0.4.0-src.tar.gz/download -o ta-lib-0.4.0-src.tar.gz
+          tar -xzf ta-lib-0.4.0-src.tar.gz
+          cd ta-lib
+          ./configure --prefix=/usr
+          make
+          sudo make install
+          sudo ldconfig
+
+      - name: Install maturin and ta-lib Python package
+        run: |
+          pip install maturin numpy
+          pip install ta-lib
+
+      - name: Build and install ferro_ta
+        run: |
+          maturin build --release --out dist
+          pip install dist/*.whl
+
+      - name: Run benchmark comparison
+        run: |
+          python benchmarks/bench_vs_talib.py --sizes 10000 100000 --json benchmark_vs_talib.json
+
+      - name: Enforce benchmark regression policy
+        run: python3 benchmarks/check_vs_talib_regression.py --input benchmark_vs_talib.json
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v7
+        with:
+          name: benchmark-vs-talib
+          path: benchmark_vs_talib.json

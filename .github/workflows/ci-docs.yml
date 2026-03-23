@@ -1,0 +1,49 @@
+name: CI Docs
+
+on:
+  workflow_call:
+    inputs:
+      upload-pages-artifact:
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  docs:
+    name: Documentation (Sphinx build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install maturin and docs dependencies
+        run: |
+          pip install maturin numpy
+          pip install sphinx sphinx-rtd-theme
+
+      - name: Build and install ferro_ta wheel
+        run: |
+          maturin build --release --out dist
+          pip install dist/*.whl
+
+      - name: Build Sphinx documentation
+        run: sphinx-build -b html docs docs/_build -W --keep-going
+
+      - name: Upload docs artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: sphinx-docs
+          path: docs/_build/
+
+      - name: Upload GitHub Pages artifact
+        if: ${{ inputs.upload-pages-artifact }}
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: docs/_build/

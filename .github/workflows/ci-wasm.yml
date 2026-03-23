@@ -1,0 +1,37 @@
+name: CI WASM
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  wasm:
+    name: WASM binding (wasm-pack test --node)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Rust (stable)
+        uses: dtolnay/rust-toolchain@v1
+        with:
+          toolchain: stable
+          targets: wasm32-unknown-unknown
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Build and test WASM binding
+        working-directory: wasm
+        run: wasm-pack test --node
+
+      - name: Build WASM package (nodejs target)
+        working-directory: wasm
+        run: wasm-pack build --target nodejs --out-dir pkg
+
+      - name: Upload WASM package artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: wasm-pkg
+          path: wasm/pkg/

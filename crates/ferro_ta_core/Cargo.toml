@@ -1,12 +1,13 @@
 [package]
 name = "ferro_ta_core"
-version = "1.0.0"
+version = "1.0.1"
 edition = "2021"
 description = "Pure Rust core indicator library — no PyO3, no numpy dependency"
 license = "MIT"
+readme = "README.md"
 repository = "https://github.com/pratikbhadane24/ferro-ta"
 homepage = "https://github.com/pratikbhadane24/ferro-ta#readme"
-documentation = "https://github.com/pratikbhadane24/ferro-ta#readme"
+documentation = "https://docs.rs/ferro_ta_core"
 keywords = ["technical-analysis", "trading", "indicators", "finance", "ta-lib"]
 categories = ["finance", "mathematics"]
 
