@@ -130,32 +130,108 @@ jobs:
   # Keep release jobs here because trusted-publisher configuration points to
   # CI.yml specifically.
   # -------------------------------------------------------------------------
-  build-wheels:
-    name: Build wheels (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
+  build-wheels-linux:
+    name: Build wheels (linux / py${{ matrix.python-version }})
+    runs-on: ubuntu-latest
     if: github.event_name == 'release' && github.event.action == 'published'
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
 
     steps:
       - uses: actions/checkout@v6
 
-      - name: Build wheels
+      - name: Build wheel
         uses: PyO3/maturin-action@v1
         with:
           command: build
-          args: --release --out dist
-          manylinux: auto
-          # Build for both Intel and Apple Silicon on macOS
-          target: ${{ matrix.os == 'macos-latest' && 'universal2-apple-darwin' || '' }}
+          args: --release --out dist --compatibility pypi -i python${{ matrix.python-version }}
+          manylinux: "2_17"
 
       - name: Upload wheels as artifact
         uses: actions/upload-artifact@v7
         with:
-          name: wheels-${{ matrix.os }}
-          path: dist
+          name: wheels-linux-py${{ matrix.python-version }}
+          path: dist/*.whl
+
+  build-wheels-macos:
+    name: Build wheels (macos / py${{ matrix.python-version }})
+    runs-on: macos-latest
+    if: github.event_name == 'release' && github.event.action == 'published'
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Build universal2 wheel
+        uses: PyO3/maturin-action@v1
+        with:
+          command: build
+          args: --release --out dist --compatibility pypi -i python
+          target: universal2-apple-darwin
+
+      - name: Upload wheels as artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: wheels-macos-py${{ matrix.python-version }}
+          path: dist/*.whl
+
+  build-wheels-windows:
+    name: Build wheels (windows / py${{ matrix.python-version }})
+    runs-on: windows-latest
+    if: github.event_name == 'release' && github.event.action == 'published'
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Build wheel
+        uses: PyO3/maturin-action@v1
+        with:
+          command: build
+          args: --release --out dist --compatibility pypi -i python
+
+      - name: Upload wheels as artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: wheels-windows-py${{ matrix.python-version }}
+          path: dist/*.whl
+
+  build-sdist:
+    name: Build source distribution
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release' && github.event.action == 'published'
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Build sdist
+        uses: PyO3/maturin-action@v1
+        with:
+          command: sdist
+          args: --out dist
+
+      - name: Upload sdist as artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: sdist
+          path: dist/*.tar.gz
 
   # -------------------------------------------------------------------------
   # Publish to PyPI
@@ -163,7 +239,11 @@ jobs:
   publish:
     name: Publish to PyPI
     runs-on: ubuntu-latest
-    needs: build-wheels
+    needs:
+      - build-wheels-linux
+      - build-wheels-macos
+      - build-wheels-windows
+      - build-sdist
     if: github.event_name == 'release' && github.event.action == 'published'
     environment:
       name: pypi
@@ -177,6 +257,52 @@ jobs:
           pattern: wheels-*
           merge-multiple: true
           path: dist
+
+      - name: Download source distribution
+        uses: actions/download-artifact@v8
+        with:
+          name: sdist
+          path: dist
+
+      - name: Verify distribution coverage
+        run: |
+          python3 - <<'PY'
+          import fnmatch
+          import sys
+          from pathlib import Path
+
+          dist = Path("dist")
+          files = sorted(p.name for p in dist.iterdir() if p.is_file())
+          print("Distributions:")
+          for name in files:
+              print(f" - {name}")
+
+          expected = [
+              "ferro_ta-*-cp310-cp310-manylinux*_x86_64.whl",
+              "ferro_ta-*-cp311-cp311-manylinux*_x86_64.whl",
+              "ferro_ta-*-cp312-cp312-manylinux*_x86_64.whl",
+              "ferro_ta-*-cp313-cp313-manylinux*_x86_64.whl",
+              "ferro_ta-*-cp310-cp310-win_amd64.whl",
+              "ferro_ta-*-cp311-cp311-win_amd64.whl",
+              "ferro_ta-*-cp312-cp312-win_amd64.whl",
+              "ferro_ta-*-cp313-cp313-win_amd64.whl",
+              "ferro_ta-*-cp310-cp310-macosx*_universal2.whl",
+              "ferro_ta-*-cp311-cp311-macosx*_universal2.whl",
+              "ferro_ta-*-cp312-cp312-macosx*_universal2.whl",
+              "ferro_ta-*-cp313-cp313-macosx*_universal2.whl",
+              "ferro_ta-*.tar.gz",
+          ]
+
+          missing = [
+              pattern for pattern in expected
+              if not any(fnmatch.fnmatch(name, pattern) for name in files)
+          ]
+          if missing:
+              print("Missing expected distributions:")
+              for pattern in missing:
+                  print(f" - {pattern}")
+              sys.exit(1)
+          PY
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
@@ -207,7 +333,7 @@ jobs:
   sbom:
     name: Generate SBOM (Python + Rust)
     runs-on: ubuntu-latest
-    needs: build-wheels
+    needs: publish
     if: github.event_name == 'release' && github.event.action == 'published'
     permissions:
       contents: write

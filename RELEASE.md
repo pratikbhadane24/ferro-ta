@@ -15,6 +15,14 @@ For the packaging and release overview, see [PACKAGING.md](PACKAGING.md).
 | **npm (WASM)** | Workflow `wasm-publish`|
 | **crates.io** | CI job `publish-cratesio` |
 
+PyPI releases are expected to include:
+
+- Wheels for CPython 3.10, 3.11, 3.12, and 3.13
+- Linux x86_64 (`manylinux_2_17`)
+- macOS universal2
+- Windows x86_64
+- One source distribution (`sdist`)
+
 ---
 
 ## Pre-release checklist
@@ -128,7 +136,7 @@ git push origin v0.2.0
 4. Paste the changelog section for `v0.2.0` into the release notes.
 5. Click **Publish release**.
 
-Publishing the release triggers the CI `build-wheels` and `publish` jobs
+Publishing the release triggers the CI wheel build jobs, `build-sdist`, and `publish`
 automatically (the workflow responds to `release: published`). The PyPI upload
 uses Trusted Publishing via GitHub OIDC, so no `PYPI_API_TOKEN` secret is used.
 
@@ -136,12 +144,22 @@ uses Trusted Publishing via GitHub OIDC, so no `PYPI_API_TOKEN` secret is used.
 
 ## Step 7 — Monitor CI and verify PyPI
 
-1. Watch the **Actions** tab: `build-wheels` → `publish` (PyPI), `publish-cratesio` (crates.io), and the **wasm-publish** workflow (npm).
+1. Watch the **Actions** tab: the release wheel jobs, `build-sdist`, `publish` (PyPI), `publish-cratesio` (crates.io), and the **wasm-publish** workflow (npm).
 2. After the `publish` job succeeds, verify the package is live:
 
 ```bash
 pip install ferro-ta==0.2.0
 python -c "import ferro_ta; print(ferro_ta.__version__ if hasattr(ferro_ta,'__version__') else 'ok')"
+```
+
+For version-specific verification, also check at least one install on each
+supported Python line, for example:
+
+```bash
+uv venv --python 3.13 .venv-313
+. .venv-313/bin/activate
+uv pip install ferro-ta==0.2.0
+python -c "import ferro_ta; print(ferro_ta.SMA([1.0, 2.0, 3.0], 2))"
 ```
 
 3. If anything fails: fix the issue, bump to a patch version (`0.2.1`), and repeat.

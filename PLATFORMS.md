@@ -20,12 +20,13 @@ Pre-compiled wheels are published to PyPI for the following targets:
 
 | OS      | Architecture    | Notes |
 |---------|-----------------|-------|
-| Linux   | x86_64 (manylinux2014 / `manylinux_2_17`) | Default CI runner |
-| Linux   | aarch64         | Built via maturin cross-compilation |
-| macOS   | x86_64          | Intel |
-| macOS   | arm64           | Apple Silicon |
-| macOS   | universal2      | Intel + Apple Silicon fat binary |
+| Linux   | x86_64 (manylinux2014 / `manylinux_2_17`) | Pre-compiled wheel |
+| macOS   | universal2      | One wheel covers Intel + Apple Silicon |
 | Windows | x86_64          | |
+
+Wheel releases target CPython 3.10, 3.11, 3.12, and 3.13. A source
+distribution is also published so other compatible environments can build from
+source.
 
 > **Note:** Python 3.14+ is not yet tested.  Set
 > `PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1` to attempt a build on a newer
@@ -39,8 +40,7 @@ Pre-compiled wheels are published to PyPI for the following targets:
 pip install ferro-ta
 ```
 
-No C-compiler required — pre-compiled wheels are available for all platforms
-listed above.
+No C-compiler required on the wheel targets listed above.
 
 ### conda / conda-forge
 
