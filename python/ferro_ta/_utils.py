@@ -20,6 +20,26 @@ DEFAULT_OHLCV_COLUMNS = {
 }
 
 
+@functools.lru_cache(maxsize=1)
+def _optional_pandas_module():
+    """Import pandas lazily once and cache absence for low-overhead hot paths."""
+    try:
+        import pandas as pd
+    except ImportError:
+        return None
+    return pd
+
+
+@functools.lru_cache(maxsize=1)
+def _optional_polars_module():
+    """Import polars lazily once and cache absence for low-overhead hot paths."""
+    try:
+        import polars as pl
+    except ImportError:
+        return None
+    return pl
+
+
 def _to_f64(data: ArrayLike) -> np.ndarray:
     """Convert any array-like to a contiguous 1-D float64 NumPy array.
 
@@ -159,9 +179,8 @@ def pandas_wrap(func):
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        try:
-            import pandas as pd  # local import — pandas is optional
-        except ImportError:
+        pd = _optional_pandas_module()
+        if pd is None:
             return func(*args, **kwargs)
 
         pd_index = None
@@ -232,9 +251,8 @@ def polars_wrap(func):
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        try:
-            import polars as pl  # local import — polars is optional
-        except ImportError:
+        pl = _optional_polars_module()
+        if pl is None:
             return func(*args, **kwargs)
 
         pl_name: Optional[str] = None
