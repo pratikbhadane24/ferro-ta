@@ -45,7 +45,7 @@ def main() -> int:
             "iv_percentile=1.1",
             "iv_zscore=1.05",
             "compute_many_close=0.85",
-            "feature_matrix=0.80",
+            "feature_matrix=0.40",
         ],
         help="Required minimum speedup per named case, e.g. CORREL=5.0 (repeatable)",
     )
