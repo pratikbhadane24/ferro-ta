@@ -1,0 +1,71 @@
+{
+  "metadata": {
+    "suite": "batch",
+    "runtime": {
+      "generated_at_utc": "2026-03-23T21:08:30.877702+00:00",
+      "python_version": "3.12.11",
+      "platform": "macOS-26.3.1-arm64-arm-64bit",
+      "machine": "arm64",
+      "processor": "arm"
+    },
+    "git": {
+      "commit": "2d5000262f0f1439546bd4872235aae0333880a4",
+      "dirty": true,
+      "branch": "feat/performace-1.0.2"
+    },
+    "dataset": {
+      "n_samples": 20000,
+      "n_series": 32,
+      "total_bars": 640000,
+      "seed": 42
+    }
+  },
+  "results": [
+    {
+      "indicator": "SMA",
+      "parallel_ms": 1.9615,
+      "sequential_ms": 2.0423,
+      "loop_ms": 0.8865,
+      "parallel_speedup_vs_loop": 0.452,
+      "sequential_speedup_vs_loop": 0.4341
+    },
+    {
+      "indicator": "RSI",
+      "parallel_ms": 2.1731,
+      "sequential_ms": 4.3225,
+      "loop_ms": 3.2043,
+      "parallel_speedup_vs_loop": 1.4745,
+      "sequential_speedup_vs_loop": 0.7413
+    },
+    {
+      "indicator": "ATR",
+      "parallel_ms": 4.2249,
+      "sequential_ms": 6.6175,
+      "loop_ms": 4.0382,
+      "parallel_speedup_vs_loop": 0.9558,
+      "sequential_speedup_vs_loop": 0.6102
+    },
+    {
+      "indicator": "ADX",
+      "parallel_ms": 4.8674,
+      "sequential_ms": 7.6402,
+      "loop_ms": 5.1861,
+      "parallel_speedup_vs_loop": 1.0655,
+      "sequential_speedup_vs_loop": 0.6788
+    }
+  ],
+  "grouped_results": [
+    {
+      "case": "close_bundle_3",
+      "grouped_ms": 0.1878,
+      "separate_ms": 0.1719,
+      "speedup_vs_separate": 0.9155
+    },
+    {
+      "case": "hlc_bundle_3",
+      "grouped_ms": 0.2958,
+      "separate_ms": 0.4633,
+      "speedup_vs_separate": 1.5666
+    }
+  ]
+}

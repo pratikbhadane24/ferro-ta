@@ -1,0 +1,96 @@
+{
+  "metadata": {
+    "suite": "runtime_hotspots",
+    "runtime": {
+      "generated_at_utc": "2026-03-23T21:08:34.436165+00:00",
+      "python_version": "3.12.11",
+      "platform": "macOS-26.3.1-arm64-arm-64bit",
+      "machine": "arm64",
+      "processor": "arm"
+    },
+    "git": {
+      "commit": "2d5000262f0f1439546bd4872235aae0333880a4",
+      "dirty": true,
+      "branch": "feat/performace-1.0.2"
+    },
+    "dataset": {
+      "price_bars": 20000,
+      "iv_bars": 50000,
+      "window": 252
+    }
+  },
+  "results": [
+    {
+      "category": "python_analysis",
+      "name": "iv_zscore",
+      "fast_ms": 28.857,
+      "reference_ms": 897.0178,
+      "speedup_vs_reference": 31.0849,
+      "share_of_suite_pct": 70.0
+    },
+    {
+      "category": "python_analysis",
+      "name": "iv_rank",
+      "fast_ms": 10.8496,
+      "reference_ms": 199.4376,
+      "speedup_vs_reference": 18.3821,
+      "share_of_suite_pct": 26.32
+    },
+    {
+      "category": "python_analysis",
+      "name": "iv_percentile",
+      "fast_ms": 0.9124,
+      "reference_ms": 79.6557,
+      "speedup_vs_reference": 87.3019,
+      "share_of_suite_pct": 2.21
+    },
+    {
+      "category": "ffi_grouping",
+      "name": "feature_matrix",
+      "fast_ms": 0.2411,
+      "reference_ms": 0.2215,
+      "speedup_vs_reference": 0.9186,
+      "share_of_suite_pct": 0.58
+    },
+    {
+      "category": "ffi_grouping",
+      "name": "compute_many_close",
+      "fast_ms": 0.1563,
+      "reference_ms": 0.1498,
+      "speedup_vs_reference": 0.9587,
+      "share_of_suite_pct": 0.38
+    },
+    {
+      "category": "rust_kernel",
+      "name": "BETA",
+      "fast_ms": 0.0694,
+      "reference_ms": 159.2715,
+      "speedup_vs_reference": 2294.4163,
+      "share_of_suite_pct": 0.17
+    },
+    {
+      "category": "rust_kernel",
+      "name": "CORREL",
+      "fast_ms": 0.0555,
+      "reference_ms": 158.2775,
+      "speedup_vs_reference": 2851.8468,
+      "share_of_suite_pct": 0.13
+    },
+    {
+      "category": "rust_kernel",
+      "name": "LINEARREG",
+      "fast_ms": 0.0414,
+      "reference_ms": 44.8111,
+      "speedup_vs_reference": 1081.9491,
+      "share_of_suite_pct": 0.1
+    },
+    {
+      "category": "rust_kernel",
+      "name": "TSF",
+      "fast_ms": 0.0413,
+      "reference_ms": 46.3799,
+      "speedup_vs_reference": 1122.1039,
+      "share_of_suite_pct": 0.1
+    }
+  ]
+}

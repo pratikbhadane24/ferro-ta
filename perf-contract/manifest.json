@@ -1,0 +1,52 @@
+{
+  "metadata": {
+    "suite": "perf_contract",
+    "runtime": {
+      "generated_at_utc": "2026-03-23T21:09:13.077731+00:00",
+      "python_version": "3.12.11",
+      "platform": "macOS-26.3.1-arm64-arm-64bit",
+      "machine": "arm64",
+      "processor": "arm"
+    },
+    "git": {
+      "commit": "2d5000262f0f1439546bd4872235aae0333880a4",
+      "dirty": true,
+      "branch": "feat/performace-1.0.2"
+    },
+    "fixtures": [
+      {
+        "path": "/Users/pratikbhadane/Work/Projects/ferro-ta/benchmarks/fixtures/canonical_ohlcv.npz",
+        "size_bytes": 75586,
+        "sha256": "60192f8349fb06cd59ef7f70fd77aa8280399e819d7cc5eed3ca95cf5ee1a89c"
+      }
+    ],
+    "output_dir": "perf-contract"
+  },
+  "artifacts": {
+    "indicator_latency": {
+      "path": "perf-contract/indicator_latency.json",
+      "size_bytes": 3212,
+      "sha256": "1e7f844fe6eb467f07bbb1e4eb918c56861e8cf819ab4802b96e033c6d2570c4"
+    },
+    "batch": {
+      "path": "perf-contract/batch.json",
+      "size_bytes": 1679,
+      "sha256": "202d67b24a88184473f93cec9f866ca34ff60721068e15e7e5d23962f006d169"
+    },
+    "streaming": {
+      "path": "perf-contract/streaming.json",
+      "size_bytes": 1939,
+      "sha256": "04476c3d95a9e7d87e40331b28c5ccad9a7aa5abcfc47fb6ac7e929365f68554"
+    },
+    "runtime_hotspots": {
+      "path": "perf-contract/runtime_hotspots.json",
+      "size_bytes": 2365,
+      "sha256": "d37a58bc88def9f1525b9b0f64f0bd7b9c0df9ed4cae260c833697f6a1689ca8"
+    },
+    "simd": {
+      "path": "perf-contract/simd.json",
+      "size_bytes": 7670,
+      "sha256": "3f9b341a8206698ed172650752d808621c9b5218f42a2373f0f4485496197b4c"
+    }
+  }
+}
