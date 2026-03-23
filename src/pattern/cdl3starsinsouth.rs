@@ -1,0 +1,39 @@
+use numpy::{IntoPyArray, PyArray1, PyReadonlyArray1};
+use pyo3::prelude::*;
+
+use super::common::*;
+
+#[pyfunction]
+pub fn cdl3starsinsouth<'py>(
+    py: Python<'py>,
+    open: PyReadonlyArray1<'py, f64>,
+    high: PyReadonlyArray1<'py, f64>,
+    low: PyReadonlyArray1<'py, f64>,
+    close: PyReadonlyArray1<'py, f64>,
+) -> PyResult<Bound<'py, PyArray1<i32>>> {
+    let opens = open.as_slice()?;
+    let highs = high.as_slice()?;
+    let lows = low.as_slice()?;
+    let closes = close.as_slice()?;
+    let n = opens.len();
+    super::common::validate_ohlc_length(n, highs.len(), lows.len(), closes.len())?;
+    let mut result = vec![0i32; n];
+    for i in 2..n {
+        let (o0, h0, l0, c0) = (opens[i - 2], highs[i - 2], lows[i - 2], closes[i - 2]);
+        let (o1, h1, l1, c1) = (opens[i - 1], highs[i - 1], lows[i - 1], closes[i - 1]);
+        let (o2, h2, l2, c2) = (opens[i], highs[i], lows[i], closes[i]);
+        if is_bearish(o0, c0)
+            && is_bearish(o1, c1)
+            && is_bearish(o2, c2)
+            && h1 <= h0
+            && l1 >= l0
+            && h2 <= h1
+            && l2 >= l1
+            && body_size(o2, c2) <= body_size(o1, c1) * 0.6
+            && upper_shadow(o2, h2, c2) <= body_size(o2, c2) * 0.2
+        {
+            result[i] = 100;
+        }
+    }
+    Ok(result.into_pyarray(py))
+}

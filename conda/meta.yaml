@@ -1,0 +1,52 @@
+{% set name = "ferro-ta" %}
+{% set version = "0.1.0" %}
+
+package:
+  name: {{ name|lower }}
+  version: {{ version }}
+
+source:
+  # Build from PyPI wheel (simplest approach; no Rust toolchain required).
+  # Replace with url/sha256 of the specific wheel for your platform or
+  # use `pip_install: true` to let conda-build fetch it.
+  pip_install: true
+  packages:
+    - ferro-ta=={{ version }}
+
+build:
+  number: 0
+  # Use noarch: python only if wheels are already compiled. For source builds
+  # remove noarch and add the maturin build steps below.
+  noarch: python
+  script: |
+    {{ PYTHON }} -m pip install ferro-ta=={{ version }} --no-deps --ignore-installed -vv
+
+requirements:
+  host:
+    - python
+    - pip
+  run:
+    - python >=3.10
+    - numpy >=1.20
+
+test:
+  imports:
+    - ferro_ta
+  commands:
+    - python -c "from ferro_ta import SMA, RSI; import numpy as np; print(SMA(np.array([1.0,2.0,3.0,4.0,5.0]), timeperiod=3))"
+
+about:
+  home: https://github.com/pratikbhadane24/ferro-ta
+  license: MIT
+  license_family: MIT
+  summary: A fast Technical Analysis library — TA-Lib alternative powered by Rust and PyO3
+  description: |
+    ferro-ta is a drop-in TA-Lib alternative with pre-compiled wheels for all
+    major platforms. It provides 155+ indicators via a Rust core and PyO3
+    bindings, with optional pandas / streaming APIs.
+  doc_url: https://github.com/pratikbhadane24/ferro-ta
+  dev_url: https://github.com/pratikbhadane24/ferro-ta
+
+extra:
+  recipe-maintainers:
+    - pratikbhadane24

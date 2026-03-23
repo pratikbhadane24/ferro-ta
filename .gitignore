@@ -1,0 +1,42 @@
+# Rust build artifacts
+/target/
+wasm/target/
+
+# Compiled Python extension
+*.so
+*.pyd
+*.dll
+
+# Maturin / wheel build outputs
+dist/
+*.egg-info/
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Issue tracker
+/myissues/
+
+# WASM build output
+wasm/pkg/
+wasm/pkg-web/
+coverage.xml
+.hypothesis/
+
+/docs/_build/
+
+
+# DS Store in all directories
+.DS_Store
+*.DS_Store

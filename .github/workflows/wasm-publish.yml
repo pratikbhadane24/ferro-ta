@@ -1,0 +1,33 @@
+name: Publish WASM to npm
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    name: Build and publish to npm
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install Rust and wasm-pack
+        uses: dtolnay/rust-toolchain@stable
+      - run: cargo install wasm-pack
+
+      - name: Build WASM package
+        run: |
+          cd wasm
+          npm run build
+
+      - name: Publish to npm
+        working-directory: wasm
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

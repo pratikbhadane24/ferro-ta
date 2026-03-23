@@ -1,0 +1,364 @@
+# Indicator binding manifest — data-driven description of Rust indicators.
+#
+# Used by scripts/generate_bindings.py to generate Python wrappers.
+# Schema (per indicator):
+#   rust_fn: name of the function in _ferro_ta
+#   array_params: list of parameter names that are array-like (passed to _to_f64)
+#   timeperiod_param: optional; name of period parameter to validate
+#   timeperiod_min: optional; minimum value (default 1)
+#   equal_length_groups: optional; list of groups of param names that must have equal length
+#   defaults: optional; map of param name -> default value for function signature
+#   extra_params: optional; list of param names (after array_params and timeperiod) for signature/call
+#
+# Indicators with multiple period params or custom logic (MACD, MA, MAVP, MAMA, SAR, SAREXT, MACDEXT)
+# are listed here for reference but are not generated (hand-written wrappers in overlap.py).
+
+overlap:
+  SMA:
+    rust_fn: sma
+    array_params: [close]
+    timeperiod_param: timeperiod
+    defaults: { timeperiod: 30 }
+  EMA:
+    rust_fn: ema
+    array_params: [close]
+    timeperiod_param: timeperiod
+    defaults: { timeperiod: 30 }
+  WMA:
+    rust_fn: wma
+    array_params: [close]
+    timeperiod_param: timeperiod
+    defaults: { timeperiod: 30 }
+  DEMA:
+    rust_fn: dema
+    array_params: [close]
+    timeperiod_param: timeperiod
+    defaults: { timeperiod: 30 }
+  TEMA:
+    rust_fn: tema
+    array_params: [close]
+    timeperiod_param: timeperiod
+    defaults: { timeperiod: 30 }
+  TRIMA:
+    rust_fn: trima
+    array_params: [close]
+    timeperiod_param: timeperiod
+    defaults: { timeperiod: 30 }
+  KAMA:
+    rust_fn: kama
+    array_params: [close]
+    timeperiod_param: timeperiod
+    defaults: { timeperiod: 30 }
+  T3:
+    rust_fn: t3
+    array_params: [close]
+    timeperiod_param: timeperiod
+    defaults: { timeperiod: 5, vfactor: 0.7 }
+    extra_params: [vfactor]
+  BBANDS:
+    rust_fn: bbands
+    array_params: [close]
+    timeperiod_param: timeperiod
+    defaults: { timeperiod: 5, nbdevup: 2.0, nbdevdn: 2.0 }
+    extra_params: [nbdevup, nbdevdn]
+  MIDPOINT:
+    rust_fn: midpoint
+    array_params: [close]
+    timeperiod_param: timeperiod
+    defaults: { timeperiod: 14 }
+  MIDPRICE:
+    rust_fn: midprice
+    array_params: [high, low]
+    timeperiod_param: timeperiod
+    equal_length_groups: [[high, low]]
+    defaults: { timeperiod: 14 }
+  MACDFIX:
+    rust_fn: macdfix
+    array_params: [close]
+    timeperiod_param: signalperiod
+    defaults: { signalperiod: 9 }
+  # Below: documented in manifest but use hand-written wrappers (multiple periods or custom validation)
+  MACD:
+    rust_fn: macd
+    array_params: [close]
+    custom: true
+  SAR:
+    rust_fn: sar
+    array_params: [high, low]
+    custom: true
+  MA:
+    rust_fn: ma
+    array_params: [close]
+    custom: true
+  MAVP:
+    rust_fn: mavp
+    array_params: [close, periods]
+    custom: true
+  MAMA:
+    rust_fn: mama
+    array_params: [close]
+    custom: true
+  SAREXT:
+    rust_fn: sarext
+    array_params: [high, low]
+    custom: true
+  MACDEXT:
+    rust_fn: macdext
+    array_params: [close]
+    custom: true
+
+# ---------------------------------------------------------------------------
+# volume
+# ---------------------------------------------------------------------------
+volume:
+  AD:
+    rust_fn: ad
+    array_params: [high, low, close, volume]
+    equal_length_groups: [[high, low, close, volume]]
+  ADOSC:
+    rust_fn: adosc
+    array_params: [high, low, close, volume]
+    equal_length_groups: [[high, low, close, volume]]
+    defaults: { fastperiod: 3, slowperiod: 10 }
+    extra_params: [fastperiod, slowperiod]
+    custom: true  # two period params (fastperiod < slowperiod)
+  OBV:
+    rust_fn: obv
+    array_params: [close, volume]
+    equal_length_groups: [[close, volume]]
+
+# ---------------------------------------------------------------------------
+# volatility
+# ---------------------------------------------------------------------------
+volatility:
+  ATR:
+    rust_fn: atr
+    array_params: [high, low, close]
+    timeperiod_param: timeperiod
+    equal_length_groups: [[high, low, close]]
+    defaults: { timeperiod: 14 }
+  NATR:
+    rust_fn: natr
+    array_params: [high, low, close]
+    timeperiod_param: timeperiod
+    equal_length_groups: [[high, low, close]]
+    defaults: { timeperiod: 14 }
+  TRANGE:
+    rust_fn: trange
+    array_params: [high, low, close]
+    equal_length_groups: [[high, low, close]]
+
+# ---------------------------------------------------------------------------
+# statistic
+# ---------------------------------------------------------------------------
+statistic:
+  STDDEV:
+    rust_fn: stddev
+    array_params: [close]
+    timeperiod_param: timeperiod
+    defaults: { timeperiod: 5, nbdev: 1.0 }
+    extra_params: [nbdev]
+  VAR:
+    rust_fn: var
+    array_params: [close]
+    timeperiod_param: timeperiod
+    defaults: { timeperiod: 5, nbdev: 1.0 }
+    extra_params: [nbdev]
+  LINEARREG:
+    rust_fn: linearreg
+    array_params: [close]
+    timeperiod_param: timeperiod
+    defaults: { timeperiod: 14 }
+  LINEARREG_SLOPE:
+    rust_fn: linearreg_slope
+    array_params: [close]
+    timeperiod_param: timeperiod
+    defaults: { timeperiod: 14 }
+  LINEARREG_INTERCEPT:
+    rust_fn: linearreg_intercept
+    array_params: [close]
+    timeperiod_param: timeperiod
+    defaults: { timeperiod: 14 }
+  LINEARREG_ANGLE:
+    rust_fn: linearreg_angle
+    array_params: [close]
+    timeperiod_param: timeperiod
+    defaults: { timeperiod: 14 }
+  TSF:
+    rust_fn: tsf
+    array_params: [close]
+    timeperiod_param: timeperiod
+    defaults: { timeperiod: 14 }
+  BETA:
+    rust_fn: beta
+    array_params: [real0, real1]
+    timeperiod_param: timeperiod
+    equal_length_groups: [[real0, real1]]
+    defaults: { timeperiod: 5 }
+  CORREL:
+    rust_fn: correl
+    array_params: [real0, real1]
+    timeperiod_param: timeperiod
+    equal_length_groups: [[real0, real1]]
+    defaults: { timeperiod: 30 }
+
+# ---------------------------------------------------------------------------
+# momentum (single-period or simple equal-length; multi-period / tuple-return marked custom)
+# ---------------------------------------------------------------------------
+momentum:
+  RSI:
+    rust_fn: rsi
+    array_params: [close]
+    timeperiod_param: timeperiod
+    defaults: { timeperiod: 14 }
+  MOM:
+    rust_fn: mom
+    array_params: [close]
+    timeperiod_param: timeperiod
+    defaults: { timeperiod: 10 }
+  ROC:
+    rust_fn: roc
+    array_params: [close]
+    timeperiod_param: timeperiod
+    defaults: { timeperiod: 10 }
+  ROCP:
+    rust_fn: rocp
+    array_params: [close]
+    timeperiod_param: timeperiod
+    defaults: { timeperiod: 10 }
+  ROCR:
+    rust_fn: rocr
+    array_params: [close]
+    timeperiod_param: timeperiod
+    defaults: { timeperiod: 10 }
+  ROCR100:
+    rust_fn: rocr100
+    array_params: [close]
+    timeperiod_param: timeperiod
+    defaults: { timeperiod: 10 }
+  WILLR:
+    rust_fn: willr
+    array_params: [high, low, close]
+    timeperiod_param: timeperiod
+    equal_length_groups: [[high, low, close]]
+    defaults: { timeperiod: 14 }
+  AROON:
+    rust_fn: aroon
+    array_params: [high, low]
+    timeperiod_param: timeperiod
+    equal_length_groups: [[high, low]]
+    defaults: { timeperiod: 14 }
+  AROONOSC:
+    rust_fn: aroonosc
+    array_params: [high, low]
+    timeperiod_param: timeperiod
+    equal_length_groups: [[high, low]]
+    defaults: { timeperiod: 14 }
+  CCI:
+    rust_fn: cci
+    array_params: [high, low, close]
+    timeperiod_param: timeperiod
+    equal_length_groups: [[high, low, close]]
+    defaults: { timeperiod: 14 }
+  MFI:
+    rust_fn: mfi
+    array_params: [high, low, close, volume]
+    timeperiod_param: timeperiod
+    equal_length_groups: [[high, low, close, volume]]
+    defaults: { timeperiod: 14 }
+  BOP:
+    rust_fn: bop
+    array_params: [open, high, low, close]
+    equal_length_groups: [[open, high, low, close]]
+  STOCHF:
+    rust_fn: stochf
+    array_params: [high, low, close]
+    equal_length_groups: [[high, low, close]]
+    defaults: { fastk_period: 5, fastd_period: 3 }
+    extra_params: [fastk_period, fastd_period]
+    custom: true
+  STOCH:
+    rust_fn: stoch
+    array_params: [high, low, close]
+    equal_length_groups: [[high, low, close]]
+    defaults: { fastk_period: 5, slowk_period: 3, slowd_period: 3 }
+    extra_params: [fastk_period, slowk_period, slowd_period]
+    custom: true
+  STOCHRSI:
+    rust_fn: stochrsi
+    array_params: [close]
+    timeperiod_param: timeperiod
+    defaults: { timeperiod: 14, fastk_period: 5, fastd_period: 3 }
+    extra_params: [fastk_period, fastd_period]
+    custom: true
+  APO:
+    rust_fn: apo
+    array_params: [close]
+    defaults: { fastperiod: 12, slowperiod: 26 }
+    extra_params: [fastperiod, slowperiod]
+    custom: true
+  PPO:
+    rust_fn: ppo
+    array_params: [close]
+    defaults: { fastperiod: 12, slowperiod: 26, signalperiod: 9 }
+    extra_params: [fastperiod, slowperiod, signalperiod]
+    custom: true
+  CMO:
+    rust_fn: cmo
+    array_params: [close]
+    timeperiod_param: timeperiod
+    defaults: { timeperiod: 14 }
+  PLUS_DM:
+    rust_fn: plus_dm
+    array_params: [high, low]
+    timeperiod_param: timeperiod
+    equal_length_groups: [[high, low]]
+    defaults: { timeperiod: 14 }
+  MINUS_DM:
+    rust_fn: minus_dm
+    array_params: [high, low]
+    timeperiod_param: timeperiod
+    equal_length_groups: [[high, low]]
+    defaults: { timeperiod: 14 }
+  PLUS_DI:
+    rust_fn: plus_di
+    array_params: [high, low, close]
+    timeperiod_param: timeperiod
+    equal_length_groups: [[high, low, close]]
+    defaults: { timeperiod: 14 }
+  MINUS_DI:
+    rust_fn: minus_di
+    array_params: [high, low, close]
+    timeperiod_param: timeperiod
+    equal_length_groups: [[high, low, close]]
+    defaults: { timeperiod: 14 }
+  DX:
+    rust_fn: dx
+    array_params: [high, low, close]
+    timeperiod_param: timeperiod
+    equal_length_groups: [[high, low, close]]
+    defaults: { timeperiod: 14 }
+  ADX:
+    rust_fn: adx
+    array_params: [high, low, close]
+    timeperiod_param: timeperiod
+    equal_length_groups: [[high, low, close]]
+    defaults: { timeperiod: 14 }
+  ADXR:
+    rust_fn: adxr
+    array_params: [high, low, close]
+    timeperiod_param: timeperiod
+    equal_length_groups: [[high, low, close]]
+    defaults: { timeperiod: 14 }
+  TRIX:
+    rust_fn: trix
+    array_params: [close]
+    timeperiod_param: timeperiod
+    defaults: { timeperiod: 30 }
+  ULTOSC:
+    rust_fn: ultosc
+    array_params: [high, low, close]
+    equal_length_groups: [[high, low, close]]
+    defaults: { timeperiod1: 7, timeperiod2: 14, timeperiod3: 28 }
+    extra_params: [timeperiod1, timeperiod2, timeperiod3]
+    custom: true

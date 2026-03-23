@@ -1,0 +1,67 @@
+//! Volatility indicators.
+
+/// Average True Range — Wilder smoothed (TA-Lib compatible).
+///
+/// Seeds ATR with SMA of TR[1..=timeperiod] (bar 0 is skipped, matching TA-Lib).
+/// First valid output is at index `timeperiod`; indices 0..timeperiod are NaN.
+/// TR is computed on-the-fly (no separate tr Vec allocation).
+pub fn atr(high: &[f64], low: &[f64], close: &[f64], timeperiod: usize) -> Vec<f64> {
+    let n = high.len();
+    let mut result = vec![f64::NAN; n];
+    if n <= timeperiod || timeperiod < 1 {
+        return result;
+    }
+    // Seed: SMA of TR[1..=timeperiod] (TA-Lib skips TR[0]).
+    // Compute TR on-the-fly to avoid a separate Vec allocation.
+    let mut seed = 0.0_f64;
+    for i in 1..=timeperiod {
+        let hl = high[i] - low[i];
+        let hpc = (high[i] - close[i - 1]).abs();
+        let lpc = (low[i] - close[i - 1]).abs();
+        seed += hl.max(hpc).max(lpc);
+    }
+    seed /= timeperiod as f64;
+    result[timeperiod] = seed;
+    let p = timeperiod as f64;
+    for i in (timeperiod + 1)..n {
+        let hl = high[i] - low[i];
+        let hpc = (high[i] - close[i - 1]).abs();
+        let lpc = (low[i] - close[i - 1]).abs();
+        let tr = hl.max(hpc).max(lpc);
+        result[i] = (result[i - 1] * (p - 1.0) + tr) / p;
+    }
+    result
+}
+
+/// True Range — max(H-L, |H-Cprev|, |L-Cprev|).
+pub fn trange(high: &[f64], low: &[f64], close: &[f64]) -> Vec<f64> {
+    let n = high.len();
+    let mut result = vec![f64::NAN; n];
+    if n == 0 {
+        return result;
+    }
+    result[0] = high[0] - low[0];
+    for i in 1..n {
+        let hl = high[i] - low[i];
+        let hpc = (high[i] - close[i - 1]).abs();
+        let lpc = (low[i] - close[i - 1]).abs();
+        result[i] = hl.max(hpc).max(lpc);
+    }
+    result
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn atr_nonnegative() {
+        let h = vec![2.0, 3.0, 4.0, 5.0, 6.0];
+        let l = vec![1.0, 2.0, 3.0, 4.0, 5.0];
+        let c = vec![1.5, 2.5, 3.5, 4.5, 5.5];
+        let result = atr(&h, &l, &c, 3);
+        for v in result.iter().filter(|v| !v.is_nan()) {
+            assert!(*v >= 0.0);
+        }
+    }
+}

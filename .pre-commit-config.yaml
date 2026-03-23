@@ -1,0 +1,33 @@
+# Pre-commit hooks for ferro-ta
+# Install: pre-commit install
+# Run: pre-commit run --all-files
+default_language_version:
+  python: python3
+
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.0
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+        args: [--maxkb=1000]
+      - id: check-merge-conflict
+      - id: debug-statements
+
+  # Optional: uncomment to run mypy on commit (after type errors are fixed)
+  # - repo: local
+  #   hooks:
+  #     - id: mypy
+  #       name: mypy
+  #       entry: mypy python/ferro_ta --ignore-missing-imports
+  #       language: system
+  #       pass_filenames: false

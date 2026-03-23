@@ -1,0 +1,46 @@
+# GitHub release notes configuration
+# Controls the auto-generated release notes when a new release is published.
+# See: https://docs.github.com/en/repositories/releasing-projects-on-github/automatically-generated-release-notes
+
+changelog:
+  exclude:
+    labels:
+      - ignore-for-release
+      - dependencies
+    authors:
+      - dependabot
+      - github-actions
+  categories:
+    - title: "🚀 New Features"
+      labels:
+        - "feature"
+        - "enhancement"
+        - "new-indicator"
+    - title: "🐛 Bug Fixes"
+      labels:
+        - "bug"
+        - "fix"
+    - title: "⚡ Performance"
+      labels:
+        - "performance"
+        - "optimization"
+    - title: "📖 Documentation"
+      labels:
+        - "documentation"
+        - "docs"
+    - title: "🔒 Security"
+      labels:
+        - "security"
+    - title: "🏗 Infrastructure & CI"
+      labels:
+        - "ci"
+        - "infrastructure"
+        - "build"
+    - title: "🔧 Maintenance"
+      labels:
+        - "maintenance"
+        - "chore"
+        - "refactor"
+    - title: "Other Changes"
+      labels:
+        - "*"

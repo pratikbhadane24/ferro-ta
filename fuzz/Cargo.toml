@@ -1,0 +1,32 @@
+[package]
+name = "ferro_ta_fuzz"
+version = "0.0.1"
+edition = "2021"
+publish = false
+
+# Exclude from the root workspace so cargo doesn't reject it as an unlisted member
+[workspace]
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+ferro_ta_core = { path = "../crates/ferro_ta_core" }
+
+[[bin]]
+name = "fuzz_sma"
+path = "fuzz_targets/fuzz_sma.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_rsi"
+path = "fuzz_targets/fuzz_rsi.rs"
+test = false
+doc = false
+bench = false
+
+[profile.release]
+debug = 1
