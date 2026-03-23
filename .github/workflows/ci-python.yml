@@ -151,6 +151,7 @@ jobs:
           python benchmarks/run_perf_contract.py \
             --output-dir perf-contract \
             --skip-talib \
+            --skip-simd \
             --batch-samples 20000 \
             --batch-series 32 \
             --streaming-bars 20000 \
