@@ -315,10 +315,12 @@ bottlenecks are fixed or deferred.
 - No fast path for already 2-D C-contiguous float64 in batch_sma/ema/rsi
   (unlike `_to_f64` for 1-D); could avoid a potential copy.
 
-**Options** (`python/ferro_ta/options.py`):
-- `iv_rank`, `iv_percentile`, and `iv_zscore` are vectorized now, but
-  `iv_percentile`/`iv_zscore` still spend meaningful time in NumPy window
-  materialization on very long series.
+**Derivatives analytics** (`python/ferro_ta/analysis/options.py`):
+- `iv_rank`, `iv_percentile`, and `iv_zscore` now delegate to Rust.
+- The Python layer mostly performs broadcasting and result shaping; the hot
+  path is in Rust.
+- Model-based implied-volatility inversion is much faster now, but still more
+  expensive than direct pricing or Greeks due to root-finding.
 
 **Features** (`python/ferro_ta/features.py`):
 - `nan_policy="fill"` is vectorized now.

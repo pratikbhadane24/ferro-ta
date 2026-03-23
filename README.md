@@ -97,7 +97,7 @@ uv run python benchmarks/benchmark_table.py
 - **Feature matrix** — multi-indicator DataFrame for ML pipelines (`ferro_ta.features`)
 - **Charting API** — matplotlib and plotly charts with indicator subplots (`ferro_ta.viz`)
 - **Data adapters** — pluggable adapter interface with CSV and in-memory implementations (`ferro_ta.adapters`)
-- **Options/IV helpers** — IV rank, IV percentile, IV z-score on any IV series (`ferro_ta.options`)
+- **Derivatives analytics** — IV rank/percentile/z-score, options pricing/Greeks/IV, futures basis/curve/roll, strategy schemas, and multi-leg payoff helpers (`ferro_ta.analysis.*`)
 - **Agentic tools** — stable LangChain/agent tool wrappers (`ferro_ta.tools`), end-to-end workflow orchestrator (`ferro_ta.workflow`)
 - **MCP server** — Model Context Protocol server for Cursor/Claude integration; run with `python -m ferro_ta.mcp`
 - **Observability / Logging** — `ferro_ta.enable_debug()`, `ferro_ta.log_call()`, `ferro_ta.benchmark()` and `ferro_ta.traced()` decorator for instrumentation
@@ -118,7 +118,7 @@ Optional extras:
 pip install "ferro-ta[pandas]"   # transparent pandas.Series support
 pip install "ferro-ta[polars]"   # transparent polars.Series support
 pip install "ferro-ta[gpu]"      # GPU-accelerated SMA/EMA/RSI via PyTorch (CUDA/MPS)
-pip install "ferro-ta[options]"  # Options/IV helpers (IV rank, percentile, z-score)
+pip install "ferro-ta[options]"  # Derivatives analytics helpers
 pip install "ferro-ta[mcp]"      # MCP server for Cursor/Claude agent integration
 pip install "ferro-ta[all]"      # all optional extras (excluding gpu)
 ```
@@ -149,6 +149,28 @@ macd_line, signal, histogram = MACD(close, fastperiod=12, slowperiod=26, signalp
 # Bollinger Bands (returns upper, middle, lower)
 upper, middle, lower = BBANDS(close, timeperiod=5, nbdevup=2.0, nbdevdn=2.0)
 ```
+
+## Δ Derivatives Analytics
+
+```python
+from ferro_ta.analysis.options import greeks, implied_volatility, option_price
+from ferro_ta.analysis.futures import basis, curve_summary
+
+price = option_price(100.0, 100.0, 0.05, 1.0, 0.20, option_type="call", model="bsm")
+iv = implied_volatility(price, 100.0, 100.0, 0.05, 1.0, option_type="call", model="bsm")
+g = greeks(100.0, 100.0, 0.05, 1.0, 0.20, option_type="call", model="bsm")
+
+front_basis = basis(100.0, 103.0)
+curve = curve_summary(100.0, [0.1, 0.5, 1.0], [101.0, 102.0, 104.0])
+```
+
+The derivatives layer is analytics-only. It includes:
+
+- options pricing under Black-Scholes-Merton and Black-76
+- delta, gamma, vega, theta, and rho
+- implied volatility inversion and smile metrics
+- futures basis, carry, curve, and continuous-roll helpers
+- typed strategy schemas and multi-leg payoff/Greeks aggregation
 
 **Migrating from TA-Lib?** Just swap the import — the API is identical:
 
@@ -673,7 +695,8 @@ python/ferro_ta/
 │                      #   statistic, cycle, pattern, price_transform, math_ops, extended)
 ├── data/              # Streaming, batch, chunked, resampling, aggregation, adapters
 ├── analysis/          # Portfolio, backtest, regime, cross_asset, attribution,
-│                      #   signals, features, crypto, options
+│                      #   signals, features, crypto, options, futures,
+│                      #   options_strategy, derivatives_payoff
 ├── tools/             # Visualisation, alerting, DSL, pipeline, workflow,
 │                      #   api_info, GPU support
 └── mcp/               # Model Context Protocol server

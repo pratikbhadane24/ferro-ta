@@ -13,6 +13,7 @@ ferro-ta Documentation
    streaming
    extended
    batch
+   derivatives
    benchmarks
    plugins
    changelog
@@ -35,7 +36,7 @@ Features:
 - Math operators and transforms
 - Type stubs (.pyi) for IDE auto-completion
 - WASM binding for browser/Node.js use
-- Options/IV helpers (IV rank, IV percentile, IV z-score) — see `Options/IV Helpers <https://github.com/pratikbhadane24/ferro-ta/blob/main/docs/options-volatility.md>`_
+- Options/IV helpers and derivatives analytics — see :doc:`derivatives`
 - Agentic workflow and LangChain tool wrappers — see `Agentic guide <https://github.com/pratikbhadane24/ferro-ta/blob/main/docs/agentic.md>`_
 - MCP server for Cursor/Claude integration — see `MCP guide <https://github.com/pratikbhadane24/ferro-ta/blob/main/docs/mcp.md>`_
 - Sphinx documentation
@@ -71,7 +72,7 @@ Further Reading
 - `API Stability <https://github.com/pratikbhadane24/ferro-ta/blob/main/docs/stability.md>`_ — stability tiers, versioning, and deprecation policy.
 - `Rust-First Policy <https://github.com/pratikbhadane24/ferro-ta/blob/main/docs/rust_first.md>`_ — all compute logic belongs in Rust; how to add new indicators.
 - `Out-of-Core Execution <https://github.com/pratikbhadane24/ferro-ta/blob/main/docs/out-of-core.md>`_ — chunked processing and Dask integration.
-- `Options/IV Helpers <https://github.com/pratikbhadane24/ferro-ta/blob/main/docs/options-volatility.md>`_ — IV rank, IV percentile, IV z-score.
+- :doc:`derivatives` — IV helpers, options pricing/Greeks/IV, futures analytics, strategy schemas, and payoff helpers.
 - `Agentic Workflow <https://github.com/pratikbhadane24/ferro-ta/blob/main/docs/agentic.md>`_ — tools.py, workflow.py, LangChain integration.
 - `MCP Server <https://github.com/pratikbhadane24/ferro-ta/blob/main/docs/mcp.md>`_ — run ferro-ta as an MCP server in Cursor/Claude.
 

@@ -29,7 +29,7 @@ Usage
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -120,7 +120,9 @@ def _extract_timeperiod(
 
 
 def compute_many(
-    indicators: list[str | tuple[str, dict[str, object]] | tuple[str, dict[str, object], object]],
+    indicators: Sequence[
+        str | tuple[str, dict[str, object]] | tuple[str, dict[str, object], object]
+    ],
     *,
     close: ArrayLike,
     high: ArrayLike | None = None,
@@ -138,7 +140,9 @@ def compute_many(
     close_arr = np.ascontiguousarray(close, dtype=np.float64)
     high_arr = None if high is None else np.ascontiguousarray(high, dtype=np.float64)
     low_arr = None if low is None else np.ascontiguousarray(low, dtype=np.float64)
-    volume_arr = None if volume is None else np.ascontiguousarray(volume, dtype=np.float64)
+    volume_arr = (
+        None if volume is None else np.ascontiguousarray(volume, dtype=np.float64)
+    )
 
     normalized = [_normalize_indicator_spec(spec) for spec in indicators]
     results: list[object | None] = [None] * len(normalized)
@@ -161,11 +165,7 @@ def compute_many(
                 continue
 
             hlc_period = _extract_timeperiod(name, kwargs, _HLC_FASTPATH_DEFAULTS)
-            if (
-                hlc_period is not None
-                and high_arr is not None
-                and low_arr is not None
-            ):
+            if hlc_period is not None and high_arr is not None and low_arr is not None:
                 hlc_indices.append(idx)
                 hlc_names.append(name)
                 hlc_periods.append(hlc_period)
@@ -196,7 +196,9 @@ def compute_many(
 
         if high_arr is not None and low_arr is not None:
             try:
-                results[idx] = _registry_run(name, high_arr, low_arr, close_arr, **kwargs)
+                results[idx] = _registry_run(
+                    name, high_arr, low_arr, close_arr, **kwargs
+                )
                 continue
             except Exception:
                 pass

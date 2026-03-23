@@ -13,7 +13,7 @@ fn price_return(curr: f64, prev: f64) -> f64 {
 fn beta_fallback(x: &[f64], y: &[f64], timeperiod: usize) -> Vec<f64> {
     let n = x.len();
     let mut result = vec![f64::NAN; n];
-    for end in timeperiod..n {
+    for (end, slot) in result.iter_mut().enumerate().take(n).skip(timeperiod) {
         let start = end - timeperiod;
         let mut rx = vec![0.0_f64; timeperiod];
         let mut ry = vec![0.0_f64; timeperiod];
@@ -36,7 +36,7 @@ fn beta_fallback(x: &[f64], y: &[f64], timeperiod: usize) -> Vec<f64> {
             .map(|&value| (value - mean_x).powi(2))
             .sum::<f64>()
             / timeperiod as f64;
-        result[end] = if var_x != 0.0 { cov / var_x } else { f64::NAN };
+        *slot = if var_x != 0.0 { cov / var_x } else { f64::NAN };
     }
     result
 }
@@ -102,8 +102,8 @@ pub fn beta<'py>(
         }
     }
 
-    for end in timeperiod..n {
-        result[end] = if invalid_pairs == 0 {
+    for (end, slot) in result.iter_mut().enumerate().take(n).skip(timeperiod) {
+        *slot = if invalid_pairs == 0 {
             let denom = period * sum_rx2 - sum_rx * sum_rx;
             if denom != 0.0 {
                 (period * sum_rxry - sum_rx * sum_ry) / denom

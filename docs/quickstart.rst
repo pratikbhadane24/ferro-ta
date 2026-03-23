@@ -101,3 +101,19 @@ Extended Indicators
 
    # Pivot Points
    pivot, r1, s1, r2, s2 = PIVOT_POINTS(high, low, close, method="classic")
+
+Derivatives Analytics
+---------------------
+
+.. code-block:: python
+
+   from ferro_ta.analysis.options import greeks, option_price
+   from ferro_ta.analysis.futures import basis
+
+   call_price = option_price(100.0, 100.0, 0.05, 1.0, 0.20, option_type="call")
+   call_greeks = greeks(100.0, 100.0, 0.05, 1.0, 0.20, option_type="call")
+   front_basis = basis(100.0, 103.0)
+
+See :doc:`derivatives` for the full analytics surface, including implied
+volatility inversion, smile metrics, strike selection, futures curve tools,
+strategy schemas, and multi-leg payoff helpers.

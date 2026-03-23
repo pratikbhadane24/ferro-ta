@@ -622,9 +622,15 @@ class TestComputeMany:
             close=close,
         )
 
-        np.testing.assert_allclose(results[0], SMA(close, timeperiod=10), equal_nan=True)
-        np.testing.assert_allclose(results[1], EMA(close, timeperiod=12), equal_nan=True)
-        np.testing.assert_allclose(results[2], RSI(close, timeperiod=14), equal_nan=True)
+        np.testing.assert_allclose(
+            results[0], SMA(close, timeperiod=10), equal_nan=True
+        )
+        np.testing.assert_allclose(
+            results[1], EMA(close, timeperiod=12), equal_nan=True
+        )
+        np.testing.assert_allclose(
+            results[2], RSI(close, timeperiod=14), equal_nan=True
+        )
 
     def test_hlc_indicators_match_public_api(self):
         from ferro_ta import ADX, ATR
@@ -653,7 +659,9 @@ class TestComputeMany:
         from ferro_ta.data.batch import compute_many
 
         _, _, _, close, _ = _make_ohlcv(80)
-        result = compute_many([("STDDEV", {"timeperiod": 10, "nbdev": 2.0})], close=close)
+        result = compute_many(
+            [("STDDEV", {"timeperiod": 10, "nbdev": 2.0})], close=close
+        )
         np.testing.assert_allclose(
             result[0], STDDEV(close, timeperiod=10, nbdev=2.0), equal_nan=True
         )

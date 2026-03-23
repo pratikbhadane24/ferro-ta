@@ -4,8 +4,9 @@
 //! Or:  cd crates/ferro_ta_core && cargo bench
 //!
 //! Input sizes: 1k, 10k, 100k, and 1M bars for key indicators.
-use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
-use ferro_ta_core::{momentum, overlap, volatility};
+use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
+use ferro_ta_core::{futures, momentum, options, overlap, volatility};
+use std::hint::black_box;
 
 fn synthetic_close(n: usize) -> Vec<f64> {
     let mut v = Vec::with_capacity(n);
@@ -83,12 +84,129 @@ fn bench_bbands(c: &mut Criterion) {
     group.finish();
 }
 
+fn bench_bsm_price(c: &mut Criterion) {
+    let mut group = c.benchmark_group("BSM_PRICE");
+    for size in [1_000_usize, 10_000, 100_000] {
+        let close = synthetic_close(size);
+        let strikes: Vec<f64> = close.iter().map(|_| 100.0).collect();
+        let vols: Vec<f64> = close.iter().map(|_| 0.2).collect();
+        group.bench_with_input(BenchmarkId::from_parameter(size), &close, |b, close| {
+            b.iter(|| {
+                close
+                    .iter()
+                    .zip(strikes.iter())
+                    .zip(vols.iter())
+                    .map(|((&spot, &strike), &vol)| {
+                        options::pricing::black_scholes_price(
+                            black_box(spot),
+                            black_box(strike),
+                            black_box(0.02),
+                            black_box(0.0),
+                            black_box(0.5),
+                            black_box(vol),
+                            options::OptionKind::Call,
+                        )
+                    })
+                    .collect::<Vec<_>>()
+            })
+        });
+    }
+    group.finish();
+}
+
+fn bench_implied_volatility(c: &mut Criterion) {
+    let mut group = c.benchmark_group("IMPLIED_VOL");
+    for size in [1_000_usize, 10_000] {
+        let prices: Vec<f64> = (0..size)
+            .map(|i| {
+                let spot = 90.0 + (i % 20) as f64;
+                options::pricing::black_scholes_price(
+                    spot,
+                    100.0,
+                    0.02,
+                    0.0,
+                    0.5,
+                    0.2,
+                    options::OptionKind::Call,
+                )
+            })
+            .collect();
+        group.bench_with_input(BenchmarkId::from_parameter(size), &prices, |b, prices| {
+            b.iter(|| {
+                prices
+                    .iter()
+                    .enumerate()
+                    .map(|(i, &price)| {
+                        options::iv::implied_volatility(
+                            options::OptionContract {
+                                model: options::PricingModel::BlackScholes,
+                                underlying: black_box(90.0 + (i % 20) as f64),
+                                strike: black_box(100.0),
+                                rate: black_box(0.02),
+                                carry: black_box(0.0),
+                                time_to_expiry: black_box(0.5),
+                                kind: options::OptionKind::Call,
+                            },
+                            black_box(price),
+                            options::IvSolverConfig {
+                                initial_guess: black_box(0.25),
+                                tolerance: black_box(1e-8),
+                                max_iterations: black_box(100),
+                            },
+                        )
+                    })
+                    .collect::<Vec<_>>()
+            })
+        });
+    }
+    group.finish();
+}
+
+fn bench_smile_metrics(c: &mut Criterion) {
+    let mut group = c.benchmark_group("SMILE_METRICS");
+    let strikes: Vec<f64> = (0..41).map(|i| 80.0 + i as f64).collect();
+    let vols: Vec<f64> = strikes
+        .iter()
+        .map(|&k| 0.18 + ((k - 100.0).abs() / 100.0) * 0.15)
+        .collect();
+    group.bench_function("single_chain", |b| {
+        b.iter(|| {
+            options::surface::smile_metrics(
+                black_box(&strikes),
+                black_box(&vols),
+                black_box(100.0),
+                black_box(0.02),
+                black_box(0.0),
+                black_box(0.5),
+                options::PricingModel::BlackScholes,
+            )
+        })
+    });
+    group.finish();
+}
+
+fn bench_curve_summary(c: &mut Criterion) {
+    let mut group = c.benchmark_group("FUTURES_CURVE");
+    let tenors = vec![0.1, 0.25, 0.5, 0.75, 1.0];
+    let prices = vec![101.0, 101.8, 102.7, 103.4, 104.1];
+    group.bench_function("curve_summary", |b| {
+        b.iter(|| {
+            futures::curve::curve_summary(black_box(100.0), black_box(&tenors), black_box(&prices))
+        })
+    });
+    group.finish();
+}
+
 criterion_group!(
     benches,
     bench_sma,
     bench_ema,
     bench_rsi,
     bench_atr,
-    bench_bbands
+    bench_bbands,
+    bench_bsm_price,
+    bench_implied_volatility,
+    bench_smile_metrics,
+    bench_curve_summary
 );
 criterion_main!(benches);

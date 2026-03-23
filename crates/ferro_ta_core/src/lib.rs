@@ -26,8 +26,10 @@ assert!((sma[2] - 2.0).abs() < 1e-10);
 ```
 */
 
+pub mod futures;
 pub mod math;
 pub mod momentum;
+pub mod options;
 pub mod overlap;
 pub mod statistic;
 pub mod volatility;

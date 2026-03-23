@@ -5,7 +5,7 @@ use pyo3::prelude::*;
 fn correl_fallback(x: &[f64], y: &[f64], timeperiod: usize) -> Vec<f64> {
     let n = x.len();
     let mut result = vec![f64::NAN; n];
-    for end in (timeperiod - 1)..n {
+    for (end, slot) in result.iter_mut().enumerate().take(n).skip(timeperiod - 1) {
         let wx = &x[(end + 1 - timeperiod)..=end];
         let wy = &y[(end + 1 - timeperiod)..=end];
         let mean_x = wx.iter().sum::<f64>() / timeperiod as f64;
@@ -26,7 +26,7 @@ fn correl_fallback(x: &[f64], y: &[f64], timeperiod: usize) -> Vec<f64> {
             .sum::<f64>()
             .sqrt();
         let denom = std_x * std_y;
-        result[end] = if denom != 0.0 { cov / denom } else { f64::NAN };
+        *slot = if denom != 0.0 { cov / denom } else { f64::NAN };
     }
     result
 }
@@ -72,10 +72,10 @@ pub fn correl<'py>(
         .map(|(&lhs, &rhs)| lhs * rhs)
         .sum::<f64>();
 
-    for end in (timeperiod - 1)..n {
+    for (end, slot) in result.iter_mut().enumerate().take(n).skip(timeperiod - 1) {
         let denom_x = period * sum_x2 - sum_x * sum_x;
         let denom_y = period * sum_y2 - sum_y * sum_y;
-        result[end] = if denom_x > 0.0 && denom_y > 0.0 {
+        *slot = if denom_x > 0.0 && denom_y > 0.0 {
             (period * sum_xy - sum_x * sum_y) / (denom_x * denom_y).sqrt()
         } else {
             f64::NAN

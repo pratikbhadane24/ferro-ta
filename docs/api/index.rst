@@ -17,3 +17,4 @@ API Reference
    extended
    streaming
    batch
+   analysis
