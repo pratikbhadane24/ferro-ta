@@ -1,5 +1,5 @@
 ferro-ta Documentation
-=====================
+======================
 
 .. toctree::
    :maxdepth: 2

@@ -1,6 +1,7 @@
 """Unit tests for ferro_ta.indicators.volume"""
+
 import numpy as np
-import pytest
+
 from ferro_ta.indicators.volume import AD, ADOSC, OBV
 
 # ---------------------------------------------------------------------------
@@ -23,6 +24,7 @@ SMALL_V = np.array([1000.0, 2000.0, 3000.0, 4000.0, 5000.0])
 # ---------------------------------------------------------------------------
 # OBV
 # ---------------------------------------------------------------------------
+
 
 class TestOBV:
     def test_known_values_rising(self):
@@ -64,6 +66,7 @@ class TestOBV:
 # AD
 # ---------------------------------------------------------------------------
 
+
 class TestAD:
     def test_known_formula(self):
         # AD = cumsum(CLV * volume)
@@ -72,7 +75,7 @@ class TestAD:
         l = np.array([10.0])
         c = np.array([12.0])
         v = np.array([1000.0])
-        clv = ((12 - 10) - (15 - 12)) / (15 - 10)   # (2 - 3) / 5 = -0.2
+        clv = ((12 - 10) - (15 - 12)) / (15 - 10)  # (2 - 3) / 5 = -0.2
         expected = clv * 1000.0
         result = AD(h, l, c, v)
         np.testing.assert_allclose(result[0], expected, rtol=1e-10)
@@ -93,6 +96,7 @@ class TestAD:
 # ---------------------------------------------------------------------------
 # ADOSC
 # ---------------------------------------------------------------------------
+
 
 class TestADOSC:
     def test_nan_warmup(self):

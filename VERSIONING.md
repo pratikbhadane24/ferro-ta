@@ -22,13 +22,13 @@ Currently supported: **3.10, 3.11, 3.12, 3.13** (see `pyproject.toml`).
 ## Release playbook
 
 1. **Bump the version** in `Cargo.toml` and `pyproject.toml` to the new version
-   (e.g. `0.2.0`).
+   (e.g. `1.0.1`).
 2. **Update `CHANGELOG.md`**: move the `[Unreleased]` block to a new dated section
-   `[0.2.0] — YYYY-MM-DD` and open a fresh `[Unreleased]` block.
+   `[1.0.1] — YYYY-MM-DD` and open a fresh `[Unreleased]` block.
 3. **Commit** the version bump and changelog update with message
-   `chore: release v0.2.0`.
-4. **Create a tag**: `git tag v0.2.0 && git push origin v0.2.0`.
-5. **Create a GitHub Release** for tag `v0.2.0` — the CI `build-wheels` and
+   `chore: release v1.0.1`.
+4. **Create a tag**: `git tag v1.0.1 && git push origin v1.0.1`.
+5. **Create a GitHub Release** for tag `v1.0.1` — the CI `build-wheels` and
    `publish` jobs trigger automatically on `release: published`.
 
 ## Breaking-change policy
@@ -47,10 +47,10 @@ touch `src/`, `python/`, or `wasm/`.
 
 ---
 
-## API Stability Guarantees (v1.0 preparation)
+## API Stability Guarantees
 
-The following modules are considered **stable API** as of the v0.1.x series and
-will not have breaking changes in minor releases:
+The following modules are considered **stable API** as of `1.0.0` and will not
+have breaking changes in minor releases:
 
 | Module | Stability |
 |---|---|
@@ -90,13 +90,12 @@ will not have breaking changes in minor releases:
 - [x] Configuration defaults API
 - [x] Jupyter notebook examples
 
-### Path to v1.0
+### Post-1.0 notes
 
-When the v1.0 release is cut:
-1. Remove any `Beta` classifiers from `pyproject.toml`.
-2. Update `CHANGELOG.md` with the `[1.0.0]` release section.
-3. Update this file to reflect stable status.
-4. Consider adding `Stable :: Stable` PyPI classifier.
+With `1.0.0` released:
+1. The package now uses the `Development Status :: 5 - Production/Stable` classifier.
+2. `CHANGELOG.md` now contains the `[1.0.0]` release section.
+3. This file now reflects the stable-series SemVer contract.
 
 ### Compatibility matrix
 

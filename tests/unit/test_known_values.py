@@ -11,7 +11,6 @@ All tests use NO optional dependencies - they run in every CI environment.
 from __future__ import annotations
 
 import numpy as np
-import pytest
 
 import ferro_ta
 
@@ -81,7 +80,7 @@ class TestEMAKnownValues:
         # After warmup, EMA should be strictly increasing
         for i in range(20, len(result) - 1):
             assert result[i + 1] > result[i], (
-                f"EMA not increasing at index {i}: {result[i]} >= {result[i+1]}"
+                f"EMA not increasing at index {i}: {result[i]} >= {result[i + 1]}"
             )
 
 
@@ -195,9 +194,9 @@ class TestRSIKnownValues:
         valid_values = result[~np.isnan(result)]
         if len(valid_values) > 0:
             # Should be either NaN everywhere or 100 everywhere
-            assert np.all(np.abs(valid_values - 100.0) < 1e-10) or np.all(np.abs(valid_values - 50.0) < 5.0), (
-                "RSI of constant series should be 100 (no down movement) or close to 50"
-            )
+            assert np.all(np.abs(valid_values - 100.0) < 1e-10) or np.all(
+                np.abs(valid_values - 50.0) < 5.0
+            ), "RSI of constant series should be 100 (no down movement) or close to 50"
 
 
 # ---------------------------------------------------------------------------
@@ -229,12 +228,63 @@ class TestATRKnownValues:
         # Bar 0: H=11, L=9, C=10
         # Bar 1: H=13, L=10, C=12  → TR = max(13-10, |13-10|, |10-10|) = 3
         # Bar 2: H=14, L=11, C=13  → TR = max(14-11, |14-12|, |11-12|) = 3
-        high = np.array([11.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0, 21.0,
-                        22.0, 23.0, 24.0, 25.0, 26.0])
-        low = np.array([9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0,
-                       19.0, 20.0, 21.0, 22.0, 23.0])
-        close = np.array([10.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0,
-                         21.0, 22.0, 23.0, 24.0, 25.0])
+        high = np.array(
+            [
+                11.0,
+                13.0,
+                14.0,
+                15.0,
+                16.0,
+                17.0,
+                18.0,
+                19.0,
+                20.0,
+                21.0,
+                22.0,
+                23.0,
+                24.0,
+                25.0,
+                26.0,
+            ]
+        )
+        low = np.array(
+            [
+                9.0,
+                10.0,
+                11.0,
+                12.0,
+                13.0,
+                14.0,
+                15.0,
+                16.0,
+                17.0,
+                18.0,
+                19.0,
+                20.0,
+                21.0,
+                22.0,
+                23.0,
+            ]
+        )
+        close = np.array(
+            [
+                10.0,
+                12.0,
+                13.0,
+                14.0,
+                15.0,
+                16.0,
+                17.0,
+                18.0,
+                19.0,
+                20.0,
+                21.0,
+                22.0,
+                23.0,
+                24.0,
+                25.0,
+            ]
+        )
 
         # For period=1, ATR still has warmup. Use TRANGE to check TR values directly
         tr = ferro_ta.TRANGE(high, low, close)
@@ -263,7 +313,7 @@ class TestMOMKnownValues:
 
         assert np.isnan(result[0])
         assert np.isnan(result[1])
-        assert np.abs(result[2] - 5.0) < 1e-10   # 15 - 10 = 5
+        assert np.abs(result[2] - 5.0) < 1e-10  # 15 - 10 = 5
         assert np.abs(result[3] - (-1.0)) < 1e-10  # 11 - 12 = -1
 
 
@@ -295,7 +345,9 @@ class TestMACDKnownValues:
     def test_macd_histogram_identity(self):
         """histogram should always equal macd - signal."""
         data = np.arange(1.0, 51.0)
-        macd, signal, histogram = ferro_ta.MACD(data, fastperiod=12, slowperiod=26, signalperiod=9)
+        macd, signal, histogram = ferro_ta.MACD(
+            data, fastperiod=12, slowperiod=26, signalperiod=9
+        )
 
         # histogram = macd - signal (within floating-point tolerance)
         expected_histogram = macd - signal
@@ -338,9 +390,9 @@ class TestVWAPKnownValues:
 
         expected_0 = typ[0]
         expected_1 = (typ[0] * volume[0] + typ[1] * volume[1]) / (volume[0] + volume[1])
-        expected_2 = (
-            typ[0] * volume[0] + typ[1] * volume[1] + typ[2] * volume[2]
-        ) / (volume[0] + volume[1] + volume[2])
+        expected_2 = (typ[0] * volume[0] + typ[1] * volume[1] + typ[2] * volume[2]) / (
+            volume[0] + volume[1] + volume[2]
+        )
 
         assert np.abs(result[0] - expected_0) < 1e-10
         assert np.abs(result[1] - expected_1) < 1e-10
@@ -359,7 +411,6 @@ class TestDONCHIANKnownValues:
         """upper == MAX(high), lower == MIN(low), middle == (upper+lower)/2."""
         high = np.array([11.0, 13.0, 14.0, 12.0, 15.0])
         low = np.array([9.0, 10.0, 11.0, 10.0, 12.0])
-        close = np.array([10.0, 12.0, 13.0, 11.0, 14.0])
 
         period = 3
         upper, middle, lower = ferro_ta.DONCHIAN(high, low, timeperiod=period)
@@ -394,7 +445,9 @@ class TestPIVOT_POINTSKnownValues:
         low = np.array([90.0, 90.0])
         close = np.array([100.0, 100.0])
 
-        pivot, r1, s1, r2, s2 = ferro_ta.PIVOT_POINTS(high, low, close, method="classic")
+        pivot, r1, s1, r2, s2 = ferro_ta.PIVOT_POINTS(
+            high, low, close, method="classic"
+        )
 
         # Check last bar (index 1) which has full history
         # P = (110 + 90 + 100) / 3 = 100
@@ -458,7 +511,6 @@ class TestPatternKnownValues:
     def test_doji_known_sequence(self):
         """Construct a perfect doji: open == close, small body."""
         # Doji: open == close (or very close), H and L have range
-        n = 5
         high = np.array([11.0, 11.0, 11.0, 11.0, 11.0])
         low = np.array([9.0, 9.0, 9.0, 9.0, 9.0])
         close = np.array([10.0, 10.0, 10.0, 10.0, 10.0])
@@ -507,3 +559,4 @@ class TestPatternKnownValues:
 
         # Last bar has hammer characteristics
         # (actual detection may vary based on implementation)
+        assert result.shape == close.shape

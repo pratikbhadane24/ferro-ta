@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.1.0 (2024)
+1.0.0 (2026)
 ------------
 
 **Candlestick Pattern Parity (61/61)**

@@ -1,10 +1,32 @@
 """Unit tests for ferro_ta.indicators.math_ops"""
+
 import numpy as np
-import pytest
+
 from ferro_ta.indicators.math_ops import (
-    ADD, SUB, MULT, DIV, SUM, MAX, MIN, MAXINDEX, MININDEX,
-    ACOS, ASIN, ATAN, CEIL, COS, COSH, EXP, FLOOR,
-    LN, LOG10, SIN, SINH, SQRT, TAN, TANH,
+    ACOS,
+    ADD,
+    ASIN,
+    ATAN,
+    CEIL,
+    COS,
+    COSH,
+    DIV,
+    EXP,
+    FLOOR,
+    LN,
+    LOG10,
+    MAX,
+    MAXINDEX,
+    MIN,
+    MININDEX,
+    MULT,
+    SIN,
+    SINH,
+    SQRT,
+    SUB,
+    SUM,
+    TAN,
+    TANH,
 )
 
 # ---------------------------------------------------------------------------
@@ -14,16 +36,17 @@ from ferro_ta.indicators.math_ops import (
 A3 = np.array([1.0, 2.0, 3.0])
 B3 = np.array([4.0, 5.0, 6.0])
 TRIG = np.array([0.0, np.pi / 6, np.pi / 4, np.pi / 3, np.pi / 2])
-UNIT = np.array([0.0, 0.25, 0.5, 0.75, 1.0])   # values in [0,1] for ASIN/ACOS
+UNIT = np.array([0.0, 0.25, 0.5, 0.75, 1.0])  # values in [0,1] for ASIN/ACOS
 
 RNG = np.random.default_rng(17)
 N = 100
-_ARR = 1.0 + RNG.random(N) * 9.0   # positive values in (1, 10]
+_ARR = 1.0 + RNG.random(N) * 9.0  # positive values in (1, 10]
 
 
 # ---------------------------------------------------------------------------
 # ADD
 # ---------------------------------------------------------------------------
+
 
 class TestADD:
     def test_known_values(self):
@@ -41,6 +64,7 @@ class TestADD:
 # SUB
 # ---------------------------------------------------------------------------
 
+
 class TestSUB:
     def test_known_values(self):
         result = SUB(B3, A3)
@@ -53,6 +77,7 @@ class TestSUB:
 # ---------------------------------------------------------------------------
 # MULT
 # ---------------------------------------------------------------------------
+
 
 class TestMULT:
     def test_known_values(self):
@@ -70,6 +95,7 @@ class TestMULT:
 # DIV
 # ---------------------------------------------------------------------------
 
+
 class TestDIV:
     def test_known_values(self):
         result = DIV(B3, A3)
@@ -85,6 +111,7 @@ class TestDIV:
 # ---------------------------------------------------------------------------
 # SUM
 # ---------------------------------------------------------------------------
+
 
 class TestSUM:
     def test_known_values(self):
@@ -105,6 +132,7 @@ class TestSUM:
 # ---------------------------------------------------------------------------
 # MAX
 # ---------------------------------------------------------------------------
+
 
 class TestMAX:
     def test_known_values(self):
@@ -127,6 +155,7 @@ class TestMAX:
 # MIN
 # ---------------------------------------------------------------------------
 
+
 class TestMIN:
     def test_known_values(self):
         arr = np.array([5.0, 3.0, 4.0, 1.0, 2.0])
@@ -142,6 +171,7 @@ class TestMIN:
 # ---------------------------------------------------------------------------
 # MAXINDEX
 # ---------------------------------------------------------------------------
+
 
 class TestMAXINDEX:
     def test_known_values(self):
@@ -162,6 +192,7 @@ class TestMAXINDEX:
 # MININDEX
 # ---------------------------------------------------------------------------
 
+
 class TestMININDEX:
     def test_known_values(self):
         arr = np.array([5.0, 1.0, 3.0, 2.0, 4.0])
@@ -180,6 +211,7 @@ class TestMININDEX:
 # ---------------------------------------------------------------------------
 # Trig functions
 # ---------------------------------------------------------------------------
+
 
 class TestSIN:
     def test_known_values(self):
@@ -235,6 +267,7 @@ class TestTANH:
 # ---------------------------------------------------------------------------
 # Rounding/exponential
 # ---------------------------------------------------------------------------
+
 
 class TestCEIL:
     def test_known_values(self):

@@ -392,7 +392,7 @@ def _run_stdio_fallback() -> None:  # pragma: no cover
                 "result": {
                     "protocolVersion": "2024-11-05",
                     "capabilities": {"tools": {}},
-                    "serverInfo": {"name": "ferro-ta", "version": "0.1.0"},
+                    "serverInfo": {"name": "ferro-ta", "version": "1.0.0"},
                 },
             }
         elif method == "tools/list":

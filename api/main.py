@@ -106,7 +106,7 @@ MAX_SERIES_LENGTH = int(os.environ.get("MAX_SERIES_LENGTH", "100000"))
 app = FastAPI(
     title="ferro-ta API",
     description="REST API for ferro-ta technical analysis indicators and backtesting.",
-    version="0.1.0",
+    version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
 )

@@ -18,7 +18,7 @@ project = "ferro-ta"
 copyright = "2024, pratikbhadane24"
 author = "pratikbhadane24"
 # Version from env (e.g. set in CI from git tag) or default
-release = os.environ.get("FERRO_TA_VERSION", "0.1.0")
+release = os.environ.get("FERRO_TA_VERSION", "1.0.0")
 version = release
 
 # -- General configuration ----------------------------------------------------

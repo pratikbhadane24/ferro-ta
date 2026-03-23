@@ -5,6 +5,8 @@ This document describes how ferro-ta is packaged and published.
 ## PyPI (pip)
 
 Wheels are built by CI on release (see [RELEASE.md](RELEASE.md)).
+Publishing uses PyPI Trusted Publishing via GitHub OIDC; no long-lived PyPI API
+token is required.
 
 Supported platforms and Python versions are documented in [PLATFORMS.md](PLATFORMS.md).
 

@@ -340,64 +340,64 @@ class TestStatisticErrorPaths:
     """Cover except ValueError branches in statistic.py."""
 
     def test_stddev_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import STDDEV
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             STDDEV(_2D)
 
     def test_var_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import VAR
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             VAR(_2D)
 
     def test_linearreg_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import LINEARREG
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             LINEARREG(_2D)
 
     def test_linearreg_slope_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import LINEARREG_SLOPE
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             LINEARREG_SLOPE(_2D)
 
     def test_linearreg_intercept_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import LINEARREG_INTERCEPT
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             LINEARREG_INTERCEPT(_2D)
 
     def test_linearreg_angle_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import LINEARREG_ANGLE
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             LINEARREG_ANGLE(_2D)
 
     def test_tsf_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import TSF
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             TSF(_2D)
 
     def test_beta_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import BETA
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             BETA(_2D, CLOSE)
 
     def test_correl_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CORREL
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CORREL(_2D, CLOSE)
@@ -412,106 +412,106 @@ class TestOverlapErrorPaths:
     """Cover except ValueError branches in overlap.py."""
 
     def test_sma_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import SMA
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             SMA(_2D)
 
     def test_ema_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import EMA
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             EMA(_2D)
 
     def test_wma_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import WMA
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             WMA(_2D)
 
     def test_trima_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import TRIMA
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             TRIMA(_2D)
 
     def test_kama_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import KAMA
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             KAMA(_2D)
 
     def test_t3_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import T3
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             T3(_2D)
 
     def test_bbands_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import BBANDS
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             BBANDS(_2D)
 
     def test_macd_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import MACD
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             MACD(_2D)
 
     def test_macdfix_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import MACDFIX
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             MACDFIX(_2D)
 
     def test_sar_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import SAR
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             SAR(_2D, LOW)
 
     def test_midpoint_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import MIDPOINT
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             MIDPOINT(_2D)
 
     def test_midprice_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import MIDPRICE
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             MIDPRICE(_2D, LOW)
 
     def test_mama_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import MAMA
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             MAMA(_2D)
 
     def test_sarext_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import SAREXT
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             SAREXT(_2D, LOW)
 
     def test_macdext_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import MACDEXT
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             MACDEXT(_2D)
@@ -526,190 +526,190 @@ class TestMomentumErrorPaths:
     """Cover except ValueError branches in momentum.py."""
 
     def test_rsi_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import RSI
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             RSI(_2D)
 
     def test_mom_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import MOM
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             MOM(_2D)
 
     def test_roc_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import ROC
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             ROC(_2D)
 
     def test_rocp_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import ROCP
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             ROCP(_2D)
 
     def test_rocr_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import ROCR
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             ROCR(_2D)
 
     def test_rocr100_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import ROCR100
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             ROCR100(_2D)
 
     def test_willr_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import WILLR
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             WILLR(_2D, LOW, CLOSE)
 
     def test_adx_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import ADX
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             ADX(_2D, LOW, CLOSE)
 
     def test_adxr_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import ADXR
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             ADXR(_2D, LOW, CLOSE)
 
     def test_apo_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import APO
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             APO(_2D)
 
     def test_ppo_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import PPO
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             PPO(_2D)
 
     def test_cci_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CCI
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CCI(_2D, LOW, CLOSE)
 
     def test_mfi_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import MFI
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             MFI(_2D, LOW, CLOSE, VOLUME)
 
     def test_bop_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import BOP
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             BOP(_2D, HIGH, LOW, CLOSE)
 
     def test_stochf_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import STOCHF
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             STOCHF(_2D, LOW, CLOSE)
 
     def test_stoch_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import STOCH
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             STOCH(_2D, LOW, CLOSE)
 
     def test_stochrsi_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import STOCHRSI
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             STOCHRSI(_2D)
 
     def test_ultosc_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import ULTOSC
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             ULTOSC(_2D, LOW, CLOSE)
 
     def test_dx_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import DX
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             DX(_2D, LOW, CLOSE)
 
     def test_plus_di_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import PLUS_DI
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             PLUS_DI(_2D, LOW, CLOSE)
 
     def test_minus_di_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import MINUS_DI
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             MINUS_DI(_2D, LOW, CLOSE)
 
     def test_plus_dm_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import PLUS_DM
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             PLUS_DM(_2D, LOW)
 
     def test_minus_dm_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import MINUS_DM
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             MINUS_DM(_2D, LOW)
 
     def test_cmo_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CMO
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CMO(_2D)
 
     def test_aroon_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import AROON
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             AROON(_2D, LOW)
 
     def test_aroonosc_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import AROONOSC
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             AROONOSC(_2D, LOW)
 
     def test_trix_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import TRIX
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             TRIX(_2D)
@@ -724,29 +724,29 @@ class TestPriceTransformErrorPaths:
     """Cover except ValueError branches in price_transform.py."""
 
     def test_avgprice_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import AVGPRICE
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             AVGPRICE(_2D, HIGH, LOW, CLOSE)
 
     def test_medprice_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import MEDPRICE
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             MEDPRICE(_2D, LOW)
 
     def test_typprice_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import TYPPRICE
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             TYPPRICE(_2D, LOW, CLOSE)
 
     def test_wclprice_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import WCLPRICE
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             WCLPRICE(_2D, LOW, CLOSE)
@@ -761,22 +761,22 @@ class TestVolumeErrorPaths:
     """Cover except ValueError branches in volume.py."""
 
     def test_ad_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import AD
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             AD(_2D, LOW, CLOSE, VOLUME)
 
     def test_adosc_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import ADOSC
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             ADOSC(_2D, LOW, CLOSE, VOLUME)
 
     def test_obv_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import OBV
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             OBV(_2D, VOLUME)
@@ -791,15 +791,15 @@ class TestVolatilityErrorPaths:
     """Cover except ValueError branches in volatility.py."""
 
     def test_atr_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import ATR
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             ATR(_2D, LOW, CLOSE)
 
     def test_natr_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import NATR
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             NATR(_2D, LOW, CLOSE)
@@ -814,64 +814,64 @@ class TestMathOpsErrorPaths:
     """Cover except ValueError branches in math_ops.py."""
 
     def test_add_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import ADD
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             ADD(_2D, CLOSE)
 
     def test_sub_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import SUB
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             SUB(_2D, CLOSE)
 
     def test_mult_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import MULT
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             MULT(_2D, CLOSE)
 
     def test_div_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import DIV
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             DIV(_2D, CLOSE)
 
     def test_sum_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import SUM
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             SUM(_2D)
 
     def test_max_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import MAX
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             MAX(_2D)
 
     def test_min_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import MIN
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             MIN(_2D)
 
     def test_maxindex_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import MAXINDEX
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             MAXINDEX(_2D)
 
     def test_minindex_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import MININDEX
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             MININDEX(_2D)
@@ -889,428 +889,428 @@ class TestPatternErrorPaths:
         return OPEN, HIGH, LOW, CLOSE
 
     def test_cdl2crows_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDL2CROWS
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDL2CROWS(_2D, HIGH, LOW, CLOSE)
 
     def test_cdldoji_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLDOJI
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLDOJI(_2D, HIGH, LOW, CLOSE)
 
     def test_cdl3blackcrows_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDL3BLACKCROWS
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDL3BLACKCROWS(_2D, HIGH, LOW, CLOSE)
 
     def test_cdl3inside_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDL3INSIDE
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDL3INSIDE(_2D, HIGH, LOW, CLOSE)
 
     def test_cdlengulfing_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLENGULFING
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLENGULFING(_2D, HIGH, LOW, CLOSE)
 
     def test_cdlhammer_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLHAMMER
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLHAMMER(_2D, HIGH, LOW, CLOSE)
 
     def test_cdlmarubozu_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLMARUBOZU
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLMARUBOZU(_2D, HIGH, LOW, CLOSE)
 
     def test_cdlmorningstar_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLMORNINGSTAR
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLMORNINGSTAR(_2D, HIGH, LOW, CLOSE)
 
     def test_cdleveningstar_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLEVENINGSTAR
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLEVENINGSTAR(_2D, HIGH, LOW, CLOSE)
 
     def test_cdlshootingstar_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLSHOOTINGSTAR
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLSHOOTINGSTAR(_2D, HIGH, LOW, CLOSE)
 
     def test_cdlharami_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLHARAMI
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLHARAMI(_2D, HIGH, LOW, CLOSE)
 
     def test_cdldojistar_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLDOJISTAR
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLDOJISTAR(_2D, HIGH, LOW, CLOSE)
 
     def test_cdlspinningtop_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLSPINNINGTOP
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLSPINNINGTOP(_2D, HIGH, LOW, CLOSE)
 
     def test_cdlkicking_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLKICKING
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLKICKING(_2D, HIGH, LOW, CLOSE)
 
     def test_cdlpiercing_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLPIERCING
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLPIERCING(_2D, HIGH, LOW, CLOSE)
 
     def test_cdl3whitesoldiers_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDL3WHITESOLDIERS
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDL3WHITESOLDIERS(_2D, HIGH, LOW, CLOSE)
 
     def test_cdl3outside_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDL3OUTSIDE
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDL3OUTSIDE(_2D, HIGH, LOW, CLOSE)
 
     def test_cdlmorningdojistar_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLMORNINGDOJISTAR
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLMORNINGDOJISTAR(_2D, HIGH, LOW, CLOSE)
 
     def test_cdleveningdojistar_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLEVENINGDOJISTAR
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLEVENINGDOJISTAR(_2D, HIGH, LOW, CLOSE)
 
     def test_cdlharamicross_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLHARAMICROSS
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLHARAMICROSS(_2D, HIGH, LOW, CLOSE)
 
     def test_cdl3linestrike_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDL3LINESTRIKE
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDL3LINESTRIKE(_2D, HIGH, LOW, CLOSE)
 
     def test_cdl3starsinsouth_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDL3STARSINSOUTH
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDL3STARSINSOUTH(_2D, HIGH, LOW, CLOSE)
 
     def test_cdlabandonedbaby_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLABANDONEDBABY
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLABANDONEDBABY(_2D, HIGH, LOW, CLOSE)
 
     def test_cdladvanceblock_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLADVANCEBLOCK
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLADVANCEBLOCK(_2D, HIGH, LOW, CLOSE)
 
     def test_cdlbelthold_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLBELTHOLD
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLBELTHOLD(_2D, HIGH, LOW, CLOSE)
 
     def test_cdlbreakaway_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLBREAKAWAY
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLBREAKAWAY(_2D, HIGH, LOW, CLOSE)
 
     def test_cdlclosingmarubozu_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLCLOSINGMARUBOZU
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLCLOSINGMARUBOZU(_2D, HIGH, LOW, CLOSE)
 
     def test_cdlconcealbabyswall_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLCONCEALBABYSWALL
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLCONCEALBABYSWALL(_2D, HIGH, LOW, CLOSE)
 
     def test_cdlcounterattack_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLCOUNTERATTACK
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLCOUNTERATTACK(_2D, HIGH, LOW, CLOSE)
 
     def test_cdldarkcloudcover_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLDARKCLOUDCOVER
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLDARKCLOUDCOVER(_2D, HIGH, LOW, CLOSE)
 
     def test_cdldragonflydoji_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLDRAGONFLYDOJI
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLDRAGONFLYDOJI(_2D, HIGH, LOW, CLOSE)
 
     def test_cdlgapsidesidewhite_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLGAPSIDESIDEWHITE
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLGAPSIDESIDEWHITE(_2D, HIGH, LOW, CLOSE)
 
     def test_cdlgravestonedoji_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLGRAVESTONEDOJI
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLGRAVESTONEDOJI(_2D, HIGH, LOW, CLOSE)
 
     def test_cdlhangingman_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLHANGINGMAN
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLHANGINGMAN(_2D, HIGH, LOW, CLOSE)
 
     def test_cdlhighwave_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLHIGHWAVE
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLHIGHWAVE(_2D, HIGH, LOW, CLOSE)
 
     def test_cdlhikkake_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLHIKKAKE
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLHIKKAKE(_2D, HIGH, LOW, CLOSE)
 
     def test_cdlhikkakemod_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLHIKKAKEMOD
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLHIKKAKEMOD(_2D, HIGH, LOW, CLOSE)
 
     def test_cdlhomingpigeon_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLHOMINGPIGEON
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLHOMINGPIGEON(_2D, HIGH, LOW, CLOSE)
 
     def test_cdlidentical3crows_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLIDENTICAL3CROWS
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLIDENTICAL3CROWS(_2D, HIGH, LOW, CLOSE)
 
     def test_cdlinneck_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLINNECK
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLINNECK(_2D, HIGH, LOW, CLOSE)
 
     def test_cdlinvertedhammer_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLINVERTEDHAMMER
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLINVERTEDHAMMER(_2D, HIGH, LOW, CLOSE)
 
     def test_cdlkickingbylength_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLKICKINGBYLENGTH
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLKICKINGBYLENGTH(_2D, HIGH, LOW, CLOSE)
 
     def test_cdlladderbottom_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLLADDERBOTTOM
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLLADDERBOTTOM(_2D, HIGH, LOW, CLOSE)
 
     def test_cdllongleggeddoji_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLLONGLEGGEDDOJI
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLLONGLEGGEDDOJI(_2D, HIGH, LOW, CLOSE)
 
     def test_cdllongline_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLLONGLINE
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLLONGLINE(_2D, HIGH, LOW, CLOSE)
 
     def test_cdlmatchinglow_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLMATCHINGLOW
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLMATCHINGLOW(_2D, HIGH, LOW, CLOSE)
 
     def test_cdlmathold_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLMATHOLD
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLMATHOLD(_2D, HIGH, LOW, CLOSE)
 
     def test_cdlonneck_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLONNECK
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLONNECK(_2D, HIGH, LOW, CLOSE)
 
     def test_cdlrickshawman_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLRICKSHAWMAN
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLRICKSHAWMAN(_2D, HIGH, LOW, CLOSE)
 
     def test_cdlrisefall3methods_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLRISEFALL3METHODS
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLRISEFALL3METHODS(_2D, HIGH, LOW, CLOSE)
 
     def test_cdlseparatinglines_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLSEPARATINGLINES
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLSEPARATINGLINES(_2D, HIGH, LOW, CLOSE)
 
     def test_cdlshortline_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLSHORTLINE
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLSHORTLINE(_2D, HIGH, LOW, CLOSE)
 
     def test_cdlstalledpattern_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLSTALLEDPATTERN
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLSTALLEDPATTERN(_2D, HIGH, LOW, CLOSE)
 
     def test_cdlsticksandwich_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLSTICKSANDWICH
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLSTICKSANDWICH(_2D, HIGH, LOW, CLOSE)
 
     def test_cdltakuri_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLTAKURI
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLTAKURI(_2D, HIGH, LOW, CLOSE)
 
     def test_cdltasukigap_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLTASUKIGAP
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLTASUKIGAP(_2D, HIGH, LOW, CLOSE)
 
     def test_cdlthrusting_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLTHRUSTING
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLTHRUSTING(_2D, HIGH, LOW, CLOSE)
 
     def test_cdltristar_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLTRISTAR
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLTRISTAR(_2D, HIGH, LOW, CLOSE)
 
     def test_cdlunique3river_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLUNIQUE3RIVER
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLUNIQUE3RIVER(_2D, HIGH, LOW, CLOSE)
 
     def test_cdlupsidegap2crows_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLUPSIDEGAP2CROWS
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLUPSIDEGAP2CROWS(_2D, HIGH, LOW, CLOSE)
 
     def test_cdlxsidegap3methods_2d_raises(self):
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta import CDLXSIDEGAP3METHODS
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             CDLXSIDEGAP3METHODS(_2D, HIGH, LOW, CLOSE)
@@ -1369,8 +1369,8 @@ class TestExtendedUncovered:
 
     def test_vwap_negative_timeperiod_raises(self):
         """Lines 107-109: VWAP raises FerroTAValueError for negative timeperiod."""
-        from ferro_ta.core.exceptions import FerroTAValueError
         from ferro_ta import VWAP
+        from ferro_ta.core.exceptions import FerroTAValueError
 
         with pytest.raises(FerroTAValueError, match="timeperiod must be >= 0"):
             VWAP(HIGH, LOW, CLOSE, VOLUME, timeperiod=-1)
@@ -1386,8 +1386,8 @@ class TestOptionsUncovered:
 
     def test_validate_iv_2d_raises(self):
         """Line 63: _validate_iv raises for 2D input."""
-        from ferro_ta.core.exceptions import FerroTAInputError
         from ferro_ta.analysis.options import iv_rank
+        from ferro_ta.core.exceptions import FerroTAInputError
 
         with pytest.raises(FerroTAInputError):
             iv_rank(np.array([[0.2, 0.3]]), window=5)

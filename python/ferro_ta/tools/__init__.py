@@ -27,4 +27,3 @@ from ferro_ta.tools.tools import (  # noqa: F401
     list_indicators,
     run_backtest,
 )
-

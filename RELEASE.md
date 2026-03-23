@@ -3,7 +3,7 @@
 This document describes the step-by-step process for cutting a new **ferro-ta** release.
 Follow every step in order to produce a consistent, reproducible release.
 
-For **automated publishing** (secrets and what runs on release), see [PUBLISHING.md](PUBLISHING.md).
+For the packaging and release overview, see [PACKAGING.md](PACKAGING.md).
 
 ---
 
@@ -11,7 +11,7 @@ For **automated publishing** (secrets and what runs on release), see [PUBLISHING
 
 | Artifact    | How |
 |-------------|-----|
-| **PyPI**    | CI job `publish|
+| **PyPI**    | CI job `publish` using PyPI Trusted Publishing (OIDC) |
 | **npm (WASM)** | Workflow `wasm-publish`|
 | **crates.io** | CI job `publish-cratesio` |
 
@@ -129,7 +129,8 @@ git push origin v0.2.0
 5. Click **Publish release**.
 
 Publishing the release triggers the CI `build-wheels` and `publish` jobs
-automatically (the workflow responds to `release: published`).
+automatically (the workflow responds to `release: published`). The PyPI upload
+uses Trusted Publishing via GitHub OIDC, so no `PYPI_API_TOKEN` secret is used.
 
 ---
 

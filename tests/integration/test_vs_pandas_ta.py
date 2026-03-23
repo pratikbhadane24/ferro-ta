@@ -181,7 +181,9 @@ class TestBBANDSVsPandasTA:
         pt_upper = pt_bbands[upper_col].to_numpy()
 
         # Middle band (SMA) must be identical
-        assert _allclose(ft_middle, pt_middle, atol=1e-8), "BBands middle (SMA) must match"
+        assert _allclose(ft_middle, pt_middle, atol=1e-8), (
+            "BBands middle (SMA) must match"
+        )
         # Upper/lower: differ due to ddof=0 vs ddof=1
         assert _allclose(ft_upper, pt_upper, atol=0.1)
         assert _allclose(ft_lower, pt_lower, atol=0.1)
@@ -259,18 +261,15 @@ class TestSTOCHVsPandasTA:
         close = ohlcv_500["close"]
 
         ft_slowk, ft_slowd = ferro_ta.STOCH(
-            high, low, close,
-            fastk_period=14, slowk_period=3,
-            slowd_period=3
+            high, low, close, fastk_period=14, slowk_period=3, slowd_period=3
         )
 
         # pandas-ta returns DataFrame
         pt_stoch = pandas_ta.stoch(
-            pd.Series(high), pd.Series(low), pd.Series(close),
-            k=14, d=3, smooth_k=3
+            pd.Series(high), pd.Series(low), pd.Series(close), k=14, d=3, smooth_k=3
         )
-        pt_slowk = pt_stoch[f"STOCHk_14_3_3"].to_numpy()
-        pt_slowd = pt_stoch[f"STOCHd_14_3_3"].to_numpy()
+        pt_slowk = pt_stoch["STOCHk_14_3_3"].to_numpy()
+        pt_slowd = pt_stoch["STOCHd_14_3_3"].to_numpy()
 
         assert _allclose(ft_slowk, pt_slowk, atol=1e-2, tail_fraction=0.3)
         assert _allclose(ft_slowd, pt_slowd, atol=1e-2, tail_fraction=0.3)
@@ -291,7 +290,9 @@ class TestCCIVsPandasTA:
         # Compute CCI manually: (TP - SMA(TP)) / (0.015 * MeanAbsDev(TP))
         tp = (pd.Series(high) + pd.Series(low) + pd.Series(close)) / 3.0
         mean_tp = tp.rolling(period).mean()
-        mad_tp = tp.rolling(period).apply(lambda x: np.mean(np.abs(x - x.mean())), raw=True)
+        mad_tp = tp.rolling(period).apply(
+            lambda x: np.mean(np.abs(x - x.mean())), raw=True
+        )
         pt = ((tp - mean_tp) / (0.015 * mad_tp)).to_numpy()
 
         assert _allclose(ft, pt, atol=1e-8)
@@ -469,8 +470,8 @@ class TestVWAPVsPandasTA:
         n = len(tp)
         ref = np.full(n, np.nan)
         for i in range(period - 1, n):
-            w = tp[i - period + 1: i + 1]
-            v = vol[i - period + 1: i + 1]
+            w = tp[i - period + 1 : i + 1]
+            v = vol[i - period + 1 : i + 1]
             ref[i] = np.dot(w, v) / v.sum()
 
         assert _allclose(ft, ref, atol=1e-8)
@@ -522,7 +523,13 @@ class TestICHIMOKUVsPandasTA:
         close = ohlcv_500["close"]
 
         ft_tenkan, ft_kijun, ft_senkou_a, ft_senkou_b, ft_chikou = ferro_ta.ICHIMOKU(
-            high, low, close, tenkan_period=9, kijun_period=26, senkou_b_period=52, displacement=26
+            high,
+            low,
+            close,
+            tenkan_period=9,
+            kijun_period=26,
+            senkou_b_period=52,
+            displacement=26,
         )
 
         df = pd.DataFrame({"high": high, "low": low, "close": close})
@@ -547,12 +554,19 @@ class TestKELTNER_CHANNELSVsPandasTA:
         multiplier = 2.0
 
         ft_upper, ft_middle, ft_lower = ferro_ta.KELTNER_CHANNELS(
-            high, low, close, timeperiod=period, atr_period=atr_period, multiplier=multiplier
+            high,
+            low,
+            close,
+            timeperiod=period,
+            atr_period=atr_period,
+            multiplier=multiplier,
         )
 
         # Compute manually using pandas_ta EMA and ATR to match ferro_ta's exact formula
         pt_ema = pandas_ta.ema(pd.Series(close), length=period).to_numpy()
-        pt_atr = pandas_ta.atr(pd.Series(high), pd.Series(low), pd.Series(close), length=atr_period).to_numpy()
+        pt_atr = pandas_ta.atr(
+            pd.Series(high), pd.Series(low), pd.Series(close), length=atr_period
+        ).to_numpy()
         pt_upper = pt_ema + multiplier * pt_atr
         pt_middle = pt_ema
         pt_lower = pt_ema - multiplier * pt_atr
@@ -643,7 +657,9 @@ class TestCHANDELIER_EXITVsPandasTA:
         )
 
         # Compute manually: long = rolling_max(H, n) - mult*ATR; short = rolling_min(L, n) + mult*ATR
-        pt_atr = pandas_ta.atr(pd.Series(high), pd.Series(low), pd.Series(close), length=period).to_numpy()
+        pt_atr = pandas_ta.atr(
+            pd.Series(high), pd.Series(low), pd.Series(close), length=period
+        ).to_numpy()
         rolling_high = pd.Series(high).rolling(period).max().to_numpy()
         rolling_low = pd.Series(low).rolling(period).min().to_numpy()
         pt_long = rolling_high - multiplier * pt_atr

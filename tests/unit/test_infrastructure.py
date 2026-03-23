@@ -640,13 +640,17 @@ class TestVersionConsistency:
 
     def test_release_md_exists(self):
         """RELEASE.md must exist in the repository root."""
-        root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        root = os.path.dirname(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        )
         release_md = os.path.join(root, "RELEASE.md")
         assert os.path.isfile(release_md), "RELEASE.md not found"
 
     def test_release_md_has_key_sections(self):
         """RELEASE.md must mention tagging and PyPI."""
-        root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        root = os.path.dirname(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        )
         release_md = os.path.join(root, "RELEASE.md")
         if not os.path.isfile(release_md):
             pytest.skip("RELEASE.md not found")

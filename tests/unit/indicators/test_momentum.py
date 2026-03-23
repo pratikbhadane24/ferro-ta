@@ -1,12 +1,35 @@
 """Unit tests for ferro_ta.indicators.momentum"""
+
 import numpy as np
-import pytest
+
 from ferro_ta.indicators.momentum import (
-    RSI, STOCH, STOCHF, STOCHRSI,
-    ADX, ADXR, CCI, WILLR, AROON, AROONOSC,
-    MFI, MOM, ROC, ROCP, ROCR, ROCR100,
-    CMO, DX, MINUS_DI, MINUS_DM, PLUS_DI, PLUS_DM,
-    PPO, APO, TRIX, ULTOSC, BOP,
+    ADX,
+    ADXR,
+    APO,
+    AROON,
+    AROONOSC,
+    BOP,
+    CCI,
+    CMO,
+    DX,
+    MFI,
+    MINUS_DI,
+    MINUS_DM,
+    MOM,
+    PLUS_DI,
+    PLUS_DM,
+    PPO,
+    ROC,
+    ROCP,
+    ROCR,
+    ROCR100,
+    RSI,
+    STOCH,
+    STOCHF,
+    STOCHRSI,
+    TRIX,
+    ULTOSC,
+    WILLR,
 )
 
 # ---------------------------------------------------------------------------
@@ -32,6 +55,7 @@ SMALL5_V = np.array([1000.0, 2000.0, 3000.0, 4000.0, 5000.0])
 # RSI
 # ---------------------------------------------------------------------------
 
+
 class TestRSI:
     def test_nan_warmup(self):
         result = RSI(_CLOSE, timeperiod=14)
@@ -49,6 +73,7 @@ class TestRSI:
 # ---------------------------------------------------------------------------
 # STOCH
 # ---------------------------------------------------------------------------
+
 
 class TestSTOCH:
     def test_returns_two_arrays(self):
@@ -69,6 +94,7 @@ class TestSTOCH:
 # ---------------------------------------------------------------------------
 # STOCHF
 # ---------------------------------------------------------------------------
+
 
 class TestSTOCHF:
     def test_returns_two_arrays(self):
@@ -99,6 +125,7 @@ class TestSTOCHF:
 # STOCHRSI
 # ---------------------------------------------------------------------------
 
+
 class TestSTOCHRSI:
     def test_returns_two_arrays(self):
         result = STOCHRSI(_CLOSE)
@@ -119,6 +146,7 @@ class TestSTOCHRSI:
 # ADX
 # ---------------------------------------------------------------------------
 
+
 class TestADX:
     def test_nan_warmup(self):
         result = ADX(_HIGH, _LOW, _CLOSE, timeperiod=14)
@@ -137,6 +165,7 @@ class TestADX:
 # ADXR
 # ---------------------------------------------------------------------------
 
+
 class TestADXR:
     def test_length(self):
         assert len(ADXR(_HIGH, _LOW, _CLOSE, 14)) == N
@@ -150,6 +179,7 @@ class TestADXR:
 # ---------------------------------------------------------------------------
 # CCI
 # ---------------------------------------------------------------------------
+
 
 class TestCCI:
     def test_known_constant_mean_dev(self):
@@ -181,6 +211,7 @@ class TestCCI:
 # WILLR
 # ---------------------------------------------------------------------------
 
+
 class TestWILLR:
     def test_range(self):
         result = WILLR(_HIGH, _LOW, _CLOSE, 14)
@@ -194,6 +225,7 @@ class TestWILLR:
 # ---------------------------------------------------------------------------
 # AROON
 # ---------------------------------------------------------------------------
+
 
 class TestAROON:
     def test_returns_two_arrays(self):
@@ -214,6 +246,7 @@ class TestAROON:
 # ---------------------------------------------------------------------------
 # AROONOSC
 # ---------------------------------------------------------------------------
+
 
 class TestAROONOSC:
     def test_known_values(self):
@@ -241,6 +274,7 @@ class TestAROONOSC:
 # ---------------------------------------------------------------------------
 # MFI
 # ---------------------------------------------------------------------------
+
 
 class TestMFI:
     def test_range(self):
@@ -271,6 +305,7 @@ class TestMFI:
 # MOM
 # ---------------------------------------------------------------------------
 
+
 class TestMOM:
     def test_known_values(self):
         result = MOM(SMALL5, timeperiod=2)
@@ -285,6 +320,7 @@ class TestMOM:
 # ---------------------------------------------------------------------------
 # ROC
 # ---------------------------------------------------------------------------
+
 
 class TestROC:
     def test_known_values(self):
@@ -301,6 +337,7 @@ class TestROC:
 # ROCP
 # ---------------------------------------------------------------------------
 
+
 class TestROCP:
     def test_known_values(self):
         arr = np.array([10.0, 11.0, 12.0, 13.0, 14.0])
@@ -315,6 +352,7 @@ class TestROCP:
 # ---------------------------------------------------------------------------
 # ROCR
 # ---------------------------------------------------------------------------
+
 
 class TestROCR:
     def test_known_values(self):
@@ -335,6 +373,7 @@ class TestROCR:
 # ---------------------------------------------------------------------------
 # ROCR100
 # ---------------------------------------------------------------------------
+
 
 class TestROCR100:
     def test_known_values(self):
@@ -357,6 +396,7 @@ class TestROCR100:
 # CMO
 # ---------------------------------------------------------------------------
 
+
 class TestCMO:
     def test_range(self):
         result = CMO(_CLOSE, 14)
@@ -371,6 +411,7 @@ class TestCMO:
 # DX
 # ---------------------------------------------------------------------------
 
+
 class TestDX:
     def test_range(self):
         result = DX(_HIGH, _LOW, _CLOSE, 14)
@@ -384,6 +425,7 @@ class TestDX:
 # ---------------------------------------------------------------------------
 # MINUS_DI / MINUS_DM
 # ---------------------------------------------------------------------------
+
 
 class TestMINUS:
     def test_minus_di_range(self):
@@ -405,6 +447,7 @@ class TestMINUS:
 # PLUS_DI / PLUS_DM
 # ---------------------------------------------------------------------------
 
+
 class TestPLUS:
     def test_plus_di_range(self):
         result = PLUS_DI(_HIGH, _LOW, _CLOSE, 14)
@@ -424,6 +467,7 @@ class TestPLUS:
 # ---------------------------------------------------------------------------
 # PPO
 # ---------------------------------------------------------------------------
+
 
 class TestPPO:
     def test_returns_three_arrays(self):
@@ -448,6 +492,7 @@ class TestPPO:
 # APO
 # ---------------------------------------------------------------------------
 
+
 class TestAPO:
     def test_known_direction(self):
         # Rising close → fast EMA > slow EMA → APO > 0 after warmup
@@ -467,6 +512,7 @@ class TestAPO:
 # ---------------------------------------------------------------------------
 # TRIX
 # ---------------------------------------------------------------------------
+
 
 class TestTRIX:
     def test_length(self):
@@ -493,6 +539,7 @@ class TestTRIX:
 # ---------------------------------------------------------------------------
 # BOP
 # ---------------------------------------------------------------------------
+
 
 class TestBOP:
     def test_known_values(self):
@@ -525,6 +572,7 @@ class TestBOP:
 # ---------------------------------------------------------------------------
 # ULTOSC
 # ---------------------------------------------------------------------------
+
 
 class TestULTOSC:
     def test_range(self):

@@ -57,6 +57,17 @@ array([ nan,  nan, 11. , 12. , 13. , 13.5, 13.33...])
 
 from __future__ import annotations
 
+import sys as _sys
+
+# ---------------------------------------------------------------------------
+# Exceptions — exported at the top level for convenient catching
+# ---------------------------------------------------------------------------
+from ferro_ta.core.exceptions import (  # noqa: F401
+    FerroTAError,
+    FerroTAInputError,
+    FerroTAValueError,
+)
+
 # ---------------------------------------------------------------------------
 # Cycle Indicators
 # ---------------------------------------------------------------------------
@@ -67,15 +78,6 @@ from ferro_ta.indicators.cycle import (  # noqa: F401
     HT_SINE,
     HT_TRENDLINE,
     HT_TRENDMODE,
-)
-
-# ---------------------------------------------------------------------------
-# Exceptions — exported at the top level for convenient catching
-# ---------------------------------------------------------------------------
-from ferro_ta.core.exceptions import (  # noqa: F401
-    FerroTAError,
-    FerroTAInputError,
-    FerroTAValueError,
 )
 
 # ---------------------------------------------------------------------------
@@ -476,21 +478,6 @@ __all__ = [
 # ---------------------------------------------------------------------------
 from ferro_ta._utils import pandas_wrap as _pandas_wrap  # noqa: E402
 from ferro_ta._utils import polars_wrap as _polars_wrap  # noqa: E402
-
-# ---------------------------------------------------------------------------
-# Additional modules (not in __all__ — access via submodule)
-# ---------------------------------------------------------------------------
-from ferro_ta.tools.alerts import (  # noqa: F401, E402
-    AlertManager,
-    check_cross,
-    check_threshold,
-    collect_alert_bars,
-)
-
-# ---------------------------------------------------------------------------
-# API discovery helpers — ferro_ta.indicators() and ferro_ta.info()
-# ---------------------------------------------------------------------------
-from ferro_ta.tools.api_info import indicators, info  # noqa: F401, E402
 from ferro_ta.analysis.attribution import (  # noqa: F401, E402
     TradeStats,
     attribution_by_month,
@@ -498,6 +485,36 @@ from ferro_ta.analysis.attribution import (  # noqa: F401, E402
     from_backtest,
     trade_stats,
 )
+from ferro_ta.analysis.crypto import (  # noqa: F401, E402
+    continuous_bar_labels,
+    funding_pnl,
+    resample_continuous,
+    session_boundaries,
+)
+from ferro_ta.analysis.regime import (  # noqa: F401, E402
+    detect_breaks_cusum,
+    regime,
+    regime_adx,
+    regime_combined,
+    rolling_variance_break,
+    structural_breaks,
+)
+from ferro_ta.core import exceptions as exceptions  # noqa: F401, E402
+
+# ---------------------------------------------------------------------------
+# Logging utilities — ferro_ta.enable_debug() / ferro_ta.benchmark()
+# ---------------------------------------------------------------------------
+from ferro_ta.core.logging_utils import (  # noqa: F401, E402
+    benchmark,
+    debug_mode,
+    disable_debug,
+    enable_debug,
+    get_logger,
+    log_call,
+    traced,
+)
+from ferro_ta.data import batch as batch  # noqa: F401, E402
+from ferro_ta.data import streaming as streaming  # noqa: F401, E402
 
 # ---------------------------------------------------------------------------
 # Batch API (not in __all__ — use directly from ferro_ta.batch)
@@ -515,45 +532,6 @@ from ferro_ta.data.chunked import (  # noqa: F401, E402
     stitch_chunks,
     trim_overlap,
 )
-from ferro_ta.analysis.crypto import (  # noqa: F401, E402
-    continuous_bar_labels,
-    funding_pnl,
-    resample_continuous,
-    session_boundaries,
-)
-from ferro_ta.indicators.extended import (  # noqa: F401, E402
-    CHANDELIER_EXIT,
-    CHOPPINESS_INDEX,
-    DONCHIAN,
-    HULL_MA,
-    ICHIMOKU,
-    KELTNER_CHANNELS,
-    PIVOT_POINTS,
-    SUPERTREND,
-    VWAP,
-    VWMA,
-)
-
-# ---------------------------------------------------------------------------
-# Logging utilities — ferro_ta.enable_debug() / ferro_ta.benchmark()
-# ---------------------------------------------------------------------------
-from ferro_ta.core.logging_utils import (  # noqa: F401, E402
-    benchmark,
-    debug_mode,
-    disable_debug,
-    enable_debug,
-    get_logger,
-    log_call,
-    traced,
-)
-from ferro_ta.analysis.regime import (  # noqa: F401, E402
-    detect_breaks_cusum,
-    regime,
-    regime_adx,
-    regime_combined,
-    rolling_variance_break,
-    structural_breaks,
-)
 
 # ---------------------------------------------------------------------------
 # Streaming / Incremental API  (not in __all__ — these are classes, not funcs)
@@ -570,6 +548,63 @@ from ferro_ta.data.streaming import (  # noqa: F401, E402  # type: ignore[assign
     StreamingSupertrend,  # type: ignore[attr-defined]
     StreamingVWAP,  # type: ignore[attr-defined]
 )
+from ferro_ta.indicators import cycle as cycle  # noqa: F401, E402
+from ferro_ta.indicators import extended as extended  # noqa: F401, E402
+from ferro_ta.indicators import math_ops as math_ops  # noqa: F401, E402
+from ferro_ta.indicators import momentum as momentum  # noqa: F401, E402
+from ferro_ta.indicators import overlap as overlap  # noqa: F401, E402
+from ferro_ta.indicators import pattern as pattern  # noqa: F401, E402
+from ferro_ta.indicators import price_transform as price_transform  # noqa: F401, E402
+from ferro_ta.indicators import statistic as statistic  # noqa: F401, E402
+from ferro_ta.indicators import volatility as volatility  # noqa: F401, E402
+from ferro_ta.indicators import volume as volume  # noqa: F401, E402
+from ferro_ta.indicators.extended import (  # noqa: F401, E402
+    CHANDELIER_EXIT,
+    CHOPPINESS_INDEX,
+    DONCHIAN,
+    HULL_MA,
+    ICHIMOKU,
+    KELTNER_CHANNELS,
+    PIVOT_POINTS,
+    SUPERTREND,
+    VWAP,
+    VWMA,
+)
+
+# ---------------------------------------------------------------------------
+# Additional modules (not in __all__ — access via submodule)
+# ---------------------------------------------------------------------------
+from ferro_ta.tools.alerts import (  # noqa: F401, E402
+    AlertManager,
+    check_cross,
+    check_threshold,
+    collect_alert_bars,
+)
+
+# ---------------------------------------------------------------------------
+# API discovery helpers — ferro_ta.indicators() and ferro_ta.info()
+# ---------------------------------------------------------------------------
+from ferro_ta.tools.api_info import indicators, info  # noqa: F401, E402
+
+_ALIASED_SUBMODULES = {
+    "batch": batch,
+    "cycle": cycle,
+    "exceptions": exceptions,
+    "extended": extended,
+    "math_ops": math_ops,
+    "momentum": momentum,
+    "overlap": overlap,
+    "pattern": pattern,
+    "price_transform": price_transform,
+    "statistic": statistic,
+    "streaming": streaming,
+    "volatility": volatility,
+    "volume": volume,
+}
+
+for _module_name, _module in _ALIASED_SUBMODULES.items():
+    setattr(_sys.modules[__name__], _module_name, _module)
+    _sys.modules[f"{__name__}.{_module_name}"] = _module
 
 _g = globals()
 for _name in __all__:
@@ -579,4 +614,4 @@ for _name in __all__:
     _fn = _g.get(_name)
     if callable(_fn) and not getattr(_fn, "_polars_wrapped", False):
         _g[_name] = _polars_wrap(_fn)
-del _g, _name, _fn
+del _ALIASED_SUBMODULES, _g, _module, _module_name, _name, _fn, _sys

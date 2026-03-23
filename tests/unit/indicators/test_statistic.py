@@ -1,10 +1,17 @@
 """Unit tests for ferro_ta.indicators.statistic"""
+
 import numpy as np
-import pytest
+
 from ferro_ta.indicators.statistic import (
-    STDDEV, VAR, BETA, CORREL,
-    LINEARREG, LINEARREG_ANGLE, LINEARREG_INTERCEPT, LINEARREG_SLOPE,
+    BETA,
+    CORREL,
+    LINEARREG,
+    LINEARREG_ANGLE,
+    LINEARREG_INTERCEPT,
+    LINEARREG_SLOPE,
+    STDDEV,
     TSF,
+    VAR,
 )
 
 # ---------------------------------------------------------------------------
@@ -16,13 +23,14 @@ N = 100
 _A = 100 + np.cumsum(RNG.normal(0, 0.5, N))
 _B = 100 + np.cumsum(RNG.normal(0, 0.5, N))
 
-LINDATA = np.arange(1.0, 6.0)       # [1,2,3,4,5]
-CONSTDATA = np.ones(10)             # all 1.0
+LINDATA = np.arange(1.0, 6.0)  # [1,2,3,4,5]
+CONSTDATA = np.ones(10)  # all 1.0
 
 
 # ---------------------------------------------------------------------------
 # STDDEV
 # ---------------------------------------------------------------------------
+
 
 class TestSTDDEV:
     def test_constant_is_zero(self):
@@ -52,6 +60,7 @@ class TestSTDDEV:
 # VAR
 # ---------------------------------------------------------------------------
 
+
 class TestVAR:
     def test_constant_is_zero(self):
         result = VAR(CONSTDATA, timeperiod=5)
@@ -77,6 +86,7 @@ class TestVAR:
 # LINEARREG
 # ---------------------------------------------------------------------------
 
+
 class TestLINEARREG:
     def test_perfect_line(self):
         # For [1,2,3,4,5] over window 5, forecast = 5.0
@@ -94,6 +104,7 @@ class TestLINEARREG:
 # ---------------------------------------------------------------------------
 # LINEARREG_SLOPE
 # ---------------------------------------------------------------------------
+
 
 class TestLINEARREG_SLOPE:
     def test_perfect_line_slope_one(self):
@@ -113,6 +124,7 @@ class TestLINEARREG_SLOPE:
 # LINEARREG_INTERCEPT
 # ---------------------------------------------------------------------------
 
+
 class TestLINEARREG_INTERCEPT:
     def test_perfect_line_intercept_one(self):
         # y = [1,2,3,4,5] with x=[0,1,2,3,4] → y = 1 + 1*x → intercept = 1.0
@@ -126,6 +138,7 @@ class TestLINEARREG_INTERCEPT:
 # ---------------------------------------------------------------------------
 # LINEARREG_ANGLE
 # ---------------------------------------------------------------------------
+
 
 class TestLINEARREG_ANGLE:
     def test_slope_one_gives_45_degrees(self):
@@ -145,6 +158,7 @@ class TestLINEARREG_ANGLE:
 # ---------------------------------------------------------------------------
 # BETA
 # ---------------------------------------------------------------------------
+
 
 class TestBETA:
     def test_nan_warmup(self):
@@ -170,6 +184,7 @@ class TestBETA:
 # CORREL
 # ---------------------------------------------------------------------------
 
+
 class TestCOREL:
     def test_self_correlation_is_one(self):
         result = CORREL(_A, _A, timeperiod=10)
@@ -194,6 +209,7 @@ class TestCOREL:
 # ---------------------------------------------------------------------------
 # TSF
 # ---------------------------------------------------------------------------
+
 
 class TestTSF:
     def test_perfect_line(self):

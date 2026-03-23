@@ -197,9 +197,9 @@ class TestStreamingATR:
 
         # Streaming
         streamer = StreamingATR(period=period)
-        stream_out = np.array([
-            streamer.update(h, l, c) for h, l, c in zip(HIGH, LOW, CLOSE)
-        ])
+        stream_out = np.array(
+            [streamer.update(h, l, c) for h, l, c in zip(HIGH, LOW, CLOSE)]
+        )
 
         # Compare only the overlap region where both arrays are valid
         mask = np.isfinite(batch_out) & np.isfinite(stream_out)
@@ -207,9 +207,9 @@ class TestStreamingATR:
         """ATR values should be non-negative."""
         period = 14
         streamer = StreamingATR(period=period)
-        stream_out = np.array([
-            streamer.update(h, l, c) for h, l, c in zip(HIGH, LOW, CLOSE)
-        ])
+        stream_out = np.array(
+            [streamer.update(h, l, c) for h, l, c in zip(HIGH, LOW, CLOSE)]
+        )
 
         # Filter out NaN values
         valid = stream_out[~np.isnan(stream_out)]
@@ -222,15 +222,21 @@ class TestStreamingATR:
         streamer = StreamingATR(period=period)
 
         # First pass
-        first_pass = np.array([
-            streamer.update(h, l, c) for h, l, c in zip(HIGH[:50], LOW[:50], CLOSE[:50])
-        ])
+        first_pass = np.array(
+            [
+                streamer.update(h, l, c)
+                for h, l, c in zip(HIGH[:50], LOW[:50], CLOSE[:50])
+            ]
+        )
 
         # Reset and second pass
         streamer.reset()
-        second_pass = np.array([
-            streamer.update(h, l, c) for h, l, c in zip(HIGH[:50], LOW[:50], CLOSE[:50])
-        ])
+        second_pass = np.array(
+            [
+                streamer.update(h, l, c)
+                for h, l, c in zip(HIGH[:50], LOW[:50], CLOSE[:50])
+            ]
+        )
 
         assert np.allclose(first_pass, second_pass, equal_nan=True, atol=1e-12)
 
@@ -253,7 +259,9 @@ class TestStreamingBBands:
         verify proximity with atol=0.2 and confirm internal consistency separately.
         """
         # Batch
-        batch_upper, batch_middle, batch_lower = ferro_ta.BBANDS(CLOSE, timeperiod=period)
+        batch_upper, batch_middle, batch_lower = ferro_ta.BBANDS(
+            CLOSE, timeperiod=period
+        )
 
         # Streaming
         streamer = StreamingBBands(period=period, nbdevup=2.0, nbdevdn=2.0)
@@ -265,8 +273,9 @@ class TestStreamingBBands:
         # Compare only overlapping valid region
         mask = np.isfinite(batch_middle)
         # Middle band (SMA) must match exactly
-        assert np.allclose(stream_middle[mask], batch_middle[mask], atol=1e-10), \
+        assert np.allclose(stream_middle[mask], batch_middle[mask], atol=1e-10), (
             "BBands middle (SMA) must match batch exactly"
+        )
         # Upper/lower: streaming uses sample std; batch uses population std — use atol=0.2
         assert np.allclose(stream_upper[mask], batch_upper[mask], atol=0.2)
         assert np.allclose(stream_lower[mask], batch_lower[mask], atol=0.2)
@@ -285,7 +294,9 @@ class TestStreamingBBands:
 
         # Compare all three bands
         for i in range(len(first_pass)):
-            assert np.allclose(first_pass[i], second_pass[i], equal_nan=True, atol=1e-14)
+            assert np.allclose(
+                first_pass[i], second_pass[i], equal_nan=True, atol=1e-14
+            )
 
 
 # ---------------------------------------------------------------------------
@@ -341,7 +352,9 @@ class TestStreamingMACD:
 
         # Compare all three outputs
         for i in range(len(first_pass)):
-            assert np.allclose(first_pass[i], second_pass[i], equal_nan=True, atol=1e-14)
+            assert np.allclose(
+                first_pass[i], second_pass[i], equal_nan=True, atol=1e-14
+            )
 
 
 # ---------------------------------------------------------------------------
@@ -356,19 +369,12 @@ class TestStreamingStoch:
         """Streaming Stochastic should match batch Stochastic."""
         # Batch
         batch_slowk, batch_slowd = ferro_ta.STOCH(
-            HIGH, LOW, CLOSE,
-            fastk_period=5, slowk_period=3,
-            slowd_period=3
+            HIGH, LOW, CLOSE, fastk_period=5, slowk_period=3, slowd_period=3
         )
 
         # Streaming
-        streamer = StreamingStoch(
-            fastk_period=5, slowk_period=3,
-            slowd_period=3
-        )
-        stream_results = [
-            streamer.update(h, l, c) for h, l, c in zip(HIGH, LOW, CLOSE)
-        ]
+        streamer = StreamingStoch(fastk_period=5, slowk_period=3, slowd_period=3)
+        stream_results = [streamer.update(h, l, c) for h, l, c in zip(HIGH, LOW, CLOSE)]
         stream_slowk = np.array([r[0] for r in stream_results])
         stream_slowd = np.array([r[1] for r in stream_results])
 
@@ -380,13 +386,8 @@ class TestStreamingStoch:
 
     def test_stoch_range_zero_to_hundred(self):
         """Stochastic values should be in range [0, 100]."""
-        streamer = StreamingStoch(
-            fastk_period=5, slowk_period=3,
-            slowd_period=3
-        )
-        stream_results = [
-            streamer.update(h, l, c) for h, l, c in zip(HIGH, LOW, CLOSE)
-        ]
+        streamer = StreamingStoch(fastk_period=5, slowk_period=3, slowd_period=3)
+        stream_results = [streamer.update(h, l, c) for h, l, c in zip(HIGH, LOW, CLOSE)]
         stream_slowk = np.array([r[0] for r in stream_results])
         stream_slowd = np.array([r[1] for r in stream_results])
 
@@ -401,10 +402,7 @@ class TestStreamingStoch:
 
     def test_reset_gives_same_result(self):
         """Reset and re-feed should give identical output."""
-        streamer = StreamingStoch(
-            fastk_period=5, slowk_period=3,
-            slowd_period=3
-        )
+        streamer = StreamingStoch(fastk_period=5, slowk_period=3, slowd_period=3)
 
         # First pass
         first_pass = [
@@ -419,7 +417,9 @@ class TestStreamingStoch:
 
         # Compare
         for i in range(len(first_pass)):
-            assert np.allclose(first_pass[i], second_pass[i], equal_nan=True, atol=1e-14)
+            assert np.allclose(
+                first_pass[i], second_pass[i], equal_nan=True, atol=1e-14
+            )
 
 
 # ---------------------------------------------------------------------------
@@ -437,9 +437,12 @@ class TestStreamingVWAP:
 
         # Streaming (cumulative)
         streamer = StreamingVWAP()
-        stream_out = np.array([
-            streamer.update(h, l, c, v) for h, l, c, v in zip(HIGH, LOW, CLOSE, VOLUME)
-        ])
+        stream_out = np.array(
+            [
+                streamer.update(h, l, c, v)
+                for h, l, c, v in zip(HIGH, LOW, CLOSE, VOLUME)
+            ]
+        )
 
         # Compare
         assert np.allclose(stream_out, batch_out, equal_nan=True, atol=1e-10)
@@ -451,9 +454,12 @@ class TestStreamingVWAP:
 
         # Streaming (cumulative)
         streamer = StreamingVWAP()
-        stream_out = np.array([
-            streamer.update(h, l, c, v) for h, l, c, v in zip(HIGH, LOW, CLOSE, VOLUME)
-        ])
+        stream_out = np.array(
+            [
+                streamer.update(h, l, c, v)
+                for h, l, c, v in zip(HIGH, LOW, CLOSE, VOLUME)
+            ]
+        )
 
         # Compare
         assert np.allclose(stream_out, batch_out, equal_nan=True, atol=1e-10)
@@ -463,17 +469,21 @@ class TestStreamingVWAP:
         streamer = StreamingVWAP()
 
         # First pass
-        first_pass = np.array([
-            streamer.update(h, l, c, v)
-            for h, l, c, v in zip(HIGH[:50], LOW[:50], CLOSE[:50], VOLUME[:50])
-        ])
+        first_pass = np.array(
+            [
+                streamer.update(h, l, c, v)
+                for h, l, c, v in zip(HIGH[:50], LOW[:50], CLOSE[:50], VOLUME[:50])
+            ]
+        )
 
         # Reset and second pass
         streamer.reset()
-        second_pass = np.array([
-            streamer.update(h, l, c, v)
-            for h, l, c, v in zip(HIGH[:50], LOW[:50], CLOSE[:50], VOLUME[:50])
-        ])
+        second_pass = np.array(
+            [
+                streamer.update(h, l, c, v)
+                for h, l, c, v in zip(HIGH[:50], LOW[:50], CLOSE[:50], VOLUME[:50])
+            ]
+        )
 
         assert np.allclose(first_pass, second_pass, equal_nan=True, atol=1e-14)
 
@@ -498,9 +508,7 @@ class TestStreamingSupertrend:
 
         # Streaming
         streamer = StreamingSupertrend(period=period, multiplier=multiplier)
-        stream_results = [
-            streamer.update(h, l, c) for h, l, c in zip(HIGH, LOW, CLOSE)
-        ]
+        stream_results = [streamer.update(h, l, c) for h, l, c in zip(HIGH, LOW, CLOSE)]
         stream_line = np.array([r[0] for r in stream_results])
         stream_dir = np.array([r[1] for r in stream_results])
 
@@ -527,4 +535,6 @@ class TestStreamingSupertrend:
 
         # Compare
         for i in range(len(first_pass)):
-            assert np.allclose(first_pass[i], second_pass[i], equal_nan=True, atol=1e-14)
+            assert np.allclose(
+                first_pass[i], second_pass[i], equal_nan=True, atol=1e-14
+            )

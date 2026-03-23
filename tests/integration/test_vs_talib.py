@@ -71,11 +71,11 @@ SIGN_AGREEMENT_THRESHOLD = 0.8
 # use lower thresholds with a documented reason.
 CDL_AGREEMENT_THRESHOLDS: dict[str, float] = {
     # Body/shadow ratio thresholds differ between ferro_ta and TA-Lib
-    "CDLHIGHWAVE":       0.65,  # Shadow length threshold differs; 69% observed
+    "CDLHIGHWAVE": 0.65,  # Shadow length threshold differs; 69% observed
     "CDLLONGLEGGEDDOJI": 0.70,  # Long-leg threshold differs; 75% observed
-    "CDLSHORTLINE":      0.20,  # Body-size cutoff definition completely differs; 25% observed
-    "CDLSPINNINGTOP":    0.75,  # Body ratio threshold differs; 78% observed
-    "CDLDOJI":           0.85,  # Shadow ratio precision differs; 86% observed
+    "CDLSHORTLINE": 0.20,  # Body-size cutoff definition completely differs; 25% observed
+    "CDLSPINNINGTOP": 0.75,  # Body ratio threshold differs; 78% observed
+    "CDLDOJI": 0.85,  # Shadow ratio precision differs; 86% observed
 }
 
 
@@ -150,7 +150,9 @@ class TestEMA:
         ta = talib.EMA(CLOSE, timeperiod=5)
         # With 500 bars, compare last 30% with tighter tolerance
         tail_start = int(N * 0.7)
-        assert np.allclose(ft[tail_start:], ta[tail_start:], atol=1e-5)  # Tightened from 1e-3
+        assert np.allclose(
+            ft[tail_start:], ta[tail_start:], atol=1e-5
+        )  # Tightened from 1e-3
 
     def test_values_finite_and_reasonable(self):
         ft = ferro_ta.EMA(CLOSE, timeperiod=5)
@@ -266,7 +268,9 @@ class TestT3:
         ta = talib.T3(CLOSE, timeperiod=5)
         # With 500 bars, use last 30% with tighter tolerance
         tail_start = int(N * 0.7)
-        assert np.allclose(ft[tail_start:], ta[tail_start:], atol=1e-3)  # Tightened from 5e-2
+        assert np.allclose(
+            ft[tail_start:], ta[tail_start:], atol=1e-3
+        )  # Tightened from 5e-2
 
 
 class TestBBANDS:
@@ -781,7 +785,9 @@ class TestSTOCHRSI:
         assert abs(_nan_count(ft_k) - _nan_count(ta_k)) <= 2
 
     def test_range_0_to_100(self):
-        ft_k, _ = ferro_ta.STOCHRSI(CLOSE, timeperiod=14, fastk_period=5, fastd_period=3)
+        ft_k, _ = ferro_ta.STOCHRSI(
+            CLOSE, timeperiod=14, fastk_period=5, fastd_period=3
+        )
         finite = ft_k[~np.isnan(ft_k)]
         # Allow small numerical tolerance for float boundaries
         assert all(-1e-9 <= v <= 100.0 + 1e-9 for v in finite)
@@ -834,6 +840,7 @@ class TestPPO:
         mask = _valid_mask(ppo, ta)
         corr = np.corrcoef(ppo[mask], ta[mask])[0, 1]
         assert corr > 0.85
+
     """CMO — same NaN count and shape; values may differ slightly.
 
     Both libraries compute the Chande Momentum Oscillator as
@@ -2034,9 +2041,7 @@ class TestHTTrendMode:
         mask = _valid_mask(ft, ta)
         if mask.sum() >= 5:
             agree = np.mean(ft[mask] == ta[mask])
-            assert agree >= 0.50, (
-                f"HT_TRENDMODE agreement {agree:.2f} < 0.50"
-            )
+            assert agree >= 0.50, f"HT_TRENDMODE agreement {agree:.2f} < 0.50"
 
 
 # ---------------------------------------------------------------------------
@@ -2046,24 +2051,66 @@ class TestHTTrendMode:
 
 # List of all candlestick patterns to test
 ALL_CDL_PATTERNS = [
-    "CDL2CROWS", "CDL3BLACKCROWS", "CDL3INSIDE", "CDL3LINESTRIKE",
-    "CDL3OUTSIDE", "CDL3STARSINSOUTH", "CDL3WHITESOLDIERS",
-    "CDLABANDONEDBABY", "CDLADVANCEBLOCK", "CDLBELTHOLD", "CDLBREAKAWAY",
-    "CDLCLOSINGMARUBOZU", "CDLCONCEALBABYSWALL", "CDLCOUNTERATTACK",
-    "CDLDARKCLOUDCOVER", "CDLDOJI", "CDLDOJISTAR", "CDLDRAGONFLYDOJI",
-    "CDLENGULFING", "CDLEVENINGDOJISTAR", "CDLEVENINGSTAR",
-    "CDLGAPSIDESIDEWHITE", "CDLGRAVESTONEDOJI", "CDLHAMMER",
-    "CDLHANGINGMAN", "CDLHARAMI", "CDLHARAMICROSS", "CDLHIGHWAVE",
-    "CDLHIKKAKE", "CDLHIKKAKEMOD", "CDLHOMINGPIGEON",
-    "CDLIDENTICAL3CROWS", "CDLINNECK", "CDLINVERTEDHAMMER",
-    "CDLKICKING", "CDLKICKINGBYLENGTH", "CDLLADDERBOTTOM",
-    "CDLLONGLEGGEDDOJI", "CDLLONGLINE", "CDLMARUBOZU",
-    "CDLMATCHINGLOW", "CDLMATHOLD", "CDLMORNINGDOJISTAR",
-    "CDLMORNINGSTAR", "CDLONNECK", "CDLPIERCING", "CDLRICKSHAWMAN",
-    "CDLRISEFALL3METHODS", "CDLSEPARATINGLINES", "CDLSHOOTINGSTAR",
-    "CDLSHORTLINE", "CDLSPINNINGTOP", "CDLSTALLEDPATTERN",
-    "CDLSTICKSANDWICH", "CDLTAKURI", "CDLTASUKIGAP", "CDLTHRUSTING",
-    "CDLTRISTAR", "CDLUNIQUE3RIVER", "CDLUPSIDEGAP2CROWS",
+    "CDL2CROWS",
+    "CDL3BLACKCROWS",
+    "CDL3INSIDE",
+    "CDL3LINESTRIKE",
+    "CDL3OUTSIDE",
+    "CDL3STARSINSOUTH",
+    "CDL3WHITESOLDIERS",
+    "CDLABANDONEDBABY",
+    "CDLADVANCEBLOCK",
+    "CDLBELTHOLD",
+    "CDLBREAKAWAY",
+    "CDLCLOSINGMARUBOZU",
+    "CDLCONCEALBABYSWALL",
+    "CDLCOUNTERATTACK",
+    "CDLDARKCLOUDCOVER",
+    "CDLDOJI",
+    "CDLDOJISTAR",
+    "CDLDRAGONFLYDOJI",
+    "CDLENGULFING",
+    "CDLEVENINGDOJISTAR",
+    "CDLEVENINGSTAR",
+    "CDLGAPSIDESIDEWHITE",
+    "CDLGRAVESTONEDOJI",
+    "CDLHAMMER",
+    "CDLHANGINGMAN",
+    "CDLHARAMI",
+    "CDLHARAMICROSS",
+    "CDLHIGHWAVE",
+    "CDLHIKKAKE",
+    "CDLHIKKAKEMOD",
+    "CDLHOMINGPIGEON",
+    "CDLIDENTICAL3CROWS",
+    "CDLINNECK",
+    "CDLINVERTEDHAMMER",
+    "CDLKICKING",
+    "CDLKICKINGBYLENGTH",
+    "CDLLADDERBOTTOM",
+    "CDLLONGLEGGEDDOJI",
+    "CDLLONGLINE",
+    "CDLMARUBOZU",
+    "CDLMATCHINGLOW",
+    "CDLMATHOLD",
+    "CDLMORNINGDOJISTAR",
+    "CDLMORNINGSTAR",
+    "CDLONNECK",
+    "CDLPIERCING",
+    "CDLRICKSHAWMAN",
+    "CDLRISEFALL3METHODS",
+    "CDLSEPARATINGLINES",
+    "CDLSHOOTINGSTAR",
+    "CDLSHORTLINE",
+    "CDLSPINNINGTOP",
+    "CDLSTALLEDPATTERN",
+    "CDLSTICKSANDWICH",
+    "CDLTAKURI",
+    "CDLTASUKIGAP",
+    "CDLTHRUSTING",
+    "CDLTRISTAR",
+    "CDLUNIQUE3RIVER",
+    "CDLUPSIDEGAP2CROWS",
     "CDLXSIDEGAP3METHODS",
 ]
 

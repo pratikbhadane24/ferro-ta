@@ -1,10 +1,27 @@
 """Unit tests for ferro_ta.indicators.overlap"""
+
 import numpy as np
-import pytest
+
 from ferro_ta.indicators.overlap import (
-    SMA, EMA, WMA, DEMA, TEMA, TRIMA, KAMA, T3, MA,
-    MACD, MACDFIX, MACDEXT, BBANDS, SAR, SAREXT,
-    MAMA, MAVP, MIDPOINT, MIDPRICE,
+    BBANDS,
+    DEMA,
+    EMA,
+    KAMA,
+    MA,
+    MACD,
+    MACDEXT,
+    MACDFIX,
+    MAMA,
+    MAVP,
+    MIDPOINT,
+    MIDPRICE,
+    SAR,
+    SAREXT,
+    SMA,
+    T3,
+    TEMA,
+    TRIMA,
+    WMA,
 )
 
 # ---------------------------------------------------------------------------
@@ -25,6 +42,7 @@ SMALL5_LOW = np.array([9.0, 10.0, 11.0, 12.0, 13.0])
 # ---------------------------------------------------------------------------
 # SMA
 # ---------------------------------------------------------------------------
+
 
 class TestSMA:
     def test_known_values(self):
@@ -49,6 +67,7 @@ class TestSMA:
 # ---------------------------------------------------------------------------
 # EMA
 # ---------------------------------------------------------------------------
+
 
 class TestEMA:
     def test_known_values(self):
@@ -80,13 +99,14 @@ class TestEMA:
 # WMA
 # ---------------------------------------------------------------------------
 
+
 class TestWMA:
     def test_known_values(self):
         arr = np.arange(1.0, 6.0)
         result = WMA(arr, timeperiod=3)
         # weights 1,2,3 / 6
-        expected_2 = (1*1 + 2*2 + 3*3) / 6.0   # 14/6
-        expected_3 = (1*2 + 2*3 + 3*4) / 6.0   # 20/6
+        expected_2 = (1 * 1 + 2 * 2 + 3 * 3) / 6.0  # 14/6
+        expected_3 = (1 * 2 + 2 * 3 + 3 * 4) / 6.0  # 20/6
         assert np.isnan(result[0]) and np.isnan(result[1])
         np.testing.assert_allclose(result[2], expected_2, rtol=1e-10)
         np.testing.assert_allclose(result[3], expected_3, rtol=1e-10)
@@ -103,10 +123,11 @@ class TestWMA:
 # DEMA
 # ---------------------------------------------------------------------------
 
+
 class TestDEMA:
     def test_nan_warmup(self):
         result = DEMA(_CLOSE, timeperiod=5)
-        assert np.all(np.isnan(result[:8]))   # DEMA needs 2*(tp-1) bars
+        assert np.all(np.isnan(result[:8]))  # DEMA needs 2*(tp-1) bars
 
     def test_length(self):
         assert len(DEMA(_CLOSE, 5)) == N
@@ -131,6 +152,7 @@ class TestDEMA:
 # TEMA
 # ---------------------------------------------------------------------------
 
+
 class TestTEMA:
     def test_nan_warmup(self):
         result = TEMA(_CLOSE, timeperiod=5)
@@ -149,6 +171,7 @@ class TestTEMA:
 # ---------------------------------------------------------------------------
 # TRIMA
 # ---------------------------------------------------------------------------
+
 
 class TestTRIMA:
     def test_known_values(self):
@@ -170,6 +193,7 @@ class TestTRIMA:
 # ---------------------------------------------------------------------------
 # KAMA
 # ---------------------------------------------------------------------------
+
 
 class TestKAMA:
     def test_nan_warmup(self):
@@ -194,6 +218,7 @@ class TestKAMA:
 # ---------------------------------------------------------------------------
 # T3
 # ---------------------------------------------------------------------------
+
 
 class TestT3:
     def test_nan_warmup(self):
@@ -223,6 +248,7 @@ class TestT3:
 # MA
 # ---------------------------------------------------------------------------
 
+
 class TestMA:
     def test_default_is_sma(self):
         result_ma = MA(_CLOSE, timeperiod=10, matype=0)
@@ -241,6 +267,7 @@ class TestMA:
 # ---------------------------------------------------------------------------
 # MACD
 # ---------------------------------------------------------------------------
+
 
 class TestMACD:
     def test_returns_three_arrays(self):
@@ -266,6 +293,7 @@ class TestMACD:
 # MACDFIX
 # ---------------------------------------------------------------------------
 
+
 class TestMACDFIX:
     def test_returns_three_arrays(self):
         result = MACDFIX(_CLOSE)
@@ -285,6 +313,7 @@ class TestMACDFIX:
 # MACDEXT
 # ---------------------------------------------------------------------------
 
+
 class TestMACDEXT:
     def test_returns_three_arrays(self):
         result = MACDEXT(_CLOSE)
@@ -302,6 +331,7 @@ class TestMACDEXT:
 # ---------------------------------------------------------------------------
 # BBANDS
 # ---------------------------------------------------------------------------
+
 
 class TestBBANDS:
     def test_returns_three_arrays(self):
@@ -331,6 +361,7 @@ class TestBBANDS:
 # SAR
 # ---------------------------------------------------------------------------
 
+
 class TestSAR:
     def test_length(self):
         result = SAR(_HIGH, _LOW)
@@ -349,6 +380,7 @@ class TestSAR:
 # SAREXT
 # ---------------------------------------------------------------------------
 
+
 class TestSAREXT:
     def test_length(self):
         result = SAREXT(_HIGH, _LOW)
@@ -366,6 +398,7 @@ class TestSAREXT:
 # ---------------------------------------------------------------------------
 # MAMA
 # ---------------------------------------------------------------------------
+
 
 class TestMAMA:
     def test_returns_two_arrays(self):
@@ -393,6 +426,7 @@ class TestMAMA:
 # MAVP
 # ---------------------------------------------------------------------------
 
+
 class TestMAVP:
     def test_length(self):
         arr = np.linspace(10.0, 30.0, 50)
@@ -411,6 +445,7 @@ class TestMAVP:
 # ---------------------------------------------------------------------------
 # MIDPOINT
 # ---------------------------------------------------------------------------
+
 
 class TestMIDPOINT:
     def test_known_values(self):
@@ -432,6 +467,7 @@ class TestMIDPOINT:
 # ---------------------------------------------------------------------------
 # MIDPRICE
 # ---------------------------------------------------------------------------
+
 
 class TestMIDPRICE:
     def test_known_values(self):

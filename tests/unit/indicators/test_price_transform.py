@@ -1,6 +1,7 @@
 """Unit tests for ferro_ta.indicators.price_transform"""
+
 import numpy as np
-import pytest
+
 from ferro_ta.indicators.price_transform import AVGPRICE, MEDPRICE, TYPPRICE, WCLPRICE
 
 # ---------------------------------------------------------------------------
@@ -16,6 +17,7 @@ C = np.array([11.0, 12.0, 13.0, 14.0])
 # ---------------------------------------------------------------------------
 # AVGPRICE
 # ---------------------------------------------------------------------------
+
 
 class TestAVGPRICE:
     def test_known_formula(self):
@@ -39,6 +41,7 @@ class TestAVGPRICE:
 # MEDPRICE
 # ---------------------------------------------------------------------------
 
+
 class TestMEDPRICE:
     def test_known_formula(self):
         result = MEDPRICE(H, L)
@@ -60,6 +63,7 @@ class TestMEDPRICE:
 # ---------------------------------------------------------------------------
 # TYPPRICE
 # ---------------------------------------------------------------------------
+
 
 class TestTYPPRICE:
     def test_known_formula(self):
@@ -83,6 +87,7 @@ class TestTYPPRICE:
 # WCLPRICE
 # ---------------------------------------------------------------------------
 
+
 class TestWCLPRICE:
     def test_known_formula(self):
         result = WCLPRICE(H, L, C)
@@ -99,7 +104,6 @@ class TestWCLPRICE:
 
     def test_close_weight_double(self):
         # WCLPRICE weights close twice vs TYPPRICE
-        typ = TYPPRICE(H, L, C)
         wcl = WCLPRICE(H, L, C)
         # On a rising series (H > L > 0), WCLPRICE > TYPPRICE when C > (H+L)/2
         # Just verify formula correctness already done above

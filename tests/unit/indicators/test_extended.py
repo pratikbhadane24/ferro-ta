@@ -1,9 +1,18 @@
 """Unit tests for ferro_ta.indicators.extended"""
+
 import numpy as np
-import pytest
+
 from ferro_ta.indicators.extended import (
-    VWAP, SUPERTREND, ICHIMOKU, DONCHIAN, PIVOT_POINTS,
-    KELTNER_CHANNELS, HULL_MA, CHANDELIER_EXIT, VWMA, CHOPPINESS_INDEX,
+    CHANDELIER_EXIT,
+    CHOPPINESS_INDEX,
+    DONCHIAN,
+    HULL_MA,
+    ICHIMOKU,
+    KELTNER_CHANNELS,
+    PIVOT_POINTS,
+    SUPERTREND,
+    VWAP,
+    VWMA,
 )
 
 # ---------------------------------------------------------------------------
@@ -22,6 +31,7 @@ _VOL = RNG.uniform(1000, 5000, N)
 # ---------------------------------------------------------------------------
 # VWAP
 # ---------------------------------------------------------------------------
+
 
 class TestVWAP:
     def test_length(self):
@@ -46,6 +56,7 @@ class TestVWAP:
 # SUPERTREND
 # ---------------------------------------------------------------------------
 
+
 class TestSUPERTREND:
     def test_returns_two_arrays(self):
         result = SUPERTREND(_H, _L, _C)
@@ -69,6 +80,7 @@ class TestSUPERTREND:
 # ICHIMOKU
 # ---------------------------------------------------------------------------
 
+
 class TestICHIMOKU:
     def test_returns_five_arrays(self):
         result = ICHIMOKU(_H, _L, _C)
@@ -80,7 +92,9 @@ class TestICHIMOKU:
             assert len(arr) == N
 
     def test_tenkan_warmup(self):
-        tenkan, kijun, senkou_a, senkou_b, chikou = ICHIMOKU(_H, _L, _C, tenkan_period=9)
+        tenkan, kijun, senkou_a, senkou_b, chikou = ICHIMOKU(
+            _H, _L, _C, tenkan_period=9
+        )
         assert np.all(np.isnan(tenkan[:8]))
 
     def test_finite_after_warmup(self):
@@ -93,6 +107,7 @@ class TestICHIMOKU:
 # ---------------------------------------------------------------------------
 # DONCHIAN
 # ---------------------------------------------------------------------------
+
 
 class TestDONCHIAN:
     def test_returns_three_arrays(self):
@@ -126,6 +141,7 @@ class TestDONCHIAN:
 # PIVOT_POINTS
 # ---------------------------------------------------------------------------
 
+
 class TestPIVOT_POINTS:
     def test_returns_five_arrays(self):
         result = PIVOT_POINTS(_H, _L, _C)
@@ -138,7 +154,7 @@ class TestPIVOT_POINTS:
 
     def test_classic_pivot_formula(self):
         # PP = (H + L + C) / 3
-        pp, r1, s1, r2, s2 = PIVOT_POINTS(_H, _L, _C, method='classic')
+        pp, r1, s1, r2, s2 = PIVOT_POINTS(_H, _L, _C, method="classic")
         valid = ~np.isnan(pp)
         expected_pp = (_H[:-1] + _L[:-1] + _C[:-1]) / 3.0
         np.testing.assert_allclose(pp[valid], expected_pp[valid[1:]], rtol=1e-6)
@@ -151,6 +167,7 @@ class TestPIVOT_POINTS:
 # ---------------------------------------------------------------------------
 # KELTNER_CHANNELS
 # ---------------------------------------------------------------------------
+
 
 class TestKELTNER_CHANNELS:
     def test_returns_three_arrays(self):
@@ -174,6 +191,7 @@ class TestKELTNER_CHANNELS:
 # ---------------------------------------------------------------------------
 # HULL_MA
 # ---------------------------------------------------------------------------
+
 
 class TestHULL_MA:
     def test_length(self):
@@ -199,6 +217,7 @@ class TestHULL_MA:
 # CHANDELIER_EXIT
 # ---------------------------------------------------------------------------
 
+
 class TestCHANDELIER_EXIT:
     def test_returns_two_arrays(self):
         result = CHANDELIER_EXIT(_H, _L, _C)
@@ -223,6 +242,7 @@ class TestCHANDELIER_EXIT:
 # VWMA
 # ---------------------------------------------------------------------------
 
+
 class TestVWMA:
     def test_length(self):
         assert len(VWMA(_C, _VOL, timeperiod=20)) == N
@@ -241,6 +261,7 @@ class TestVWMA:
         vol = np.ones(N) * 1000.0
         vwma = VWMA(_C, vol, timeperiod=20)
         from ferro_ta.indicators.overlap import SMA
+
         sma = SMA(_C, timeperiod=20)
         valid = ~np.isnan(vwma) & ~np.isnan(sma)
         np.testing.assert_allclose(vwma[valid], sma[valid], rtol=1e-8)
@@ -249,6 +270,7 @@ class TestVWMA:
 # ---------------------------------------------------------------------------
 # CHOPPINESS_INDEX
 # ---------------------------------------------------------------------------
+
 
 class TestCHOPPINESS_INDEX:
     def test_length(self):

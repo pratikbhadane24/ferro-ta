@@ -61,9 +61,8 @@ ferro-ta follows [Semantic Versioning 2.0.0]:
 | New indicators, new sub-modules, new features (backward-compatible) | **MINOR** |
 | Bug fixes, performance improvements, docs, dependency bumps | **PATCH** |
 
-The current version (`0.1.x`) is pre-stable — **breaking changes are possible
-in minor releases**.  When the project reaches 1.0.0, the full SemVer
-contract kicks in.
+The current version (`1.x`) is stable. Breaking changes to stable APIs are
+reserved for future **major** releases.
 
 ---
 
@@ -71,7 +70,7 @@ contract kicks in.
 
 Before removing or renaming any **stable** API:
 
-1. The deprecated name/function is kept for at least **one minor release** after
+1. The deprecated name/function is kept until the next **major release** after
    the deprecation notice.
 2. A `DeprecationWarning` is raised when the deprecated API is used.
 3. The deprecation and removal are documented in `CHANGELOG.md` under
@@ -79,8 +78,8 @@ Before removing or renaming any **stable** API:
 
 Example timeline:
 
-- `0.2.0` — `OLD_NAME` deprecated, `DeprecationWarning` added; `NEW_NAME` available.
-- `0.3.0` — `OLD_NAME` removed.
+- `1.1.0` — `OLD_NAME` deprecated, `DeprecationWarning` added; `NEW_NAME` available.
+- `2.0.0` — `OLD_NAME` removed.
 
 ---
 

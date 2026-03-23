@@ -1,6 +1,7 @@
 """Unit tests for ferro_ta.indicators.volatility"""
+
 import numpy as np
-import pytest
+
 from ferro_ta.indicators.volatility import ATR, NATR, TRANGE
 
 # ---------------------------------------------------------------------------
@@ -22,6 +23,7 @@ SMALL_C = np.array([11.0, 12.0, 13.0, 14.0, 15.0])
 # ---------------------------------------------------------------------------
 # TRANGE
 # ---------------------------------------------------------------------------
+
 
 class TestTRANGE:
     def test_known_values_constant_range(self):
@@ -66,6 +68,7 @@ class TestTRANGE:
 # ATR
 # ---------------------------------------------------------------------------
 
+
 class TestATR:
     def test_timeperiod_1_equals_trange(self):
         atr = ATR(SMALL_H, SMALL_L, SMALL_C, timeperiod=1)
@@ -98,6 +101,7 @@ class TestATR:
 # ---------------------------------------------------------------------------
 # NATR
 # ---------------------------------------------------------------------------
+
 
 class TestNATR:
     def test_nan_warmup(self):

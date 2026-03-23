@@ -190,9 +190,7 @@ class TestSTOCHVsTA:
         close = ohlcv_500["close"]
 
         ft_slowk, ft_slowd = ferro_ta.STOCH(
-            high, low, close,
-            fastk_period=14, slowk_period=3,
-            slowd_period=3
+            high, low, close, fastk_period=14, slowk_period=3, slowd_period=3
         )
 
         # Values in valid region must be within [0, 100]
@@ -200,16 +198,21 @@ class TestSTOCHVsTA:
         valid_d = ft_slowd[np.isfinite(ft_slowd)]
         assert len(valid_k) > 0, "STOCH slowk should have valid values"
         assert len(valid_d) > 0, "STOCH slowd should have valid values"
-        assert np.all(valid_k >= 0.0) and np.all(valid_k <= 100.0), \
+        assert np.all(valid_k >= 0.0) and np.all(valid_k <= 100.0), (
             "STOCH slowk must be in [0, 100]"
-        assert np.all(valid_d >= 0.0) and np.all(valid_d <= 100.0), \
+        )
+        assert np.all(valid_d >= 0.0) and np.all(valid_d <= 100.0), (
             "STOCH slowd must be in [0, 100]"
+        )
 
         # Warm-up: TA-Lib STOCH NaN count = fastk_period + slowk_period - 1
-        expected_nan = 14 + 3 + 1 - 1  # = fastk_period + slowk_period (TA-Lib convention)
+        expected_nan = (
+            14 + 3 + 1 - 1
+        )  # = fastk_period + slowk_period (TA-Lib convention)
         actual_nan_k = int(np.sum(np.isnan(ft_slowk)))
-        assert actual_nan_k == expected_nan, \
+        assert actual_nan_k == expected_nan, (
             f"STOCH slowk NaN warmup: expected {expected_nan}, got {actual_nan_k}"
+        )
 
 
 class TestWILLRVsTA:

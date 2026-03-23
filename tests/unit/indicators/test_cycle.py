@@ -1,8 +1,14 @@
 """Unit tests for ferro_ta.indicators.cycle"""
+
 import numpy as np
-import pytest
+
 from ferro_ta.indicators.cycle import (
-    HT_DCPERIOD, HT_DCPHASE, HT_PHASOR, HT_SINE, HT_TRENDLINE, HT_TRENDMODE,
+    HT_DCPERIOD,
+    HT_DCPHASE,
+    HT_PHASOR,
+    HT_SINE,
+    HT_TRENDLINE,
+    HT_TRENDMODE,
 )
 
 # ---------------------------------------------------------------------------
@@ -11,7 +17,7 @@ from ferro_ta.indicators.cycle import (
 
 N = 200
 t = np.linspace(0, 10 * np.pi, N)
-SINE_CLOSE = 100 + 10 * np.sin(t)   # clean sine wave
+SINE_CLOSE = 100 + 10 * np.sin(t)  # clean sine wave
 
 
 def _warmup_end(arr):
@@ -23,6 +29,7 @@ def _warmup_end(arr):
 # ---------------------------------------------------------------------------
 # HT_DCPERIOD
 # ---------------------------------------------------------------------------
+
 
 class TestHT_DCPERIOD:
     def test_length(self):
@@ -53,6 +60,7 @@ class TestHT_DCPERIOD:
 # HT_DCPHASE
 # ---------------------------------------------------------------------------
 
+
 class TestHT_DCPHASE:
     def test_length(self):
         assert len(HT_DCPHASE(SINE_CLOSE)) == N
@@ -71,6 +79,7 @@ class TestHT_DCPHASE:
 # ---------------------------------------------------------------------------
 # HT_PHASOR
 # ---------------------------------------------------------------------------
+
 
 class TestHT_PHASOR:
     def test_returns_two_arrays(self):
@@ -97,6 +106,7 @@ class TestHT_PHASOR:
 # ---------------------------------------------------------------------------
 # HT_SINE
 # ---------------------------------------------------------------------------
+
 
 class TestHT_SINE:
     def test_returns_two_arrays(self):
@@ -130,6 +140,7 @@ class TestHT_SINE:
 # HT_TRENDLINE
 # ---------------------------------------------------------------------------
 
+
 class TestHT_TRENDLINE:
     def test_length(self):
         assert len(HT_TRENDLINE(SINE_CLOSE)) == N
@@ -156,6 +167,7 @@ class TestHT_TRENDLINE:
 # ---------------------------------------------------------------------------
 # HT_TRENDMODE
 # ---------------------------------------------------------------------------
+
 
 class TestHT_TRENDMODE:
     def test_length(self):

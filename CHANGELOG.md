@@ -9,6 +9,8 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.0.0] — 2026-03-23  *(initial stable release)*
+
 ### Performance
 
 - **SMA/EMA** (`src/overlap/sma.rs`, `src/overlap/ema.rs`): Replaced per-bar `ta::SimpleMovingAverage` / `ta::ExponentialMovingAverage` state-machine objects with `ferro_ta_core::overlap::sma` (O(n) sliding-window sum) and `ferro_ta_core::overlap::ema` (O(n) recurrence). SMA/EMA now run at **200–600 M bars/s** on 1 M input.
@@ -250,25 +252,5 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ---
 
-## [0.1.0] — 2025-xx-xx  *(initial release)*
-
-### Added
-- Rust + PyO3 core with 155+ TA-Lib-compatible indicators.
-- Overlap studies (SMA, EMA, BBANDS, MACD, …).
-- Momentum indicators (RSI, STOCH, ADX, CCI, …).
-- Volume indicators (AD, ADOSC, OBV).
-- Volatility indicators (ATR, NATR, TRANGE).
-- Statistic functions (STDDEV, VAR, LINEARREG, BETA, CORREL).
-- Price transforms (AVGPRICE, MEDPRICE, TYPPRICE, WCLPRICE).
-- 61 candlestick pattern recognition functions.
-- Cycle indicators (HT_TRENDLINE, HT_DCPERIOD, HT_DCPHASE, HT_PHASOR, HT_SINE, HT_TRENDMODE).
-- Math operators and transforms (ADD, SUB, SUM, MAX, ACOS, SIN, …).
-- Extended indicators (VWAP, SUPERTREND, ICHIMOKU, DONCHIAN, PIVOT_POINTS).
-- Streaming / incremental API for live trading (StreamingSMA, StreamingRSI, …).
-- Transparent pandas Series / DataFrame support.
-- Type stubs (`.pyi`) for IDE auto-completion.
-- Sphinx documentation in `docs/`.
-- Pre-compiled manylinux wheels for Linux, Windows, macOS (Intel & Apple Silicon).
-
-[Unreleased]: https://github.com/pratikbhadane24/ferro-ta/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/pratikbhadane24/ferro-ta/releases/tag/v0.1.0
+[Unreleased]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/pratikbhadane24/ferro-ta/releases/tag/v1.0.0

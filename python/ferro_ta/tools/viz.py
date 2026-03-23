@@ -40,10 +40,10 @@ True
 
 from __future__ import annotations
 
+import warnings
 from typing import Any, Optional
 
 import numpy as np
-import warnings
 from numpy.typing import ArrayLike, NDArray
 
 __all__ = [

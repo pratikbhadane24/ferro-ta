@@ -28,8 +28,8 @@ from collections.abc import Callable
 from typing import Any, Optional
 
 from ferro_ta._utils import _to_f64
-from ferro_ta.core.exceptions import _normalize_rust_error
 from ferro_ta.core.exceptions import (
+    _normalize_rust_error,
     check_equal_length,
     check_timeperiod,
 )

@@ -60,8 +60,8 @@ register("SMOOTH_RSI", SMOOTH_RSI)
 ```toml
 [project]
 name = "ferro-ta-myplugin"
-version = "0.1.0"
-dependencies = ["ferro_ta>=0.1.0"]
+version = "1.0.0"
+dependencies = ["ferro_ta>=1.0.0"]
 
 [project.entry-points."ferro_ta.plugins"]
 auto_register = "ferro_ta_myplugin:register_all"
