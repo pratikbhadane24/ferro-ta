@@ -13,6 +13,11 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
       - name: Install Rust (stable)
         uses: dtolnay/rust-toolchain@v1
         with:
@@ -30,8 +35,18 @@ jobs:
         working-directory: wasm
         run: wasm-pack build --target nodejs --out-dir pkg
 
+      - name: Benchmark WASM package
+        working-directory: wasm
+        run: node bench.js --json ../wasm_benchmark.json
+
       - name: Upload WASM package artifact
         uses: actions/upload-artifact@v7
         with:
           name: wasm-pkg
           path: wasm/pkg/
+
+      - name: Upload WASM benchmark artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: wasm-benchmark
+          path: wasm_benchmark.json

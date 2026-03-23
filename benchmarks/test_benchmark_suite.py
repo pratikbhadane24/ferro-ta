@@ -32,7 +32,8 @@ from __future__ import annotations
 
 import pathlib
 import time
-from typing import Any, Callable, Dict, List
+from collections.abc import Callable
+from typing import Any
 
 import numpy as np
 import pytest
@@ -46,7 +47,7 @@ BASELINE_PATH = pathlib.Path(__file__).parent / "baselines.npz"
 
 
 @pytest.fixture(scope="session")
-def ohlcv() -> Dict[str, np.ndarray]:
+def ohlcv() -> dict[str, np.ndarray]:
     """Load canonical OHLCV fixture."""
     if not FIXTURE_PATH.exists():
         pytest.skip(f"Canonical fixture not found: {FIXTURE_PATH}")
@@ -60,7 +61,7 @@ def ohlcv() -> Dict[str, np.ndarray]:
 
 # Each entry: (name, callable, kwargs)
 # The callable receives (close,) or (high, low, close,) based on 'inputs' key.
-INDICATOR_SUITE: List[Dict[str, Any]] = [
+INDICATOR_SUITE: list[dict[str, Any]] = [
     {
         "name": "SMA_20",
         "inputs": "close",
@@ -132,11 +133,39 @@ INDICATOR_SUITE: List[Dict[str, Any]] = [
         "kwargs": {"timeperiod": 14},
     },
     {
+        "name": "LINEARREG_SLOPE_14",
+        "inputs": "close",
+        "fn": None,
+        "fn_name": "LINEARREG_SLOPE",
+        "kwargs": {"timeperiod": 14},
+    },
+    {
+        "name": "TSF_14",
+        "inputs": "close",
+        "fn": None,
+        "fn_name": "TSF",
+        "kwargs": {"timeperiod": 14},
+    },
+    {
         "name": "VAR_20",
         "inputs": "close",
         "fn": None,
         "fn_name": "VAR",
         "kwargs": {"timeperiod": 20},
+    },
+    {
+        "name": "CORREL_30",
+        "inputs": "pair_hl",
+        "fn": None,
+        "fn_name": "CORREL",
+        "kwargs": {"timeperiod": 30},
+    },
+    {
+        "name": "BETA_5",
+        "inputs": "pair_hl",
+        "fn": None,
+        "fn_name": "BETA",
+        "kwargs": {"timeperiod": 5},
     },
     {
         "name": "CCI_14",
@@ -161,12 +190,14 @@ def _load_fn(fn_name: str) -> Callable[..., Any]:
     return getattr(ft, fn_name)
 
 
-def _run_indicator(entry: Dict[str, Any], data: Dict[str, np.ndarray]) -> np.ndarray:
+def _run_indicator(entry: dict[str, Any], data: dict[str, np.ndarray]) -> np.ndarray:
     fn = _load_fn(entry["fn_name"])
     if entry["inputs"] == "close":
         result = fn(data["close"], **entry["kwargs"])
-    else:  # hlc
+    elif entry["inputs"] == "hlc":
         result = fn(data["high"], data["low"], data["close"], **entry["kwargs"])
+    else:  # pair_hl
+        result = fn(data["high"], data["low"], **entry["kwargs"])
     if isinstance(result, tuple):
         result = result[0]
     return np.asarray(result, dtype=np.float64)
@@ -184,7 +215,7 @@ class TestNumericalRegression:
         "entry", INDICATOR_SUITE, ids=[e["name"] for e in INDICATOR_SUITE]
     )
     def test_output_shape(
-        self, entry: Dict[str, Any], ohlcv: Dict[str, np.ndarray]
+        self, entry: dict[str, Any], ohlcv: dict[str, np.ndarray]
     ) -> None:
         """Indicator output length must equal input length."""
         out = _run_indicator(entry, ohlcv)
@@ -196,7 +227,7 @@ class TestNumericalRegression:
         "entry", INDICATOR_SUITE, ids=[e["name"] for e in INDICATOR_SUITE]
     )
     def test_warmup_is_nan(
-        self, entry: Dict[str, Any], ohlcv: Dict[str, np.ndarray]
+        self, entry: dict[str, Any], ohlcv: dict[str, np.ndarray]
     ) -> None:
         """First bar must be NaN (warm-up)."""
         out = _run_indicator(entry, ohlcv)
@@ -205,7 +236,7 @@ class TestNumericalRegression:
     @pytest.mark.parametrize(
         "entry", INDICATOR_SUITE, ids=[e["name"] for e in INDICATOR_SUITE]
     )
-    def test_no_inf(self, entry: Dict[str, Any], ohlcv: Dict[str, np.ndarray]) -> None:
+    def test_no_inf(self, entry: dict[str, Any], ohlcv: dict[str, np.ndarray]) -> None:
         """Output must not contain infinities."""
         out = _run_indicator(entry, ohlcv)
         assert not np.any(np.isinf(out)), f"{entry['name']}: output contains Inf"
@@ -214,7 +245,7 @@ class TestNumericalRegression:
         "entry", INDICATOR_SUITE, ids=[e["name"] for e in INDICATOR_SUITE]
     )
     def test_last_values_stable(
-        self, entry: Dict[str, Any], ohlcv: Dict[str, np.ndarray]
+        self, entry: dict[str, Any], ohlcv: dict[str, np.ndarray]
     ) -> None:
         """Last 10 non-NaN values must be finite and stable (no sudden jumps)."""
         out = _run_indicator(entry, ohlcv)
@@ -230,7 +261,7 @@ class TestNumericalRegression:
         "entry", INDICATOR_SUITE, ids=[e["name"] for e in INDICATOR_SUITE]
     )
     def test_regression_vs_baseline(
-        self, entry: Dict[str, Any], ohlcv: Dict[str, np.ndarray]
+        self, entry: dict[str, Any], ohlcv: dict[str, np.ndarray]
     ) -> None:
         """Compare last 10 values to stored baselines."""
         baselines = np.load(BASELINE_PATH)
@@ -265,8 +296,8 @@ class TestPerformance:
     )
     def test_timing(
         self,
-        entry: Dict[str, Any],
-        ohlcv: Dict[str, np.ndarray],
+        entry: dict[str, Any],
+        ohlcv: dict[str, np.ndarray],
         request: pytest.FixtureRequest,
     ) -> None:
         """Time the indicator on the canonical dataset."""
@@ -302,7 +333,7 @@ class TestPerformance:
 # ---------------------------------------------------------------------------
 
 
-def update_baselines(ohlcv_data: Dict[str, np.ndarray]) -> None:
+def update_baselines(ohlcv_data: dict[str, np.ndarray]) -> None:
     """Write current indicator outputs and timings to baselines.npz.
 
     Call this after intentional changes to update the stored baselines::
@@ -314,7 +345,7 @@ def update_baselines(ohlcv_data: Dict[str, np.ndarray]) -> None:
         update_baselines(data)
         "
     """
-    store: Dict[str, np.ndarray] = {}
+    store: dict[str, np.ndarray] = {}
     for entry in INDICATOR_SUITE:
         out = _run_indicator(entry, ohlcv_data)
         valid = out[~np.isnan(out)]

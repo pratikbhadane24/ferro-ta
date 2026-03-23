@@ -45,6 +45,7 @@ iv_zscore(iv_series, window)
 from __future__ import annotations
 
 import numpy as np
+from numpy.lib.stride_tricks import sliding_window_view
 from numpy.typing import ArrayLike, NDArray
 
 from ferro_ta.core.exceptions import FerroTAInputError, FerroTAValueError
@@ -103,15 +104,15 @@ def iv_rank(
     arr = _validate_iv(np.asarray(iv_series, dtype=np.float64), window)
     n = len(arr)
     out = np.full(n, np.nan, dtype=np.float64)
+    if window > n:
+        return out
 
-    for i in range(window - 1, n):
-        window_slice = arr[i - window + 1 : i + 1]
-        lo = float(np.nanmin(window_slice))
-        hi = float(np.nanmax(window_slice))
-        if hi == lo:
-            out[i] = 0.0
-        else:
-            out[i] = (arr[i] - lo) / (hi - lo)
+    windows = sliding_window_view(arr, window_shape=window)
+    lower = np.nanmin(windows, axis=1)
+    upper = np.nanmax(windows, axis=1)
+    current = arr[window - 1 :]
+    spread = upper - lower
+    out[window - 1 :] = np.where(spread == 0.0, 0.0, (current - lower) / spread)
 
     return out
 
@@ -149,11 +150,12 @@ def iv_percentile(
     arr = _validate_iv(np.asarray(iv_series, dtype=np.float64), window)
     n = len(arr)
     out = np.full(n, np.nan, dtype=np.float64)
+    if window > n:
+        return out
 
-    for i in range(window - 1, n):
-        window_slice = arr[i - window + 1 : i + 1]
-        current = arr[i]
-        out[i] = float(np.sum(window_slice <= current)) / window
+    windows = sliding_window_view(arr, window_shape=window)
+    current = arr[window - 1 :, None]
+    out[window - 1 :] = np.sum(windows <= current, axis=1, dtype=np.int64) / window
 
     return out
 
@@ -192,14 +194,13 @@ def iv_zscore(
     arr = _validate_iv(np.asarray(iv_series, dtype=np.float64), window)
     n = len(arr)
     out = np.full(n, np.nan, dtype=np.float64)
+    if window > n:
+        return out
 
-    for i in range(window - 1, n):
-        window_slice = arr[i - window + 1 : i + 1]
-        mu = float(np.nanmean(window_slice))
-        sigma = float(np.nanstd(window_slice, ddof=0))
-        if sigma == 0.0:
-            out[i] = np.nan
-        else:
-            out[i] = (arr[i] - mu) / sigma
+    windows = sliding_window_view(arr, window_shape=window)
+    mean = np.nanmean(windows, axis=1)
+    std = np.nanstd(windows, axis=1, ddof=0)
+    current = arr[window - 1 :]
+    out[window - 1 :] = np.where(std == 0.0, np.nan, (current - mean) / std)
 
     return out

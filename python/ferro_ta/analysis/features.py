@@ -24,11 +24,22 @@ import numpy as np
 from numpy.typing import NDArray
 
 from ferro_ta._utils import _to_f64
-from ferro_ta.core.registry import run as _registry_run
+from ferro_ta.data.batch import compute_many
 
 __all__ = [
     "feature_matrix",
 ]
+
+
+def _forward_fill_nan(arr: NDArray[np.float64]) -> NDArray[np.float64]:
+    mask = np.isnan(arr)
+    if not mask.any():
+        return arr
+
+    last_valid = np.where(~mask, np.arange(len(arr)), 0)
+    np.maximum.accumulate(last_valid, out=last_valid)
+    return arr[last_valid]
+
 
 # ---------------------------------------------------------------------------
 # feature_matrix
@@ -117,67 +128,23 @@ def feature_matrix(
     n = len(close)
     columns: dict[str, NDArray[np.float64]] = {}
 
-    # --- Indicators needing HLCV ---
-    _multi_input = {
-        "ATR",
-        "NATR",
-        "TRANGE",
-        "ADX",
-        "ADXR",
-        "PLUS_DI",
-        "MINUS_DI",
-        "PLUS_DM",
-        "MINUS_DM",
-        "DX",
-        "AROON",
-        "AROONOSC",
-        "CCI",
-        "MFI",
-        "STOCH",
-        "STOCHF",
-        "STOCHRSI",
-        "WILLR",
-        "AD",
-        "ADOSC",
-        "OBV",
-        "VWAP",
-        "DONCHIAN",
-        "ICHIMOKU",
-    }
+    results = compute_many(
+        indicators,
+        close=close,
+        high=high if high is not None else None,
+        low=low if low is not None else None,
+        volume=volume if volume is not None else None,
+    )
 
-    def _call_indicator(name: str, kwargs: dict[str, Any]) -> Any:
-        # Try with close only first; if that fails try with hlcv
-        try:
-            return _registry_run(name, close, **kwargs)
-        except (TypeError, Exception):
-            pass
-        # Build appropriate positional args from available arrays
-        if name in _multi_input and high is not None and low is not None:
-            try:
-                return _registry_run(name, high, low, close, **kwargs)
-            except Exception:
-                pass
-            if volume is not None:
-                try:
-                    return _registry_run(name, high, low, close, volume, **kwargs)
-                except Exception:
-                    pass
-        raise ValueError(
-            f"Cannot call indicator '{name}': insufficient data columns or incompatible parameters."
-        )
-
-    for spec in indicators:
+    for spec, result in zip(indicators, results):
         if isinstance(spec, str):
             name = spec
-            kwargs: dict[str, Any] = {}
             out_key: Optional[Any] = None
         elif len(spec) == 2:
-            name, kwargs = spec  # type: ignore[misc]
+            name, _ = spec  # type: ignore[misc]
             out_key = None
         else:
-            name, kwargs, out_key = spec  # type: ignore[misc]
-
-        result = _call_indicator(name, kwargs)
+            name, _, out_key = spec  # type: ignore[misc]
 
         if isinstance(result, tuple):
             if out_key is not None:
@@ -215,8 +182,6 @@ def feature_matrix(
                 mask &= ~np.isnan(arr)
             return {k: v[mask] for k, v in columns.items()}
         elif nan_policy == "fill":
-            for k, arr in columns.items():
-                for i in range(1, len(arr)):
-                    if np.isnan(arr[i]):
-                        arr[i] = arr[i - 1]
+            for key, arr in columns.items():
+                columns[key] = _forward_fill_nan(arr)
         return columns

@@ -1,0 +1,73 @@
+{
+  "metadata": {
+    "suite": "streaming",
+    "runtime": {
+      "generated_at_utc": "2026-03-23T20:25:58.628657+00:00",
+      "python_version": "3.13.5",
+      "platform": "macOS-26.3.1-arm64-arm-64bit-Mach-O",
+      "machine": "arm64",
+      "processor": "arm"
+    },
+    "git": {
+      "commit": "9011250f992119170242cf17a67834c67b91bcdb",
+      "dirty": true,
+      "branch": "feat/performace-1.0.2"
+    },
+    "dataset": {
+      "n_bars": 100000,
+      "seed": 2026
+    }
+  },
+  "results": [
+    {
+      "indicator": "StreamingSMA",
+      "inputs": "close",
+      "stream_total_ms": 4.5729,
+      "batch_total_ms": 0.0685,
+      "stream_ns_per_update": 45.73,
+      "batch_ns_per_bar": 0.68,
+      "updates_per_second": 21867879.95,
+      "stream_over_batch_ratio": 66.7989
+    },
+    {
+      "indicator": "StreamingEMA",
+      "inputs": "close",
+      "stream_total_ms": 4.535,
+      "batch_total_ms": 0.1969,
+      "stream_ns_per_update": 45.35,
+      "batch_ns_per_bar": 1.97,
+      "updates_per_second": 22050716.65,
+      "stream_over_batch_ratio": 23.0301
+    },
+    {
+      "indicator": "StreamingRSI",
+      "inputs": "close",
+      "stream_total_ms": 4.6421,
+      "batch_total_ms": 0.4597,
+      "stream_ns_per_update": 46.42,
+      "batch_ns_per_bar": 4.6,
+      "updates_per_second": 21541858.52,
+      "stream_over_batch_ratio": 10.098
+    },
+    {
+      "indicator": "StreamingATR",
+      "inputs": "hlc",
+      "stream_total_ms": 10.2098,
+      "batch_total_ms": 0.4599,
+      "stream_ns_per_update": 102.1,
+      "batch_ns_per_bar": 4.6,
+      "updates_per_second": 9794518.83,
+      "stream_over_batch_ratio": 22.2012
+    },
+    {
+      "indicator": "StreamingVWAP",
+      "inputs": "hlcv",
+      "stream_total_ms": 12.5109,
+      "batch_total_ms": 0.1027,
+      "stream_ns_per_update": 125.11,
+      "batch_ns_per_bar": 1.03,
+      "updates_per_second": 7993046.05,
+      "stream_over_batch_ratio": 121.7603
+    }
+  ]
+}

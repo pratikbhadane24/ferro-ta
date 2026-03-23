@@ -323,6 +323,21 @@ class TestSignalComposition:
         score = compose(sigs, method="rank")
         assert score.shape == (30,)
 
+    def test_compose_rank_matches_manual_column_ranks(self):
+        from ferro_ta.analysis.signals import compose
+
+        sigs = np.array(
+            [
+                [3.0, 1.0],
+                [1.0, 2.0],
+                [2.0, 2.0],
+            ],
+            dtype=np.float64,
+        )
+        score = compose(sigs, method="rank")
+        expected = np.array([4.0, 3.5, 4.5], dtype=np.float64)
+        np.testing.assert_allclose(score, expected)
+
     def test_compose_equal_weights_default(self):
         from ferro_ta.analysis.signals import compose
 
@@ -573,6 +588,75 @@ class TestFeatureMatrix:
         ohlcv = {"close": c, "high": h, "low": l, "open": o, "volume": v}
         fm = feature_matrix(ohlcv, ["SMA"])
         assert "SMA" in fm
+
+    def test_feature_matrix_mixed_fastpath_and_multi_output(self):
+        from ferro_ta.analysis.features import feature_matrix
+
+        o, h, l, c, v = _make_ohlcv(80)
+        ohlcv = {"close": c, "high": h, "low": l, "open": o, "volume": v}
+        fm = feature_matrix(
+            ohlcv,
+            [
+                ("SMA", {"timeperiod": 10}),
+                ("ATR", {"timeperiod": 14}),
+                ("BBANDS", {"timeperiod": 10}, 1),
+            ],
+        )
+        assert "SMA" in fm
+        assert "ATR" in fm
+        assert "BBANDS_1" in fm
+
+
+class TestComputeMany:
+    def test_close_indicators_match_public_api(self):
+        from ferro_ta import EMA, RSI, SMA
+        from ferro_ta.data.batch import compute_many
+
+        _, _, _, close, _ = _make_ohlcv(80)
+        results = compute_many(
+            [
+                ("SMA", {"timeperiod": 10}),
+                ("EMA", {"timeperiod": 12}),
+                ("RSI", {"timeperiod": 14}),
+            ],
+            close=close,
+        )
+
+        np.testing.assert_allclose(results[0], SMA(close, timeperiod=10), equal_nan=True)
+        np.testing.assert_allclose(results[1], EMA(close, timeperiod=12), equal_nan=True)
+        np.testing.assert_allclose(results[2], RSI(close, timeperiod=14), equal_nan=True)
+
+    def test_hlc_indicators_match_public_api(self):
+        from ferro_ta import ADX, ATR
+        from ferro_ta.data.batch import compute_many
+
+        _, high, low, close, _ = _make_ohlcv(80)
+        results = compute_many(
+            [
+                ("ATR", {"timeperiod": 14}),
+                ("ADX", {"timeperiod": 14}),
+            ],
+            close=close,
+            high=high,
+            low=low,
+        )
+
+        np.testing.assert_allclose(
+            results[0], ATR(high, low, close, timeperiod=14), equal_nan=True
+        )
+        np.testing.assert_allclose(
+            results[1], ADX(high, low, close, timeperiod=14), equal_nan=True
+        )
+
+    def test_unsupported_kwargs_fall_back_cleanly(self):
+        from ferro_ta import STDDEV
+        from ferro_ta.data.batch import compute_many
+
+        _, _, _, close, _ = _make_ohlcv(80)
+        result = compute_many([("STDDEV", {"timeperiod": 10, "nbdev": 2.0})], close=close)
+        np.testing.assert_allclose(
+            result[0], STDDEV(close, timeperiod=10, nbdev=2.0), equal_nan=True
+        )
 
 
 # ---------------------------------------------------------------------------

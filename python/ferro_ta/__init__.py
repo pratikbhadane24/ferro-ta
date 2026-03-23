@@ -525,6 +525,7 @@ from ferro_ta.data.batch import (  # noqa: F401, E402
     batch_ema,
     batch_rsi,
     batch_sma,
+    compute_many,
 )
 from ferro_ta.data.chunked import (  # noqa: F401, E402
     chunk_apply,
