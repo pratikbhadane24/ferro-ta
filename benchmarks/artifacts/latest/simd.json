@@ -1,0 +1,285 @@
+{
+  "metadata": {
+    "suite": "simd",
+    "runtime": {
+      "generated_at_utc": "2026-03-23T20:26:40.566511+00:00",
+      "python_version": "3.13.5",
+      "platform": "macOS-26.3.1-arm64-arm-64bit-Mach-O",
+      "machine": "arm64",
+      "processor": "arm"
+    },
+    "git": {
+      "commit": "9011250f992119170242cf17a67834c67b91bcdb",
+      "dirty": true,
+      "branch": "feat/performace-1.0.2"
+    },
+    "dataset": {
+      "price_bars": 20000,
+      "iv_bars": 50000,
+      "window": 252
+    },
+    "variants": [
+      "portable_release",
+      "simd_release"
+    ]
+  },
+  "results": [
+    {
+      "name": "BETA",
+      "category": "rust_kernel",
+      "portable_ms": 0.0635,
+      "simd_ms": 0.0636,
+      "speedup_simd_vs_portable": 0.9984
+    },
+    {
+      "name": "TSF",
+      "category": "rust_kernel",
+      "portable_ms": 0.0415,
+      "simd_ms": 0.0417,
+      "speedup_simd_vs_portable": 0.9952
+    },
+    {
+      "name": "compute_many_close",
+      "category": "ffi_grouping",
+      "portable_ms": 0.1548,
+      "simd_ms": 0.1572,
+      "speedup_simd_vs_portable": 0.9847
+    },
+    {
+      "name": "iv_zscore",
+      "category": "python_analysis",
+      "portable_ms": 36.0643,
+      "simd_ms": 37.2041,
+      "speedup_simd_vs_portable": 0.9694
+    },
+    {
+      "name": "feature_matrix",
+      "category": "ffi_grouping",
+      "portable_ms": 0.2556,
+      "simd_ms": 0.2667,
+      "speedup_simd_vs_portable": 0.9584
+    },
+    {
+      "name": "iv_percentile",
+      "category": "python_analysis",
+      "portable_ms": 7.7548,
+      "simd_ms": 8.1565,
+      "speedup_simd_vs_portable": 0.9508
+    },
+    {
+      "name": "LINEARREG",
+      "category": "rust_kernel",
+      "portable_ms": 0.0416,
+      "simd_ms": 0.0443,
+      "speedup_simd_vs_portable": 0.9391
+    },
+    {
+      "name": "iv_rank",
+      "category": "python_analysis",
+      "portable_ms": 2.2813,
+      "simd_ms": 2.4386,
+      "speedup_simd_vs_portable": 0.9355
+    },
+    {
+      "name": "CORREL",
+      "category": "rust_kernel",
+      "portable_ms": 0.0552,
+      "simd_ms": 0.0633,
+      "speedup_simd_vs_portable": 0.872
+    }
+  ],
+  "reports": {
+    "portable_release": {
+      "metadata": {
+        "suite": "runtime_hotspots",
+        "runtime": {
+          "generated_at_utc": "2026-03-23T20:26:06.920513+00:00",
+          "python_version": "3.13.5",
+          "platform": "macOS-26.3.1-arm64-arm-64bit-Mach-O",
+          "machine": "arm64",
+          "processor": "arm"
+        },
+        "git": {
+          "commit": "9011250f992119170242cf17a67834c67b91bcdb",
+          "dirty": true,
+          "branch": "feat/performace-1.0.2"
+        },
+        "dataset": {
+          "price_bars": 20000,
+          "iv_bars": 50000,
+          "window": 252
+        }
+      },
+      "results": [
+        {
+          "category": "python_analysis",
+          "name": "iv_zscore",
+          "fast_ms": 36.0643,
+          "reference_ms": 908.5403,
+          "speedup_vs_reference": 25.1922,
+          "share_of_suite_pct": 77.2
+        },
+        {
+          "category": "python_analysis",
+          "name": "iv_percentile",
+          "fast_ms": 7.7548,
+          "reference_ms": 82.2352,
+          "speedup_vs_reference": 10.6045,
+          "share_of_suite_pct": 16.6
+        },
+        {
+          "category": "python_analysis",
+          "name": "iv_rank",
+          "fast_ms": 2.2813,
+          "reference_ms": 202.5375,
+          "speedup_vs_reference": 88.7803,
+          "share_of_suite_pct": 4.88
+        },
+        {
+          "category": "ffi_grouping",
+          "name": "feature_matrix",
+          "fast_ms": 0.2556,
+          "reference_ms": 0.2252,
+          "speedup_vs_reference": 0.8812,
+          "share_of_suite_pct": 0.55
+        },
+        {
+          "category": "ffi_grouping",
+          "name": "compute_many_close",
+          "fast_ms": 0.1548,
+          "reference_ms": 0.1508,
+          "speedup_vs_reference": 0.9742,
+          "share_of_suite_pct": 0.33
+        },
+        {
+          "category": "rust_kernel",
+          "name": "BETA",
+          "fast_ms": 0.0635,
+          "reference_ms": 162.8972,
+          "speedup_vs_reference": 2563.6148,
+          "share_of_suite_pct": 0.14
+        },
+        {
+          "category": "rust_kernel",
+          "name": "CORREL",
+          "fast_ms": 0.0552,
+          "reference_ms": 163.1357,
+          "speedup_vs_reference": 2952.6826,
+          "share_of_suite_pct": 0.12
+        },
+        {
+          "category": "rust_kernel",
+          "name": "LINEARREG",
+          "fast_ms": 0.0416,
+          "reference_ms": 48.0097,
+          "speedup_vs_reference": 1153.3863,
+          "share_of_suite_pct": 0.09
+        },
+        {
+          "category": "rust_kernel",
+          "name": "TSF",
+          "fast_ms": 0.0415,
+          "reference_ms": 47.9395,
+          "speedup_vs_reference": 1155.1696,
+          "share_of_suite_pct": 0.09
+        }
+      ]
+    },
+    "simd_release": {
+      "metadata": {
+        "suite": "runtime_hotspots",
+        "runtime": {
+          "generated_at_utc": "2026-03-23T20:26:25.789478+00:00",
+          "python_version": "3.13.5",
+          "platform": "macOS-26.3.1-arm64-arm-64bit-Mach-O",
+          "machine": "arm64",
+          "processor": "arm"
+        },
+        "git": {
+          "commit": "9011250f992119170242cf17a67834c67b91bcdb",
+          "dirty": true,
+          "branch": "feat/performace-1.0.2"
+        },
+        "dataset": {
+          "price_bars": 20000,
+          "iv_bars": 50000,
+          "window": 252
+        }
+      },
+      "results": [
+        {
+          "category": "python_analysis",
+          "name": "iv_zscore",
+          "fast_ms": 37.2041,
+          "reference_ms": 930.7842,
+          "speedup_vs_reference": 25.0183,
+          "share_of_suite_pct": 76.81
+        },
+        {
+          "category": "python_analysis",
+          "name": "iv_percentile",
+          "fast_ms": 8.1565,
+          "reference_ms": 88.3639,
+          "speedup_vs_reference": 10.8336,
+          "share_of_suite_pct": 16.84
+        },
+        {
+          "category": "python_analysis",
+          "name": "iv_rank",
+          "fast_ms": 2.4386,
+          "reference_ms": 221.0389,
+          "speedup_vs_reference": 90.6424,
+          "share_of_suite_pct": 5.03
+        },
+        {
+          "category": "ffi_grouping",
+          "name": "feature_matrix",
+          "fast_ms": 0.2667,
+          "reference_ms": 0.2436,
+          "speedup_vs_reference": 0.9134,
+          "share_of_suite_pct": 0.55
+        },
+        {
+          "category": "ffi_grouping",
+          "name": "compute_many_close",
+          "fast_ms": 0.1572,
+          "reference_ms": 0.1593,
+          "speedup_vs_reference": 1.0135,
+          "share_of_suite_pct": 0.32
+        },
+        {
+          "category": "rust_kernel",
+          "name": "BETA",
+          "fast_ms": 0.0636,
+          "reference_ms": 172.9198,
+          "speedup_vs_reference": 2717.7961,
+          "share_of_suite_pct": 0.13
+        },
+        {
+          "category": "rust_kernel",
+          "name": "CORREL",
+          "fast_ms": 0.0633,
+          "reference_ms": 170.0262,
+          "speedup_vs_reference": 2686.3776,
+          "share_of_suite_pct": 0.13
+        },
+        {
+          "category": "rust_kernel",
+          "name": "LINEARREG",
+          "fast_ms": 0.0443,
+          "reference_ms": 50.5614,
+          "speedup_vs_reference": 1141.5474,
+          "share_of_suite_pct": 0.09
+        },
+        {
+          "category": "rust_kernel",
+          "name": "TSF",
+          "fast_ms": 0.0417,
+          "reference_ms": 50.9599,
+          "speedup_vs_reference": 1221.8259,
+          "share_of_suite_pct": 0.09
+        }
+      ]
+    }
+  }
+}

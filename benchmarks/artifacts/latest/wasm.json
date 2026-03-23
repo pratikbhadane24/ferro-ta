@@ -1,0 +1,46 @@
+{
+  "metadata": {
+    "suite": "wasm",
+    "runtime": {
+      "generated_at_utc": "2026-03-23T20:15:04.885Z",
+      "node_version": "v25.8.1",
+      "platform": "darwin",
+      "arch": "arm64"
+    },
+    "dataset": {
+      "bars": 100000
+    }
+  },
+  "results": [
+    {
+      "indicator": "SMA",
+      "elapsed_ms": 0.1702,
+      "ns_per_bar": 1.7,
+      "million_bars_per_second": 587.52
+    },
+    {
+      "indicator": "EMA",
+      "elapsed_ms": 0.2923,
+      "ns_per_bar": 2.92,
+      "million_bars_per_second": 342.08
+    },
+    {
+      "indicator": "RSI",
+      "elapsed_ms": 0.5962,
+      "ns_per_bar": 5.96,
+      "million_bars_per_second": 167.73
+    },
+    {
+      "indicator": "ATR",
+      "elapsed_ms": 0.642,
+      "ns_per_bar": 6.42,
+      "million_bars_per_second": 155.75
+    },
+    {
+      "indicator": "BBANDS",
+      "elapsed_ms": 1.7411,
+      "ns_per_bar": 17.41,
+      "million_bars_per_second": 57.43
+    }
+  ]
+}

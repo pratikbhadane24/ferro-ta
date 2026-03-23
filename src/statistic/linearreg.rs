@@ -1,4 +1,4 @@
-use super::common::linreg;
+use super::common::rolling_linreg_apply;
 use crate::validation;
 use numpy::{IntoPyArray, PyArray1, PyReadonlyArray1};
 use pyo3::prelude::*;
@@ -14,13 +14,10 @@ pub fn linearreg<'py>(
 ) -> PyResult<Bound<'py, PyArray1<f64>>> {
     validation::validate_timeperiod(timeperiod, "timeperiod", 1)?;
     let prices = close.as_slice()?;
-    let n = prices.len();
-    let mut result = vec![f64::NAN; n];
-    for i in (timeperiod - 1)..n {
-        let window = &prices[(i + 1 - timeperiod)..=i];
-        let (slope, intercept) = linreg(window);
-        result[i] = intercept + slope * (timeperiod - 1) as f64;
-    }
+    let last_x = (timeperiod - 1) as f64;
+    let result = rolling_linreg_apply(prices, timeperiod, |slope, intercept| {
+        intercept + slope * last_x
+    });
     Ok(result.into_pyarray(py))
 }
 
@@ -34,13 +31,7 @@ pub fn linearreg_slope<'py>(
 ) -> PyResult<Bound<'py, PyArray1<f64>>> {
     validation::validate_timeperiod(timeperiod, "timeperiod", 1)?;
     let prices = close.as_slice()?;
-    let n = prices.len();
-    let mut result = vec![f64::NAN; n];
-    for i in (timeperiod - 1)..n {
-        let window = &prices[(i + 1 - timeperiod)..=i];
-        let (slope, _) = linreg(window);
-        result[i] = slope;
-    }
+    let result = rolling_linreg_apply(prices, timeperiod, |slope, _| slope);
     Ok(result.into_pyarray(py))
 }
 
@@ -54,13 +45,7 @@ pub fn linearreg_intercept<'py>(
 ) -> PyResult<Bound<'py, PyArray1<f64>>> {
     validation::validate_timeperiod(timeperiod, "timeperiod", 1)?;
     let prices = close.as_slice()?;
-    let n = prices.len();
-    let mut result = vec![f64::NAN; n];
-    for i in (timeperiod - 1)..n {
-        let window = &prices[(i + 1 - timeperiod)..=i];
-        let (_, intercept) = linreg(window);
-        result[i] = intercept;
-    }
+    let result = rolling_linreg_apply(prices, timeperiod, |_, intercept| intercept);
     Ok(result.into_pyarray(py))
 }
 
@@ -74,13 +59,7 @@ pub fn linearreg_angle<'py>(
 ) -> PyResult<Bound<'py, PyArray1<f64>>> {
     validation::validate_timeperiod(timeperiod, "timeperiod", 1)?;
     let prices = close.as_slice()?;
-    let n = prices.len();
-    let mut result = vec![f64::NAN; n];
-    for i in (timeperiod - 1)..n {
-        let window = &prices[(i + 1 - timeperiod)..=i];
-        let (slope, _) = linreg(window);
-        result[i] = slope.atan() * 180.0 / PI;
-    }
+    let result = rolling_linreg_apply(prices, timeperiod, |slope, _| slope.atan() * 180.0 / PI);
     Ok(result.into_pyarray(py))
 }
 
@@ -94,13 +73,9 @@ pub fn tsf<'py>(
 ) -> PyResult<Bound<'py, PyArray1<f64>>> {
     validation::validate_timeperiod(timeperiod, "timeperiod", 1)?;
     let prices = close.as_slice()?;
-    let n = prices.len();
-    let mut result = vec![f64::NAN; n];
-    for i in (timeperiod - 1)..n {
-        let window = &prices[(i + 1 - timeperiod)..=i];
-        let (slope, intercept) = linreg(window);
-        // Forecast one period ahead of the last point in the window
-        result[i] = intercept + slope * timeperiod as f64;
-    }
+    let forecast_x = timeperiod as f64;
+    let result = rolling_linreg_apply(prices, timeperiod, |slope, intercept| {
+        intercept + slope * forecast_x
+    });
     Ok(result.into_pyarray(py))
 }

@@ -40,6 +40,30 @@ from benchmarks.data_generator import SMALL, MEDIUM, LARGE
 - **Machine info:** Stored in `benchmarks/results.json` (`machine_info`, `commit_info`) for reproducibility.
 - **Libraries:** Only libraries present in the environment are benchmarked; missing ones are skipped.
 
+## Reproducible Perf Artifacts
+
+Use the perf-contract runner when you want a compact set of machine-readable
+artifacts for single-series latency, batch throughput, streaming throughput,
+and hotspot attribution in one directory:
+
+```bash
+uv run python benchmarks/run_perf_contract.py --output-dir benchmarks/artifacts/latest --skip-talib
+```
+
+That command writes:
+
+- `indicator_latency.json` — canonical-fixture timings for the benchmark suite indicators
+- `batch.json` — 2-D batch throughput plus grouped multi-indicator timings
+- `streaming.json` — streaming update throughput vs batch baselines
+- `runtime_hotspots.json` — ranked hotspot report with reference speedups
+- `manifest.json` — runtime/git metadata plus hashes for the generated artifacts
+
+For CI or local guardrails, validate the hotspot report with:
+
+```bash
+uv run python benchmarks/check_hotspot_regression.py --input benchmarks/artifacts/latest/runtime_hotspots.json
+```
+
 ---
 
 ## Speed comparison (100k bars, median µs — lower is better)
@@ -141,9 +165,33 @@ uv run python benchmarks/bench_vs_talib.py --sizes 10000 100000 --json benchmark
 
 # Optional regression check used in CI
 uv run python benchmarks/check_vs_talib_regression.py --input benchmark_vs_talib.json
+
+# Batch throughput + grouped multi-indicator calls
+uv run python benchmarks/bench_batch.py --samples 100000 --series 100 --json batch_benchmark.json
+
+# Streaming update throughput vs batch baselines
+uv run python benchmarks/bench_streaming.py --bars 100000 --json streaming_benchmark.json
+
+# Ranked hotspot attribution against bundled reference implementations
+uv run python benchmarks/profile_runtime_hotspots.py --json runtime_hotspots.json
+
+# Portable vs SIMD-enabled build comparison
+uv run python benchmarks/bench_simd.py --json simd_benchmark.json
+
+# One-shot perf artifact bundle
+uv run python benchmarks/run_perf_contract.py --output-dir benchmarks/artifacts/latest
 ```
 
 Without `uv`: use `pytest` and `python` from the same environment where `ferro_ta` and optional libs (e.g. `talib`, `pandas_ta`, `ta`, `tulipy`, `finta`) are installed.
+
+### WASM
+
+From the `wasm/` directory:
+
+```bash
+wasm-pack build --target nodejs --out-dir pkg
+node bench.js --json ../wasm_benchmark.json
+```
 
 ---
 

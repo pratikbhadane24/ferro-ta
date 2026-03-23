@@ -710,6 +710,7 @@ from ferro_ta.batch import batch_apply as batch_apply
 from ferro_ta.batch import batch_ema as batch_ema
 from ferro_ta.batch import batch_rsi as batch_rsi
 from ferro_ta.batch import batch_sma as batch_sma
+from ferro_ta.batch import compute_many as compute_many
 
 # ---------------------------------------------------------------------------
 # Exception hierarchy (re-exported from ferro_ta.exceptions)

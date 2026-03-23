@@ -2,7 +2,7 @@
 //! Each function (or closely related group) lives in its own file.
 
 mod beta;
-mod common;
+pub(crate) mod common;
 mod correl;
 mod linearreg;
 mod stddev;

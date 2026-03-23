@@ -14,6 +14,7 @@ practical advice on how to get the best speed from the library.
 | polars users                          | Pass `pl.Series`; result is `pl.Series`| Small overhead for type conversion     |
 | Raw Rust access (expert)              | `from ferro_ta._ferro_ta import sma`     | Bypasses all Python wrappers           |
 | Multiple series at once               | `batch_sma`, `batch_ema`, `batch_rsi`  | One Python call for all columns        |
+| Many indicators on same arrays        | `compute_many`                         | Amortizes Python→Rust overhead         |
 
 **Recorded baseline and roadmap:** Performance roadmap and trade-offs are tracked
 in [PERFORMANCE_ROADMAP.md](../PERFORMANCE_ROADMAP.md). For reproducible benchmark
@@ -41,10 +42,12 @@ fast.  The bottlenecks for most users are in the Python wrapping layer:
    np.asarray(result))`), which avoids the O(n) `.tolist()` conversion of
    earlier versions.
 
-4. **Batch** — `batch_sma`/`batch_ema`/`batch_rsi` use Rust-side batch functions
-   for 2-D input (single GIL release for all columns).  The generic
-   `batch_apply` runs any indicator in a Python loop over columns; use the
-   dedicated batch functions when available.
+4. **Batch / grouped execution** — `batch_sma`/`batch_ema`/`batch_rsi` use
+   Rust-side batch functions for 2-D input (single GIL release for all
+   columns). `compute_many(...)` groups supported 1-D indicator bundles into
+   one Rust call, which helps most on medium-to-large workloads. The generic
+   `batch_apply` still runs a Python loop over columns; use it only when there
+   is no dedicated fast path.
 
 ---
 
@@ -156,6 +159,25 @@ For 2-D input, `batch_sma`/`batch_ema`/`batch_rsi` use Rust-side batch
 functions (single GIL release for all columns).  Use `batch_apply` for other
 indicators that do not have a dedicated Rust batch implementation.
 
+When you have several indicators over the same 1-D arrays, use `compute_many`:
+
+```python
+from ferro_ta.batch import compute_many
+
+results = compute_many(
+    [
+        ("SMA", {"timeperiod": 10}),
+        ("EMA", {"timeperiod": 12}),
+        ("RSI", {"timeperiod": 14}),
+    ],
+    close=close,
+)
+```
+
+Supported grouped paths currently cover common close-only indicators plus a
+small HLC bundle (`ATR`, `NATR`, `ADX`, `ADXR`, `CCI`, `WILLR`). Unsupported
+parameter shapes fall back to the normal registry path automatically.
+
 ---
 
 ## Streaming (Bar-by-Bar)
@@ -208,6 +230,53 @@ wrapper with validation and `_to_f64`; all computation runs in the extension.
 5. **Profile before optimising.** Use `cProfile` or `py-spy` to find the
    actual bottleneck before assuming a particular layer is slow.
 
+6. **Use the perf-contract scripts for evidence.** `benchmarks/run_perf_contract.py`
+   and `benchmarks/profile_runtime_hotspots.py` record timings with git/runtime
+   metadata so you can compare apples to apples across machines and commits.
+
+## Benchmark Tooling
+
+The benchmark suite now includes a small set of machine-readable scripts for
+performance work beyond the full pytest benchmark table:
+
+- `python benchmarks/bench_batch.py --json batch_benchmark.json`
+- `python benchmarks/bench_streaming.py --json streaming_benchmark.json`
+- `python benchmarks/profile_runtime_hotspots.py --json runtime_hotspots.json`
+- `python benchmarks/bench_simd.py --json simd_benchmark.json`
+- `python benchmarks/run_perf_contract.py --output-dir benchmarks/artifacts/latest`
+- `python benchmarks/check_hotspot_regression.py --input runtime_hotspots.json`
+
+The WASM bindings also ship with a Node benchmark:
+
+- `cd wasm && wasm-pack build --target nodejs --out-dir pkg`
+- `node bench.js --json ../wasm_benchmark.json`
+
+## SIMD And Build Flags
+
+Distributable wheels should stay on the portable release profile:
+
+- `cargo`/`maturin` release build
+- `lto = true`
+- `codegen-units = 1`
+- no architecture-specific `target-cpu=native` in shipped artifacts
+
+For local source builds, there are two opt-in tuning levers:
+
+```bash
+# Portable SIMD-enabled local build
+uv run maturin develop --release --features simd
+
+# Maximum local tuning for your current machine only
+RUSTFLAGS="-C target-cpu=native" uv run maturin develop --release --features simd
+```
+
+Policy:
+
+- Ship portable wheels with the default release settings.
+- Use `--features simd` for measured local/source wins.
+- Reserve `target-cpu=native` for developer workstations or private deploys,
+  because those binaries are not portable across CPU families.
+
 ---
 
 ## Performance Improvements (implemented)
@@ -246,18 +315,22 @@ bottlenecks are fixed or deferred.
 - No fast path for already 2-D C-contiguous float64 in batch_sma/ema/rsi
   (unlike `_to_f64` for 1-D); could avoid a potential copy.
 
-**Options** (`python/ferro_ta/options.py`):
-- `iv_rank`, `iv_percentile`, `iv_zscore` use Python loops over windows
-  (O(n) iterations with per-window NumPy). Could move to Rust or vectorize.
-  See also `docs/options-volatility.md`.
+**Derivatives analytics** (`python/ferro_ta/analysis/options.py`):
+- `iv_rank`, `iv_percentile`, and `iv_zscore` now delegate to Rust.
+- The Python layer mostly performs broadcasting and result shaping; the hot
+  path is in Rust.
+- Model-based implied-volatility inversion is much faster now, but still more
+  expensive than direct pricing or Greeks due to root-finding.
 
 **Features** (`python/ferro_ta/features.py`):
-- With `nan_policy="fill"` and no pandas, a Python loop fills NaN per column.
-- Indicators are run in a Python loop (one call per indicator); no bulk API.
+- `nan_policy="fill"` is vectorized now.
+- `feature_matrix(...)` uses `compute_many(...)`, but grouped HLC bundles are
+  still only near parity on medium workloads and are best on larger arrays.
 
 **Signals** (`python/ferro_ta/signals.py`):
-- `compose(..., method="rank")` uses a list comprehension over columns (one
-  Python round-trip per column). Could add a Rust batch rank for 2-D input.
+- `compose(..., method="rank")` now uses a one-call Rust rank-composition
+  path, but its gains are moderate rather than dramatic. Keep measuring before
+  treating it as a major optimization lever.
 
 **Other**:
 - **dsl.py**: Some code paths use Python loops over bars.

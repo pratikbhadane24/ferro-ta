@@ -9,6 +9,25 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.0.2] — 2026-03-24
+
+### Performance
+
+- Optimized rolling statistical kernels (`CORREL`, `BETA`, `LINEARREG*`, `TSF`)
+  with incremental window math and matching warmup semantics.
+- Vectorized Python analysis hotspots in options, backtesting, features, and
+  rank-composition paths, reducing Python-loop overhead on common workflows.
+- Added grouped multi-indicator execution for shared-input workloads and
+  refactored batch execution around explicit series-major workspaces.
+
+### Added
+
+- Reproducible perf-contract artifacts for single-series, batch, streaming,
+  SIMD, TA-Lib comparison, and WASM benchmark runs.
+- Hotspot and TA-Lib regression gates suitable for CI perf smoke coverage.
+- Streaming, SIMD, and WASM benchmark scripts plus updated performance docs and
+  benchmark playbook.
+
 ## [1.0.1] — 2026-03-24
 
 ### Added
@@ -274,6 +293,7 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ---
 
-[Unreleased]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/pratikbhadane24/ferro-ta/releases/tag/v1.0.0

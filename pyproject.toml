@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "ferro-ta"
-version = "1.0.1"
+version = "1.0.2"
 description = "A fast Technical Analysis library — TA-Lib alternative powered by Rust and PyO3"
 readme = "README.md"
 license = { text = "MIT" }

@@ -29,7 +29,7 @@ Usage
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -52,6 +52,13 @@ from ferro_ta._ferro_ta import (
 from ferro_ta._ferro_ta import (
     batch_stoch as _rust_batch_stoch,
 )
+from ferro_ta._ferro_ta import (
+    run_close_indicators as _rust_run_close_indicators,
+)
+from ferro_ta._ferro_ta import (
+    run_hlc_indicators as _rust_run_hlc_indicators,
+)
+from ferro_ta.core.registry import run as _registry_run
 from ferro_ta.indicators.momentum import RSI
 from ferro_ta.indicators.overlap import EMA, SMA
 
@@ -60,7 +67,155 @@ __all__ = [
     "batch_ema",
     "batch_rsi",
     "batch_apply",
+    "compute_many",
 ]
+
+_CLOSE_FASTPATH_DEFAULTS: dict[str, int] = {
+    "SMA": 30,
+    "EMA": 30,
+    "RSI": 14,
+    "STDDEV": 5,
+    "VAR": 5,
+    "LINEARREG": 14,
+    "LINEARREG_SLOPE": 14,
+    "LINEARREG_INTERCEPT": 14,
+    "LINEARREG_ANGLE": 14,
+    "TSF": 14,
+}
+
+_HLC_FASTPATH_DEFAULTS: dict[str, int] = {
+    "ATR": 14,
+    "NATR": 14,
+    "ADX": 14,
+    "ADXR": 14,
+    "CCI": 14,
+    "WILLR": 14,
+}
+
+
+def _normalize_indicator_spec(
+    spec: str | tuple[str, dict[str, object]] | tuple[str, dict[str, object], object],
+) -> tuple[str, dict[str, object], object | None]:
+    if isinstance(spec, str):
+        return spec, {}, None
+    if len(spec) == 2:
+        name, kwargs = spec
+        return name, kwargs, None
+    name, kwargs, out_key = spec
+    return name, kwargs, out_key
+
+
+def _extract_timeperiod(
+    name: str, kwargs: dict[str, object], defaults: dict[str, int]
+) -> int | None:
+    if name not in defaults:
+        return None
+    extra_keys = set(kwargs) - {"timeperiod"}
+    if extra_keys:
+        return None
+    raw_value = kwargs.get("timeperiod", defaults[name])
+    if not isinstance(raw_value, int):
+        return None
+    return raw_value
+
+
+def compute_many(
+    indicators: Sequence[
+        str | tuple[str, dict[str, object]] | tuple[str, dict[str, object], object]
+    ],
+    *,
+    close: ArrayLike,
+    high: ArrayLike | None = None,
+    low: ArrayLike | None = None,
+    volume: ArrayLike | None = None,
+    parallel: bool = True,
+) -> list[object]:
+    """Compute multiple indicators over the same arrays with grouped Rust calls.
+
+    Supported single-output indicators are grouped into one Rust boundary crossing
+    per input-shape family (`close` only or `high/low/close`). Unsupported specs
+    fall back to the regular registry path, preserving behavior.
+    """
+
+    close_arr = np.ascontiguousarray(close, dtype=np.float64)
+    high_arr = None if high is None else np.ascontiguousarray(high, dtype=np.float64)
+    low_arr = None if low is None else np.ascontiguousarray(low, dtype=np.float64)
+    volume_arr = (
+        None if volume is None else np.ascontiguousarray(volume, dtype=np.float64)
+    )
+
+    normalized = [_normalize_indicator_spec(spec) for spec in indicators]
+    results: list[object | None] = [None] * len(normalized)
+
+    close_indices: list[int] = []
+    close_names: list[str] = []
+    close_periods: list[int] = []
+
+    hlc_indices: list[int] = []
+    hlc_names: list[str] = []
+    hlc_periods: list[int] = []
+
+    for idx, (name, kwargs, out_key) in enumerate(normalized):
+        if out_key is None:
+            close_period = _extract_timeperiod(name, kwargs, _CLOSE_FASTPATH_DEFAULTS)
+            if close_period is not None:
+                close_indices.append(idx)
+                close_names.append(name)
+                close_periods.append(close_period)
+                continue
+
+            hlc_period = _extract_timeperiod(name, kwargs, _HLC_FASTPATH_DEFAULTS)
+            if hlc_period is not None and high_arr is not None and low_arr is not None:
+                hlc_indices.append(idx)
+                hlc_names.append(name)
+                hlc_periods.append(hlc_period)
+                continue
+
+    if close_names:
+        grouped = _rust_run_close_indicators(
+            close_arr, close_names, close_periods, parallel
+        )
+        for idx, value in zip(close_indices, grouped):
+            results[idx] = np.asarray(value, dtype=np.float64)
+
+    if hlc_names and high_arr is not None and low_arr is not None:
+        grouped = _rust_run_hlc_indicators(
+            high_arr, low_arr, close_arr, hlc_names, hlc_periods, parallel
+        )
+        for idx, value in zip(hlc_indices, grouped):
+            results[idx] = np.asarray(value, dtype=np.float64)
+
+    for idx, (name, kwargs, _) in enumerate(normalized):
+        if results[idx] is not None:
+            continue
+        try:
+            results[idx] = _registry_run(name, close_arr, **kwargs)
+            continue
+        except (TypeError, Exception):
+            pass
+
+        if high_arr is not None and low_arr is not None:
+            try:
+                results[idx] = _registry_run(
+                    name, high_arr, low_arr, close_arr, **kwargs
+                )
+                continue
+            except Exception:
+                pass
+            if volume_arr is not None:
+                try:
+                    results[idx] = _registry_run(
+                        name, high_arr, low_arr, close_arr, volume_arr, **kwargs
+                    )
+                    continue
+                except Exception:
+                    pass
+
+        raise ValueError(
+            f"Cannot call indicator '{name}': insufficient data columns or incompatible parameters."
+        )
+
+    return [result for result in results]
 
 
 def batch_apply(

@@ -1,12 +1,13 @@
 {
   "name": "ferro-ta-wasm",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "WebAssembly bindings for ferro-ta technical analysis indicators",
   "main": "pkg/ferro_ta_wasm.js",
   "types": "pkg/ferro_ta_wasm.d.ts",
   "files": ["pkg"],
   "scripts": {
     "build": "wasm-pack build --target nodejs --out-dir pkg",
+    "bench": "node bench.js",
     "prepack": "npm run build && node -e \"require('fs').rmSync('pkg/.gitignore', { force: true })\"",
     "test": "wasm-pack test --node"
   },

@@ -360,10 +360,10 @@ def backtest(
     bar_returns[1:] = np.diff(c) / c[:-1]
 
     strategy_returns = positions * bar_returns
+    position_changed = np.concatenate([[False], positions[1:] != positions[:-1]])
 
     # Slippage: on each position change, reduce return by slippage_bps/10000 (one-way)
     if slippage_bps > 0:
-        position_changed = np.concatenate([[False], positions[1:] != positions[:-1]])
         strategy_returns = strategy_returns.copy()
         strategy_returns[position_changed] -= slippage_bps / 10_000.0
 
@@ -371,13 +371,18 @@ def backtest(
     if commission_per_trade <= 0:
         equity = np.cumprod(1.0 + strategy_returns)
     else:
-        equity = np.empty(len(c), dtype=np.float64)
-        equity[0] = 1.0
-        position_changed = np.concatenate([[False], positions[1:] != positions[:-1]])
-        for i in range(1, len(c)):
-            equity[i] = equity[i - 1] * (1.0 + strategy_returns[i])
-            if position_changed[i]:
-                equity[i] -= commission_per_trade
+        gross_equity = np.cumprod(1.0 + strategy_returns)
+        if np.any(gross_equity == 0.0):
+            equity = np.empty(len(c), dtype=np.float64)
+            equity[0] = 1.0
+            for i in range(1, len(c)):
+                equity[i] = equity[i - 1] * (1.0 + strategy_returns[i])
+                if position_changed[i]:
+                    equity[i] -= commission_per_trade
+        else:
+            commissions = position_changed.astype(np.float64) * commission_per_trade
+            discounted_commissions = np.cumsum(commissions / gross_equity)
+            equity = gross_equity * (1.0 - discounted_commissions)
 
     return BacktestResult(
         signals=signals,

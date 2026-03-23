@@ -1,0 +1,62 @@
+{
+  "metadata": {
+    "suite": "perf_contract",
+    "runtime": {
+      "generated_at_utc": "2026-03-23T20:26:40.776130+00:00",
+      "python_version": "3.13.5",
+      "platform": "macOS-26.3.1-arm64-arm-64bit-Mach-O",
+      "machine": "arm64",
+      "processor": "arm"
+    },
+    "git": {
+      "commit": "9011250f992119170242cf17a67834c67b91bcdb",
+      "dirty": true,
+      "branch": "feat/performace-1.0.2"
+    },
+    "fixtures": [
+      {
+        "path": "/Users/pratikbhadane/Work/Projects/ferro-ta/benchmarks/fixtures/canonical_ohlcv.npz",
+        "size_bytes": 75586,
+        "sha256": "60192f8349fb06cd59ef7f70fd77aa8280399e819d7cc5eed3ca95cf5ee1a89c"
+      }
+    ],
+    "output_dir": "benchmarks/artifacts/latest"
+  },
+  "artifacts": {
+    "indicator_latency": {
+      "path": "benchmarks/artifacts/latest/indicator_latency.json",
+      "size_bytes": 3217,
+      "sha256": "43b88a50a4d7f91e30ff8e57dbf859ae5e76ecabaaf05cfcb7d8db67df920f7f"
+    },
+    "batch": {
+      "path": "benchmarks/artifacts/latest/batch.json",
+      "size_bytes": 1701,
+      "sha256": "bc900c885c48ec1903ea4870ca1de8cb9f33c609d2cefa4688cbdd18cb977f11"
+    },
+    "streaming": {
+      "path": "benchmarks/artifacts/latest/streaming.json",
+      "size_bytes": 1944,
+      "sha256": "925ba1be66d0d499daa81dfc148b03ac325ad685ce0c71e28ca1fc6927f16415"
+    },
+    "runtime_hotspots": {
+      "path": "benchmarks/artifacts/latest/runtime_hotspots.json",
+      "size_bytes": 2366,
+      "sha256": "920553b14b545f211b119c099ec59885de8b9e8056271cb2d2ac34c0c69b0906"
+    },
+    "simd": {
+      "path": "benchmarks/artifacts/latest/simd.json",
+      "size_bytes": 7700,
+      "sha256": "d48943a5dfcf4f8d8d2ca42f0004f02f9fc894de7477791b686231da665e3335"
+    },
+    "benchmark_vs_talib": {
+      "path": "benchmarks/artifacts/latest/benchmark_vs_talib.json",
+      "size_bytes": 5923,
+      "sha256": "8a4e847517f1334255353982a5266c0323bf433a1eb78dafeff808d5ad3bf7f0"
+    },
+    "wasm": {
+      "path": "benchmarks/artifacts/latest/wasm.json",
+      "size_bytes": 935,
+      "sha256": "f31fd871990c44e24a2259d618ae40a52866d20b95aa6047af3d38b9371c2ab7"
+    }
+  }
+}

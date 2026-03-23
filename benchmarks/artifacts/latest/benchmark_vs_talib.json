@@ -1,0 +1,262 @@
+{
+  "schema_version": 1,
+  "command": "python benchmarks/bench_vs_talib.py",
+  "n_warmup": 1,
+  "n_runs": 7,
+  "sizes": [
+    10000,
+    100000
+  ],
+  "talib_available": true,
+  "runtime": {
+    "generated_at_utc": "2026-03-23T20:26:40.738132+00:00",
+    "python_version": "3.13.5",
+    "platform": "macOS-26.3.1-arm64-arm-64bit-Mach-O",
+    "machine": "arm64"
+  },
+  "git": {
+    "commit": "9011250f992119170242cf17a67834c67b91bcdb",
+    "dirty": true
+  },
+  "summary": {
+    "total_rows": 24,
+    "by_size": [
+      {
+        "size": 10000,
+        "rows": 12,
+        "wins": 8,
+        "win_rate": 0.6666666666666666,
+        "median_speedup": 1.0546,
+        "min_speedup": 0.7174,
+        "max_speedup": 2.0135
+      },
+      {
+        "size": 100000,
+        "rows": 12,
+        "wins": 7,
+        "win_rate": 0.5833333333333334,
+        "median_speedup": 1.0896,
+        "min_speedup": 0.4965,
+        "max_speedup": 3.6029
+      }
+    ]
+  },
+  "results": [
+    {
+      "indicator": "SMA",
+      "size": 10000,
+      "ferro_ta_ms": 0.0093,
+      "talib_ms": 0.0167,
+      "speedup": 1.7937,
+      "ferro_ta_m_bars_s": 1076.19,
+      "talib_m_bars_s": 599.99
+    },
+    {
+      "indicator": "SMA",
+      "size": 100000,
+      "ferro_ta_ms": 0.0765,
+      "talib_ms": 0.1346,
+      "speedup": 1.7589,
+      "ferro_ta_m_bars_s": 1306.49,
+      "talib_m_bars_s": 742.8
+    },
+    {
+      "indicator": "EMA",
+      "size": 10000,
+      "ferro_ta_ms": 0.02,
+      "talib_ms": 0.0214,
+      "speedup": 1.0687,
+      "ferro_ta_m_bars_s": 500.0,
+      "talib_m_bars_s": 467.84
+    },
+    {
+      "indicator": "EMA",
+      "size": 100000,
+      "ferro_ta_ms": 0.1998,
+      "talib_ms": 0.1883,
+      "speedup": 0.9425,
+      "ferro_ta_m_bars_s": 500.42,
+      "talib_m_bars_s": 530.97
+    },
+    {
+      "indicator": "RSI",
+      "size": 10000,
+      "ferro_ta_ms": 0.0475,
+      "talib_ms": 0.048,
+      "speedup": 1.0088,
+      "ferro_ta_m_bars_s": 210.34,
+      "talib_m_bars_s": 208.52
+    },
+    {
+      "indicator": "RSI",
+      "size": 100000,
+      "ferro_ta_ms": 0.4804,
+      "talib_ms": 0.4635,
+      "speedup": 0.9647,
+      "ferro_ta_m_bars_s": 208.15,
+      "talib_m_bars_s": 215.77
+    },
+    {
+      "indicator": "BBANDS",
+      "size": 10000,
+      "ferro_ta_ms": 0.0215,
+      "talib_ms": 0.0433,
+      "speedup": 2.0135,
+      "ferro_ta_m_bars_s": 465.12,
+      "talib_m_bars_s": 230.99
+    },
+    {
+      "indicator": "BBANDS",
+      "size": 100000,
+      "ferro_ta_ms": 0.1686,
+      "talib_ms": 0.4275,
+      "speedup": 2.535,
+      "ferro_ta_m_bars_s": 593.03,
+      "talib_m_bars_s": 233.94
+    },
+    {
+      "indicator": "MACD",
+      "size": 10000,
+      "ferro_ta_ms": 0.0495,
+      "talib_ms": 0.065,
+      "speedup": 1.3134,
+      "ferro_ta_m_bars_s": 202.19,
+      "talib_m_bars_s": 153.95
+    },
+    {
+      "indicator": "MACD",
+      "size": 100000,
+      "ferro_ta_ms": 0.4459,
+      "talib_ms": 0.6334,
+      "speedup": 1.4205,
+      "ferro_ta_m_bars_s": 224.28,
+      "talib_m_bars_s": 157.88
+    },
+    {
+      "indicator": "ATR",
+      "size": 10000,
+      "ferro_ta_ms": 0.0483,
+      "talib_ms": 0.0502,
+      "speedup": 1.0405,
+      "ferro_ta_m_bars_s": 207.07,
+      "talib_m_bars_s": 199.0
+    },
+    {
+      "indicator": "ATR",
+      "size": 100000,
+      "ferro_ta_ms": 0.4705,
+      "talib_ms": 0.4788,
+      "speedup": 1.0174,
+      "ferro_ta_m_bars_s": 212.52,
+      "talib_m_bars_s": 208.88
+    },
+    {
+      "indicator": "STOCH",
+      "size": 10000,
+      "ferro_ta_ms": 0.0915,
+      "talib_ms": 0.066,
+      "speedup": 0.721,
+      "ferro_ta_m_bars_s": 109.24,
+      "talib_m_bars_s": 151.52
+    },
+    {
+      "indicator": "STOCH",
+      "size": 100000,
+      "ferro_ta_ms": 1.5285,
+      "talib_ms": 0.7589,
+      "speedup": 0.4965,
+      "ferro_ta_m_bars_s": 65.42,
+      "talib_m_bars_s": 131.77
+    },
+    {
+      "indicator": "ADX",
+      "size": 10000,
+      "ferro_ta_ms": 0.0692,
+      "talib_ms": 0.0522,
+      "speedup": 0.7538,
+      "ferro_ta_m_bars_s": 144.49,
+      "talib_m_bars_s": 191.7
+    },
+    {
+      "indicator": "ADX",
+      "size": 100000,
+      "ferro_ta_ms": 0.6209,
+      "talib_ms": 0.5731,
+      "speedup": 0.923,
+      "ferro_ta_m_bars_s": 161.05,
+      "talib_m_bars_s": 174.49
+    },
+    {
+      "indicator": "CCI",
+      "size": 10000,
+      "ferro_ta_ms": 0.0731,
+      "talib_ms": 0.0829,
+      "speedup": 1.1333,
+      "ferro_ta_m_bars_s": 136.75,
+      "talib_m_bars_s": 120.66
+    },
+    {
+      "indicator": "CCI",
+      "size": 100000,
+      "ferro_ta_ms": 0.7028,
+      "talib_ms": 0.8164,
+      "speedup": 1.1617,
+      "ferro_ta_m_bars_s": 142.3,
+      "talib_m_bars_s": 122.49
+    },
+    {
+      "indicator": "OBV",
+      "size": 10000,
+      "ferro_ta_ms": 0.0156,
+      "talib_ms": 0.0112,
+      "speedup": 0.7174,
+      "ferro_ta_m_bars_s": 640.0,
+      "talib_m_bars_s": 892.14
+    },
+    {
+      "indicator": "OBV",
+      "size": 100000,
+      "ferro_ta_ms": 0.2953,
+      "talib_ms": 0.2808,
+      "speedup": 0.9509,
+      "ferro_ta_m_bars_s": 338.6,
+      "talib_m_bars_s": 356.08
+    },
+    {
+      "indicator": "MFI",
+      "size": 10000,
+      "ferro_ta_ms": 0.0239,
+      "talib_ms": 0.0203,
+      "speedup": 0.8516,
+      "ferro_ta_m_bars_s": 418.85,
+      "talib_m_bars_s": 491.81
+    },
+    {
+      "indicator": "MFI",
+      "size": 100000,
+      "ferro_ta_ms": 0.1721,
+      "talib_ms": 0.62,
+      "speedup": 3.6029,
+      "ferro_ta_m_bars_s": 581.11,
+      "talib_m_bars_s": 161.29
+    },
+    {
+      "indicator": "WMA",
+      "size": 10000,
+      "ferro_ta_ms": 0.0105,
+      "talib_ms": 0.0203,
+      "speedup": 1.9363,
+      "ferro_ta_m_bars_s": 956.21,
+      "talib_m_bars_s": 493.83
+    },
+    {
+      "indicator": "WMA",
+      "size": 100000,
+      "ferro_ta_ms": 0.0869,
+      "talib_ms": 0.1868,
+      "speedup": 2.1506,
+      "ferro_ta_m_bars_s": 1151.08,
+      "talib_m_bars_s": 535.24
+    }
+  ]
+}

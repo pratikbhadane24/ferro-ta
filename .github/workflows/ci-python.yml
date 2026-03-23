@@ -125,3 +125,44 @@ jobs:
         with:
           name: benchmark-vs-talib
           path: benchmark_vs_talib.json
+
+  perf-smoke:
+    name: Performance smoke and contracts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install maturin and perf dependencies
+        run: |
+          pip install maturin numpy pytest
+
+      - name: Build and install ferro_ta
+        run: |
+          maturin build --release --out dist
+          pip install dist/*.whl
+
+      - name: Generate reproducible perf artifacts
+        run: |
+          python benchmarks/run_perf_contract.py \
+            --output-dir perf-contract \
+            --skip-talib \
+            --skip-simd \
+            --batch-samples 20000 \
+            --batch-series 32 \
+            --streaming-bars 20000 \
+            --price-bars 20000 \
+            --iv-bars 50000
+
+      - name: Enforce hotspot regression policy
+        run: python benchmarks/check_hotspot_regression.py --input perf-contract/runtime_hotspots.json
+
+      - name: Upload perf artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: perf-contract
+          path: perf-contract/

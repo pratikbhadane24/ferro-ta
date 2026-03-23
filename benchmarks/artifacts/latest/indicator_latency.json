@@ -1,0 +1,163 @@
+{
+  "metadata": {
+    "suite": "indicator_latency",
+    "runtime": {
+      "generated_at_utc": "2026-03-23T20:25:52.160357+00:00",
+      "python_version": "3.13.5",
+      "platform": "macOS-26.3.1-arm64-arm-64bit-Mach-O",
+      "machine": "arm64",
+      "processor": "arm"
+    },
+    "git": {
+      "commit": "9011250f992119170242cf17a67834c67b91bcdb",
+      "dirty": true,
+      "branch": "feat/performace-1.0.2"
+    },
+    "fixtures": [
+      {
+        "path": "/Users/pratikbhadane/Work/Projects/ferro-ta/benchmarks/fixtures/canonical_ohlcv.npz",
+        "size_bytes": 75586,
+        "sha256": "60192f8349fb06cd59ef7f70fd77aa8280399e819d7cc5eed3ca95cf5ee1a89c"
+      }
+    ],
+    "dataset": {
+      "fixture": "/Users/pratikbhadane/Work/Projects/ferro-ta/benchmarks/fixtures/canonical_ohlcv.npz",
+      "bars": 2000,
+      "rounds": 5
+    }
+  },
+  "results": [
+    {
+      "name": "VAR_20",
+      "inputs": "close",
+      "kwargs": {
+        "timeperiod": 20
+      },
+      "elapsed_ms": 0.0229
+    },
+    {
+      "name": "STOCH",
+      "inputs": "hlc",
+      "kwargs": {},
+      "elapsed_ms": 0.0201
+    },
+    {
+      "name": "WILLR_14",
+      "inputs": "hlc",
+      "kwargs": {
+        "timeperiod": 14
+      },
+      "elapsed_ms": 0.0201
+    },
+    {
+      "name": "CCI_14",
+      "inputs": "hlc",
+      "kwargs": {
+        "timeperiod": 14
+      },
+      "elapsed_ms": 0.0163
+    },
+    {
+      "name": "ADX_14",
+      "inputs": "hlc",
+      "kwargs": {
+        "timeperiod": 14
+      },
+      "elapsed_ms": 0.015
+    },
+    {
+      "name": "MACD",
+      "inputs": "close",
+      "kwargs": {},
+      "elapsed_ms": 0.0135
+    },
+    {
+      "name": "ATR_14",
+      "inputs": "hlc",
+      "kwargs": {
+        "timeperiod": 14
+      },
+      "elapsed_ms": 0.0105
+    },
+    {
+      "name": "RSI_14",
+      "inputs": "close",
+      "kwargs": {
+        "timeperiod": 14
+      },
+      "elapsed_ms": 0.0098
+    },
+    {
+      "name": "STDDEV_20",
+      "inputs": "close",
+      "kwargs": {
+        "timeperiod": 20
+      },
+      "elapsed_ms": 0.009
+    },
+    {
+      "name": "BETA_5",
+      "inputs": "pair_hl",
+      "kwargs": {
+        "timeperiod": 5
+      },
+      "elapsed_ms": 0.0083
+    },
+    {
+      "name": "CORREL_30",
+      "inputs": "pair_hl",
+      "kwargs": {
+        "timeperiod": 30
+      },
+      "elapsed_ms": 0.0076
+    },
+    {
+      "name": "BBANDS_20",
+      "inputs": "close",
+      "kwargs": {
+        "timeperiod": 20
+      },
+      "elapsed_ms": 0.0055
+    },
+    {
+      "name": "LINEARREG_14",
+      "inputs": "close",
+      "kwargs": {
+        "timeperiod": 14
+      },
+      "elapsed_ms": 0.0055
+    },
+    {
+      "name": "TSF_14",
+      "inputs": "close",
+      "kwargs": {
+        "timeperiod": 14
+      },
+      "elapsed_ms": 0.0054
+    },
+    {
+      "name": "LINEARREG_SLOPE_14",
+      "inputs": "close",
+      "kwargs": {
+        "timeperiod": 14
+      },
+      "elapsed_ms": 0.0052
+    },
+    {
+      "name": "EMA_20",
+      "inputs": "close",
+      "kwargs": {
+        "timeperiod": 20
+      },
+      "elapsed_ms": 0.005
+    },
+    {
+      "name": "SMA_20",
+      "inputs": "close",
+      "kwargs": {
+        "timeperiod": 20
+      },
+      "elapsed_ms": 0.0026
+    }
+  ]
+}

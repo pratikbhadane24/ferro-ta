@@ -33,6 +33,7 @@ import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
 from ferro_ta._ferro_ta import bottom_n_indices as _rust_bottom_n
+from ferro_ta._ferro_ta import compose_rank as _rust_compose_rank
 from ferro_ta._ferro_ta import compose_weighted as _rust_compose_weighted
 from ferro_ta._ferro_ta import rank_series as _rust_rank_series
 from ferro_ta._ferro_ta import top_n_indices as _rust_top_n
@@ -131,13 +132,7 @@ def compose(
         w = np.full(n_sigs, 1.0 / n_sigs)
         return _rust_compose_weighted(arr, w)
     elif method == "rank":
-        # Replace each column with its rank, then sum (ensure contiguous slices)
-        ranked = np.column_stack(
-            [_rust_rank_series(np.ascontiguousarray(arr[:, j])) for j in range(n_sigs)]
-        )
-        ranked = np.ascontiguousarray(ranked)
-        w = np.full(n_sigs, 1.0)
-        return _rust_compose_weighted(ranked, w)
+        return _rust_compose_rank(arr)
     else:
         # weighted (default)
         if weights is None:

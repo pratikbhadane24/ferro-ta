@@ -11,7 +11,7 @@ Sub-packages
 * :mod:`ferro_ta.indicators` — All indicator functions (overlap, momentum, volume, volatility, statistic, cycle, pattern, price_transform, math_ops, extended)
 * :mod:`ferro_ta.core`       — Core utilities (exceptions, config, logging, registry, raw)
 * :mod:`ferro_ta.data`       — Data utilities (streaming, batch, chunked, resampling, aggregation, adapters)
-* :mod:`ferro_ta.analysis`   — Analysis tools (portfolio, backtest, regime, cross_asset, attribution, signals, features, crypto, options)
+* :mod:`ferro_ta.analysis`   — Analysis tools (portfolio, backtest, regime, cross_asset, attribution, signals, features, crypto, options, futures, derivatives payoff)
 * :mod:`ferro_ta.tools`      — Developer tools (tools, viz, dashboard, alerts, dsl, pipeline, workflow, api_info, gpu)
 
 Sub-modules (also accessible via sub-packages above)
@@ -35,6 +35,8 @@ Sub-modules (also accessible via sub-packages above)
 * :mod:`ferro_ta.analysis.portfolio`         — Portfolio and multi-asset analytics
 * :mod:`ferro_ta.analysis.cross_asset`       — Cross-asset and relative strength
 * :mod:`ferro_ta.analysis.features`          — Feature matrix and ML readiness
+* :mod:`ferro_ta.analysis.options`           — Options pricing, Greeks, IV, smile, and chain analytics
+* :mod:`ferro_ta.analysis.futures`           — Futures basis, carry, roll, and curve analytics
 * :mod:`ferro_ta.tools.viz`                  — Charting and visualisation API
 * :mod:`ferro_ta.data.adapters`              — Market data adapters
 
@@ -525,6 +527,7 @@ from ferro_ta.data.batch import (  # noqa: F401, E402
     batch_ema,
     batch_rsi,
     batch_sma,
+    compute_many,
 )
 from ferro_ta.data.chunked import (  # noqa: F401, E402
     chunk_apply,

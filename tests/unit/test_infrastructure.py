@@ -297,6 +297,40 @@ class TestBacktest:
             result_no_slip.n_trades == 0
         )
 
+    def test_commission_matches_reference_loop(self):
+        close = np.array([100.0, 102.0, 101.0, 104.0, 103.0, 105.0], dtype=np.float64)
+        raw_signals = np.array([0.0, 1.0, 1.0, -1.0, -1.0, 0.0], dtype=np.float64)
+
+        def strategy(_, **__):
+            return raw_signals
+
+        commission = 0.02
+        result = backtest(close, strategy=strategy, commission_per_trade=commission)
+
+        expected_positions = np.array(
+            [0.0, 0.0, 1.0, 1.0, -1.0, -1.0], dtype=np.float64
+        )
+        expected_returns = np.empty_like(close)
+        expected_returns[0] = 0.0
+        expected_returns[1:] = np.diff(close) / close[:-1]
+        expected_strategy_returns = expected_positions * expected_returns
+        position_changed = np.concatenate(
+            [[False], expected_positions[1:] != expected_positions[:-1]]
+        )
+
+        expected_equity = np.empty_like(close)
+        expected_equity[0] = 1.0
+        for i in range(1, len(close)):
+            expected_equity[i] = expected_equity[i - 1] * (
+                1.0 + expected_strategy_returns[i]
+            )
+            if position_changed[i]:
+                expected_equity[i] -= commission
+
+        np.testing.assert_allclose(result.positions, expected_positions)
+        np.testing.assert_allclose(result.strategy_returns, expected_strategy_returns)
+        np.testing.assert_allclose(result.equity, expected_equity)
+
 
 # ---------------------------------------------------------------------------
 # Plugin / Registry
@@ -509,7 +543,13 @@ class TestChoppinessIndex:
 # ---------------------------------------------------------------------------
 
 from ferro_ta import EMA, RSI, SMA
-from ferro_ta.data.batch import batch_apply, batch_ema, batch_rsi, batch_sma
+from ferro_ta.data.batch import (
+    batch_apply,
+    batch_atr,
+    batch_ema,
+    batch_rsi,
+    batch_sma,
+)
 
 
 class TestBatchSMA:
@@ -585,6 +625,15 @@ class TestBatchApply:
     def test_3d_raises(self):
         with pytest.raises(ValueError, match="1-D or 2-D"):
             batch_apply(np.zeros((5, 5, 5)), SMA, timeperiod=3)
+
+
+class TestBatchShapeValidation:
+    def test_batch_atr_shape_mismatch_raises(self):
+        high = np.ones((5, 2), dtype=np.float64)
+        low = np.ones((4, 2), dtype=np.float64)
+        close = np.ones((5, 2), dtype=np.float64)
+        with pytest.raises(ValueError, match="shape"):
+            batch_atr(high, low, close, timeperiod=3)
 
 
 # ---------------------------------------------------------------------------

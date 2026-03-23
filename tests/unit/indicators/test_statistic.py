@@ -27,6 +27,68 @@ LINDATA = np.arange(1.0, 6.0)  # [1,2,3,4,5]
 CONSTDATA = np.ones(10)  # all 1.0
 
 
+def _naive_linreg_window(window: np.ndarray) -> tuple[float, float]:
+    x = np.arange(len(window), dtype=np.float64)
+    sum_x = float(np.sum(x))
+    sum_y = float(np.sum(window))
+    sum_xy = float(np.sum(x * window))
+    sum_x2 = float(np.sum(x * x))
+    n = float(len(window))
+    denom = n * sum_x2 - sum_x * sum_x
+    slope = (n * sum_xy - sum_x * sum_y) / denom if denom != 0.0 else 0.0
+    intercept = (sum_y - slope * sum_x) / n
+    return slope, intercept
+
+
+def _naive_linearreg(series: np.ndarray, timeperiod: int, x_value: float) -> np.ndarray:
+    out = np.full(len(series), np.nan, dtype=np.float64)
+    for end in range(timeperiod - 1, len(series)):
+        slope, intercept = _naive_linreg_window(series[end + 1 - timeperiod : end + 1])
+        out[end] = intercept + slope * x_value
+    return out
+
+
+def _naive_correl(x: np.ndarray, y: np.ndarray, timeperiod: int) -> np.ndarray:
+    out = np.full(len(x), np.nan, dtype=np.float64)
+    for end in range(timeperiod - 1, len(x)):
+        x_window = x[end + 1 - timeperiod : end + 1]
+        y_window = y[end + 1 - timeperiod : end + 1]
+        mean_x = float(np.sum(x_window)) / timeperiod
+        mean_y = float(np.sum(y_window)) / timeperiod
+        cov = float(np.sum((x_window - mean_x) * (y_window - mean_y)))
+        std_x = float(np.sqrt(np.sum((x_window - mean_x) ** 2)))
+        std_y = float(np.sqrt(np.sum((y_window - mean_y) ** 2)))
+        denom = std_x * std_y
+        out[end] = cov / denom if denom != 0.0 else np.nan
+    return out
+
+
+def _naive_beta(x: np.ndarray, y: np.ndarray, timeperiod: int) -> np.ndarray:
+    out = np.full(len(x), np.nan, dtype=np.float64)
+    for end in range(timeperiod, len(x)):
+        start = end - timeperiod
+        rx = np.array(
+            [
+                x[idx + 1] / x[idx] - 1.0 if x[idx] != 0.0 else np.nan
+                for idx in range(start, end)
+            ],
+            dtype=np.float64,
+        )
+        ry = np.array(
+            [
+                y[idx + 1] / y[idx] - 1.0 if y[idx] != 0.0 else np.nan
+                for idx in range(start, end)
+            ],
+            dtype=np.float64,
+        )
+        mean_x = float(np.sum(rx)) / timeperiod
+        mean_y = float(np.sum(ry)) / timeperiod
+        cov = float(np.sum((rx - mean_x) * (ry - mean_y))) / timeperiod
+        var_x = float(np.sum((rx - mean_x) ** 2)) / timeperiod
+        out[end] = cov / var_x if var_x != 0.0 else np.nan
+    return out
+
+
 # ---------------------------------------------------------------------------
 # STDDEV
 # ---------------------------------------------------------------------------
@@ -99,6 +161,11 @@ class TestLINEARREG:
 
     def test_length(self):
         assert len(LINEARREG(_A, 14)) == N
+
+    def test_matches_naive_regression(self):
+        expected = _naive_linearreg(_A, timeperiod=14, x_value=13.0)
+        result = LINEARREG(_A, timeperiod=14)
+        np.testing.assert_allclose(result, expected, equal_nan=True)
 
 
 # ---------------------------------------------------------------------------
@@ -179,6 +246,11 @@ class TestBETA:
         valid = result[~np.isnan(result)]
         assert np.all(np.isfinite(valid))
 
+    def test_matches_naive_beta(self):
+        expected = _naive_beta(_A, _B, timeperiod=5)
+        result = BETA(_A, _B, timeperiod=5)
+        np.testing.assert_allclose(result, expected, equal_nan=True)
+
 
 # ---------------------------------------------------------------------------
 # CORREL
@@ -205,6 +277,11 @@ class TestCOREL:
     def test_length(self):
         assert len(CORREL(_A, _B, 10)) == N
 
+    def test_matches_naive_correlation(self):
+        expected = _naive_correl(_A, _B, timeperiod=10)
+        result = CORREL(_A, _B, timeperiod=10)
+        np.testing.assert_allclose(result, expected, equal_nan=True)
+
 
 # ---------------------------------------------------------------------------
 # TSF
@@ -226,3 +303,8 @@ class TestTSF:
 
     def test_length(self):
         assert len(TSF(_A, 14)) == N
+
+    def test_matches_naive_tsf(self):
+        expected = _naive_linearreg(_A, timeperiod=14, x_value=14.0)
+        result = TSF(_A, timeperiod=14)
+        np.testing.assert_allclose(result, expected, equal_nan=True)
