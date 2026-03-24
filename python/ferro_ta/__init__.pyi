@@ -13,6 +13,8 @@ from numpy.typing import ArrayLike, NDArray
 
 _F = TypeVar("_F", bound=Callable[..., Any])
 
+__version__: str
+
 # ---------------------------------------------------------------------------
 # Overlap Studies
 # ---------------------------------------------------------------------------
@@ -739,8 +741,10 @@ class FerroTAInputError(FerroTAError, ValueError):
 # API discovery (ferro_ta.api_info)
 # ---------------------------------------------------------------------------
 
+def about() -> dict[str, Any]: ...
 def indicators(category: str | None = None) -> list[dict[str, Any]]: ...
 def info(func_or_name: Callable[..., Any] | str) -> dict[str, Any]: ...
+def methods(category: str | None = None) -> list[dict[str, Any]]: ...
 
 # ---------------------------------------------------------------------------
 # Logging utilities (ferro_ta.logging_utils)

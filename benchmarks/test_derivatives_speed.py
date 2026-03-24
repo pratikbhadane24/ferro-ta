@@ -10,11 +10,27 @@ Run with:
 from __future__ import annotations
 
 import importlib.util
+import sys
+from pathlib import Path
 
 import numpy as np
 import pytest
 
-from ferro_ta.analysis.options import implied_volatility, option_price
+# Ensure direct benchmark test runs can import local package from `python/`.
+ROOT = Path(__file__).resolve().parents[1]
+PYTHON_SRC = ROOT / "python"
+if str(PYTHON_SRC) not in sys.path:
+    sys.path.insert(0, str(PYTHON_SRC))
+
+HAS_FERRO_EXTENSION = True
+try:
+    from ferro_ta.analysis.options import implied_volatility, option_price
+except ModuleNotFoundError:
+    HAS_FERRO_EXTENSION = False
+
+pytestmark = pytest.mark.skipif(
+    not HAS_FERRO_EXTENSION, reason="ferro_ta extension is not built"
+)
 
 
 def _sample_chain(n: int = 1000) -> tuple[np.ndarray, ...]:

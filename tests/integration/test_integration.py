@@ -233,7 +233,9 @@ def test_methods_returns_public_callables():
     result = ferro_ta.methods()
     assert isinstance(result, list)
     assert any(d["name"] == "SMA" and d["category"] == "top_level" for d in result)
-    assert any(d["name"] == "option_price" and d["category"] == "options" for d in result)
+    assert any(
+        d["name"] == "option_price" and d["category"] == "options" for d in result
+    )
 
 
 def test_about_reports_version_and_counts():

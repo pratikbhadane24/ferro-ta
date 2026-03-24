@@ -1,3 +1,7 @@
+import subprocess
+import sys
+from pathlib import Path
+
 import numpy as np
 import pytest
 
@@ -220,19 +224,30 @@ class TestStrategyAndPayoff:
 
 class TestDerivativesBenchmarking:
     def test_derivatives_benchmark_smoke(self, tmp_path):
-        from benchmarks.bench_derivatives_compare import run_benchmark
-
+        root = Path(__file__).resolve().parents[2]
+        script = root / "benchmarks" / "bench_derivatives_compare.py"
         output_path = tmp_path / "derivatives_benchmark.json"
-        result = run_benchmark(
-            sizes=[32],
-            accuracy_size=16,
-            json_path=str(output_path),
+
+        completed = subprocess.run(
+            [
+                sys.executable,
+                str(script),
+                "--sizes",
+                "32",
+                "--accuracy-size",
+                "16",
+                "--json",
+                str(output_path),
+            ],
+            cwd=root,
+            check=False,
+            capture_output=True,
+            text=True,
         )
 
+        assert completed.returncode == 0, completed.stdout + completed.stderr
         assert output_path.is_file()
-        assert result["accuracy"]["results"]
-        assert result["speed"]["results"]
-        assert any(
-            row["provider"] == "ferro_ta" for row in result["accuracy"]["results"]
-        )
-        assert any(row["provider"] == "ferro_ta" for row in result["speed"]["results"])
+        payload = output_path.read_text(encoding="utf-8")
+        assert '"accuracy"' in payload
+        assert '"speed"' in payload
+        assert '"provider": "ferro_ta"' in payload

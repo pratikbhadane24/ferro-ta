@@ -59,11 +59,11 @@ array([ nan,  nan, 11. , 12. , 13. , 13.5, 13.33...])
 
 from __future__ import annotations
 
+import re as _re
+import sys as _sys
 from importlib.metadata import PackageNotFoundError as _PackageNotFoundError
 from importlib.metadata import version as _dist_version
 from pathlib import Path as _Path
-import re as _re
-import sys as _sys
 
 try:
     import tomllib as _tomllib

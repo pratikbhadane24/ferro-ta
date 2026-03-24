@@ -104,6 +104,7 @@ ignore = ["E501", "UP006", "UP045", "UP007"]
 "tests/unit/*" = ["N801", "N802", "N806", "E402", "E741", "F811"]
 "tests/integration/*" = ["N801", "N802", "N806", "E402", "E741", "F811"]
 "python/ferro_ta/*.py" = ["N802"]  # Public API: SMA, RSI, ATR, etc.
+"python/ferro_ta/__init__.py" = ["E402", "N802"]  # Re-export surface by design
 "python/ferro_ta/__init__.pyi" = ["N802", "E402"]
 
 [tool.ruff.format]
