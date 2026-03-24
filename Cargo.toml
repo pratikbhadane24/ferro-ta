@@ -7,7 +7,14 @@ resolver = "2"
 name = "ferro_ta"
 version = "1.0.3"
 edition = "2021"
+description = "Rust-powered Python technical analysis library with a TA-Lib-compatible API"
 license = "MIT"
+readme = "README.md"
+repository = "https://github.com/pratikbhadane24/ferro-ta"
+homepage = "https://github.com/pratikbhadane24/ferro-ta#readme"
+documentation = "https://pratikbhadane24.github.io/ferro-ta/"
+keywords = ["technical-analysis", "trading", "indicators", "finance", "ta-lib"]
+categories = ["finance", "mathematics"]
 publish = false
 
 [lib]
