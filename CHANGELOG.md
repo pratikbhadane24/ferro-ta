@@ -9,6 +9,36 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.0.4] — 2026-03-24
+
+### Added
+
+- The optional MCP server now exposes the broad public ferro-ta callable
+  surface, including exact top-level exports, non-top-level public analysis and
+  tooling functions, and generic stored-instance tools for stateful classes and
+  returned callables.
+- Added a dedicated `TA_LIB_COMPATIBILITY.md` document so the full TA-Lib
+  coverage matrix remains available without bloating the project homepage.
+
+### Changed
+
+- Reworked the root README into a shorter product-first landing page with a
+  compatibility summary and docs map, and refreshed MCP documentation to match
+  the expanded server behavior.
+- Updated the MCP implementation to use generated tool registration over the
+  public API while keeping the legacy lowercase aliases (`sma`, `ema`, `rsi`,
+  `macd`, `backtest`) available for existing clients.
+- Refreshed locked Python dependency resolutions for the latest low-risk direct
+  updates in this release cycle.
+
+### Fixed
+
+- The repository no longer tracks the stray `.coverage` artifact, and coverage
+  outputs are now ignored consistently.
+- MCP tests now cover generated tool discovery, stored-instance workflows, and
+  callable-reference execution paths so the broader server surface does not
+  regress silently.
+
 ## [1.0.3] — 2026-03-24
 
 ### Added
@@ -325,7 +355,8 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ---
 
-[Unreleased]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.0.3...HEAD
+[Unreleased]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.0.4...HEAD
+[1.0.4]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.0.0...v1.0.1

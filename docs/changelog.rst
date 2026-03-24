@@ -1,7 +1,20 @@
 Release Notes
 =============
 
-These docs track package version ``1.0.3``.
+These docs track package version ``1.0.4``.
+
+1.0.4 (2026-03-24)
+------------------
+
+- Expanded the optional MCP server from a small hand-written subset to the
+  broader public ferro-ta callable surface, including stateful class support
+  through stored-instance management tools.
+- Split the root documentation so the full TA-Lib compatibility matrix lives in
+  ``TA_LIB_COMPATIBILITY.md`` while the README stays product-first and shorter.
+- Refreshed MCP docs/tests and updated locked low-risk Python dependencies as
+  part of the release cleanup pass.
+- Stopped tracking the stray ``.coverage`` artifact and aligned ignore rules
+  for local coverage outputs.
 
 1.0.3 (2026-03-24)
 ------------------
