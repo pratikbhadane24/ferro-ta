@@ -1,0 +1,5178 @@
+{
+  "surfaces": {
+    "python": {
+      "indicator_count": 208,
+      "method_count": 447,
+      "categories": [
+        "aggregation",
+        "alerts",
+        "batch",
+        "crypto",
+        "cycle",
+        "extended",
+        "features",
+        "math_ops",
+        "momentum",
+        "overlap",
+        "pattern",
+        "portfolio",
+        "price_transform",
+        "regime",
+        "resampling",
+        "signals",
+        "statistic",
+        "streaming",
+        "volatility",
+        "volume"
+      ],
+      "indicators": [
+        {
+          "name": "ACOS",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "AD",
+          "category": "volume",
+          "module": "ferro_ta.indicators.volume",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ADD",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ADOSC",
+          "category": "volume",
+          "module": "ferro_ta.indicators.volume",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ADX",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ADXR",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "APO",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "AROON",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "AROONOSC",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ASIN",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ATAN",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ATR",
+          "category": "volatility",
+          "module": "ferro_ta.indicators.volatility",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "AVGPRICE",
+          "category": "price_transform",
+          "module": "ferro_ta.indicators.price_transform",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "AlertEvent",
+          "category": "alerts",
+          "module": "ferro_ta.tools.alerts",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "AlertManager",
+          "category": "alerts",
+          "module": "ferro_ta.tools.alerts",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "BBANDS",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "BETA",
+          "category": "statistic",
+          "module": "ferro_ta.indicators.statistic",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "BOP",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CCI",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDL2CROWS",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDL3BLACKCROWS",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDL3INSIDE",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDL3LINESTRIKE",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDL3OUTSIDE",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDL3STARSINSOUTH",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDL3WHITESOLDIERS",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLABANDONEDBABY",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLADVANCEBLOCK",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLBELTHOLD",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLBREAKAWAY",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLCLOSINGMARUBOZU",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLCONCEALBABYSWALL",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLCOUNTERATTACK",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLDARKCLOUDCOVER",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLDOJI",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLDOJISTAR",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLDRAGONFLYDOJI",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLENGULFING",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLEVENINGDOJISTAR",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLEVENINGSTAR",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLGAPSIDESIDEWHITE",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLGRAVESTONEDOJI",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLHAMMER",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLHANGINGMAN",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLHARAMI",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLHARAMICROSS",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLHIGHWAVE",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLHIKKAKE",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLHIKKAKEMOD",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLHOMINGPIGEON",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLIDENTICAL3CROWS",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLINNECK",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLINVERTEDHAMMER",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLKICKING",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLKICKINGBYLENGTH",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLLADDERBOTTOM",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLLONGLEGGEDDOJI",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLLONGLINE",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLMARUBOZU",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLMATCHINGLOW",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLMATHOLD",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLMORNINGDOJISTAR",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLMORNINGSTAR",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLONNECK",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLPIERCING",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLRICKSHAWMAN",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLRISEFALL3METHODS",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLSEPARATINGLINES",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLSHOOTINGSTAR",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLSHORTLINE",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLSPINNINGTOP",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLSTALLEDPATTERN",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLSTICKSANDWICH",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLTAKURI",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLTASUKIGAP",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLTHRUSTING",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLTRISTAR",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLUNIQUE3RIVER",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLUPSIDEGAP2CROWS",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLXSIDEGAP3METHODS",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CEIL",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CHANDELIER_EXIT",
+          "category": "extended",
+          "module": "ferro_ta.indicators.extended",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CHOPPINESS_INDEX",
+          "category": "extended",
+          "module": "ferro_ta.indicators.extended",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CMO",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CORREL",
+          "category": "statistic",
+          "module": "ferro_ta.indicators.statistic",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "COS",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "COSH",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "DEMA",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "DIV",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "DONCHIAN",
+          "category": "extended",
+          "module": "ferro_ta.indicators.extended",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "DX",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "EMA",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "EXP",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "FLOOR",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "HT_DCPERIOD",
+          "category": "cycle",
+          "module": "ferro_ta.indicators.cycle",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "HT_DCPHASE",
+          "category": "cycle",
+          "module": "ferro_ta.indicators.cycle",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "HT_PHASOR",
+          "category": "cycle",
+          "module": "ferro_ta.indicators.cycle",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "HT_SINE",
+          "category": "cycle",
+          "module": "ferro_ta.indicators.cycle",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "HT_TRENDLINE",
+          "category": "cycle",
+          "module": "ferro_ta.indicators.cycle",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "HT_TRENDMODE",
+          "category": "cycle",
+          "module": "ferro_ta.indicators.cycle",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "HULL_MA",
+          "category": "extended",
+          "module": "ferro_ta.indicators.extended",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ICHIMOKU",
+          "category": "extended",
+          "module": "ferro_ta.indicators.extended",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "KAMA",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "KELTNER_CHANNELS",
+          "category": "extended",
+          "module": "ferro_ta.indicators.extended",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "LINEARREG",
+          "category": "statistic",
+          "module": "ferro_ta.indicators.statistic",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "LINEARREG_ANGLE",
+          "category": "statistic",
+          "module": "ferro_ta.indicators.statistic",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "LINEARREG_INTERCEPT",
+          "category": "statistic",
+          "module": "ferro_ta.indicators.statistic",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "LINEARREG_SLOPE",
+          "category": "statistic",
+          "module": "ferro_ta.indicators.statistic",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "LN",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "LOG10",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MA",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MACD",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MACDEXT",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MACDFIX",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MAMA",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MAVP",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MAX",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MAXINDEX",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MEDPRICE",
+          "category": "price_transform",
+          "module": "ferro_ta.indicators.price_transform",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MFI",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MIDPOINT",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MIDPRICE",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MIN",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MININDEX",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MINUS_DI",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MINUS_DM",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MOM",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MULT",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "NATR",
+          "category": "volatility",
+          "module": "ferro_ta.indicators.volatility",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "OBV",
+          "category": "volume",
+          "module": "ferro_ta.indicators.volume",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "PIVOT_POINTS",
+          "category": "extended",
+          "module": "ferro_ta.indicators.extended",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "PLUS_DI",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "PLUS_DM",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "PPO",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ROC",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ROCP",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ROCR",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ROCR100",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "RSI",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "SAR",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "SAREXT",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "SIN",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "SINH",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "SMA",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "SQRT",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "STDDEV",
+          "category": "statistic",
+          "module": "ferro_ta.indicators.statistic",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "STOCH",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "STOCHF",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "STOCHRSI",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "SUB",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "SUM",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "SUPERTREND",
+          "category": "extended",
+          "module": "ferro_ta.indicators.extended",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingATR",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingBBands",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingEMA",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingMACD",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingRSI",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingSMA",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingStoch",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingSupertrend",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingVWAP",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "T3",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "TAN",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "TANH",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "TEMA",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "TRANGE",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "TRIMA",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "TRIX",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "TSF",
+          "category": "statistic",
+          "module": "ferro_ta.indicators.statistic",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "TYPPRICE",
+          "category": "price_transform",
+          "module": "ferro_ta.indicators.price_transform",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "TickAggregator",
+          "category": "aggregation",
+          "module": "ferro_ta.data.aggregation",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ULTOSC",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "VAR",
+          "category": "statistic",
+          "module": "ferro_ta.indicators.statistic",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "VWAP",
+          "category": "extended",
+          "module": "ferro_ta.indicators.extended",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "VWMA",
+          "category": "extended",
+          "module": "ferro_ta.indicators.extended",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "WCLPRICE",
+          "category": "price_transform",
+          "module": "ferro_ta.indicators.price_transform",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "WILLR",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "WMA",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "aggregate_ticks",
+          "category": "aggregation",
+          "module": "ferro_ta.data.aggregation",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "batch_apply",
+          "category": "batch",
+          "module": "ferro_ta.data.batch",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "batch_ema",
+          "category": "batch",
+          "module": "ferro_ta.data.batch",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "batch_rsi",
+          "category": "batch",
+          "module": "ferro_ta.data.batch",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "batch_sma",
+          "category": "batch",
+          "module": "ferro_ta.data.batch",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "beta",
+          "category": "portfolio",
+          "module": "ferro_ta.analysis.portfolio",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "check_cross",
+          "category": "alerts",
+          "module": "ferro_ta.tools.alerts",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "check_threshold",
+          "category": "alerts",
+          "module": "ferro_ta.tools.alerts",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "collect_alert_bars",
+          "category": "alerts",
+          "module": "ferro_ta.tools.alerts",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "compose",
+          "category": "signals",
+          "module": "ferro_ta.analysis.signals",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "compute_many",
+          "category": "batch",
+          "module": "ferro_ta.data.batch",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "continuous_bar_labels",
+          "category": "crypto",
+          "module": "ferro_ta.analysis.crypto",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "correlation_matrix",
+          "category": "portfolio",
+          "module": "ferro_ta.analysis.portfolio",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "detect_breaks_cusum",
+          "category": "regime",
+          "module": "ferro_ta.analysis.regime",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "drawdown",
+          "category": "portfolio",
+          "module": "ferro_ta.analysis.portfolio",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "feature_matrix",
+          "category": "features",
+          "module": "ferro_ta.analysis.features",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "funding_pnl",
+          "category": "crypto",
+          "module": "ferro_ta.analysis.crypto",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "multi_timeframe",
+          "category": "resampling",
+          "module": "ferro_ta.data.resampling",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "portfolio_volatility",
+          "category": "portfolio",
+          "module": "ferro_ta.analysis.portfolio",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "rank_signals",
+          "category": "signals",
+          "module": "ferro_ta.analysis.signals",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "regime",
+          "category": "regime",
+          "module": "ferro_ta.analysis.regime",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "regime_adx",
+          "category": "regime",
+          "module": "ferro_ta.analysis.regime",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "regime_combined",
+          "category": "regime",
+          "module": "ferro_ta.analysis.regime",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "resample",
+          "category": "resampling",
+          "module": "ferro_ta.data.resampling",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "resample_continuous",
+          "category": "crypto",
+          "module": "ferro_ta.analysis.crypto",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "rolling_variance_break",
+          "category": "regime",
+          "module": "ferro_ta.analysis.regime",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "screen",
+          "category": "signals",
+          "module": "ferro_ta.analysis.signals",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "session_boundaries",
+          "category": "crypto",
+          "module": "ferro_ta.analysis.crypto",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "structural_breaks",
+          "category": "regime",
+          "module": "ferro_ta.analysis.regime",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "volume_bars",
+          "category": "resampling",
+          "module": "ferro_ta.data.resampling",
+          "doc": "",
+          "params": []
+        }
+      ],
+      "methods": [
+        {
+          "name": "TickAggregator",
+          "category": "aggregation",
+          "module": "ferro_ta.data.aggregation",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "aggregate_ticks",
+          "category": "aggregation",
+          "module": "ferro_ta.data.aggregation",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "AlertEvent",
+          "category": "alerts",
+          "module": "ferro_ta.tools.alerts",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "AlertManager",
+          "category": "alerts",
+          "module": "ferro_ta.tools.alerts",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "check_cross",
+          "category": "alerts",
+          "module": "ferro_ta.tools.alerts",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "check_threshold",
+          "category": "alerts",
+          "module": "ferro_ta.tools.alerts",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "collect_alert_bars",
+          "category": "alerts",
+          "module": "ferro_ta.tools.alerts",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "TradeStats",
+          "category": "attribution",
+          "module": "ferro_ta.analysis.attribution",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "attribution_by_month",
+          "category": "attribution",
+          "module": "ferro_ta.analysis.attribution",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "attribution_by_signal",
+          "category": "attribution",
+          "module": "ferro_ta.analysis.attribution",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "from_backtest",
+          "category": "attribution",
+          "module": "ferro_ta.analysis.attribution",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "trade_stats",
+          "category": "attribution",
+          "module": "ferro_ta.analysis.attribution",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "batch_apply",
+          "category": "batch",
+          "module": "ferro_ta.data.batch",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "batch_ema",
+          "category": "batch",
+          "module": "ferro_ta.data.batch",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "batch_rsi",
+          "category": "batch",
+          "module": "ferro_ta.data.batch",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "batch_sma",
+          "category": "batch",
+          "module": "ferro_ta.data.batch",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "compute_many",
+          "category": "batch",
+          "module": "ferro_ta.data.batch",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ratio",
+          "category": "cross_asset",
+          "module": "ferro_ta.analysis.cross_asset",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "relative_strength",
+          "category": "cross_asset",
+          "module": "ferro_ta.analysis.cross_asset",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "rolling_beta",
+          "category": "cross_asset",
+          "module": "ferro_ta.analysis.cross_asset",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "spread",
+          "category": "cross_asset",
+          "module": "ferro_ta.analysis.cross_asset",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "zscore",
+          "category": "cross_asset",
+          "module": "ferro_ta.analysis.cross_asset",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "continuous_bar_labels",
+          "category": "crypto",
+          "module": "ferro_ta.analysis.crypto",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "funding_pnl",
+          "category": "crypto",
+          "module": "ferro_ta.analysis.crypto",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "resample_continuous",
+          "category": "crypto",
+          "module": "ferro_ta.analysis.crypto",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "session_boundaries",
+          "category": "crypto",
+          "module": "ferro_ta.analysis.crypto",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "HT_DCPERIOD",
+          "category": "cycle",
+          "module": "ferro_ta.indicators.cycle",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "HT_DCPHASE",
+          "category": "cycle",
+          "module": "ferro_ta.indicators.cycle",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "HT_PHASOR",
+          "category": "cycle",
+          "module": "ferro_ta.indicators.cycle",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "HT_SINE",
+          "category": "cycle",
+          "module": "ferro_ta.indicators.cycle",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "HT_TRENDLINE",
+          "category": "cycle",
+          "module": "ferro_ta.indicators.cycle",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "HT_TRENDMODE",
+          "category": "cycle",
+          "module": "ferro_ta.indicators.cycle",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "PayoffLeg",
+          "category": "derivatives_payoff",
+          "module": "ferro_ta.analysis.derivatives_payoff",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "aggregate_greeks",
+          "category": "derivatives_payoff",
+          "module": "ferro_ta.analysis.derivatives_payoff",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "futures_leg_payoff",
+          "category": "derivatives_payoff",
+          "module": "ferro_ta.analysis.derivatives_payoff",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "option_leg_payoff",
+          "category": "derivatives_payoff",
+          "module": "ferro_ta.analysis.derivatives_payoff",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "strategy_payoff",
+          "category": "derivatives_payoff",
+          "module": "ferro_ta.analysis.derivatives_payoff",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CHANDELIER_EXIT",
+          "category": "extended",
+          "module": "ferro_ta.indicators.extended",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CHOPPINESS_INDEX",
+          "category": "extended",
+          "module": "ferro_ta.indicators.extended",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "DONCHIAN",
+          "category": "extended",
+          "module": "ferro_ta.indicators.extended",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "HULL_MA",
+          "category": "extended",
+          "module": "ferro_ta.indicators.extended",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ICHIMOKU",
+          "category": "extended",
+          "module": "ferro_ta.indicators.extended",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "KELTNER_CHANNELS",
+          "category": "extended",
+          "module": "ferro_ta.indicators.extended",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "PIVOT_POINTS",
+          "category": "extended",
+          "module": "ferro_ta.indicators.extended",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "SUPERTREND",
+          "category": "extended",
+          "module": "ferro_ta.indicators.extended",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "VWAP",
+          "category": "extended",
+          "module": "ferro_ta.indicators.extended",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "VWMA",
+          "category": "extended",
+          "module": "ferro_ta.indicators.extended",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "feature_matrix",
+          "category": "features",
+          "module": "ferro_ta.analysis.features",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CurveSummary",
+          "category": "futures",
+          "module": "ferro_ta.analysis.futures",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "annualized_basis",
+          "category": "futures",
+          "module": "ferro_ta.analysis.futures",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "back_adjusted_continuous_contract",
+          "category": "futures",
+          "module": "ferro_ta.analysis.futures",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "basis",
+          "category": "futures",
+          "module": "ferro_ta.analysis.futures",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "calendar_spreads",
+          "category": "futures",
+          "module": "ferro_ta.analysis.futures",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "carry_spread",
+          "category": "futures",
+          "module": "ferro_ta.analysis.futures",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "curve_slope",
+          "category": "futures",
+          "module": "ferro_ta.analysis.futures",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "curve_summary",
+          "category": "futures",
+          "module": "ferro_ta.analysis.futures",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "implied_carry_rate",
+          "category": "futures",
+          "module": "ferro_ta.analysis.futures",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "parity_gap",
+          "category": "futures",
+          "module": "ferro_ta.analysis.futures",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ratio_adjusted_continuous_contract",
+          "category": "futures",
+          "module": "ferro_ta.analysis.futures",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "roll_yield",
+          "category": "futures",
+          "module": "ferro_ta.analysis.futures",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "synthetic_forward",
+          "category": "futures",
+          "module": "ferro_ta.analysis.futures",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "synthetic_spot",
+          "category": "futures",
+          "module": "ferro_ta.analysis.futures",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "weighted_continuous_contract",
+          "category": "futures",
+          "module": "ferro_ta.analysis.futures",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ACOS",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ADD",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ASIN",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ATAN",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CEIL",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "COS",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "COSH",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "DIV",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "EXP",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "FLOOR",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "LN",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "LOG10",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MAX",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MAXINDEX",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MIN",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MININDEX",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MULT",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "SIN",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "SINH",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "SQRT",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "SUB",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "SUM",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "TAN",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "TANH",
+          "category": "math_ops",
+          "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ADX",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ADXR",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "APO",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "AROON",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "AROONOSC",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "BOP",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CCI",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CMO",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "DX",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MFI",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MINUS_DI",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MINUS_DM",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MOM",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "PLUS_DI",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "PLUS_DM",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "PPO",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ROC",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ROCP",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ROCR",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ROCR100",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "RSI",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "STOCH",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "STOCHF",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "STOCHRSI",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "TRANGE",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "TRIX",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ULTOSC",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "WILLR",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "OptionGreeks",
+          "category": "options",
+          "module": "ferro_ta.analysis.options",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "SmileMetrics",
+          "category": "options",
+          "module": "ferro_ta.analysis.options",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "black_76_price",
+          "category": "options",
+          "module": "ferro_ta.analysis.options",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "black_scholes_price",
+          "category": "options",
+          "module": "ferro_ta.analysis.options",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "greeks",
+          "category": "options",
+          "module": "ferro_ta.analysis.options",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "implied_volatility",
+          "category": "options",
+          "module": "ferro_ta.analysis.options",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "iv_percentile",
+          "category": "options",
+          "module": "ferro_ta.analysis.options",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "iv_rank",
+          "category": "options",
+          "module": "ferro_ta.analysis.options",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "iv_zscore",
+          "category": "options",
+          "module": "ferro_ta.analysis.options",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "label_moneyness",
+          "category": "options",
+          "module": "ferro_ta.analysis.options",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "option_price",
+          "category": "options",
+          "module": "ferro_ta.analysis.options",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "select_strike",
+          "category": "options",
+          "module": "ferro_ta.analysis.options",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "smile_metrics",
+          "category": "options",
+          "module": "ferro_ta.analysis.options",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "term_structure_slope",
+          "category": "options",
+          "module": "ferro_ta.analysis.options",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "DerivativesStrategy",
+          "category": "options_strategy",
+          "module": "ferro_ta.analysis.options_strategy",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ExpirySelector",
+          "category": "options_strategy",
+          "module": "ferro_ta.analysis.options_strategy",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ExpirySelectorKind",
+          "category": "options_strategy",
+          "module": "ferro_ta.analysis.options_strategy",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "LegPreset",
+          "category": "options_strategy",
+          "module": "ferro_ta.analysis.options_strategy",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "RiskControl",
+          "category": "options_strategy",
+          "module": "ferro_ta.analysis.options_strategy",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "RiskMode",
+          "category": "options_strategy",
+          "module": "ferro_ta.analysis.options_strategy",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "SimulationLimits",
+          "category": "options_strategy",
+          "module": "ferro_ta.analysis.options_strategy",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StrategyLeg",
+          "category": "options_strategy",
+          "module": "ferro_ta.analysis.options_strategy",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StrikeSelector",
+          "category": "options_strategy",
+          "module": "ferro_ta.analysis.options_strategy",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StrikeSelectorKind",
+          "category": "options_strategy",
+          "module": "ferro_ta.analysis.options_strategy",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "build_strategy_preset",
+          "category": "options_strategy",
+          "module": "ferro_ta.analysis.options_strategy",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "BBANDS",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "DEMA",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "EMA",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "KAMA",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MA",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MACD",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MACDEXT",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MACDFIX",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MAMA",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MAVP",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MIDPOINT",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MIDPRICE",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "SAR",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "SAREXT",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "SMA",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "T3",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "TEMA",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "TRIMA",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "WMA",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDL2CROWS",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDL3BLACKCROWS",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDL3INSIDE",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDL3LINESTRIKE",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDL3OUTSIDE",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDL3STARSINSOUTH",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDL3WHITESOLDIERS",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLABANDONEDBABY",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLADVANCEBLOCK",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLBELTHOLD",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLBREAKAWAY",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLCLOSINGMARUBOZU",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLCONCEALBABYSWALL",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLCOUNTERATTACK",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLDARKCLOUDCOVER",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLDOJI",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLDOJISTAR",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLDRAGONFLYDOJI",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLENGULFING",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLEVENINGDOJISTAR",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLEVENINGSTAR",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLGAPSIDESIDEWHITE",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLGRAVESTONEDOJI",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLHAMMER",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLHANGINGMAN",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLHARAMI",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLHARAMICROSS",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLHIGHWAVE",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLHIKKAKE",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLHIKKAKEMOD",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLHOMINGPIGEON",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLIDENTICAL3CROWS",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLINNECK",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLINVERTEDHAMMER",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLKICKING",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLKICKINGBYLENGTH",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLLADDERBOTTOM",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLLONGLEGGEDDOJI",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLLONGLINE",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLMARUBOZU",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLMATCHINGLOW",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLMATHOLD",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLMORNINGDOJISTAR",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLMORNINGSTAR",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLONNECK",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLPIERCING",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLRICKSHAWMAN",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLRISEFALL3METHODS",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLSEPARATINGLINES",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLSHOOTINGSTAR",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLSHORTLINE",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLSPINNINGTOP",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLSTALLEDPATTERN",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLSTICKSANDWICH",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLTAKURI",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLTASUKIGAP",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLTHRUSTING",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLTRISTAR",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLUNIQUE3RIVER",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLUPSIDEGAP2CROWS",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLXSIDEGAP3METHODS",
+          "category": "pattern",
+          "module": "ferro_ta.indicators.pattern",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "beta",
+          "category": "portfolio",
+          "module": "ferro_ta.analysis.portfolio",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "correlation_matrix",
+          "category": "portfolio",
+          "module": "ferro_ta.analysis.portfolio",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "drawdown",
+          "category": "portfolio",
+          "module": "ferro_ta.analysis.portfolio",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "portfolio_volatility",
+          "category": "portfolio",
+          "module": "ferro_ta.analysis.portfolio",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "AVGPRICE",
+          "category": "price_transform",
+          "module": "ferro_ta.indicators.price_transform",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MEDPRICE",
+          "category": "price_transform",
+          "module": "ferro_ta.indicators.price_transform",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "TYPPRICE",
+          "category": "price_transform",
+          "module": "ferro_ta.indicators.price_transform",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "WCLPRICE",
+          "category": "price_transform",
+          "module": "ferro_ta.indicators.price_transform",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "detect_breaks_cusum",
+          "category": "regime",
+          "module": "ferro_ta.analysis.regime",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "regime",
+          "category": "regime",
+          "module": "ferro_ta.analysis.regime",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "regime_adx",
+          "category": "regime",
+          "module": "ferro_ta.analysis.regime",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "regime_combined",
+          "category": "regime",
+          "module": "ferro_ta.analysis.regime",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "rolling_variance_break",
+          "category": "regime",
+          "module": "ferro_ta.analysis.regime",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "structural_breaks",
+          "category": "regime",
+          "module": "ferro_ta.analysis.regime",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "multi_timeframe",
+          "category": "resampling",
+          "module": "ferro_ta.data.resampling",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "resample",
+          "category": "resampling",
+          "module": "ferro_ta.data.resampling",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "volume_bars",
+          "category": "resampling",
+          "module": "ferro_ta.data.resampling",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "compose",
+          "category": "signals",
+          "module": "ferro_ta.analysis.signals",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "rank_signals",
+          "category": "signals",
+          "module": "ferro_ta.analysis.signals",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "screen",
+          "category": "signals",
+          "module": "ferro_ta.analysis.signals",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "BETA",
+          "category": "statistic",
+          "module": "ferro_ta.indicators.statistic",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CORREL",
+          "category": "statistic",
+          "module": "ferro_ta.indicators.statistic",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "LINEARREG",
+          "category": "statistic",
+          "module": "ferro_ta.indicators.statistic",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "LINEARREG_ANGLE",
+          "category": "statistic",
+          "module": "ferro_ta.indicators.statistic",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "LINEARREG_INTERCEPT",
+          "category": "statistic",
+          "module": "ferro_ta.indicators.statistic",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "LINEARREG_SLOPE",
+          "category": "statistic",
+          "module": "ferro_ta.indicators.statistic",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "STDDEV",
+          "category": "statistic",
+          "module": "ferro_ta.indicators.statistic",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "TSF",
+          "category": "statistic",
+          "module": "ferro_ta.indicators.statistic",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "VAR",
+          "category": "statistic",
+          "module": "ferro_ta.indicators.statistic",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingATR",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingBBands",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingEMA",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingMACD",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingRSI",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingSMA",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingStoch",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingSupertrend",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingVWAP",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "compute_indicator",
+          "category": "tools",
+          "module": "ferro_ta.tools.tools",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "describe_indicator",
+          "category": "tools",
+          "module": "ferro_ta.tools.tools",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "list_indicators",
+          "category": "tools",
+          "module": "ferro_ta.tools.tools",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "run_backtest",
+          "category": "tools",
+          "module": "ferro_ta.tools.tools",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ACOS",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "AD",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ADD",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ADOSC",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ADX",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ADXR",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "APO",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "AROON",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "AROONOSC",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ASIN",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ATAN",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ATR",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "AVGPRICE",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "BBANDS",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "BETA",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "BOP",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CCI",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDL2CROWS",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDL3BLACKCROWS",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDL3INSIDE",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDL3LINESTRIKE",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDL3OUTSIDE",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDL3STARSINSOUTH",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDL3WHITESOLDIERS",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLABANDONEDBABY",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLADVANCEBLOCK",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLBELTHOLD",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLBREAKAWAY",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLCLOSINGMARUBOZU",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLCONCEALBABYSWALL",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLCOUNTERATTACK",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLDARKCLOUDCOVER",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLDOJI",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLDOJISTAR",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLDRAGONFLYDOJI",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLENGULFING",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLEVENINGDOJISTAR",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLEVENINGSTAR",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLGAPSIDESIDEWHITE",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLGRAVESTONEDOJI",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLHAMMER",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLHANGINGMAN",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLHARAMI",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLHARAMICROSS",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLHIGHWAVE",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLHIKKAKE",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLHIKKAKEMOD",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLHOMINGPIGEON",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLIDENTICAL3CROWS",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLINNECK",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLINVERTEDHAMMER",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLKICKING",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLKICKINGBYLENGTH",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLLADDERBOTTOM",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLLONGLEGGEDDOJI",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLLONGLINE",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLMARUBOZU",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLMATCHINGLOW",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLMATHOLD",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLMORNINGDOJISTAR",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLMORNINGSTAR",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLONNECK",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLPIERCING",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLRICKSHAWMAN",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLRISEFALL3METHODS",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLSEPARATINGLINES",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLSHOOTINGSTAR",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLSHORTLINE",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLSPINNINGTOP",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLSTALLEDPATTERN",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLSTICKSANDWICH",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLTAKURI",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLTASUKIGAP",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLTHRUSTING",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLTRISTAR",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLUNIQUE3RIVER",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLUPSIDEGAP2CROWS",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CDLXSIDEGAP3METHODS",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CEIL",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CHANDELIER_EXIT",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CHOPPINESS_INDEX",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CMO",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CORREL",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "COS",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "COSH",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "DEMA",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "DIV",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "DONCHIAN",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "DX",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "EMA",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "EXP",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "FLOOR",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "HT_DCPERIOD",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "HT_DCPHASE",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "HT_PHASOR",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "HT_SINE",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "HT_TRENDLINE",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "HT_TRENDMODE",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "HULL_MA",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ICHIMOKU",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "KAMA",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "KELTNER_CHANNELS",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "LINEARREG",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "LINEARREG_ANGLE",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "LINEARREG_INTERCEPT",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "LINEARREG_SLOPE",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "LN",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "LOG10",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MA",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MACD",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MACDEXT",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MACDFIX",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MAMA",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MAVP",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MAX",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MAXINDEX",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MEDPRICE",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MFI",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MIDPOINT",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MIDPRICE",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MIN",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MININDEX",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MINUS_DI",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MINUS_DM",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MOM",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MULT",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "NATR",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "OBV",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "PIVOT_POINTS",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "PLUS_DI",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "PLUS_DM",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "PPO",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ROC",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ROCP",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ROCR",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ROCR100",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "RSI",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "SAR",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "SAREXT",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "SIN",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "SINH",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "SMA",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "SQRT",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "STDDEV",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "STOCH",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "STOCHF",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "STOCHRSI",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "SUB",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "SUM",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "SUPERTREND",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "T3",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "TAN",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "TANH",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "TEMA",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "TRANGE",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "TRIMA",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "TRIX",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "TSF",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "TYPPRICE",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ULTOSC",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "VAR",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "VWAP",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "VWMA",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "WCLPRICE",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "WILLR",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "WMA",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "__version__",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "about",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "benchmark",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "debug_mode",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "disable_debug",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "enable_debug",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "get_logger",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "indicators",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "info",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "log_call",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "methods",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "traced",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "plot",
+          "category": "viz",
+          "module": "ferro_ta.tools.viz",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ATR",
+          "category": "volatility",
+          "module": "ferro_ta.indicators.volatility",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "NATR",
+          "category": "volatility",
+          "module": "ferro_ta.indicators.volatility",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "TRANGE",
+          "category": "volatility",
+          "module": "ferro_ta.indicators.volatility",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "AD",
+          "category": "volume",
+          "module": "ferro_ta.indicators.volume",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ADOSC",
+          "category": "volume",
+          "module": "ferro_ta.indicators.volume",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "OBV",
+          "category": "volume",
+          "module": "ferro_ta.indicators.volume",
+          "doc": "",
+          "params": []
+        }
+      ]
+    },
+    "rust_core": {
+      "public_function_count": 64,
+      "functions": [
+        {
+          "module": "futures.basis",
+          "function": "annualized_basis",
+          "file": "futures/basis.rs"
+        },
+        {
+          "module": "futures.basis",
+          "function": "basis",
+          "file": "futures/basis.rs"
+        },
+        {
+          "module": "futures.basis",
+          "function": "carry_spread",
+          "file": "futures/basis.rs"
+        },
+        {
+          "module": "futures.basis",
+          "function": "implied_carry_rate",
+          "file": "futures/basis.rs"
+        },
+        {
+          "module": "futures.curve",
+          "function": "calendar_spreads",
+          "file": "futures/curve.rs"
+        },
+        {
+          "module": "futures.curve",
+          "function": "curve_slope",
+          "file": "futures/curve.rs"
+        },
+        {
+          "module": "futures.curve",
+          "function": "curve_summary",
+          "file": "futures/curve.rs"
+        },
+        {
+          "module": "futures.roll",
+          "function": "back_adjusted_continuous",
+          "file": "futures/roll.rs"
+        },
+        {
+          "module": "futures.roll",
+          "function": "ratio_adjusted_continuous",
+          "file": "futures/roll.rs"
+        },
+        {
+          "module": "futures.roll",
+          "function": "roll_yield",
+          "file": "futures/roll.rs"
+        },
+        {
+          "module": "futures.roll",
+          "function": "weighted_continuous",
+          "file": "futures/roll.rs"
+        },
+        {
+          "module": "futures.synthetic",
+          "function": "parity_gap",
+          "file": "futures/synthetic.rs"
+        },
+        {
+          "module": "futures.synthetic",
+          "function": "synthetic_forward",
+          "file": "futures/synthetic.rs"
+        },
+        {
+          "module": "futures.synthetic",
+          "function": "synthetic_spot",
+          "file": "futures/synthetic.rs"
+        },
+        {
+          "module": "math",
+          "function": "max",
+          "file": "math.rs"
+        },
+        {
+          "module": "math",
+          "function": "min",
+          "file": "math.rs"
+        },
+        {
+          "module": "math",
+          "function": "sliding_max",
+          "file": "math.rs"
+        },
+        {
+          "module": "math",
+          "function": "sliding_min",
+          "file": "math.rs"
+        },
+        {
+          "module": "math",
+          "function": "sum",
+          "file": "math.rs"
+        },
+        {
+          "module": "momentum",
+          "function": "adx",
+          "file": "momentum.rs"
+        },
+        {
+          "module": "momentum",
+          "function": "adxr",
+          "file": "momentum.rs"
+        },
+        {
+          "module": "momentum",
+          "function": "dx",
+          "file": "momentum.rs"
+        },
+        {
+          "module": "momentum",
+          "function": "minus_di",
+          "file": "momentum.rs"
+        },
+        {
+          "module": "momentum",
+          "function": "minus_dm",
+          "file": "momentum.rs"
+        },
+        {
+          "module": "momentum",
+          "function": "mom",
+          "file": "momentum.rs"
+        },
+        {
+          "module": "momentum",
+          "function": "plus_di",
+          "file": "momentum.rs"
+        },
+        {
+          "module": "momentum",
+          "function": "plus_dm",
+          "file": "momentum.rs"
+        },
+        {
+          "module": "momentum",
+          "function": "rsi",
+          "file": "momentum.rs"
+        },
+        {
+          "module": "momentum",
+          "function": "stoch",
+          "file": "momentum.rs"
+        },
+        {
+          "module": "options.chain",
+          "function": "atm_index",
+          "file": "options/chain.rs"
+        },
+        {
+          "module": "options.chain",
+          "function": "label_moneyness",
+          "file": "options/chain.rs"
+        },
+        {
+          "module": "options.chain",
+          "function": "select_strike_by_delta",
+          "file": "options/chain.rs"
+        },
+        {
+          "module": "options.chain",
+          "function": "select_strike_by_offset",
+          "file": "options/chain.rs"
+        },
+        {
+          "module": "options.greeks",
+          "function": "black_76_greeks",
+          "file": "options/greeks.rs"
+        },
+        {
+          "module": "options.greeks",
+          "function": "black_scholes_greeks",
+          "file": "options/greeks.rs"
+        },
+        {
+          "module": "options.greeks",
+          "function": "model_greeks",
+          "file": "options/greeks.rs"
+        },
+        {
+          "module": "options.greeks",
+          "function": "model_theta",
+          "file": "options/greeks.rs"
+        },
+        {
+          "module": "options.iv",
+          "function": "implied_volatility",
+          "file": "options/iv.rs"
+        },
+        {
+          "module": "options.iv",
+          "function": "iv_percentile",
+          "file": "options/iv.rs"
+        },
+        {
+          "module": "options.iv",
+          "function": "iv_rank",
+          "file": "options/iv.rs"
+        },
+        {
+          "module": "options.iv",
+          "function": "iv_zscore",
+          "file": "options/iv.rs"
+        },
+        {
+          "module": "options.mod",
+          "function": "sign",
+          "file": "options/mod.rs"
+        },
+        {
+          "module": "options.normal",
+          "function": "cdf",
+          "file": "options/normal.rs"
+        },
+        {
+          "module": "options.normal",
+          "function": "pdf",
+          "file": "options/normal.rs"
+        },
+        {
+          "module": "options.pricing",
+          "function": "black_76_price",
+          "file": "options/pricing.rs"
+        },
+        {
+          "module": "options.pricing",
+          "function": "black_scholes_price",
+          "file": "options/pricing.rs"
+        },
+        {
+          "module": "options.pricing",
+          "function": "model_price",
+          "file": "options/pricing.rs"
+        },
+        {
+          "module": "options.pricing",
+          "function": "price_lower_bound",
+          "file": "options/pricing.rs"
+        },
+        {
+          "module": "options.pricing",
+          "function": "price_upper_bound",
+          "file": "options/pricing.rs"
+        },
+        {
+          "module": "options.surface",
+          "function": "atm_iv",
+          "file": "options/surface.rs"
+        },
+        {
+          "module": "options.surface",
+          "function": "linear_interpolate",
+          "file": "options/surface.rs"
+        },
+        {
+          "module": "options.surface",
+          "function": "smile_metrics",
+          "file": "options/surface.rs"
+        },
+        {
+          "module": "options.surface",
+          "function": "term_structure_slope",
+          "file": "options/surface.rs"
+        },
+        {
+          "module": "overlap",
+          "function": "bbands",
+          "file": "overlap.rs"
+        },
+        {
+          "module": "overlap",
+          "function": "ema",
+          "file": "overlap.rs"
+        },
+        {
+          "module": "overlap",
+          "function": "macd",
+          "file": "overlap.rs"
+        },
+        {
+          "module": "overlap",
+          "function": "sma",
+          "file": "overlap.rs"
+        },
+        {
+          "module": "overlap",
+          "function": "sma_into",
+          "file": "overlap.rs"
+        },
+        {
+          "module": "overlap",
+          "function": "wma",
+          "file": "overlap.rs"
+        },
+        {
+          "module": "statistic",
+          "function": "stddev",
+          "file": "statistic.rs"
+        },
+        {
+          "module": "volatility",
+          "function": "atr",
+          "file": "volatility.rs"
+        },
+        {
+          "module": "volatility",
+          "function": "trange",
+          "file": "volatility.rs"
+        },
+        {
+          "module": "volume",
+          "function": "mfi",
+          "file": "volume.rs"
+        },
+        {
+          "module": "volume",
+          "function": "obv",
+          "file": "volume.rs"
+        }
+      ]
+    },
+    "wasm_node": {
+      "export_count": 12,
+      "exports": [
+        "adx",
+        "atr",
+        "bbands",
+        "ema",
+        "macd",
+        "mfi",
+        "mom",
+        "obv",
+        "rsi",
+        "sma",
+        "stochf",
+        "wma"
+      ]
+    }
+  },
+  "parity_summary": {
+    "python_indicator_count": 207,
+    "wasm_export_count": 12,
+    "common_python_wasm_count": 12,
+    "common_python_wasm": [
+      "adx",
+      "atr",
+      "bbands",
+      "ema",
+      "macd",
+      "mfi",
+      "mom",
+      "obv",
+      "rsi",
+      "sma",
+      "stochf",
+      "wma"
+    ],
+    "python_only_vs_wasm": [
+      "acos",
+      "ad",
+      "add",
+      "adosc",
+      "adxr",
+      "aggregate_ticks",
+      "alertevent",
+      "alertmanager",
+      "apo",
+      "aroon",
+      "aroonosc",
+      "asin",
+      "atan",
+      "avgprice",
+      "batch_apply",
+      "batch_ema",
+      "batch_rsi",
+      "batch_sma",
+      "beta",
+      "bop",
+      "cci",
+      "cdl2crows",
+      "cdl3blackcrows",
+      "cdl3inside",
+      "cdl3linestrike",
+      "cdl3outside",
+      "cdl3starsinsouth",
+      "cdl3whitesoldiers",
+      "cdlabandonedbaby",
+      "cdladvanceblock",
+      "cdlbelthold",
+      "cdlbreakaway",
+      "cdlclosingmarubozu",
+      "cdlconcealbabyswall",
+      "cdlcounterattack",
+      "cdldarkcloudcover",
+      "cdldoji",
+      "cdldojistar",
+      "cdldragonflydoji",
+      "cdlengulfing",
+      "cdleveningdojistar",
+      "cdleveningstar",
+      "cdlgapsidesidewhite",
+      "cdlgravestonedoji",
+      "cdlhammer",
+      "cdlhangingman",
+      "cdlharami",
+      "cdlharamicross",
+      "cdlhighwave",
+      "cdlhikkake",
+      "cdlhikkakemod",
+      "cdlhomingpigeon",
+      "cdlidentical3crows",
+      "cdlinneck",
+      "cdlinvertedhammer",
+      "cdlkicking",
+      "cdlkickingbylength",
+      "cdlladderbottom",
+      "cdllongleggeddoji",
+      "cdllongline",
+      "cdlmarubozu",
+      "cdlmatchinglow",
+      "cdlmathold",
+      "cdlmorningdojistar",
+      "cdlmorningstar",
+      "cdlonneck",
+      "cdlpiercing",
+      "cdlrickshawman",
+      "cdlrisefall3methods",
+      "cdlseparatinglines",
+      "cdlshootingstar",
+      "cdlshortline",
+      "cdlspinningtop",
+      "cdlstalledpattern",
+      "cdlsticksandwich",
+      "cdltakuri",
+      "cdltasukigap",
+      "cdlthrusting",
+      "cdltristar",
+      "cdlunique3river",
+      "cdlupsidegap2crows",
+      "cdlxsidegap3methods",
+      "ceil",
+      "chandelier_exit",
+      "check_cross",
+      "check_threshold",
+      "choppiness_index",
+      "cmo",
+      "collect_alert_bars",
+      "compose",
+      "compute_many",
+      "continuous_bar_labels",
+      "correl",
+      "correlation_matrix",
+      "cos",
+      "cosh",
+      "dema",
+      "detect_breaks_cusum",
+      "div",
+      "donchian",
+      "drawdown",
+      "dx",
+      "exp",
+      "feature_matrix",
+      "floor",
+      "funding_pnl",
+      "ht_dcperiod",
+      "ht_dcphase",
+      "ht_phasor",
+      "ht_sine",
+      "ht_trendline",
+      "ht_trendmode",
+      "hull_ma",
+      "ichimoku",
+      "kama",
+      "keltner_channels",
+      "linearreg",
+      "linearreg_angle",
+      "linearreg_intercept",
+      "linearreg_slope",
+      "ln",
+      "log10",
+      "ma",
+      "macdext",
+      "macdfix",
+      "mama",
+      "mavp",
+      "max",
+      "maxindex",
+      "medprice",
+      "midpoint",
+      "midprice",
+      "min",
+      "minindex",
+      "minus_di",
+      "minus_dm",
+      "mult",
+      "multi_timeframe",
+      "natr",
+      "pivot_points",
+      "plus_di",
+      "plus_dm",
+      "portfolio_volatility",
+      "ppo",
+      "rank_signals",
+      "regime",
+      "regime_adx",
+      "regime_combined",
+      "resample",
+      "resample_continuous",
+      "roc",
+      "rocp",
+      "rocr",
+      "rocr100",
+      "rolling_variance_break",
+      "sar",
+      "sarext",
+      "screen",
+      "session_boundaries",
+      "sin",
+      "sinh",
+      "sqrt",
+      "stddev",
+      "stoch",
+      "stochrsi",
+      "streamingatr",
+      "streamingbbands",
+      "streamingema",
+      "streamingmacd",
+      "streamingrsi",
+      "streamingsma",
+      "streamingstoch",
+      "streamingsupertrend",
+      "streamingvwap",
+      "structural_breaks",
+      "sub",
+      "sum",
+      "supertrend",
+      "t3",
+      "tan",
+      "tanh",
+      "tema",
+      "tickaggregator",
+      "trange",
+      "trima",
+      "trix",
+      "tsf",
+      "typprice",
+      "ultosc",
+      "var",
+      "volume_bars",
+      "vwap",
+      "vwma",
+      "wclprice",
+      "willr"
+    ],
+    "wasm_only_vs_python": []
+  }
+}

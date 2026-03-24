@@ -11,7 +11,7 @@ npm install ferro-ta-wasm
 ```
 
 ```javascript
-const { sma, ema, rsi, bbands, atr, obv, macd } = require('ferro-ta-wasm');
+const { sma, ema, wma, rsi, adx, mfi, bbands, atr, obv, macd } = require('ferro-ta-wasm');
 
 const close = new Float64Array([44.34, 44.09, 44.15, 43.61, 44.33, 44.83, 45.10]);
 const smaOut = sma(close, 3);
@@ -28,20 +28,23 @@ console.log('SMA:', Array.from(smaOut));
 |------------|---------------|----------------------------------------------------|---------|
 | Overlap    | `sma`         | `close: Float64Array, timeperiod: number`          | `Float64Array` |
 | Overlap    | `ema`         | `close: Float64Array, timeperiod: number`          | `Float64Array` |
+| Overlap    | `wma`         | `close: Float64Array, timeperiod: number`          | `Float64Array` |
 | Overlap    | `bbands`      | `close, timeperiod, nbdevup, nbdevdn`              | `Array[upper, middle, lower]` |
 | Momentum   | `rsi`         | `close: Float64Array, timeperiod: number`          | `Float64Array` |
+| Momentum   | `adx`         | `high, low, close: Float64Array, timeperiod`       | `Float64Array` |
 | Momentum   | `macd`        | `close, fastperiod, slowperiod, signalperiod`      | `Array[macd, signal, hist]` |
 | Momentum   | `mom`         | `close: Float64Array, timeperiod: number`          | `Float64Array` |
 | Momentum   | `stochf`      | `high, low, close, fastk_period, fastd_period`     | `Array[fastk, fastd]` |
 | Volatility | `atr`         | `high, low, close: Float64Array, timeperiod`       | `Float64Array` |
 | Volume     | `obv`         | `close: Float64Array, volume: Float64Array`        | `Float64Array` |
+| Volume     | `mfi`         | `high, low, close, volume: Float64Array, timeperiod` | `Float64Array` |
 
 ### Adding more indicators
 
-All implementations are self-contained in `src/lib.rs` — no external crate dependency needed.
+WASM exports live in `src/lib.rs` and can either implement logic directly or delegate to `ferro_ta_core`.
 To add a new indicator:
 
-1. Implement the algorithm in a `#[wasm_bindgen]` function in `src/lib.rs`.
+1. Add a `#[wasm_bindgen]` export in `src/lib.rs` (prefer delegating to `ferro_ta_core` where possible).
 2. Add at least two `#[wasm_bindgen_test]` tests covering output length and a known value.
 3. Update this README table.
 4. Run `wasm-pack test --node` to verify.
@@ -79,7 +82,7 @@ wasm-pack build --target web --out-dir pkg-web
 ## Usage (Node.js)
 
 ```javascript
-const { sma, ema, rsi, bbands, atr, obv, macd } = require('./pkg/ferro_ta_wasm.js');
+const { sma, ema, wma, rsi, adx, mfi, bbands, atr, obv, macd } = require('./pkg/ferro_ta_wasm.js');
 
 const close = new Float64Array([44.34, 44.09, 44.15, 43.61, 44.33, 44.83, 45.10]);
 
@@ -90,6 +93,10 @@ console.log('SMA:', Array.from(smaOut));  // [ NaN, NaN, 44.193, ... ]
 // RSI (period 5)
 const rsiOut = rsi(close, 5);
 console.log('RSI:', Array.from(rsiOut));
+
+// WMA (period 5)
+const wmaOut = wma(close, 5);
+console.log('WMA:', Array.from(wmaOut));
 
 // Bollinger Bands (period 5, ±2σ) — returns [upper, middle, lower]
 const [upper, middle, lower] = bbands(close, 5, 2.0, 2.0);
@@ -107,10 +114,18 @@ const low    = new Float64Array([43.0, 44.0, 45.0, 44.0, 43.0, 42.0, 43.0]);
 const atrOut = atr(high, low, close, 3);
 console.log('ATR:', Array.from(atrOut));
 
+// ADX (period 3)
+const adxOut = adx(high, low, close, 3);
+console.log('ADX:', Array.from(adxOut));
+
 // OBV
 const volume  = new Float64Array([1000, 1200, 900, 1500, 800, 600, 700]);
 const obvOut  = obv(close, volume);
 console.log('OBV:', Array.from(obvOut));
+
+// MFI (period 3)
+const mfiOut = mfi(high, low, close, volume, 3);
+console.log('MFI:', Array.from(mfiOut));
 ```
 
 ## Usage (Browser)
@@ -150,7 +165,7 @@ from source:
 
 ## Limitations
 
-- Only 9 indicators are currently exposed (SMA, EMA, BBANDS, RSI, MACD, MOM, STOCHF, ATR, OBV).
+- Only 12 indicators are currently exposed (SMA, EMA, WMA, BBANDS, RSI, ADX, MACD, MOM, STOCHF, ATR, OBV, MFI).
   Additional indicators will be added following the same pattern in `src/lib.rs`.
 - Large arrays (> 10M bars) may be slow due to JS↔WASM memory copies.  For high-throughput
   use cases prefer the Python (PyO3) binding.

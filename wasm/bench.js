@@ -23,14 +23,16 @@ function makeSeries(length) {
   const close = new Float64Array(length);
   const high = new Float64Array(length);
   const low = new Float64Array(length);
+  const volume = new Float64Array(length);
   let value = 100.0;
   for (let idx = 0; idx < length; idx += 1) {
     value += Math.sin(idx / 13.0) * 0.35 + Math.cos(idx / 29.0) * 0.18;
     close[idx] = value;
     high[idx] = value + 1.25;
     low[idx] = value - 1.10;
+    volume[idx] = 1000.0 + Math.abs(Math.sin(idx / 7.0) * 300.0) + (idx % 100);
   }
-  return { close, high, low };
+  return { close, high, low, volume };
 }
 
 function timeMin(fn, rounds = 7) {
@@ -45,11 +47,14 @@ function timeMin(fn, rounds = 7) {
 }
 
 function runBenchmark({ bars }) {
-  const { close, high, low } = makeSeries(bars);
+  const { close, high, low, volume } = makeSeries(bars);
   const cases = [
     ["SMA", () => wasm.sma(close, 20)],
     ["EMA", () => wasm.ema(close, 20)],
+    ["WMA", () => wasm.wma(close, 20)],
     ["RSI", () => wasm.rsi(close, 14)],
+    ["ADX", () => wasm.adx(high, low, close, 14)],
+    ["MFI", () => wasm.mfi(high, low, close, volume, 14)],
     ["ATR", () => wasm.atr(high, low, close, 14)],
     ["BBANDS", () => wasm.bbands(close, 20, 2.0, 2.0)],
   ];

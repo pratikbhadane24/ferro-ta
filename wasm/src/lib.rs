@@ -10,6 +10,7 @@ and `MACD`).
 ## Overlap Studies
 - [`sma`] — Simple Moving Average
 - [`ema`] — Exponential Moving Average
+- [`wma`] — Weighted Moving Average
 - [`bbands`] — Bollinger Bands (returns `[upper, middle, lower]`)
 
 ## Momentum Indicators
@@ -17,12 +18,14 @@ and `MACD`).
 - [`macd`] — Moving Average Convergence/Divergence (returns `[macd, signal, hist]`)
 - [`mom`] — Momentum (close[i] - close[i-period])
 - [`stochf`] — Fast Stochastic (returns `[fastk, fastd]`)
+- [`adx`] — Average Directional Movement Index
 
 ## Volatility Indicators
 - [`atr`] — Average True Range (Wilder smoothing)
 
 ## Volume Indicators
 - [`obv`] — On-Balance Volume
+- [`mfi`] — Money Flow Index
 */
 
 use js_sys::{Array, Float64Array};
@@ -326,6 +329,24 @@ pub fn obv(close: &Float64Array, volume: &Float64Array) -> Float64Array {
 }
 
 // ---------------------------------------------------------------------------
+// WMA — Weighted Moving Average
+// ---------------------------------------------------------------------------
+
+/// Weighted Moving Average.
+///
+/// # Arguments
+/// - `close` – `Float64Array` of close prices.
+/// - `timeperiod` – look-back window (default 30, minimum 1).
+///
+/// # Returns
+/// `Float64Array` with the first `timeperiod - 1` values set to `NaN`.
+#[wasm_bindgen]
+pub fn wma(close: &Float64Array, timeperiod: usize) -> Float64Array {
+    let prices = to_vec(close);
+    from_vec(ferro_ta_core::overlap::wma(&prices, timeperiod))
+}
+
+// ---------------------------------------------------------------------------
 // MOM — Momentum
 // ---------------------------------------------------------------------------
 
@@ -431,6 +452,70 @@ pub fn stochf(
     out.push(&from_vec(fastk));
     out.push(&from_vec(fastd));
     out
+}
+
+// ---------------------------------------------------------------------------
+// ADX — Average Directional Movement Index
+// ---------------------------------------------------------------------------
+
+/// Average Directional Movement Index (Wilder smoothing).
+///
+/// # Arguments
+/// - `high`       – `Float64Array` of high prices.
+/// - `low`        – `Float64Array` of low prices.
+/// - `close`      – `Float64Array` of close prices.
+/// - `timeperiod` – look-back period (default 14, minimum 1).
+///
+/// # Returns
+/// `Float64Array`; warm-up values are `NaN`.
+#[wasm_bindgen]
+pub fn adx(
+    high: &Float64Array,
+    low: &Float64Array,
+    close: &Float64Array,
+    timeperiod: usize,
+) -> Float64Array {
+    let h = to_vec(high);
+    let l = to_vec(low);
+    let c = to_vec(close);
+    if h.len() != l.len() || h.len() != c.len() {
+        return from_vec(vec![f64::NAN; c.len()]);
+    }
+    from_vec(ferro_ta_core::momentum::adx(&h, &l, &c, timeperiod))
+}
+
+// ---------------------------------------------------------------------------
+// MFI — Money Flow Index
+// ---------------------------------------------------------------------------
+
+/// Money Flow Index.
+///
+/// # Arguments
+/// - `high`       – `Float64Array` of high prices.
+/// - `low`        – `Float64Array` of low prices.
+/// - `close`      – `Float64Array` of close prices.
+/// - `volume`     – `Float64Array` of volume values.
+/// - `timeperiod` – look-back period (default 14, minimum 1).
+///
+/// # Returns
+/// `Float64Array`; warm-up values are `NaN`.
+#[wasm_bindgen]
+pub fn mfi(
+    high: &Float64Array,
+    low: &Float64Array,
+    close: &Float64Array,
+    volume: &Float64Array,
+    timeperiod: usize,
+) -> Float64Array {
+    let h = to_vec(high);
+    let l = to_vec(low);
+    let c = to_vec(close);
+    let v = to_vec(volume);
+    let n = c.len();
+    if h.len() != n || l.len() != n || v.len() != n {
+        return from_vec(vec![f64::NAN; n]);
+    }
+    from_vec(ferro_ta_core::volume::mfi(&h, &l, &c, &v, timeperiod))
 }
 
 // ---------------------------------------------------------------------------
@@ -859,6 +944,79 @@ mod tests {
         assert!(!finite.is_empty(), "fastk should have finite values");
         for v in finite {
             assert!(v >= 0.0 && v <= 100.0, "fastk value {v} out of [0, 100]");
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // WMA tests
+    // -----------------------------------------------------------------------
+
+    #[wasm_bindgen_test]
+    fn test_wma_output_length() {
+        let close = make_arr(&[1.0, 2.0, 3.0, 4.0, 5.0]);
+        let out = wma(&close, 3);
+        assert_eq!(out.length(), 5);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_wma_known_value() {
+        // WMA(3) at index 2 = (1*1 + 2*2 + 3*3) / 6 = 14/6
+        let close = make_arr(&[1.0, 2.0, 3.0, 4.0, 5.0]);
+        let out = wma(&close, 3);
+        let mut vals = vec![0.0f64; 5];
+        out.copy_to(&mut vals);
+        assert!(vals[0].is_nan());
+        assert!(vals[1].is_nan());
+        assert!((vals[2] - (14.0 / 6.0)).abs() < 1e-10);
+    }
+
+    // -----------------------------------------------------------------------
+    // ADX tests
+    // -----------------------------------------------------------------------
+
+    #[wasm_bindgen_test]
+    fn test_adx_output_length() {
+        let h = make_arr(&[10.0, 11.0, 12.0, 13.0, 13.5, 14.0, 14.5, 15.0]);
+        let l = make_arr(&[9.0, 9.5, 10.5, 11.5, 12.0, 12.5, 13.0, 13.5]);
+        let c = make_arr(&[9.5, 10.5, 11.5, 12.0, 13.0, 13.5, 14.0, 14.5]);
+        let out = adx(&h, &l, &c, 3);
+        assert_eq!(out.length(), 8);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_adx_values_in_range() {
+        let h = make_arr(&[10.0, 11.0, 12.0, 13.0, 13.5, 14.0, 14.5, 15.0]);
+        let l = make_arr(&[9.0, 9.5, 10.5, 11.5, 12.0, 12.5, 13.0, 13.5]);
+        let c = make_arr(&[9.5, 10.5, 11.5, 12.0, 13.0, 13.5, 14.0, 14.5]);
+        let out = adx(&h, &l, &c, 3);
+        for v in get_finite(&out) {
+            assert!((0.0..=100.0).contains(&v), "ADX out of range: {v}");
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // MFI tests
+    // -----------------------------------------------------------------------
+
+    #[wasm_bindgen_test]
+    fn test_mfi_output_length() {
+        let h = make_arr(&[10.0, 11.0, 12.0, 11.5, 12.5, 13.0, 13.5]);
+        let l = make_arr(&[9.0, 9.5, 10.5, 10.0, 11.0, 11.5, 12.0]);
+        let c = make_arr(&[9.5, 10.5, 11.5, 11.0, 12.0, 12.5, 13.0]);
+        let v = make_arr(&[100.0, 110.0, 120.0, 130.0, 125.0, 140.0, 150.0]);
+        let out = mfi(&h, &l, &c, &v, 3);
+        assert_eq!(out.length(), 7);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_mfi_values_in_range() {
+        let h = make_arr(&[10.0, 11.0, 12.0, 11.5, 12.5, 13.0, 13.5]);
+        let l = make_arr(&[9.0, 9.5, 10.5, 10.0, 11.0, 11.5, 12.0]);
+        let c = make_arr(&[9.5, 10.5, 11.5, 11.0, 12.0, 12.5, 13.0]);
+        let v = make_arr(&[100.0, 110.0, 120.0, 130.0, 125.0, 140.0, 150.0]);
+        let out = mfi(&h, &l, &c, &v, 3);
+        for val in get_finite(&out) {
+            assert!((0.0..=100.0).contains(&val), "MFI out of range: {val}");
         }
     }
 }

@@ -55,6 +55,10 @@ from typing import Optional, Union
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
+from ferro_ta._ferro_ta import backtest_core as _rust_backtest_core
+from ferro_ta._ferro_ta import macd_crossover_signals as _rust_macd_crossover_signals
+from ferro_ta._ferro_ta import rsi_threshold_signals as _rust_rsi_threshold_signals
+from ferro_ta._ferro_ta import sma_crossover_signals as _rust_sma_crossover_signals
 from ferro_ta.core.exceptions import FerroTAInputError, FerroTAValueError
 
 # ---------------------------------------------------------------------------
@@ -149,16 +153,14 @@ def rsi_strategy(
     overbought : float
         RSI level above which a short (-1) signal is generated (default 70).
     """
-    from ferro_ta import RSI  # local import to avoid circular dep
-
     if timeperiod < 1:
         raise FerroTAValueError(f"timeperiod must be >= 1, got {timeperiod}")
 
     c = np.asarray(close, dtype=np.float64)
-    rsi = np.asarray(RSI(c, timeperiod=timeperiod), dtype=np.float64)
-    signals = np.where(rsi <= oversold, 1.0, np.where(rsi >= overbought, -1.0, 0.0))
-    signals[np.isnan(rsi)] = np.nan
-    return signals
+    return np.asarray(
+        _rust_rsi_threshold_signals(c, int(timeperiod), float(oversold), float(overbought)),
+        dtype=np.float64,
+    )
 
 
 def sma_crossover_strategy(
@@ -183,8 +185,6 @@ def sma_crossover_strategy(
     slow : int
         Slow SMA period (default 30).
     """
-    from ferro_ta import SMA  # local import
-
     if fast < 1:
         raise FerroTAValueError(f"fast must be >= 1, got {fast}")
     if slow < 1:
@@ -193,13 +193,10 @@ def sma_crossover_strategy(
         raise FerroTAValueError(f"fast ({fast}) must be less than slow ({slow})")
 
     c = np.asarray(close, dtype=np.float64)
-    sma_fast = np.asarray(SMA(c, timeperiod=fast), dtype=np.float64)
-    sma_slow = np.asarray(SMA(c, timeperiod=slow), dtype=np.float64)
-    signals = np.where(sma_fast > sma_slow, 1.0, -1.0).astype(np.float64)
-    # Warm-up: NaN where either MA is NaN
-    warmup = np.isnan(sma_fast) | np.isnan(sma_slow)
-    signals[warmup] = np.nan
-    return signals
+    return np.asarray(
+        _rust_sma_crossover_signals(c, int(fast), int(slow)),
+        dtype=np.float64,
+    )
 
 
 def macd_crossover_strategy(
@@ -227,8 +224,6 @@ def macd_crossover_strategy(
     signalperiod : int
         Signal line EMA period (default 9).
     """
-    from ferro_ta import MACD  # local import
-
     if fastperiod < 1 or slowperiod < 1 or signalperiod < 1:
         raise FerroTAValueError("MACD periods must be >= 1")
     if fastperiod >= slowperiod:
@@ -237,15 +232,12 @@ def macd_crossover_strategy(
         )
 
     c = np.asarray(close, dtype=np.float64)
-    macd_line, signal_line, _ = MACD(
-        c, fastperiod=fastperiod, slowperiod=slowperiod, signalperiod=signalperiod
+    return np.asarray(
+        _rust_macd_crossover_signals(
+            c, int(fastperiod), int(slowperiod), int(signalperiod)
+        ),
+        dtype=np.float64,
     )
-    macd_line = np.asarray(macd_line, dtype=np.float64)
-    signal_line = np.asarray(signal_line, dtype=np.float64)
-    signals = np.where(macd_line > signal_line, 1.0, -1.0).astype(np.float64)
-    warmup = np.isnan(macd_line) | np.isnan(signal_line)
-    signals[warmup] = np.nan
-    return signals
 
 
 # ---------------------------------------------------------------------------
@@ -342,52 +334,14 @@ def backtest(
     # Compute signals
     # ------------------------------------------------------------------
     signals = np.asarray(strategy_fn(c, **strategy_kwargs), dtype=np.float64)
-
-    # ------------------------------------------------------------------
-    # Positions: lag signals by 1 bar to avoid look-ahead bias
-    # ------------------------------------------------------------------
-    positions = np.empty_like(signals)
-    positions[0] = 0.0
-    positions[1:] = signals[:-1]
-    # Replace NaN in positions with 0 (flat)
-    positions = np.nan_to_num(positions, nan=0.0)
-
-    # ------------------------------------------------------------------
-    # Returns
-    # ------------------------------------------------------------------
-    bar_returns: np.ndarray = np.empty(len(c), dtype=np.float64)
-    bar_returns[0] = 0.0
-    bar_returns[1:] = np.diff(c) / c[:-1]
-
-    strategy_returns = positions * bar_returns
-    position_changed = np.concatenate([[False], positions[1:] != positions[:-1]])
-
-    # Slippage: on each position change, reduce return by slippage_bps/10000 (one-way)
-    if slippage_bps > 0:
-        strategy_returns = strategy_returns.copy()
-        strategy_returns[position_changed] -= slippage_bps / 10_000.0
-
-    # Cumulative equity: with optional commission per trade
-    if commission_per_trade <= 0:
-        equity = np.cumprod(1.0 + strategy_returns)
-    else:
-        gross_equity = np.cumprod(1.0 + strategy_returns)
-        if np.any(gross_equity == 0.0):
-            equity = np.empty(len(c), dtype=np.float64)
-            equity[0] = 1.0
-            for i in range(1, len(c)):
-                equity[i] = equity[i - 1] * (1.0 + strategy_returns[i])
-                if position_changed[i]:
-                    equity[i] -= commission_per_trade
-        else:
-            commissions = position_changed.astype(np.float64) * commission_per_trade
-            discounted_commissions = np.cumsum(commissions / gross_equity)
-            equity = gross_equity * (1.0 - discounted_commissions)
+    positions, bar_returns, strategy_returns, equity = _rust_backtest_core(
+        c, signals, float(commission_per_trade), float(slippage_bps)
+    )
 
     return BacktestResult(
         signals=signals,
-        positions=positions,
-        bar_returns=bar_returns,
-        strategy_returns=strategy_returns,
+        positions=np.asarray(positions, dtype=np.float64),
+        bar_returns=np.asarray(bar_returns, dtype=np.float64),
+        strategy_returns=np.asarray(strategy_returns, dtype=np.float64),
         equity=np.asarray(equity, dtype=np.float64),
     )

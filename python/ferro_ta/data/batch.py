@@ -6,16 +6,16 @@ This module provides a 2-D batch API that accepts a 2-D numpy array
 a 2-D output array of the same shape.
 
 For the most common indicators — SMA, EMA, RSI — the 2-D path is handled
-entirely in Rust (a single GIL release for all columns). The generic
-``batch_apply`` is available for other indicators that do not have a Rust
-batch implementation.
+entirely in Rust (a single GIL release for all columns). ``batch_apply``
+also dispatches these indicators to Rust when possible; other indicators
+use the generic Python fallback path.
 
 Functions
 ---------
 batch_sma    — SMA on every column of a 2-D array  (Rust fast path for 2-D)
 batch_ema    — EMA on every column of a 2-D array  (Rust fast path for 2-D)
 batch_rsi    — RSI on every column of a 2-D array  (Rust fast path for 2-D)
-batch_apply  — Generic batch wrapper (Python loop) for any arbitrary indicator
+batch_apply  — Generic batch wrapper with Rust fast-path for SMA/EMA/RSI
 
 Usage
 -----
@@ -91,6 +91,27 @@ _HLC_FASTPATH_DEFAULTS: dict[str, int] = {
     "CCI": 14,
     "WILLR": 14,
 }
+
+_BATCH_FASTPATH_DEFAULTS: dict[str, int] = {
+    "SMA": 30,
+    "EMA": 30,
+    "RSI": 14,
+}
+
+
+def _resolve_batch_fastpath(
+    fn: Callable[..., np.ndarray],
+    kwargs: dict[str, object],
+) -> tuple[str, int] | None:
+    name = getattr(fn, "__name__", "").upper()
+    if name not in _BATCH_FASTPATH_DEFAULTS:
+        return None
+    if set(kwargs) - {"timeperiod"}:
+        return None
+    raw = kwargs.get("timeperiod", _BATCH_FASTPATH_DEFAULTS[name])
+    if not isinstance(raw, int):
+        return None
+    return name, int(raw)
 
 
 def _normalize_indicator_spec(
@@ -225,11 +246,9 @@ def batch_apply(
 ) -> np.ndarray:
     """Apply any single-series indicator *fn* to every column of *data*.
 
-    This is the generic fallback batch executor — it calls *fn* once per
-    column in a Python loop.  For the common indicators SMA, EMA, and RSI
-    prefer the dedicated :func:`batch_sma`, :func:`batch_ema`, and
-    :func:`batch_rsi` functions, which use a Rust-side loop and avoid
-    per-column Python round-trips.
+    For recognized close-only indicators (SMA/EMA/RSI with default or
+    ``timeperiod`` argument only), this function dispatches to the Rust
+    batch kernels.  Otherwise it falls back to a Python per-column loop.
 
     Parameters
     ----------
@@ -264,6 +283,16 @@ def batch_apply(
         return fn(arr, **kwargs)
     if arr.ndim != 2:
         raise ValueError(f"batch_apply expects 1-D or 2-D input; got {arr.ndim}-D")
+
+    fastpath = _resolve_batch_fastpath(fn, kwargs)
+    if fastpath is not None:
+        indicator, timeperiod = fastpath
+        contiguous = np.ascontiguousarray(arr)
+        if indicator == "SMA":
+            return np.asarray(_rust_batch_sma(contiguous, timeperiod, True))
+        if indicator == "EMA":
+            return np.asarray(_rust_batch_ema(contiguous, timeperiod, True))
+        return np.asarray(_rust_batch_rsi(contiguous, timeperiod, True))
 
     n_samples, n_series = arr.shape
     result = np.empty((n_samples, n_series), dtype=np.float64)

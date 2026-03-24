@@ -27,6 +27,7 @@ Rust backend
     ferro_ta._ferro_ta.make_chunk_ranges
     ferro_ta._ferro_ta.trim_overlap
     ferro_ta._ferro_ta.stitch_chunks
+    ferro_ta._ferro_ta.chunk_apply_close_indicator
 
 Notes
 -----
@@ -50,6 +51,9 @@ import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
 from ferro_ta._ferro_ta import (
+    chunk_apply_close_indicator as _rust_chunk_apply_close_indicator,
+)
+from ferro_ta._ferro_ta import (
     make_chunk_ranges as _rust_make_chunk_ranges,
 )
 from ferro_ta._ferro_ta import (
@@ -66,6 +70,26 @@ __all__ = [
     "trim_overlap",
     "stitch_chunks",
 ]
+
+_FASTPATH_DEFAULT_PERIODS: dict[str, int] = {
+    "SMA": 30,
+    "EMA": 30,
+    "RSI": 14,
+}
+
+
+def _resolve_chunk_fastpath(
+    fn: Callable[..., Any], fn_kwargs: dict[str, Any]
+) -> tuple[str, int] | None:
+    name = getattr(fn, "__name__", "").upper()
+    if name not in _FASTPATH_DEFAULT_PERIODS:
+        return None
+    if set(fn_kwargs) - {"timeperiod"}:
+        return None
+    raw = fn_kwargs.get("timeperiod", _FASTPATH_DEFAULT_PERIODS[name])
+    if not isinstance(raw, int):
+        return None
+    return name, int(raw)
 
 
 def make_chunk_ranges(
@@ -189,6 +213,20 @@ def chunk_apply(
     n = len(s)
     if n == 0:
         return np.empty(0, dtype=np.float64)
+
+    fastpath = _resolve_chunk_fastpath(fn, fn_kwargs)
+    if fastpath is not None:
+        indicator, timeperiod = fastpath
+        return np.asarray(
+            _rust_chunk_apply_close_indicator(
+                np.ascontiguousarray(s),
+                indicator,
+                int(timeperiod),
+                int(chunk_size),
+                int(overlap),
+            ),
+            dtype=np.float64,
+        )
 
     ranges = make_chunk_ranges(n, chunk_size, overlap)
     if len(ranges) == 0:

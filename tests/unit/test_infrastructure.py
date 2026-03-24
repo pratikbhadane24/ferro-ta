@@ -626,6 +626,13 @@ class TestBatchApply:
         with pytest.raises(ValueError, match="1-D or 2-D"):
             batch_apply(np.zeros((5, 5, 5)), SMA, timeperiod=3)
 
+    def test_sma_fastpath_matches_batch_sma(self):
+        from ferro_ta.data.batch import batch_sma
+
+        fast = batch_apply(self.C2D, SMA, timeperiod=10)
+        direct = batch_sma(self.C2D, timeperiod=10)
+        assert np.allclose(fast, direct, equal_nan=True)
+
 
 class TestBatchShapeValidation:
     def test_batch_atr_shape_mismatch_raises(self):

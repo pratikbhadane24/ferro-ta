@@ -40,6 +40,7 @@ from __future__ import annotations
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
+from ferro_ta._ferro_ta import ratio as _rust_ratio
 from ferro_ta._ferro_ta import relative_strength as _rust_rel_strength
 from ferro_ta._ferro_ta import rolling_beta as _rust_rolling_beta
 from ferro_ta._ferro_ta import spread as _rust_spread
@@ -162,11 +163,7 @@ def ratio(
     >>> list(ratio(a, b))
     [2.0, 3.0, 3.0]
     """
-    av = _to_f64(a)
-    bv = _to_f64(b)
-    with np.errstate(divide="ignore", invalid="ignore"):
-        result = np.where(bv == 0, np.nan, av / bv)
-    return result
+    return _rust_ratio(_to_f64(a), _to_f64(b))
 
 
 # ---------------------------------------------------------------------------

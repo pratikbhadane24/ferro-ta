@@ -192,6 +192,54 @@ pub fn signal_attribution<'py>(
 }
 
 // ---------------------------------------------------------------------------
+// extract_trades
+// ---------------------------------------------------------------------------
+
+/// Extract trade-level pnl and hold durations from positions and strategy returns.
+///
+/// A trade is a maximal contiguous run of non-zero position values.
+#[pyfunction]
+#[allow(clippy::type_complexity)]
+pub fn extract_trades<'py>(
+    py: Python<'py>,
+    positions: PyReadonlyArray1<'py, f64>,
+    strategy_returns: PyReadonlyArray1<'py, f64>,
+) -> PyResult<(Bound<'py, PyArray1<f64>>, Bound<'py, PyArray1<f64>>)> {
+    let pos = positions.as_slice()?;
+    let ret = strategy_returns.as_slice()?;
+    let n = pos.len();
+    if n != ret.len() {
+        return Err(PyValueError::new_err(
+            "positions and strategy_returns must have the same length",
+        ));
+    }
+
+    let mut pnl = Vec::<f64>::new();
+    let mut hold = Vec::<f64>::new();
+
+    let mut i = 0usize;
+    while i < n {
+        if pos[i] == 0.0 {
+            i += 1;
+            continue;
+        }
+        let mut j = i + 1;
+        while j < n && pos[j] == pos[i] {
+            j += 1;
+        }
+        let mut trade_pnl = 0.0_f64;
+        for v in ret.iter().take(j).skip(i) {
+            trade_pnl += *v;
+        }
+        pnl.push(trade_pnl);
+        hold.push((j - i) as f64);
+        i = j;
+    }
+
+    Ok((pnl.into_pyarray(py), hold.into_pyarray(py)))
+}
+
+// ---------------------------------------------------------------------------
 // Register
 // ---------------------------------------------------------------------------
 
@@ -199,5 +247,6 @@ pub fn register(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(trade_stats, m)?)?;
     m.add_function(wrap_pyfunction!(monthly_contribution, m)?)?;
     m.add_function(wrap_pyfunction!(signal_attribution, m)?)?;
+    m.add_function(wrap_pyfunction!(extract_trades, m)?)?;
     Ok(())
 }

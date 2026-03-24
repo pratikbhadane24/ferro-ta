@@ -11,10 +11,16 @@ from typing import Any
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
+from ferro_ta._ferro_ta import aggregate_greeks_legs as _rust_aggregate_greeks_legs
+from ferro_ta._ferro_ta import strategy_payoff_dense as _rust_strategy_payoff_dense
+from ferro_ta._ferro_ta import strategy_payoff_legs as _rust_strategy_payoff_legs
 from ferro_ta.analysis.options import OptionGreeks
-from ferro_ta.analysis.options import greeks as option_greeks
 from ferro_ta.analysis.options_strategy import DerivativesStrategy, StrategyLeg
-from ferro_ta.core.exceptions import FerroTAInputError, FerroTAValueError
+from ferro_ta.core.exceptions import (
+    FerroTAInputError,
+    FerroTAValueError,
+    _normalize_rust_error,
+)
 
 __all__ = [
     "PayoffLeg",
@@ -79,14 +85,23 @@ def option_leg_payoff(
 ) -> NDArray[np.float64]:
     """Expiry payoff for a single option leg."""
     grid = _coerce_spot_grid(spot_grid)
-    sign = _side_sign(side) * float(quantity) * float(multiplier)
-    if option_type == "call":
-        intrinsic = np.maximum(grid - float(strike), 0.0)
-    elif option_type == "put":
-        intrinsic = np.maximum(float(strike) - grid, 0.0)
-    else:
+    _side_sign(side)
+    if option_type not in {"call", "put"}:
         raise FerroTAValueError("option_type must be 'call' or 'put'.")
-    return sign * (intrinsic - float(premium))
+    return np.asarray(
+        _rust_strategy_payoff_dense(
+            grid,
+            np.array([0], dtype=np.int64),  # option
+            np.array([1 if side == "long" else -1], dtype=np.int64),
+            np.array([1 if option_type == "call" else -1], dtype=np.int64),
+            np.array([float(strike)], dtype=np.float64),
+            np.array([float(premium)], dtype=np.float64),
+            np.array([0.0], dtype=np.float64),
+            np.array([float(quantity)], dtype=np.float64),
+            np.array([float(multiplier)], dtype=np.float64),
+        ),
+        dtype=np.float64,
+    )
 
 
 def futures_leg_payoff(
@@ -99,8 +114,21 @@ def futures_leg_payoff(
 ) -> NDArray[np.float64]:
     """P/L profile for a futures leg."""
     grid = _coerce_spot_grid(spot_grid)
-    sign = _side_sign(side) * float(quantity) * float(multiplier)
-    return sign * (grid - float(entry_price))
+    _side_sign(side)
+    return np.asarray(
+        _rust_strategy_payoff_dense(
+            grid,
+            np.array([1], dtype=np.int64),  # future
+            np.array([1 if side == "long" else -1], dtype=np.int64),
+            np.array([-1], dtype=np.int64),
+            np.array([0.0], dtype=np.float64),
+            np.array([0.0], dtype=np.float64),
+            np.array([float(entry_price)], dtype=np.float64),
+            np.array([float(quantity)], dtype=np.float64),
+            np.array([float(multiplier)], dtype=np.float64),
+        ),
+        dtype=np.float64,
+    )
 
 
 def _mapping_to_leg(mapping: Mapping[str, Any]) -> PayoffLeg:
@@ -141,31 +169,13 @@ def strategy_payoff(
     """Aggregate expiry payoff across option and futures legs."""
     grid = _coerce_spot_grid(spot_grid)
     normalized = _normalize_legs(legs, strategy=strategy)
-    total = np.zeros_like(grid)
-    for leg in normalized:
-        if leg.instrument == "option":
-            if leg.strike is None:
-                raise FerroTAValueError("Option payoff legs require strike.")
-            total += option_leg_payoff(
-                grid,
-                strike=float(leg.strike),
-                premium=float(leg.premium),
-                option_type=str(leg.option_type),
-                side=str(leg.side),
-                quantity=float(leg.quantity),
-                multiplier=float(leg.multiplier),
-            )
-        else:
-            if leg.entry_price is None:
-                raise FerroTAValueError("Futures payoff legs require entry_price.")
-            total += futures_leg_payoff(
-                grid,
-                entry_price=float(leg.entry_price),
-                side=str(leg.side),
-                quantity=float(leg.quantity),
-                multiplier=float(leg.multiplier),
-            )
-    return total
+    if len(normalized) == 0:
+        return np.zeros_like(grid)
+
+    try:
+        return np.asarray(_rust_strategy_payoff_legs(grid, normalized), dtype=np.float64)
+    except ValueError as err:
+        _normalize_rust_error(err)
 
 
 def aggregate_greeks(
@@ -176,42 +186,20 @@ def aggregate_greeks(
 ) -> OptionGreeks:
     """Aggregate Greeks across option and futures legs."""
     normalized = _normalize_legs(legs, strategy=strategy)
-    totals = {
-        "delta": 0.0,
-        "gamma": 0.0,
-        "vega": 0.0,
-        "theta": 0.0,
-        "rho": 0.0,
-    }
-    for leg in normalized:
-        leg_sign = _side_sign(leg.side) * float(leg.quantity) * float(leg.multiplier)
-        if leg.instrument == "future":
-            totals["delta"] += leg_sign
-            continue
-        if leg.strike is None or leg.volatility is None or leg.time_to_expiry is None:
-            raise FerroTAValueError(
-                "Option legs require strike, volatility, and time_to_expiry for Greeks aggregation."
-            )
-        leg_greeks = option_greeks(
-            float(spot),
-            float(leg.strike),
-            float(leg.rate),
-            float(leg.time_to_expiry),
-            float(leg.volatility),
-            option_type=str(leg.option_type),
-            model="bsm",
-            carry=float(leg.carry),
+    if len(normalized) == 0:
+        return OptionGreeks(0.0, 0.0, 0.0, 0.0, 0.0)
+
+    try:
+        delta, gamma, vega, theta, rho = _rust_aggregate_greeks_legs(
+            float(spot), normalized
         )
-        totals["delta"] += leg_sign * float(leg_greeks.delta)
-        totals["gamma"] += leg_sign * float(leg_greeks.gamma)
-        totals["vega"] += leg_sign * float(leg_greeks.vega)
-        totals["theta"] += leg_sign * float(leg_greeks.theta)
-        totals["rho"] += leg_sign * float(leg_greeks.rho)
+    except ValueError as err:
+        _normalize_rust_error(err)
 
     return OptionGreeks(
-        totals["delta"],
-        totals["gamma"],
-        totals["vega"],
-        totals["theta"],
-        totals["rho"],
+        float(delta),
+        float(gamma),
+        float(vega),
+        float(theta),
+        float(rho),
     )

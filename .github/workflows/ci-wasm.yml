@@ -35,6 +35,9 @@ jobs:
         working-directory: wasm
         run: wasm-pack build --target nodejs --out-dir pkg
 
+      - name: Check API manifest is current
+        run: python3 scripts/check_api_manifest.py
+
       - name: Benchmark WASM package
         working-directory: wasm
         run: node bench.js --json ../wasm_benchmark.json

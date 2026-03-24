@@ -3,6 +3,7 @@
 mod chain;
 mod greeks;
 mod iv;
+mod payoff;
 mod pricing;
 mod surface;
 
@@ -63,5 +64,21 @@ pub fn register(m: &Bound<'_, PyModule>) -> PyResult<()> {
         m
     )?)?;
     m.add_function(pyo3::wrap_pyfunction!(self::chain::select_strike_delta, m)?)?;
+    m.add_function(pyo3::wrap_pyfunction!(
+        self::payoff::strategy_payoff_dense,
+        m
+    )?)?;
+    m.add_function(pyo3::wrap_pyfunction!(
+        self::payoff::strategy_payoff_legs,
+        m
+    )?)?;
+    m.add_function(pyo3::wrap_pyfunction!(
+        self::payoff::aggregate_greeks_dense,
+        m
+    )?)?;
+    m.add_function(pyo3::wrap_pyfunction!(
+        self::payoff::aggregate_greeks_legs,
+        m
+    )?)?;
     Ok(())
 }

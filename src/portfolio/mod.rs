@@ -351,6 +351,35 @@ pub fn spread<'py>(
 }
 
 // ---------------------------------------------------------------------------
+// ratio
+// ---------------------------------------------------------------------------
+
+/// Compute the ratio between two series: A / B.
+///
+/// Where B is 0, returns NaN.
+#[pyfunction]
+pub fn ratio<'py>(
+    py: Python<'py>,
+    a: PyReadonlyArray1<'py, f64>,
+    b: PyReadonlyArray1<'py, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let av = a.as_slice()?;
+    let bv = b.as_slice()?;
+    let n = av.len();
+    if n == 0 || bv.len() != n {
+        return Err(PyValueError::new_err(
+            "a and b must be non-empty and equal length",
+        ));
+    }
+    let result: Vec<f64> = av
+        .iter()
+        .zip(bv.iter())
+        .map(|(&x, &y)| if y == 0.0 { f64::NAN } else { x / y })
+        .collect();
+    Ok(result.into_pyarray(py))
+}
+
+// ---------------------------------------------------------------------------
 // zscore_series
 // ---------------------------------------------------------------------------
 
@@ -449,6 +478,7 @@ pub fn register(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(correlation_matrix, m)?)?;
     m.add_function(wrap_pyfunction!(relative_strength, m)?)?;
     m.add_function(wrap_pyfunction!(spread, m)?)?;
+    m.add_function(wrap_pyfunction!(ratio, m)?)?;
     m.add_function(wrap_pyfunction!(zscore_series, m)?)?;
     m.add_function(wrap_pyfunction!(compose_weighted, m)?)?;
     Ok(())

@@ -39,6 +39,9 @@ import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
 from ferro_ta._ferro_ta import (
+    extract_trades as _rust_extract_trades,
+)
+from ferro_ta._ferro_ta import (
     monthly_contribution as _rust_monthly_contribution,
 )
 from ferro_ta._ferro_ta import (
@@ -199,31 +202,10 @@ def from_backtest(result: Any) -> tuple[NDArray[np.float64], NDArray[np.float64]
     """
     pos = np.asarray(result.positions, dtype=np.float64)
     ret = np.asarray(result.strategy_returns, dtype=np.float64)
-    n = len(pos)
-
-    pnl_list: list[float] = []
-    hold_list: list[float] = []
-
-    i = 0
-    while i < n:
-        if pos[i] == 0.0:
-            i += 1
-            continue
-        # Start of a trade
-        j = i + 1
-        while j < n and pos[j] == pos[i]:
-            j += 1
-        # Trade from i to j-1
-        trade_pnl = float(np.sum(ret[i:j]))
-        pnl_list.append(trade_pnl)
-        hold_list.append(float(j - i))
-        i = j
-
-    if not pnl_list:
-        return np.empty(0, dtype=np.float64), np.empty(0, dtype=np.float64)
+    pnl, hold = _rust_extract_trades(pos, ret)
     return (
-        np.array(pnl_list, dtype=np.float64),
-        np.array(hold_list, dtype=np.float64),
+        np.asarray(pnl, dtype=np.float64),
+        np.asarray(hold, dtype=np.float64),
     )
 
 

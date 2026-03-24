@@ -48,9 +48,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9330f8b2ff13f34540b44e946ef35111825727b38d33286ef986142615121801"
 
 [[package]]
+name = "ferro_ta_core"
+version = "1.0.4"
+
+[[package]]
 name = "ferro_ta_wasm"
-version = "1.0.0"
+version = "1.0.4"
 dependencies = [
+ "ferro_ta_core",
  "js-sys",
  "wasm-bindgen",
  "wasm-bindgen-test",

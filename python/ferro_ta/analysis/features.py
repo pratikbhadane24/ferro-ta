@@ -23,6 +23,7 @@ from typing import Any, Optional, Union
 import numpy as np
 from numpy.typing import NDArray
 
+from ferro_ta._ferro_ta import forward_fill_nan as _rust_forward_fill_nan
 from ferro_ta._utils import _to_f64
 from ferro_ta.data.batch import compute_many
 
@@ -32,13 +33,7 @@ __all__ = [
 
 
 def _forward_fill_nan(arr: NDArray[np.float64]) -> NDArray[np.float64]:
-    mask = np.isnan(arr)
-    if not mask.any():
-        return arr
-
-    last_valid = np.where(~mask, np.arange(len(arr)), 0)
-    np.maximum.accumulate(last_valid, out=last_valid)
-    return arr[last_valid]
+    return np.asarray(_rust_forward_fill_nan(np.ascontiguousarray(arr, dtype=np.float64)))
 
 
 # ---------------------------------------------------------------------------

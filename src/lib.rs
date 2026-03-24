@@ -1,6 +1,7 @@
 pub mod aggregation;
 pub mod alerts;
 pub mod attribution;
+pub mod backtest;
 pub mod batch;
 pub mod chunked;
 pub mod crypto;
@@ -70,5 +71,6 @@ fn _ferro_ta(m: &Bound<'_, PyModule>) -> PyResult<()> {
     chunked::register(m)?;
     regime::register(m)?;
     attribution::register(m)?;
+    backtest::register(m)?;
     Ok(())
 }
