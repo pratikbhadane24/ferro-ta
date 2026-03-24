@@ -2,16 +2,38 @@
   "metadata": {
     "suite": "streaming",
     "runtime": {
-      "generated_at_utc": "2026-03-23T21:08:30.968886+00:00",
-      "python_version": "3.12.11",
-      "platform": "macOS-26.3.1-arm64-arm-64bit",
+      "generated_at_utc": "2026-03-24T09:13:04.351797+00:00",
+      "python_version": "3.13.5",
+      "python_implementation": "CPython",
+      "python_executable": "/Users/pratikbhadane/Work/Projects/ferro-ta/.venv/bin/python3",
+      "platform": "macOS-26.3.1-arm64-arm-64bit-Mach-O",
+      "system": "Darwin",
+      "release": "25.3.0",
       "machine": "arm64",
-      "processor": "arm"
+      "processor": "arm",
+      "cpu_model": "Apple M3 Max",
+      "cpu_count_logical": 14,
+      "total_memory_bytes": 38654705664
     },
     "git": {
-      "commit": "2d5000262f0f1439546bd4872235aae0333880a4",
+      "commit": "53566b9d82898fa4f95c5190156c969a0bd8e8e3",
       "dirty": true,
-      "branch": "feat/performace-1.0.2"
+      "branch": "main"
+    },
+    "build": {
+      "rustc": "rustc 1.93.1 (01f6ddf75 2026-02-11)\nbinary: rustc\ncommit-hash: 01f6ddf7588f42ae2d7eb0a2f21d44e8e96674cf\ncommit-date: 2026-02-11\nhost: aarch64-apple-darwin\nrelease: 1.93.1\nLLVM version: 21.1.8",
+      "cargo": "cargo 1.93.1 (083ac5135 2025-12-15)",
+      "cargo_release_profile": {
+        "lto": true,
+        "codegen-units": 1
+      },
+      "rustflags": null,
+      "cargo_build_rustflags": null,
+      "maturin_flags": null
+    },
+    "packages": {
+      "numpy": "2.2.6",
+      "ferro-ta": "1.0.4"
     },
     "dataset": {
       "n_bars": 20000,
@@ -22,52 +44,52 @@
     {
       "indicator": "StreamingSMA",
       "inputs": "close",
-      "stream_total_ms": 0.8808,
-      "batch_total_ms": 0.0153,
-      "stream_ns_per_update": 44.04,
-      "batch_ns_per_bar": 0.77,
-      "updates_per_second": 22705779.59,
-      "stream_over_batch_ratio": 57.4469
+      "stream_total_ms": 0.9927,
+      "batch_total_ms": 0.0166,
+      "stream_ns_per_update": 49.63,
+      "batch_ns_per_bar": 0.83,
+      "updates_per_second": 20147763.43,
+      "stream_over_batch_ratio": 59.7092
     },
     {
       "indicator": "StreamingEMA",
       "inputs": "close",
-      "stream_total_ms": 0.8611,
-      "batch_total_ms": 0.0408,
-      "stream_ns_per_update": 43.06,
-      "batch_ns_per_bar": 2.04,
-      "updates_per_second": 23225431.81,
-      "stream_over_batch_ratio": 21.0884
+      "stream_total_ms": 0.9459,
+      "batch_total_ms": 0.0435,
+      "stream_ns_per_update": 47.3,
+      "batch_ns_per_bar": 2.18,
+      "updates_per_second": 21143503.9,
+      "stream_over_batch_ratio": 21.7247
     },
     {
       "indicator": "StreamingRSI",
       "inputs": "close",
-      "stream_total_ms": 0.9235,
-      "batch_total_ms": 0.0932,
-      "stream_ns_per_update": 46.17,
-      "batch_ns_per_bar": 4.66,
-      "updates_per_second": 21656740.75,
-      "stream_over_batch_ratio": 9.9035
+      "stream_total_ms": 1.0059,
+      "batch_total_ms": 0.0991,
+      "stream_ns_per_update": 50.3,
+      "batch_ns_per_bar": 4.95,
+      "updates_per_second": 19882356.06,
+      "stream_over_batch_ratio": 10.1523
     },
     {
       "indicator": "StreamingATR",
       "inputs": "hlc",
-      "stream_total_ms": 2.0074,
-      "batch_total_ms": 0.0935,
-      "stream_ns_per_update": 100.37,
-      "batch_ns_per_bar": 4.68,
-      "updates_per_second": 9963056.99,
-      "stream_over_batch_ratio": 21.4603
+      "stream_total_ms": 2.1574,
+      "batch_total_ms": 0.0992,
+      "stream_ns_per_update": 107.87,
+      "batch_ns_per_bar": 4.96,
+      "updates_per_second": 9270525.53,
+      "stream_over_batch_ratio": 21.746
     },
     {
       "indicator": "StreamingVWAP",
       "inputs": "hlcv",
-      "stream_total_ms": 2.6068,
-      "batch_total_ms": 0.0223,
-      "stream_ns_per_update": 130.34,
-      "batch_ns_per_bar": 1.11,
-      "updates_per_second": 7672265.38,
-      "stream_over_batch_ratio": 116.9385
+      "stream_total_ms": 2.6935,
+      "batch_total_ms": 0.0252,
+      "stream_ns_per_update": 134.68,
+      "batch_ns_per_bar": 1.26,
+      "updates_per_second": 7425170.07,
+      "stream_over_batch_ratio": 106.8484
     }
   ]
 }

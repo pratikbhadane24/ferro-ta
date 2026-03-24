@@ -70,9 +70,7 @@ def run_simd_benchmark(
         for label, args in variants
     }
 
-    portable_rows = {
-        row["name"]: row for row in reports["portable_release"]["results"]
-    }
+    portable_rows = {row["name"]: row for row in reports["portable_release"]["results"]}
     simd_rows = {row["name"]: row for row in reports["simd_release"]["results"]}
 
     comparison: list[dict[str, Any]] = []
@@ -136,9 +134,7 @@ def main() -> int:
         window=args.window,
     )
 
-    print(
-        f"{'Case':<20} {'Portable (ms)':>14} {'SIMD (ms)':>12} {'SIMD speedup':>14}"
-    )
+    print(f"{'Case':<20} {'Portable (ms)':>14} {'SIMD (ms)':>12} {'SIMD speedup':>14}")
     print("-" * 64)
     for row in payload["results"]:
         print(

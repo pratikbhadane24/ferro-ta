@@ -33,7 +33,9 @@ __all__ = [
 
 
 def _forward_fill_nan(arr: NDArray[np.float64]) -> NDArray[np.float64]:
-    return np.asarray(_rust_forward_fill_nan(np.ascontiguousarray(arr, dtype=np.float64)))
+    return np.asarray(
+        _rust_forward_fill_nan(np.ascontiguousarray(arr, dtype=np.float64))
+    )
 
 
 # ---------------------------------------------------------------------------

@@ -1403,9 +1403,9 @@ class TestMCPCallTool:
         instance_id = created["instance_id"]
 
         described = json.loads(
-            handle_call_tool(
-                "describe_instance", {"instance_id": instance_id}
-            )["content"][0]["text"]
+            handle_call_tool("describe_instance", {"instance_id": instance_id})[
+                "content"
+            ][0]["text"]
         )
         method_names = [item["name"] for item in described["methods"]]
         assert "aggregate" in method_names
@@ -1429,9 +1429,9 @@ class TestMCPCallTool:
         assert "close" in aggregated
 
         deleted = json.loads(
-            handle_call_tool(
-                "delete_instance", {"instance_id": instance_id}
-            )["content"][0]["text"]
+            handle_call_tool("delete_instance", {"instance_id": instance_id})[
+                "content"
+            ][0]["text"]
         )
         assert deleted["deleted"] is True
 
@@ -1441,9 +1441,9 @@ class TestMCPCallTool:
         from ferro_ta.mcp import handle_call_tool
 
         wrapped = json.loads(
-            handle_call_tool(
-                "traced", {"func": {"callable": "SMA"}}
-            )["content"][0]["text"]
+            handle_call_tool("traced", {"func": {"callable": "SMA"}})["content"][0][
+                "text"
+            ]
         )
         instance_id = wrapped["instance_id"]
 

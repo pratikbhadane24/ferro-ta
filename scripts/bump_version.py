@@ -15,7 +15,6 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parent.parent
 SEMVER_RE = re.compile(r"^\d+\.\d+\.\d+$")
 

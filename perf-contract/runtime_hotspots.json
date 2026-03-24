@@ -2,16 +2,38 @@
   "metadata": {
     "suite": "runtime_hotspots",
     "runtime": {
-      "generated_at_utc": "2026-03-23T21:08:34.436165+00:00",
-      "python_version": "3.12.11",
-      "platform": "macOS-26.3.1-arm64-arm-64bit",
+      "generated_at_utc": "2026-03-24T09:13:08.521805+00:00",
+      "python_version": "3.13.5",
+      "python_implementation": "CPython",
+      "python_executable": "/Users/pratikbhadane/Work/Projects/ferro-ta/.venv/bin/python3",
+      "platform": "macOS-26.3.1-arm64-arm-64bit-Mach-O",
+      "system": "Darwin",
+      "release": "25.3.0",
       "machine": "arm64",
-      "processor": "arm"
+      "processor": "arm",
+      "cpu_model": "Apple M3 Max",
+      "cpu_count_logical": 14,
+      "total_memory_bytes": 38654705664
     },
     "git": {
-      "commit": "2d5000262f0f1439546bd4872235aae0333880a4",
+      "commit": "53566b9d82898fa4f95c5190156c969a0bd8e8e3",
       "dirty": true,
-      "branch": "feat/performace-1.0.2"
+      "branch": "main"
+    },
+    "build": {
+      "rustc": "rustc 1.93.1 (01f6ddf75 2026-02-11)\nbinary: rustc\ncommit-hash: 01f6ddf7588f42ae2d7eb0a2f21d44e8e96674cf\ncommit-date: 2026-02-11\nhost: aarch64-apple-darwin\nrelease: 1.93.1\nLLVM version: 21.1.8",
+      "cargo": "cargo 1.93.1 (083ac5135 2025-12-15)",
+      "cargo_release_profile": {
+        "lto": true,
+        "codegen-units": 1
+      },
+      "rustflags": null,
+      "cargo_build_rustflags": null,
+      "maturin_flags": null
+    },
+    "packages": {
+      "numpy": "2.2.6",
+      "ferro-ta": "1.0.4"
     },
     "dataset": {
       "price_bars": 20000,
@@ -23,74 +45,74 @@
     {
       "category": "python_analysis",
       "name": "iv_zscore",
-      "fast_ms": 28.857,
-      "reference_ms": 897.0178,
-      "speedup_vs_reference": 31.0849,
-      "share_of_suite_pct": 70.0
+      "fast_ms": 32.5847,
+      "reference_ms": 990.4233,
+      "speedup_vs_reference": 30.3954,
+      "share_of_suite_pct": 69.27
     },
     {
       "category": "python_analysis",
       "name": "iv_rank",
-      "fast_ms": 10.8496,
-      "reference_ms": 199.4376,
-      "speedup_vs_reference": 18.3821,
-      "share_of_suite_pct": 26.32
+      "fast_ms": 12.2974,
+      "reference_ms": 233.0671,
+      "speedup_vs_reference": 18.9525,
+      "share_of_suite_pct": 26.14
     },
     {
       "category": "python_analysis",
       "name": "iv_percentile",
-      "fast_ms": 0.9124,
-      "reference_ms": 79.6557,
-      "speedup_vs_reference": 87.3019,
-      "share_of_suite_pct": 2.21
+      "fast_ms": 0.9511,
+      "reference_ms": 90.5663,
+      "speedup_vs_reference": 95.2202,
+      "share_of_suite_pct": 2.02
     },
     {
       "category": "ffi_grouping",
       "name": "feature_matrix",
-      "fast_ms": 0.2411,
-      "reference_ms": 0.2215,
-      "speedup_vs_reference": 0.9186,
-      "share_of_suite_pct": 0.58
+      "fast_ms": 0.6619,
+      "reference_ms": 0.6155,
+      "speedup_vs_reference": 0.9299,
+      "share_of_suite_pct": 1.41
     },
     {
       "category": "ffi_grouping",
       "name": "compute_many_close",
-      "fast_ms": 0.1563,
-      "reference_ms": 0.1498,
-      "speedup_vs_reference": 0.9587,
-      "share_of_suite_pct": 0.38
+      "fast_ms": 0.3175,
+      "reference_ms": 0.2437,
+      "speedup_vs_reference": 0.7675,
+      "share_of_suite_pct": 0.67
     },
     {
       "category": "rust_kernel",
       "name": "BETA",
-      "fast_ms": 0.0694,
-      "reference_ms": 159.2715,
-      "speedup_vs_reference": 2294.4163,
-      "share_of_suite_pct": 0.17
+      "fast_ms": 0.0742,
+      "reference_ms": 188.6048,
+      "speedup_vs_reference": 2541.5695,
+      "share_of_suite_pct": 0.16
     },
     {
       "category": "rust_kernel",
       "name": "CORREL",
-      "fast_ms": 0.0555,
-      "reference_ms": 158.2775,
-      "speedup_vs_reference": 2851.8468,
-      "share_of_suite_pct": 0.13
-    },
-    {
-      "category": "rust_kernel",
-      "name": "LINEARREG",
-      "fast_ms": 0.0414,
-      "reference_ms": 44.8111,
-      "speedup_vs_reference": 1081.9491,
-      "share_of_suite_pct": 0.1
+      "fast_ms": 0.0638,
+      "reference_ms": 215.973,
+      "speedup_vs_reference": 3387.8115,
+      "share_of_suite_pct": 0.14
     },
     {
       "category": "rust_kernel",
       "name": "TSF",
-      "fast_ms": 0.0413,
-      "reference_ms": 46.3799,
-      "speedup_vs_reference": 1122.1039,
-      "share_of_suite_pct": 0.1
+      "fast_ms": 0.0441,
+      "reference_ms": 49.6108,
+      "speedup_vs_reference": 1125.3954,
+      "share_of_suite_pct": 0.09
+    },
+    {
+      "category": "rust_kernel",
+      "name": "LINEARREG",
+      "fast_ms": 0.044,
+      "reference_ms": 57.9675,
+      "speedup_vs_reference": 1318.7009,
+      "share_of_suite_pct": 0.09
     }
   ]
 }

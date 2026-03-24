@@ -2,16 +2,38 @@
   "metadata": {
     "suite": "batch",
     "runtime": {
-      "generated_at_utc": "2026-03-23T21:08:30.877702+00:00",
-      "python_version": "3.12.11",
-      "platform": "macOS-26.3.1-arm64-arm-64bit",
+      "generated_at_utc": "2026-03-24T09:13:04.010216+00:00",
+      "python_version": "3.13.5",
+      "python_implementation": "CPython",
+      "python_executable": "/Users/pratikbhadane/Work/Projects/ferro-ta/.venv/bin/python3",
+      "platform": "macOS-26.3.1-arm64-arm-64bit-Mach-O",
+      "system": "Darwin",
+      "release": "25.3.0",
       "machine": "arm64",
-      "processor": "arm"
+      "processor": "arm",
+      "cpu_model": "Apple M3 Max",
+      "cpu_count_logical": 14,
+      "total_memory_bytes": 38654705664
     },
     "git": {
-      "commit": "2d5000262f0f1439546bd4872235aae0333880a4",
+      "commit": "53566b9d82898fa4f95c5190156c969a0bd8e8e3",
       "dirty": true,
-      "branch": "feat/performace-1.0.2"
+      "branch": "main"
+    },
+    "build": {
+      "rustc": "rustc 1.93.1 (01f6ddf75 2026-02-11)\nbinary: rustc\ncommit-hash: 01f6ddf7588f42ae2d7eb0a2f21d44e8e96674cf\ncommit-date: 2026-02-11\nhost: aarch64-apple-darwin\nrelease: 1.93.1\nLLVM version: 21.1.8",
+      "cargo": "cargo 1.93.1 (083ac5135 2025-12-15)",
+      "cargo_release_profile": {
+        "lto": true,
+        "codegen-units": 1
+      },
+      "rustflags": null,
+      "cargo_build_rustflags": null,
+      "maturin_flags": null
+    },
+    "packages": {
+      "numpy": "2.2.6",
+      "ferro-ta": "1.0.4"
     },
     "dataset": {
       "n_samples": 20000,
@@ -23,49 +45,49 @@
   "results": [
     {
       "indicator": "SMA",
-      "parallel_ms": 1.9615,
-      "sequential_ms": 2.0423,
-      "loop_ms": 0.8865,
-      "parallel_speedup_vs_loop": 0.452,
-      "sequential_speedup_vs_loop": 0.4341
+      "parallel_ms": 7.9306,
+      "sequential_ms": 2.4832,
+      "loop_ms": 1.0238,
+      "parallel_speedup_vs_loop": 0.1291,
+      "sequential_speedup_vs_loop": 0.4123
     },
     {
       "indicator": "RSI",
-      "parallel_ms": 2.1731,
-      "sequential_ms": 4.3225,
-      "loop_ms": 3.2043,
-      "parallel_speedup_vs_loop": 1.4745,
-      "sequential_speedup_vs_loop": 0.7413
+      "parallel_ms": 3.9307,
+      "sequential_ms": 5.0938,
+      "loop_ms": 3.6883,
+      "parallel_speedup_vs_loop": 0.9383,
+      "sequential_speedup_vs_loop": 0.7241
     },
     {
       "indicator": "ATR",
-      "parallel_ms": 4.2249,
-      "sequential_ms": 6.6175,
-      "loop_ms": 4.0382,
-      "parallel_speedup_vs_loop": 0.9558,
-      "sequential_speedup_vs_loop": 0.6102
+      "parallel_ms": 9.2546,
+      "sequential_ms": 7.768,
+      "loop_ms": 5.2669,
+      "parallel_speedup_vs_loop": 0.5691,
+      "sequential_speedup_vs_loop": 0.678
     },
     {
       "indicator": "ADX",
-      "parallel_ms": 4.8674,
-      "sequential_ms": 7.6402,
-      "loop_ms": 5.1861,
-      "parallel_speedup_vs_loop": 1.0655,
-      "sequential_speedup_vs_loop": 0.6788
+      "parallel_ms": 9.5489,
+      "sequential_ms": 9.1403,
+      "loop_ms": 7.1578,
+      "parallel_speedup_vs_loop": 0.7496,
+      "sequential_speedup_vs_loop": 0.7831
     }
   ],
   "grouped_results": [
     {
       "case": "close_bundle_3",
-      "grouped_ms": 0.1878,
-      "separate_ms": 0.1719,
-      "speedup_vs_separate": 0.9155
+      "grouped_ms": 0.466,
+      "separate_ms": 0.2003,
+      "speedup_vs_separate": 0.4298
     },
     {
       "case": "hlc_bundle_3",
-      "grouped_ms": 0.2958,
-      "separate_ms": 0.4633,
-      "speedup_vs_separate": 1.5666
+      "grouped_ms": 1.2538,
+      "separate_ms": 0.6999,
+      "speedup_vs_separate": 0.5582
     }
   ]
 }

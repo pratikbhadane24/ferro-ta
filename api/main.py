@@ -77,7 +77,7 @@ from __future__ import annotations
 
 import math
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import numpy as np
 
@@ -117,12 +117,12 @@ app = FastAPI(
 # ---------------------------------------------------------------------------
 
 
-def _nan_to_none(arr: np.ndarray) -> List[Optional[float]]:
+def _nan_to_none(arr: np.ndarray) -> list[float | None]:
     """Convert numpy array to list, replacing NaN/Inf with None."""
     return [None if not math.isfinite(v) else float(v) for v in arr]
 
 
-def _validate_series(close: List[float]) -> np.ndarray:
+def _validate_series(close: list[float]) -> np.ndarray:
     if len(close) > MAX_SERIES_LENGTH:
         raise HTTPException(
             status_code=413,
@@ -142,54 +142,54 @@ def _validate_series(close: List[float]) -> np.ndarray:
 
 
 class IndicatorRequest(BaseModel):
-    close: List[float] = Field(..., description="Close price series")
+    close: list[float] = Field(..., description="Close price series")
     timeperiod: int = Field(default=14, ge=1, description="Look-back period")
 
     @field_validator("close")
     @classmethod
-    def close_must_be_finite(cls, v: List[float]) -> List[float]:
+    def close_must_be_finite(cls, v: list[float]) -> list[float]:
         if not all(math.isfinite(x) for x in v):
             raise ValueError("close series must contain only finite values")
         return v
 
 
 class MACDRequest(BaseModel):
-    close: List[float] = Field(..., description="Close price series")
+    close: list[float] = Field(..., description="Close price series")
     fastperiod: int = Field(default=12, ge=1)
     slowperiod: int = Field(default=26, ge=1)
     signalperiod: int = Field(default=9, ge=1)
 
     @field_validator("close")
     @classmethod
-    def close_must_be_finite(cls, v: List[float]) -> List[float]:
+    def close_must_be_finite(cls, v: list[float]) -> list[float]:
         if not all(math.isfinite(x) for x in v):
             raise ValueError("close series must contain only finite values")
         return v
 
 
 class BBANDSRequest(BaseModel):
-    close: List[float] = Field(..., description="Close price series")
+    close: list[float] = Field(..., description="Close price series")
     timeperiod: int = Field(default=5, ge=2)
     nbdevup: float = Field(default=2.0, gt=0)
     nbdevdn: float = Field(default=2.0, gt=0)
 
     @field_validator("close")
     @classmethod
-    def close_must_be_finite(cls, v: List[float]) -> List[float]:
+    def close_must_be_finite(cls, v: list[float]) -> list[float]:
         if not all(math.isfinite(x) for x in v):
             raise ValueError("close series must contain only finite values")
         return v
 
 
 class BacktestRequest(BaseModel):
-    close: List[float] = Field(..., description="Close price series")
+    close: list[float] = Field(..., description="Close price series")
     strategy: str = Field(default="rsi_30_70")
     commission_per_trade: float = Field(default=0.0, ge=0.0)
     slippage_bps: float = Field(default=0.0, ge=0.0)
 
     @field_validator("close")
     @classmethod
-    def close_must_be_finite(cls, v: List[float]) -> List[float]:
+    def close_must_be_finite(cls, v: list[float]) -> list[float]:
         if not all(math.isfinite(x) for x in v):
             raise ValueError("close series must contain only finite values")
         return v
@@ -201,13 +201,13 @@ class BacktestRequest(BaseModel):
 
 
 @app.get("/health", summary="Health check")
-def health() -> Dict[str, str]:
+def health() -> dict[str, str]:
     """Readiness / liveness probe."""
     return {"status": "ok", "version": app.version}
 
 
 @app.post("/indicators/sma", summary="Simple Moving Average")
-def compute_sma(req: IndicatorRequest) -> Dict[str, Any]:
+def compute_sma(req: IndicatorRequest) -> dict[str, Any]:
     """Compute Simple Moving Average (SMA).
 
     Returns ``result``: list of floats (null for warm-up bars).
@@ -218,7 +218,7 @@ def compute_sma(req: IndicatorRequest) -> Dict[str, Any]:
 
 
 @app.post("/indicators/ema", summary="Exponential Moving Average")
-def compute_ema(req: IndicatorRequest) -> Dict[str, Any]:
+def compute_ema(req: IndicatorRequest) -> dict[str, Any]:
     """Compute Exponential Moving Average (EMA)."""
     c = _validate_series(req.close)
     out = np.asarray(ft.EMA(c, timeperiod=req.timeperiod), dtype=np.float64)
@@ -226,7 +226,7 @@ def compute_ema(req: IndicatorRequest) -> Dict[str, Any]:
 
 
 @app.post("/indicators/rsi", summary="Relative Strength Index")
-def compute_rsi(req: IndicatorRequest) -> Dict[str, Any]:
+def compute_rsi(req: IndicatorRequest) -> dict[str, Any]:
     """Compute Relative Strength Index (RSI)."""
     c = _validate_series(req.close)
     out = np.asarray(ft.RSI(c, timeperiod=req.timeperiod), dtype=np.float64)
@@ -234,7 +234,7 @@ def compute_rsi(req: IndicatorRequest) -> Dict[str, Any]:
 
 
 @app.post("/indicators/macd", summary="MACD")
-def compute_macd(req: MACDRequest) -> Dict[str, Any]:
+def compute_macd(req: MACDRequest) -> dict[str, Any]:
     """Compute MACD (line, signal, histogram).
 
     Returns ``result`` with keys ``macd``, ``signal``, ``hist``.
@@ -256,7 +256,7 @@ def compute_macd(req: MACDRequest) -> Dict[str, Any]:
 
 
 @app.post("/indicators/bbands", summary="Bollinger Bands")
-def compute_bbands(req: BBANDSRequest) -> Dict[str, Any]:
+def compute_bbands(req: BBANDSRequest) -> dict[str, Any]:
     """Compute Bollinger Bands (upper, middle, lower).
 
     Returns ``result`` with keys ``upper``, ``middle``, ``lower``.
@@ -278,7 +278,7 @@ def compute_bbands(req: BBANDSRequest) -> Dict[str, Any]:
 
 
 @app.post("/backtest", summary="Vectorized backtest")
-def run_backtest(req: BacktestRequest) -> Dict[str, Any]:
+def run_backtest(req: BacktestRequest) -> dict[str, Any]:
     """Run a vectorized backtest using a named strategy.
 
     Strategies: ``rsi_30_70``, ``sma_crossover``, ``macd_crossover``.

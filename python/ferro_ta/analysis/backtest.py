@@ -158,7 +158,9 @@ def rsi_strategy(
 
     c = np.asarray(close, dtype=np.float64)
     return np.asarray(
-        _rust_rsi_threshold_signals(c, int(timeperiod), float(oversold), float(overbought)),
+        _rust_rsi_threshold_signals(
+            c, int(timeperiod), float(oversold), float(overbought)
+        ),
         dtype=np.float64,
     )
 

@@ -31,6 +31,9 @@ env/
 # WASM build output
 wasm/pkg/
 wasm/pkg-web/
+benchmark_vs_talib.json
+wasm_benchmark.json
+.wasm_benchmark.prepush.json
 .coverage
 .coverage.*
 coverage.xml

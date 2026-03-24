@@ -50,7 +50,9 @@ def _run_node_conformance() -> dict[str, list[float | None]]:
     if shutil.which("node") is None:
         pytest.skip("node is required for wasm/node conformance test")
     if not PKG_JS.exists():
-        pytest.skip("wasm/pkg not found; run `wasm-pack build --target nodejs --out-dir pkg`")
+        pytest.skip(
+            "wasm/pkg not found; run `wasm-pack build --target nodejs --out-dir pkg`"
+        )
 
     _write_node_conformance_script(SCRIPT)
     try:
@@ -78,7 +80,9 @@ def _assert_close_with_null_nan(
 ) -> None:
     assert len(actual) == len(expected)
     a = np.array([np.nan if v is None else float(v) for v in actual], dtype=np.float64)
-    e = np.array([np.nan if v is None else float(v) for v in expected], dtype=np.float64)
+    e = np.array(
+        [np.nan if v is None else float(v) for v in expected], dtype=np.float64
+    )
     np.testing.assert_allclose(a, e, atol=atol, rtol=0.0, equal_nan=True)
 
 

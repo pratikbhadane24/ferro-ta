@@ -26,9 +26,10 @@ import math
 import sys
 import time
 import tracemalloc
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 import numpy as np
 

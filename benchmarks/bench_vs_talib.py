@@ -309,9 +309,13 @@ def run_comparison(sizes: list[int], json_path: str | None) -> list[dict[str, An
 
     if not TALIB_AVAILABLE:
         print("Note: ta-lib not installed. Reporting ferro_ta timings only.")
-        print("Install with: pip install ta-lib (or conda install ta-lib) for comparison.\n")
+        print(
+            "Install with: pip install ta-lib (or conda install ta-lib) for comparison.\n"
+        )
 
-    print(f"\nferro_ta vs TA-Lib — median of {N_RUNS} measured runs after {N_WARMUP} warmup")
+    print(
+        f"\nferro_ta vs TA-Lib — median of {N_RUNS} measured runs after {N_WARMUP} warmup"
+    )
     print(f"Sizes: {sizes}")
     print()
 
@@ -328,11 +332,15 @@ def run_comparison(sizes: list[int], json_path: str | None) -> list[dict[str, An
             if size == 1_000_000 and name in SKIP_1M_FOR:
                 continue
 
-            ft_samples_ms = _timed_runs_ms(ft_run, open_, high, low, close, volume, size)
+            ft_samples_ms = _timed_runs_ms(
+                ft_run, open_, high, low, close, volume, size
+            )
             ft_stats = _summary_stats(ft_samples_ms)
             ft_median_ms = float(ft_stats["median_ms"])
             ft_m_bars_s = _throughput_m_bars_s(size, ft_median_ms)
-            ft_peak_bytes = _python_peak_bytes(ft_run, open_, high, low, close, volume, size)
+            ft_peak_bytes = _python_peak_bytes(
+                ft_run, open_, high, low, close, volume, size
+            )
 
             row: dict[str, Any] = {
                 "indicator": name,
@@ -351,11 +359,15 @@ def run_comparison(sizes: list[int], json_path: str | None) -> list[dict[str, An
             }
 
             if TALIB_AVAILABLE:
-                ta_samples_ms = _timed_runs_ms(ta_run, open_, high, low, close, volume, size)
+                ta_samples_ms = _timed_runs_ms(
+                    ta_run, open_, high, low, close, volume, size
+                )
                 ta_stats = _summary_stats(ta_samples_ms)
                 ta_median_ms = float(ta_stats["median_ms"])
                 ta_m_bars_s = _throughput_m_bars_s(size, ta_median_ms)
-                speedup = ta_median_ms / ft_median_ms if ft_median_ms > 0 else float("inf")
+                speedup = (
+                    ta_median_ms / ft_median_ms if ft_median_ms > 0 else float("inf")
+                )
                 outcome = _outcome(speedup)
                 ta_peak_bytes = _python_peak_bytes(
                     ta_run, open_, high, low, close, volume, size

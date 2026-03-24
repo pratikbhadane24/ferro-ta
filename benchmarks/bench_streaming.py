@@ -57,7 +57,9 @@ def _stream_hlcv(
 ) -> float:
     streamer = factory()
     last = np.nan
-    for high_value, low_value, close_value, volume_value in zip(high, low, close, volume):
+    for high_value, low_value, close_value, volume_value in zip(
+        high, low, close, volume
+    ):
         last = streamer.update(
             float(high_value),
             float(low_value),
@@ -154,7 +156,9 @@ def run_streaming_benchmark(
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Benchmark streaming indicator execution.")
+    parser = argparse.ArgumentParser(
+        description="Benchmark streaming indicator execution."
+    )
     parser.add_argument("--bars", type=int, default=100_000)
     parser.add_argument("--seed", type=int, default=2026)
     parser.add_argument("--json", dest="json_path")

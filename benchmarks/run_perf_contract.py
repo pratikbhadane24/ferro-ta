@@ -52,7 +52,9 @@ def build_indicator_latency_report(*, rounds: int = 5) -> dict[str, Any]:
 
     rows: list[dict[str, Any]] = []
     for entry in INDICATOR_SUITE:
-        elapsed_ms = _time_min(lambda entry=entry: _run_indicator(entry, ohlcv), rounds=rounds)
+        elapsed_ms = _time_min(
+            lambda entry=entry: _run_indicator(entry, ohlcv), rounds=rounds
+        )
         rows.append(
             {
                 "name": entry["name"],
@@ -192,10 +194,7 @@ def main() -> int:
             fixtures=[FIXTURE_PATH],
             extra={"output_dir": str(output_dir)},
         ),
-        "artifacts": {
-            name: file_info(path)
-            for name, path in artifacts.items()
-        },
+        "artifacts": {name: file_info(path) for name, path in artifacts.items()},
     }
     manifest_path = output_dir / "manifest.json"
     _write_json(manifest_path, manifest)

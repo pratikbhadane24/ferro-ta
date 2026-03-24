@@ -50,11 +50,17 @@ def _naive_beta(x: np.ndarray, y: np.ndarray, window: int) -> np.ndarray:
     for end in range(window, len(x)):
         start = end - window
         rx = np.array(
-            [x[idx + 1] / x[idx] - 1.0 if x[idx] != 0.0 else np.nan for idx in range(start, end)],
+            [
+                x[idx + 1] / x[idx] - 1.0 if x[idx] != 0.0 else np.nan
+                for idx in range(start, end)
+            ],
             dtype=np.float64,
         )
         ry = np.array(
-            [y[idx + 1] / y[idx] - 1.0 if y[idx] != 0.0 else np.nan for idx in range(start, end)],
+            [
+                y[idx + 1] / y[idx] - 1.0 if y[idx] != 0.0 else np.nan
+                for idx in range(start, end)
+            ],
             dtype=np.float64,
         )
         mean_x = float(np.sum(rx)) / window
@@ -120,7 +126,12 @@ def build_hotspot_report(
     high = close + rng.uniform(0.1, 2.0, price_bars)
     low = close - rng.uniform(0.1, 2.0, price_bars)
     iv = rng.uniform(10.0, 40.0, iv_bars).astype(np.float64)
-    ohlcv = {"close": close, "high": high, "low": low, "volume": np.full(price_bars, 1000.0)}
+    ohlcv = {
+        "close": close,
+        "high": high,
+        "low": low,
+        "volume": np.full(price_bars, 1000.0),
+    }
 
     rows = [
         (
@@ -218,7 +229,9 @@ def build_hotspot_report(
     results.sort(key=lambda row: row["fast_ms"], reverse=True)
     total_fast_ms = sum(float(row["fast_ms"]) for row in results) or 1.0
     for row in results:
-        row["share_of_suite_pct"] = round(float(row["fast_ms"]) / total_fast_ms * 100.0, 2)
+        row["share_of_suite_pct"] = round(
+            float(row["fast_ms"]) / total_fast_ms * 100.0, 2
+        )
 
     return {
         "metadata": benchmark_metadata(
@@ -249,7 +262,9 @@ def main() -> int:
         window=args.window,
     )
 
-    print(f"{'Category':<16} {'Case':<18} {'Fast (ms)':>10} {'Ref (ms)':>10} {'Speedup':>10}")
+    print(
+        f"{'Category':<16} {'Case':<18} {'Fast (ms)':>10} {'Ref (ms)':>10} {'Speedup':>10}"
+    )
     print("-" * 70)
     for row in payload["results"]:
         print(

@@ -66,8 +66,8 @@ ensure_python_env() {
   fi
 
   need_cmd uv
-  run_cmd uv sync --extra dev --extra docs
-  run_cmd uv run --extra dev --extra docs maturin develop --release
+  run_cmd uv sync --extra dev --extra docs --extra mcp
+  run_cmd uv run --extra dev --extra docs --extra mcp maturin develop --release
   python_env_ready=1
 }
 
@@ -110,13 +110,13 @@ run_python_lint() {
 
 run_python_typecheck() {
   need_cmd uv
-  run_cmd uv run --with mypy --with numpy mypy python/ferro_ta --ignore-missing-imports --no-error-summary
-  run_cmd uv run --with pyright pyright python/ferro_ta
+  run_cmd uv run --with mypy --with numpy python -m mypy python/ferro_ta --ignore-missing-imports --no-error-summary
+  run_cmd uv run --with pyright python -m pyright python/ferro_ta
 }
 
 run_python_test() {
   ensure_python_env
-  run_cmd uv run --extra dev --with pytest-cov pytest tests/unit/ tests/integration/ -v --cov=ferro_ta --cov-report=term-missing --cov-fail-under=65
+  run_cmd uv run --extra dev --extra mcp --with pytest-cov pytest tests/unit/ tests/integration/ -v --cov=ferro_ta --cov-report=term-missing --cov-fail-under=65
 }
 
 run_docs() {

@@ -70,23 +70,23 @@ rustflags = ["-C", "target-cpu=native"]
 ### Phase 3: Algorithm-Level Optimizations (Target: 5-10x improvement)
 
 #### SMA — O(n) running sum
-Current: recomputes each window.  
+Current: recomputes each window.
 Target: single-pass running sum (already done in Rust — verify SIMD path is hit).
 
 #### BBANDS — Welford's algorithm
-Current: compute mean, then variance in two passes.  
+Current: compute mean, then variance in two passes.
 Target: Welford's online algorithm — single pass, better cache utilization.
 
 #### ATR/ADX — Avoid redundant True Range calculations
-Current: ATR → ADX each compute TR independently.  
+Current: ATR → ADX each compute TR independently.
 Target: Compute TR once, share with ATR, NATR, +DI, -DI, ADX in a single pass.
 
 #### MACD — Reuse EMA computations
-Current: Compute fast EMA and slow EMA separately.  
+Current: Compute fast EMA and slow EMA separately.
 Target: Single function computes both EMAs in one pass.
 
 #### Candlestick Patterns — Batch lookup table
-Current: Sequential condition checks per bar.  
+Current: Sequential condition checks per bar.
 Target: Pre-compute body/shadow ratios, vectorized pattern matching.
 
 ### Phase 4: Streaming Precomputation (Target: 100x for incremental updates)

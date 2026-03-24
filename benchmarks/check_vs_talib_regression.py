@@ -88,7 +88,9 @@ def main() -> int:
 
     data = json.loads(path.read_text(encoding="utf-8"))
     if not data.get("talib_available", False):
-        print("ERROR: TA-Lib was not available; cannot enforce TA-Lib regression policy.")
+        print(
+            "ERROR: TA-Lib was not available; cannot enforce TA-Lib regression policy."
+        )
         return 1
 
     summary_by_size = {
@@ -133,9 +135,7 @@ def main() -> int:
         )
 
         if rows < args.min_rows:
-            failures.append(
-                f"size={size} rows {rows} < min_rows {args.min_rows}"
-            )
+            failures.append(f"size={size} rows {rows} < min_rows {args.min_rows}")
         if med < median_floor.get(size, float("-inf")):
             failures.append(
                 f"size={size} median_speedup {med:.4f} < floor {median_floor[size]:.4f}"

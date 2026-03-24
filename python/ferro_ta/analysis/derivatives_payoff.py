@@ -173,7 +173,9 @@ def strategy_payoff(
         return np.zeros_like(grid)
 
     try:
-        return np.asarray(_rust_strategy_payoff_legs(grid, normalized), dtype=np.float64)
+        return np.asarray(
+            _rust_strategy_payoff_legs(grid, normalized), dtype=np.float64
+        )
     except ValueError as err:
         _normalize_rust_error(err)
 

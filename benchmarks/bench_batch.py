@@ -48,13 +48,17 @@ def run_batch_benchmark(
             "SMA",
             lambda: ferro_ta.batch.batch_sma(close2d, timeperiod=14, parallel=True),
             lambda: ferro_ta.batch.batch_sma(close2d, timeperiod=14, parallel=False),
-            lambda: [ferro_ta.SMA(close2d[:, j], timeperiod=14) for j in range(n_series)],
+            lambda: [
+                ferro_ta.SMA(close2d[:, j], timeperiod=14) for j in range(n_series)
+            ],
         ),
         (
             "RSI",
             lambda: ferro_ta.batch.batch_rsi(close2d, timeperiod=14, parallel=True),
             lambda: ferro_ta.batch.batch_rsi(close2d, timeperiod=14, parallel=False),
-            lambda: [ferro_ta.RSI(close2d[:, j], timeperiod=14) for j in range(n_series)],
+            lambda: [
+                ferro_ta.RSI(close2d[:, j], timeperiod=14) for j in range(n_series)
+            ],
         ),
         (
             "ATR",
@@ -201,7 +205,9 @@ def main() -> int:
     if payload["grouped_results"]:
         print("\nGrouped Multi-Indicator Calls")
         print("-" * 64)
-        print(f"{'Case':<18} {'Grouped (ms)':>14} {'Separate (ms)':>16} {'Speedup':>12}")
+        print(
+            f"{'Case':<18} {'Grouped (ms)':>14} {'Separate (ms)':>16} {'Speedup':>12}"
+        )
         print("-" * 64)
         for row in payload["grouped_results"]:
             print(

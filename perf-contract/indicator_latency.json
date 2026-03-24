@@ -2,16 +2,38 @@
   "metadata": {
     "suite": "indicator_latency",
     "runtime": {
-      "generated_at_utc": "2026-03-23T21:08:30.515962+00:00",
-      "python_version": "3.12.11",
-      "platform": "macOS-26.3.1-arm64-arm-64bit",
+      "generated_at_utc": "2026-03-24T09:13:02.973728+00:00",
+      "python_version": "3.13.5",
+      "python_implementation": "CPython",
+      "python_executable": "/Users/pratikbhadane/Work/Projects/ferro-ta/.venv/bin/python3",
+      "platform": "macOS-26.3.1-arm64-arm-64bit-Mach-O",
+      "system": "Darwin",
+      "release": "25.3.0",
       "machine": "arm64",
-      "processor": "arm"
+      "processor": "arm",
+      "cpu_model": "Apple M3 Max",
+      "cpu_count_logical": 14,
+      "total_memory_bytes": 38654705664
     },
     "git": {
-      "commit": "2d5000262f0f1439546bd4872235aae0333880a4",
+      "commit": "53566b9d82898fa4f95c5190156c969a0bd8e8e3",
       "dirty": true,
-      "branch": "feat/performace-1.0.2"
+      "branch": "main"
+    },
+    "build": {
+      "rustc": "rustc 1.93.1 (01f6ddf75 2026-02-11)\nbinary: rustc\ncommit-hash: 01f6ddf7588f42ae2d7eb0a2f21d44e8e96674cf\ncommit-date: 2026-02-11\nhost: aarch64-apple-darwin\nrelease: 1.93.1\nLLVM version: 21.1.8",
+      "cargo": "cargo 1.93.1 (083ac5135 2025-12-15)",
+      "cargo_release_profile": {
+        "lto": true,
+        "codegen-units": 1
+      },
+      "rustflags": null,
+      "cargo_build_rustflags": null,
+      "maturin_flags": null
+    },
+    "packages": {
+      "numpy": "2.2.6",
+      "ferro-ta": "1.0.4"
     },
     "fixtures": [
       {
@@ -33,7 +55,7 @@
       "kwargs": {
         "timeperiod": 20
       },
-      "elapsed_ms": 0.0202
+      "elapsed_ms": 0.0233
     },
     {
       "name": "WILLR_14",
@@ -41,13 +63,13 @@
       "kwargs": {
         "timeperiod": 14
       },
-      "elapsed_ms": 0.0183
+      "elapsed_ms": 0.0207
     },
     {
       "name": "STOCH",
       "inputs": "hlc",
       "kwargs": {},
-      "elapsed_ms": 0.0181
+      "elapsed_ms": 0.0202
     },
     {
       "name": "ADX_14",
@@ -55,7 +77,7 @@
       "kwargs": {
         "timeperiod": 14
       },
-      "elapsed_ms": 0.0147
+      "elapsed_ms": 0.0171
     },
     {
       "name": "CCI_14",
@@ -63,13 +85,13 @@
       "kwargs": {
         "timeperiod": 14
       },
-      "elapsed_ms": 0.0144
+      "elapsed_ms": 0.0164
     },
     {
       "name": "MACD",
       "inputs": "close",
       "kwargs": {},
-      "elapsed_ms": 0.0132
+      "elapsed_ms": 0.015
     },
     {
       "name": "ATR_14",
@@ -77,7 +99,7 @@
       "kwargs": {
         "timeperiod": 14
       },
-      "elapsed_ms": 0.0108
+      "elapsed_ms": 0.0116
     },
     {
       "name": "RSI_14",
@@ -85,7 +107,7 @@
       "kwargs": {
         "timeperiod": 14
       },
-      "elapsed_ms": 0.0102
+      "elapsed_ms": 0.011
     },
     {
       "name": "STDDEV_20",
@@ -93,7 +115,7 @@
       "kwargs": {
         "timeperiod": 20
       },
-      "elapsed_ms": 0.0086
+      "elapsed_ms": 0.0103
     },
     {
       "name": "BETA_5",
@@ -101,7 +123,7 @@
       "kwargs": {
         "timeperiod": 5
       },
-      "elapsed_ms": 0.008
+      "elapsed_ms": 0.0091
     },
     {
       "name": "CORREL_30",
@@ -109,15 +131,7 @@
       "kwargs": {
         "timeperiod": 30
       },
-      "elapsed_ms": 0.0068
-    },
-    {
-      "name": "EMA_20",
-      "inputs": "close",
-      "kwargs": {
-        "timeperiod": 20
-      },
-      "elapsed_ms": 0.0052
+      "elapsed_ms": 0.0078
     },
     {
       "name": "BBANDS_20",
@@ -125,7 +139,7 @@
       "kwargs": {
         "timeperiod": 20
       },
-      "elapsed_ms": 0.005
+      "elapsed_ms": 0.0062
     },
     {
       "name": "TSF_14",
@@ -133,7 +147,15 @@
       "kwargs": {
         "timeperiod": 14
       },
-      "elapsed_ms": 0.0048
+      "elapsed_ms": 0.0056
+    },
+    {
+      "name": "EMA_20",
+      "inputs": "close",
+      "kwargs": {
+        "timeperiod": 20
+      },
+      "elapsed_ms": 0.0055
     },
     {
       "name": "LINEARREG_14",
@@ -141,7 +163,7 @@
       "kwargs": {
         "timeperiod": 14
       },
-      "elapsed_ms": 0.0046
+      "elapsed_ms": 0.0054
     },
     {
       "name": "LINEARREG_SLOPE_14",
@@ -149,7 +171,7 @@
       "kwargs": {
         "timeperiod": 14
       },
-      "elapsed_ms": 0.0045
+      "elapsed_ms": 0.005
     },
     {
       "name": "SMA_20",
@@ -157,7 +179,7 @@
       "kwargs": {
         "timeperiod": 20
       },
-      "elapsed_ms": 0.0027
+      "elapsed_ms": 0.0032
     }
   ]
 }

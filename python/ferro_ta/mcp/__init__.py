@@ -12,7 +12,7 @@ from collections.abc import Callable, Mapping
 from datetime import date, datetime, time
 from functools import lru_cache
 from itertools import count
-from typing import Any, get_args, get_origin, get_type_hints
+from typing import Any, cast, get_args, get_origin, get_type_hints
 
 import numpy as np
 
@@ -156,38 +156,42 @@ def _object_snapshot(value: Any) -> Any:
     if isinstance(value, enum.Enum):
         return value.value
 
-    if dataclasses.is_dataclass(value):
+    if dataclasses.is_dataclass(value) and not isinstance(value, type):
         return _normalise_json(dataclasses.asdict(value), store_objects=False)
 
-    if hasattr(value, "to_dict") and callable(value.to_dict):
+    dynamic_value = cast(Any, value)
+
+    if hasattr(dynamic_value, "to_dict") and callable(dynamic_value.to_dict):
         try:
-            return _normalise_json(value.to_dict(), store_objects=False)
+            return _normalise_json(dynamic_value.to_dict(), store_objects=False)
         except TypeError:
-            if value.__class__.__module__.startswith("pandas"):
-                return _normalise_json(value.to_dict(orient="list"), store_objects=False)
-            if value.__class__.__module__.startswith("polars"):
+            if dynamic_value.__class__.__module__.startswith("pandas"):
                 return _normalise_json(
-                    value.to_dict(as_series=False), store_objects=False
+                    dynamic_value.to_dict(orient="list"), store_objects=False
+                )
+            if dynamic_value.__class__.__module__.startswith("polars"):
+                return _normalise_json(
+                    dynamic_value.to_dict(as_series=False), store_objects=False
                 )
         except Exception:
             return None
 
-    if hasattr(value, "__dict__"):
+    if hasattr(dynamic_value, "__dict__"):
         fields = {
             key: val
-            for key, val in vars(value).items()
+            for key, val in vars(dynamic_value).items()
             if not key.startswith("_") and not callable(val)
         }
         if fields:
             return _normalise_json(fields, store_objects=False)
 
-    slots = getattr(type(value), "__slots__", ())
+    slots = getattr(type(dynamic_value), "__slots__", ())
     if slots:
         fields = {}
         for slot in slots:
-            if slot.startswith("_") or not hasattr(value, slot):
+            if slot.startswith("_") or not hasattr(dynamic_value, slot):
                 continue
-            slot_value = getattr(value, slot)
+            slot_value = getattr(dynamic_value, slot)
             if callable(slot_value):
                 continue
             fields[slot] = slot_value
@@ -215,7 +219,10 @@ def _normalise_json(value: Any, *, store_objects: bool = True) -> Any:
         return _normalise_json(value.value, store_objects=store_objects)
 
     if isinstance(value, np.ndarray):
-        return [_normalise_json(item, store_objects=store_objects) for item in value.tolist()]
+        return [
+            _normalise_json(item, store_objects=store_objects)
+            for item in value.tolist()
+        ]
 
     if isinstance(value, np.generic):
         return _normalise_json(value.item(), store_objects=store_objects)
@@ -408,7 +415,9 @@ def _annotation_includes_custom_class(annotation: Any) -> bool:
     return False
 
 
-def _schema_and_py_type(annotation: Any, *, param_name: str) -> tuple[dict[str, Any], Any]:
+def _schema_and_py_type(
+    annotation: Any, *, param_name: str
+) -> tuple[dict[str, Any], Any]:
     """Map Python annotations to JSON Schema and wrapper annotations."""
     enum_type = _is_enum_annotation(annotation)
     if enum_type is not None:
@@ -437,18 +446,25 @@ def _schema_and_py_type(annotation: Any, *, param_name: str) -> tuple[dict[str, 
         if "scalarorarray" in lower:
             return {
                 "type": _JSON_ANY_TYPE,
-                "description": f"Parameter `{param_name}`. { _REFERENCE_HELP }",
+                "description": f"Parameter `{param_name}`. {_REFERENCE_HELP}",
             }, Any
         if "ndarray" in lower or "arraylike" in lower:
             return {"type": "array", "items": {}}, list[Any]
         return {"type": "number"}, float
-    if "list" in lower or "tuple" in lower or "sequence" in lower or "iterable" in lower:
+    if (
+        "list" in lower
+        or "tuple" in lower
+        or "sequence" in lower
+        or "iterable" in lower
+    ):
         return {"type": "array", "items": {}}, list[Any]
     if "dict" in lower or "mapping" in lower:
         return {"type": "object"}, dict[str, Any]
     if "str" in lower or "date" in lower or "datetime" in lower or "time" in lower:
         return {"type": "string"}, str
-    if _annotation_includes_callable(annotation) or _annotation_includes_custom_class(annotation):
+    if _annotation_includes_callable(annotation) or _annotation_includes_custom_class(
+        annotation
+    ):
         return {
             "type": _JSON_ANY_TYPE,
             "description": f"Parameter `{param_name}`. {_REFERENCE_HELP}",
@@ -639,7 +655,10 @@ def _invoke_target(
             if not isinstance(extra_kwargs, dict):
                 raise TypeError("kwargs must be a JSON object")
             keyword_args.update(
-                {str(key): _decode_value(item, Any) for key, item in extra_kwargs.items()}
+                {
+                    str(key): _decode_value(item, Any)
+                    for key, item in extra_kwargs.items()
+                }
             )
             continue
 
@@ -689,8 +708,7 @@ def _describe_instance_payload(identifier: str) -> dict[str, Any]:
 def _list_instances_payload() -> list[dict[str, Any]]:
     """Return current stored-object metadata."""
     return [
-        _describe_instance_payload(identifier)
-        for identifier in sorted(_INSTANCE_STORE)
+        _describe_instance_payload(identifier) for identifier in sorted(_INSTANCE_STORE)
     ]
 
 
@@ -719,7 +737,9 @@ def _build_public_tool_spec(item: dict[str, str], target: Any) -> _ToolSpec:
             or f"Construct a {item['name']} enum member. Returns a stored instance reference."
         )
 
-        def invoke(arguments: dict[str, Any], *, enum_type: type[enum.Enum] = target) -> Any:
+        def invoke_enum(
+            arguments: dict[str, Any], *, enum_type: type[enum.Enum] = target
+        ) -> Any:
             if "value" not in arguments:
                 raise KeyError("Missing required argument: value")
             member = _coerce_enum(arguments["value"], enum_type)
@@ -730,7 +750,7 @@ def _build_public_tool_spec(item: dict[str, str], target: Any) -> _ToolSpec:
             description=description,
             input_schema=input_schema,
             wrapper_signature=wrapper_signature,
-            invoke=invoke,
+            invoke=invoke_enum,
         )
 
     signature = inspect.signature(target)
@@ -746,7 +766,7 @@ def _build_public_tool_spec(item: dict[str, str], target: Any) -> _ToolSpec:
             or f"Construct a {item['name']} instance. Returns a stored instance reference."
         )
 
-    def invoke(
+    def invoke_target(
         arguments: dict[str, Any],
         *,
         raw_target: Any = target,
@@ -770,7 +790,7 @@ def _build_public_tool_spec(item: dict[str, str], target: Any) -> _ToolSpec:
         description=description,
         input_schema=input_schema,
         wrapper_signature=wrapper_signature,
-        invoke=invoke,
+        invoke=invoke_target,
     )
 
 
@@ -1136,7 +1156,9 @@ def _instance_management_specs() -> list[_ToolSpec]:
             raise ValueError("Only public methods can be called")
         method = getattr(value, method_name)
         if not callable(method):
-            raise TypeError(f"{method_name!r} is not callable on {arguments['instance_id']!r}")
+            raise TypeError(
+                f"{method_name!r} is not callable on {arguments['instance_id']!r}"
+            )
         args = [_decode_value(item, Any) for item in (arguments.get("args") or [])]
         kwargs = {
             str(key): _decode_value(item, Any)
@@ -1247,7 +1269,7 @@ def _make_fastmcp_wrapper(spec: _ToolSpec) -> Callable[..., Any]:
 
     wrapper.__name__ = f"tool_{_slugify(spec.name).replace('-', '_')}"
     wrapper.__doc__ = spec.description
-    wrapper.__signature__ = spec.wrapper_signature
+    setattr(wrapper, "__signature__", spec.wrapper_signature)
     wrapper.__annotations__ = {
         parameter.name: (
             Any if parameter.annotation is inspect._empty else parameter.annotation
@@ -1311,7 +1333,9 @@ def create_server() -> Any:
     )
 
     for spec in _tool_catalog().values():
-        app.add_tool(_make_fastmcp_wrapper(spec), name=spec.name, description=spec.description)
+        app.add_tool(
+            _make_fastmcp_wrapper(spec), name=spec.name, description=spec.description
+        )
 
     return app
 

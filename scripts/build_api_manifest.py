@@ -32,7 +32,9 @@ def _load_api_info_module(root: Path, module_path: Path):
     python_root = str(root / "python")
     if python_root not in sys.path:
         sys.path.insert(0, python_root)
-    spec = importlib.util.spec_from_file_location("ferro_ta_tools_api_info", module_path)
+    spec = importlib.util.spec_from_file_location(
+        "ferro_ta_tools_api_info", module_path
+    )
     if spec is None or spec.loader is None:
         raise RuntimeError(f"Could not load module spec from {module_path}")
     module = importlib.util.module_from_spec(spec)
@@ -217,7 +219,9 @@ def _safe_git_head(root: Path) -> str | None:
     return value or None
 
 
-def build_manifest(root: Path, include_runtime_metadata: bool = False) -> dict[str, Any]:
+def build_manifest(
+    root: Path, include_runtime_metadata: bool = False
+) -> dict[str, Any]:
     python_api = _extract_python_api(root)
     rust_core = _extract_core_exports(root)
     wasm_exports = _extract_wasm_exports(root)
@@ -279,7 +283,9 @@ def main() -> None:
     output_path = (root / args.output).resolve()
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    manifest = build_manifest(root, include_runtime_metadata=args.include_runtime_metadata)
+    manifest = build_manifest(
+        root, include_runtime_metadata=args.include_runtime_metadata
+    )
     output_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     print(f"Wrote API manifest to {output_path}")
 

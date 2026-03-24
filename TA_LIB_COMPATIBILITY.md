@@ -259,4 +259,3 @@ for the first `timeperiod - 1` bars.
 
 > `ferro-ta` implements 100% of TA-Lib's function set. NaN values are placed
 > at the beginning of each output array for the warmup period.
-

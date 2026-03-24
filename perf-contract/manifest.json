@@ -2,16 +2,38 @@
   "metadata": {
     "suite": "perf_contract",
     "runtime": {
-      "generated_at_utc": "2026-03-23T21:09:13.077731+00:00",
-      "python_version": "3.12.11",
-      "platform": "macOS-26.3.1-arm64-arm-64bit",
+      "generated_at_utc": "2026-03-24T09:13:08.787230+00:00",
+      "python_version": "3.13.5",
+      "python_implementation": "CPython",
+      "python_executable": "/Users/pratikbhadane/Work/Projects/ferro-ta/.venv/bin/python3",
+      "platform": "macOS-26.3.1-arm64-arm-64bit-Mach-O",
+      "system": "Darwin",
+      "release": "25.3.0",
       "machine": "arm64",
-      "processor": "arm"
+      "processor": "arm",
+      "cpu_model": "Apple M3 Max",
+      "cpu_count_logical": 14,
+      "total_memory_bytes": 38654705664
     },
     "git": {
-      "commit": "2d5000262f0f1439546bd4872235aae0333880a4",
+      "commit": "53566b9d82898fa4f95c5190156c969a0bd8e8e3",
       "dirty": true,
-      "branch": "feat/performace-1.0.2"
+      "branch": "main"
+    },
+    "build": {
+      "rustc": "rustc 1.93.1 (01f6ddf75 2026-02-11)\nbinary: rustc\ncommit-hash: 01f6ddf7588f42ae2d7eb0a2f21d44e8e96674cf\ncommit-date: 2026-02-11\nhost: aarch64-apple-darwin\nrelease: 1.93.1\nLLVM version: 21.1.8",
+      "cargo": "cargo 1.93.1 (083ac5135 2025-12-15)",
+      "cargo_release_profile": {
+        "lto": true,
+        "codegen-units": 1
+      },
+      "rustflags": null,
+      "cargo_build_rustflags": null,
+      "maturin_flags": null
+    },
+    "packages": {
+      "numpy": "2.2.6",
+      "ferro-ta": "1.0.4"
     },
     "fixtures": [
       {
@@ -25,28 +47,23 @@
   "artifacts": {
     "indicator_latency": {
       "path": "perf-contract/indicator_latency.json",
-      "size_bytes": 3212,
-      "sha256": "1e7f844fe6eb467f07bbb1e4eb918c56861e8cf819ab4802b96e033c6d2570c4"
+      "size_bytes": 4041,
+      "sha256": "564027c7abed7ecd4ae2ac1720217d96e1e31807f8ac7d5c5393c8fd974f13ed"
     },
     "batch": {
       "path": "perf-contract/batch.json",
-      "size_bytes": 1679,
-      "sha256": "202d67b24a88184473f93cec9f866ca34ff60721068e15e7e5d23962f006d169"
+      "size_bytes": 2507,
+      "sha256": "c50f242a138a0c358a6fa86c420954b4b11a2200598ca2942bcd0fd2bc456fb2"
     },
     "streaming": {
       "path": "perf-contract/streaming.json",
-      "size_bytes": 1939,
-      "sha256": "04476c3d95a9e7d87e40331b28c5ccad9a7aa5abcfc47fb6ac7e929365f68554"
+      "size_bytes": 2766,
+      "sha256": "d271d3219ec098e443e84ef648ab4220cd2a38e6dc998bc6c9fc545d7fc77716"
     },
     "runtime_hotspots": {
       "path": "perf-contract/runtime_hotspots.json",
-      "size_bytes": 2365,
-      "sha256": "d37a58bc88def9f1525b9b0f64f0bd7b9c0df9ed4cae260c833697f6a1689ca8"
-    },
-    "simd": {
-      "path": "perf-contract/simd.json",
-      "size_bytes": 7670,
-      "sha256": "3f9b341a8206698ed172650752d808621c9b5218f42a2373f0f4485496197b4c"
+      "size_bytes": 3197,
+      "sha256": "96eafc9a61ac410e47fcdfee6a9db1123cdee0ec05f49a85c631a3975063deed"
     }
   }
 }

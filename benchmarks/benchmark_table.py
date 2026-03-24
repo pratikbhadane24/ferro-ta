@@ -9,7 +9,9 @@ Reads results.json and prints a markdown table: all indicators × all libraries.
 Unsupported (indicator, library) pairs show N/A. Supported pairs missing benchmark
 data show ERR (indicating the benchmark run was incomplete or failed).
 """
+
 from __future__ import annotations
+
 import json
 import sys
 from pathlib import Path
@@ -21,8 +23,10 @@ if _root not in (Path(p).resolve() for p in sys.path):
 
 from benchmarks.wrapper_registry import (
     INDICATOR_CATEGORIES,
-    LIBRARY_NAMES as LIBS,
     is_supported,
+)
+from benchmarks.wrapper_registry import (
+    LIBRARY_NAMES as LIBS,
 )
 
 
@@ -34,11 +38,17 @@ def _all_indicators() -> list[str]:
 def main():
     p = Path(__file__).parent / "results.json"
     if not p.exists():
-        print("Run: pytest benchmarks/test_speed.py --benchmark-only --benchmark-json=benchmarks/results.json -v", file=sys.stderr)
+        print(
+            "Run: pytest benchmarks/test_speed.py --benchmark-only --benchmark-json=benchmarks/results.json -v",
+            file=sys.stderr,
+        )
         sys.exit(1)
     raw = p.read_text().strip()
     if not raw:
-        print("results.json is empty. Run the full benchmark suite first.", file=sys.stderr)
+        print(
+            "results.json is empty. Run the full benchmark suite first.",
+            file=sys.stderr,
+        )
         sys.exit(1)
     try:
         data = json.loads(raw)
