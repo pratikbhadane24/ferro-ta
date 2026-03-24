@@ -20,7 +20,8 @@ a Python technical analysis library.
        `docs/agentic.md <https://github.com/pratikbhadane24/ferro-ta/blob/main/docs/agentic.md>`_.
    * - MCP server
      - Experimental or adjacent
-     - Exposes selected ferro-ta capabilities to MCP-compatible clients. See
+     - FastMCP-based server exposing selected ferro-ta capabilities to
+       MCP-compatible clients. See
        `docs/mcp.md <https://github.com/pratikbhadane24/ferro-ta/blob/main/docs/mcp.md>`_.
    * - WASM package
      - Experimental

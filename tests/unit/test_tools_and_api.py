@@ -4,6 +4,9 @@ regime detection, performance attribution, and dashboard helpers.
 
 from __future__ import annotations
 
+import importlib
+import runpy
+
 import numpy as np
 import pytest
 
@@ -1218,7 +1221,22 @@ class TestMCPListTools:
 
         result = handle_list_tools()
         names = [t["name"] for t in result["tools"]]
-        for expected in ("sma", "ema", "rsi", "macd", "backtest", "list_indicators"):
+        assert len(names) > 250
+        for expected in (
+            "sma",
+            "ema",
+            "rsi",
+            "macd",
+            "backtest",
+            "SMA",
+            "compute_indicator",
+            "about",
+            "check_cross",
+            "TickAggregator",
+            "call_instance_method",
+            "call_stored_callable",
+            "delete_instance",
+        ):
             assert expected in names, f"Expected tool '{expected}' not found"
 
     def test_each_tool_has_schema(self):
@@ -1280,6 +1298,57 @@ class TestMCPCallTool:
         assert "final_equity" in payload
         assert "n_trades" in payload
 
+    def test_top_level_sma_call(self):
+        import json
+
+        from ferro_ta.mcp import handle_call_tool
+
+        close = list(np.linspace(100, 110, 30))
+        result = handle_call_tool("SMA", {"close": close, "timeperiod": 5})
+        payload = json.loads(result["content"][0]["text"])
+        assert len(payload) == 30
+
+    def test_compute_indicator_call(self):
+        import json
+
+        from ferro_ta.mcp import handle_call_tool
+
+        close = list(_make_close(100))
+        result = handle_call_tool(
+            "compute_indicator",
+            {
+                "name": "MACD",
+                "args": [close],
+            },
+        )
+        payload = json.loads(result["content"][0]["text"])
+        assert "macd" in payload
+
+    def test_about_call(self):
+        import json
+
+        from ferro_ta.mcp import handle_call_tool
+
+        result = handle_call_tool("about", {})
+        payload = json.loads(result["content"][0]["text"])
+        assert payload["indicator_count"] >= 200
+        assert payload["method_count"] >= 400
+
+    def test_check_cross_call(self):
+        import json
+
+        from ferro_ta.mcp import handle_call_tool
+
+        result = handle_call_tool(
+            "check_cross",
+            {
+                "fast": [1.0, 2.0, 3.0, 2.0, 1.0],
+                "slow": [2.0, 2.0, 2.0, 2.0, 2.0],
+            },
+        )
+        payload = json.loads(result["content"][0]["text"])
+        assert len(payload) == 5
+
     def test_list_indicators_call(self):
         import json
 
@@ -1322,3 +1391,129 @@ class TestMCPCallTool:
             "backtest", {"close": close, "strategy": "no_strategy"}
         )
         assert result.get("isError") is True or "content" in result
+
+    def test_tick_aggregator_instance_lifecycle(self):
+        import json
+
+        from ferro_ta.mcp import handle_call_tool
+
+        created = json.loads(
+            handle_call_tool("TickAggregator", {"rule": "tick:2"})["content"][0]["text"]
+        )
+        instance_id = created["instance_id"]
+
+        described = json.loads(
+            handle_call_tool(
+                "describe_instance", {"instance_id": instance_id}
+            )["content"][0]["text"]
+        )
+        method_names = [item["name"] for item in described["methods"]]
+        assert "aggregate" in method_names
+
+        aggregated = json.loads(
+            handle_call_tool(
+                "call_instance_method",
+                {
+                    "instance_id": instance_id,
+                    "method": "aggregate",
+                    "args": [
+                        {
+                            "price": [1.0, 2.0, 3.0, 4.0],
+                            "size": [1.0, 1.0, 1.0, 1.0],
+                        }
+                    ],
+                },
+            )["content"][0]["text"]
+        )
+        assert "open" in aggregated
+        assert "close" in aggregated
+
+        deleted = json.loads(
+            handle_call_tool(
+                "delete_instance", {"instance_id": instance_id}
+            )["content"][0]["text"]
+        )
+        assert deleted["deleted"] is True
+
+    def test_stored_callable_can_be_invoked(self):
+        import json
+
+        from ferro_ta.mcp import handle_call_tool
+
+        wrapped = json.loads(
+            handle_call_tool(
+                "traced", {"func": {"callable": "SMA"}}
+            )["content"][0]["text"]
+        )
+        instance_id = wrapped["instance_id"]
+
+        called = json.loads(
+            handle_call_tool(
+                "call_stored_callable",
+                {
+                    "instance_id": instance_id,
+                    "args": [[1.0, 2.0, 3.0, 4.0, 5.0]],
+                    "kwargs": {"timeperiod": 3},
+                },
+            )["content"][0]["text"]
+        )
+        assert len(called) == 5
+
+        handle_call_tool("delete_instance", {"instance_id": instance_id})
+
+    def test_benchmark_accepts_callable_reference(self):
+        import json
+
+        from ferro_ta.mcp import handle_call_tool
+
+        result = handle_call_tool(
+            "benchmark",
+            {
+                "func": {"callable": "SMA"},
+                "args": [[1.0, 2.0, 3.0, 4.0, 5.0]],
+                "kwargs": {"timeperiod": 3},
+                "n": 2,
+                "warmup": 0,
+            },
+        )
+        payload = json.loads(result["content"][0]["text"])
+        assert payload["n"] == 2.0
+        assert "mean_ms" in payload
+
+
+class TestMCPServer:
+    def test_create_server_requires_mcp_dependency(self, monkeypatch):
+        import ferro_ta.mcp as mcp_mod
+
+        real_import_module = importlib.import_module
+
+        def fake_import_module(name, package=None):
+            if name.startswith("mcp"):
+                raise ImportError("No module named 'mcp'")
+            return real_import_module(name, package)
+
+        mcp_mod.create_server.cache_clear()
+        monkeypatch.setattr(importlib, "import_module", fake_import_module)
+
+        with pytest.raises(RuntimeError, match='pip install "ferro-ta\\[mcp\\]"'):
+            mcp_mod.create_server()
+
+    def test_main_entrypoint_invokes_run_server(self, monkeypatch):
+        import ferro_ta.mcp as mcp_mod
+
+        calls: list[str] = []
+
+        monkeypatch.setattr(mcp_mod, "run_server", lambda: calls.append("called"))
+        runpy.run_module("ferro_ta.mcp.__main__", run_name="__main__")
+
+        assert calls == ["called"]
+
+    def test_create_server_registers_generated_tools(self):
+        import ferro_ta.mcp as mcp_mod
+
+        server = mcp_mod.create_server()
+        tool_names = [tool.name for tool in server._tool_manager.list_tools()]
+
+        assert "SMA" in tool_names
+        assert "TickAggregator" in tool_names
+        assert "call_instance_method" in tool_names

@@ -198,6 +198,6 @@ while True:
 
 - `ferro_ta.tools` — module source.
 - `ferro_ta.workflow` — module source.
-- `docs/mcp.md` — MCP server for Cursor/Claude integration.
+- `docs/mcp.md` — MCP server for MCP-compatible clients.
 - `ferro_ta.backtest` — backtest harness.
 - `ferro_ta.registry` — indicator registry.

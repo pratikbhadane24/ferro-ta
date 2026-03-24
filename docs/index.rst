@@ -61,7 +61,7 @@ Adjacent and experimental tooling:
 
 - Derivatives analytics — see :doc:`derivatives`
 - Agentic workflow and LangChain tool wrappers — see `Agentic guide <https://github.com/pratikbhadane24/ferro-ta/blob/main/docs/agentic.md>`_
-- MCP server for Cursor/Claude integration — see `MCP guide <https://github.com/pratikbhadane24/ferro-ta/blob/main/docs/mcp.md>`_
+- MCP server for MCP-compatible clients — see `MCP guide <https://github.com/pratikbhadane24/ferro-ta/blob/main/docs/mcp.md>`_
 - WASM, plugins, and other optional surfaces — see :doc:`adjacent_tooling`
 
 Installation

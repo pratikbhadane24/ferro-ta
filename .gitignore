@@ -31,6 +31,8 @@ env/
 # WASM build output
 wasm/pkg/
 wasm/pkg-web/
+.coverage
+.coverage.*
 coverage.xml
 .hypothesis/
 
