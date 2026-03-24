@@ -32,6 +32,15 @@ and the project uses [Semantic Versioning](https://semver.org/).
   benchmark caveats, support-matrix pages, and more explicit release/version
   consistency guidance.
 
+### Fixed
+
+- Python CI now recognizes the top-level metadata API in type stubs, and the
+  derivatives benchmark smoke test no longer depends on importing the
+  `benchmarks` package from an installed wheel layout.
+- The tag-driven GitHub Release workflow now uses a valid glob trigger and an
+  explicit semantic-version validation step, so pushing `v1.0.3`-style tags
+  correctly creates the release that fans out into the publish jobs.
+
 ## [1.0.2] — 2026-03-24
 
 ### Performance

@@ -12,6 +12,8 @@ These docs track package version ``1.0.3``.
   pricing, IV, Greeks, and Black-76 comparisons.
 - Simplified release version bumps with a single script and updated release
   guidance.
+- Fixed Python CI/type-stub gaps around the new metadata API and corrected the
+  tag-driven GitHub Release workflow trigger used for publish automation.
 
 1.0.2 (2026-03-24)
 ------------------
