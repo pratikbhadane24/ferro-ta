@@ -1,7 +1,18 @@
 Release Notes
 =============
 
-These docs track package version ``1.0.4``.
+These docs track package version ``1.0.6``.
+
+1.0.6 (2026-03-24)
+------------------
+
+- Added a repo-managed pre-push gate so the core Rust, Python, docs, and WASM
+  checks can be run locally before release.
+- Expanded Rust-backed analysis/data helpers, broadened the WASM exports, and
+  added cross-surface API manifest verification plus Node conformance checks.
+- Refreshed benchmark coverage and perf artifacts, aligned Python CI with the
+  local tooling flow, and updated the locked security fixes needed for a clean
+  release pass.
 
 1.0.4 (2026-03-24)
 ------------------

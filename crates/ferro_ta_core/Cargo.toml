@@ -1,6 +1,6 @@
 [package]
 name = "ferro_ta_core"
-version = "1.0.4"
+version = "1.0.6"
 edition = "2021"
 description = "Pure Rust core indicator library — no PyO3, no numpy dependency"
 license = "MIT"

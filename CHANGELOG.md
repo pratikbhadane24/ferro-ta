@@ -9,6 +9,42 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.0.6] — 2026-03-24
+
+### Added
+
+- Added a repo-managed pre-push gate that mirrors the core local CI and
+  release checks, including version and changelog validation, Rust formatting
+  and clippy, Python linting and type checks, tests, docs, and the WASM smoke
+  suite.
+- Added generated API manifest tooling and CI coverage so Python and WASM
+  export drift is detected before release candidates are pushed.
+- Expanded the Rust-backed implementation surface for analysis and data-heavy
+  workflows, including backtest signal generation, portfolio loops, payoff and
+  Greeks aggregation, chunked indicator execution, and related helper paths.
+- Expanded the WASM package surface with additional indicator exports such as
+  `WMA`, `ADX`, and `MFI`, along with refreshed Node examples and conformance
+  coverage against the Python package.
+
+### Changed
+
+- Refreshed benchmark wrappers, perf-contract artifacts, and benchmark
+  comparison helpers so the checked-in performance evidence stays aligned with
+  the current feature set.
+- Hardened Python CI and local tooling so they run the same typecheck and test
+  entrypoints, including installing the optional MCP dependency needed by the
+  MCP server tests.
+- Updated local pre-commit integration to match the current Ruff
+  configuration and refreshed locked dependencies to pick up the audited
+  PyJWT security fix.
+
+### Fixed
+
+- One-off benchmark output files produced in the repository root are now
+  ignored so local benchmarking no longer dirties the repo by default.
+- Tightened API typing and MCP helper behavior so the stricter lint and
+  typecheck pipeline passes consistently before release.
+
 ## [1.0.4] — 2026-03-24
 
 ### Added
@@ -355,7 +391,8 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ---
 
-[Unreleased]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.0.4...HEAD
+[Unreleased]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.0.6...HEAD
+[1.0.6]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.0.4...v1.0.6
 [1.0.4]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.0.1...v1.0.2

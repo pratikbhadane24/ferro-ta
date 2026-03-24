@@ -1,6 +1,6 @@
 {
   "name": "ferro-ta-wasm",
-  "version": "1.0.4",
+  "version": "1.0.6",
   "description": "WebAssembly bindings for ferro-ta technical analysis indicators",
   "main": "pkg/ferro_ta_wasm.js",
   "types": "pkg/ferro_ta_wasm.d.ts",
