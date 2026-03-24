@@ -4,7 +4,17 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
 import os
+import re
 import sys
+from pathlib import Path
+
+try:
+    import tomllib
+except ImportError:  # pragma: no cover
+    try:
+        import tomli as tomllib  # type: ignore[no-redef]
+    except ImportError:  # pragma: no cover
+        tomllib = None  # type: ignore[assignment]
 
 # Add the python source directory so autodoc can import ferro_ta
 # Only add if ferro_ta is not already installed (e.g. from a wheel in CI)
@@ -17,8 +27,28 @@ except ImportError:
 project = "ferro-ta"
 copyright = "2024, pratikbhadane24"
 author = "pratikbhadane24"
-# Version from env (e.g. set in CI from git tag) or default
-release = os.environ.get("FERRO_TA_VERSION", "1.0.0")
+
+
+def _default_release() -> str:
+    if tomllib is None:
+        return "0+unknown"
+    pyproject_toml = Path(__file__).resolve().parents[1] / "pyproject.toml"
+    try:
+        if tomllib is not None:
+            with pyproject_toml.open("rb") as handle:
+                data = tomllib.load(handle)
+            return data.get("project", {}).get("version", "0+unknown")
+        text = pyproject_toml.read_text(encoding="utf-8")
+        match = re.search(r'^version\s*=\s*"([^"]+)"', text, re.MULTILINE)
+        if match:
+            return match.group(1)
+        return "0+unknown"
+    except Exception:
+        return "0+unknown"
+
+
+# Version from env (e.g. set in CI from git tag) or default to pyproject.toml
+release = os.environ.get("FERRO_TA_VERSION", _default_release())
 version = release
 
 # -- General configuration ----------------------------------------------------

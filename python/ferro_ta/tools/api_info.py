@@ -1,19 +1,23 @@
 """
 ferro_ta.api_info — API discovery helpers.
 
-Provides :func:`indicators` and :func:`info` for exploring the ferro_ta
-indicator catalogue without reading source code.
+Provides :func:`indicators`, :func:`methods`, :func:`about`, and :func:`info`
+for exploring the ferro_ta public API without reading source code.
 
 Usage
 -----
 >>> import ferro_ta
 >>> ferro_ta.indicators()                      # all indicators, sorted
 >>> ferro_ta.indicators(category="momentum")   # filter by category
+>>> ferro_ta.methods()                         # public callables across modules
+>>> ferro_ta.about()["version"]               # package metadata summary
 >>> ferro_ta.info(ferro_ta.SMA)                 # parameter docs for SMA
 
 API
 ---
 indicators(category=None)   — Return list of dicts describing every indicator.
+methods(category=None)      — Return list of public callables across modules.
+about()                     — Return package/version/module summary metadata.
 info(func_or_name)          — Return a dict with full signature/docstring info.
 """
 
@@ -23,7 +27,7 @@ import importlib
 import inspect
 from typing import Any
 
-__all__ = ["indicators", "info"]
+__all__ = ["indicators", "methods", "about", "info"]
 
 # ---------------------------------------------------------------------------
 # Category → module mapping used by indicators()
@@ -50,6 +54,20 @@ _CATEGORY_MODULES: dict[str, str] = {
     "alerts": "ferro_ta.tools.alerts",
     "crypto": "ferro_ta.analysis.crypto",
     "regime": "ferro_ta.analysis.regime",
+}
+
+_METHOD_MODULES: dict[str, str] = {
+    "top_level": "ferro_ta",
+    **_CATEGORY_MODULES,
+    "options": "ferro_ta.analysis.options",
+    "futures": "ferro_ta.analysis.futures",
+    "backtest": "ferro_ta.analysis.backtest",
+    "options_strategy": "ferro_ta.analysis.options_strategy",
+    "derivatives_payoff": "ferro_ta.analysis.derivatives_payoff",
+    "attribution": "ferro_ta.analysis.attribution",
+    "cross_asset": "ferro_ta.analysis.cross_asset",
+    "tools": "ferro_ta.tools.tools",
+    "viz": "ferro_ta.tools.viz",
 }
 
 
@@ -135,6 +153,66 @@ def indicators(category: str | None = None) -> list[dict[str, Any]]:
 
     result.sort(key=lambda d: d["name"])
     return result
+
+
+def methods(category: str | None = None) -> list[dict[str, Any]]:
+    """Return public callables across ferro_ta modules.
+
+    Parameters
+    ----------
+    category : str | None
+        Optional key from :data:`_METHOD_MODULES`, such as ``"top_level"``,
+        ``"options"``, ``"futures"``, or ``"batch"``.
+    """
+    cats: dict[str, str] = (
+        {category: _METHOD_MODULES[category]}
+        if category is not None
+        else _METHOD_MODULES
+    )
+
+    result: list[dict[str, Any]] = []
+    seen: set[tuple[str, str]] = set()
+    for cat, mod_name in cats.items():
+        for name, func in _iter_module_callables(mod_name):
+            key = (mod_name, name)
+            if key in seen:
+                continue
+            seen.add(key)
+            doc = inspect.getdoc(func) or ""
+            first_line = doc.splitlines()[0] if doc else ""
+            try:
+                sig = inspect.signature(func)
+                params = list(sig.parameters.keys())
+            except (ValueError, TypeError):
+                params = []
+            result.append(
+                {
+                    "name": name,
+                    "category": cat,
+                    "module": mod_name,
+                    "doc": first_line,
+                    "params": params,
+                }
+            )
+
+    result.sort(key=lambda d: (d["category"], d["name"]))
+    return result
+
+
+def about() -> dict[str, Any]:
+    """Return a small metadata summary for the installed ferro_ta package."""
+    import ferro_ta  # noqa: PLC0415
+
+    top_level_exports = sorted(getattr(ferro_ta, "__all__", []))
+    return {
+        "name": "ferro-ta",
+        "version": getattr(ferro_ta, "__version__", "0+unknown"),
+        "top_level_export_count": len(top_level_exports),
+        "indicator_count": len(indicators()),
+        "method_count": len(methods()),
+        "categories": sorted(_METHOD_MODULES.keys()),
+        "top_level_exports": top_level_exports,
+    }
 
 
 def info(func_or_name: Any) -> dict[str, Any]:

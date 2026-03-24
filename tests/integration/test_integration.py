@@ -227,6 +227,25 @@ def test_indicators_returns_list():
     assert "ATR" in names
 
 
+def test_methods_returns_public_callables():
+    import ferro_ta
+
+    result = ferro_ta.methods()
+    assert isinstance(result, list)
+    assert any(d["name"] == "SMA" and d["category"] == "top_level" for d in result)
+    assert any(d["name"] == "option_price" and d["category"] == "options" for d in result)
+
+
+def test_about_reports_version_and_counts():
+    import ferro_ta
+
+    meta = ferro_ta.about()
+    assert meta["version"] == ferro_ta.__version__
+    assert meta["indicator_count"] > 20
+    assert meta["method_count"] >= meta["indicator_count"]
+    assert "__version__" in meta["top_level_exports"]
+
+
 def test_indicators_filter_by_category():
     import ferro_ta
 

@@ -641,6 +641,9 @@ class TestBatchShapeValidation:
 # ---------------------------------------------------------------------------
 
 import os
+import re
+import runpy
+import subprocess
 
 try:
     import tomllib  # Python 3.11+
@@ -673,8 +676,41 @@ def _read_pyproject_version() -> str:
     return data["project"]["version"]
 
 
+def _read_conda_version() -> str:
+    root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    conda_meta = os.path.join(root, "conda", "meta.yaml")
+    text = open(conda_meta).read()
+    match = re.search(r'{% set version = "([^"]+)" %}', text)
+    if not match:
+        raise ValueError("Could not find conda version")
+    return match.group(1)
+
+
+def _read_docs_release() -> str:
+    root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    conf_py = os.path.join(root, "docs", "conf.py")
+    old_env = os.environ.pop("FERRO_TA_VERSION", None)
+    try:
+        data = runpy.run_path(conf_py)
+        return data["release"]
+    finally:
+        if old_env is not None:
+            os.environ["FERRO_TA_VERSION"] = old_env
+
+
+def _run_bump_version_check() -> subprocess.CompletedProcess[str]:
+    root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    return subprocess.run(
+        ["python3", "scripts/bump_version.py", "--check"],
+        cwd=root,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+
 class TestVersionConsistency:
-    """Cargo.toml and pyproject.toml must have the same version string."""
+    """Public version strings should stay aligned with the package version."""
 
     def test_versions_match(self):
         try:
@@ -686,6 +722,41 @@ class TestVersionConsistency:
             f"Version mismatch: Cargo.toml={cargo_ver!r}, "
             f"pyproject.toml={pyproject_ver!r}"
         )
+
+    def test_package_version_matches_project_version(self):
+        cargo_ver = _read_cargo_version()
+        assert ferro_ta.__version__ == cargo_ver
+
+    def test_conda_version_matches_project_version(self):
+        cargo_ver = _read_cargo_version()
+        conda_ver = _read_conda_version()
+        assert conda_ver == cargo_ver
+
+    def test_docs_release_matches_project_version(self):
+        cargo_ver = _read_cargo_version()
+        docs_release = _read_docs_release()
+        assert docs_release == cargo_ver
+
+    def test_docs_changelog_mentions_current_version(self):
+        cargo_ver = _read_cargo_version()
+        root = os.path.dirname(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        )
+        changelog_rst = os.path.join(root, "docs", "changelog.rst")
+        text = open(changelog_rst).read()
+        assert cargo_ver in text
+
+    def test_api_version_matches_project_version(self):
+        cargo_ver = _read_cargo_version()
+        try:
+            from api.main import app
+        except Exception:
+            pytest.skip("api/main.py not importable")
+        assert app.version == cargo_ver
+
+    def test_bump_version_check_passes(self):
+        result = _run_bump_version_check()
+        assert result.returncode == 0, result.stdout + result.stderr
 
     def test_release_md_exists(self):
         """RELEASE.md must exist in the repository root."""

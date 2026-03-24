@@ -1,0 +1,1162 @@
+{
+  "schema_version": 1,
+  "command": "python benchmarks/bench_derivatives_compare.py --sizes 1000 10000 --accuracy-size 512 --json benchmarks/artifacts/latest/benchmark_derivatives_compare.json",
+  "n_warmup": 1,
+  "n_runs": 7,
+  "accuracy_size": 512,
+  "sizes": [
+    1000,
+    10000
+  ],
+  "metadata": {
+    "suite": "benchmark_derivatives_compare",
+    "runtime": {
+      "generated_at_utc": "2026-03-24T05:39:25.642936+00:00",
+      "python_version": "3.13.5",
+      "python_implementation": "CPython",
+      "python_executable": "/Users/pratikbhadane/Work/Projects/ferro-ta/.venv/bin/python3",
+      "platform": "macOS-26.3.1-arm64-arm-64bit-Mach-O",
+      "system": "Darwin",
+      "release": "25.3.0",
+      "machine": "arm64",
+      "processor": "arm",
+      "cpu_model": "Apple M3 Max",
+      "cpu_count_logical": 14,
+      "total_memory_bytes": 38654705664
+    },
+    "git": {
+      "commit": "0382c4e3024c96809ffd89dd76d820efcd56479d",
+      "dirty": true,
+      "branch": "main"
+    },
+    "build": {
+      "rustc": "rustc 1.91.1 (ed61e7d7e 2025-11-07) (Homebrew)\nbinary: rustc\ncommit-hash: ed61e7d7e242494fb7057f2657300d9e77bb4fcb\ncommit-date: 2025-11-07\nhost: aarch64-apple-darwin\nrelease: 1.91.1\nLLVM version: 21.1.5",
+      "cargo": "cargo 1.91.1 (Homebrew)",
+      "cargo_release_profile": {
+        "lto": true,
+        "codegen-units": 1
+      },
+      "rustflags": null,
+      "cargo_build_rustflags": null,
+      "maturin_flags": null
+    },
+    "packages": {
+      "numpy": "2.2.6",
+      "ferro-ta": "1.0.3",
+      "py_vollib": null
+    },
+    "dataset": {
+      "generator": "synthetic_option_chain",
+      "speed_sizes": [
+        1000,
+        10000
+      ],
+      "accuracy_size": 512,
+      "dtype": "float64",
+      "array_layout": "C-contiguous",
+      "seed": 42,
+      "ranges": {
+        "spot": [
+          80.0,
+          120.0
+        ],
+        "strike": [
+          70.0,
+          130.0
+        ],
+        "rate": [
+          0.0,
+          0.07
+        ],
+        "carry": [
+          0.0,
+          0.03
+        ],
+        "time_to_expiry_years": [
+          0.019178082191780823,
+          2.0
+        ],
+        "volatility": [
+          0.08,
+          0.65
+        ]
+      }
+    },
+    "methodology": {
+      "warmup_runs": 1,
+      "measured_runs": 7,
+      "reported_metric": "median_ms",
+      "speed_metric": "contracts_per_second",
+      "accuracy_reference": "Scalar analytical Black-Scholes-Merton and Black-76 formulas using math.erf; IV accuracy is measured as repriced error from the recovered volatility because direct volatility differences can be unstable on low-vega contracts.",
+      "input_layout_notes": "Benchmarks use contiguous float64 arrays. If your workload passes non-contiguous arrays or mixed dtypes, benchmark that path separately.",
+      "allocation_notes": "python_peak_allocation_bytes is a tracemalloc snapshot of Python-tracked allocations only; it does not measure native RSS.",
+      "provider_notes": "reference_python_loop and py_vollib are scalar baselines and are size-capped in the speed table to keep runtime reasonable."
+    },
+    "providers": [
+      {
+        "name": "ferro_ta",
+        "kind": "project",
+        "note": "Rust-backed vectorized implementation.",
+        "max_speed_size": null,
+        "supported_cases": [
+          "bsm_call_price",
+          "bsm_call_iv",
+          "bsm_call_greeks",
+          "black76_call_price"
+        ]
+      },
+      {
+        "name": "reference_numpy",
+        "kind": "reference",
+        "note": "Pure NumPy analytical formulas with vectorized IV bisection.",
+        "max_speed_size": null,
+        "supported_cases": [
+          "bsm_call_price",
+          "bsm_call_iv",
+          "bsm_call_greeks",
+          "black76_call_price"
+        ]
+      },
+      {
+        "name": "reference_python_loop",
+        "kind": "reference",
+        "note": "Scalar math-loop analytical baseline; useful for accuracy sanity checks.",
+        "max_speed_size": 1000,
+        "supported_cases": [
+          "bsm_call_price",
+          "bsm_call_iv",
+          "bsm_call_greeks",
+          "black76_call_price"
+        ]
+      }
+    ]
+  },
+  "accuracy": {
+    "summary": [
+      {
+        "case": "bsm_call_price",
+        "best_provider": "reference_python_loop",
+        "best_max_abs_error": 0.0,
+        "worst_provider": "ferro_ta",
+        "worst_max_abs_error": 1.6274806e-05
+      },
+      {
+        "case": "bsm_call_iv",
+        "best_provider": "reference_python_loop",
+        "best_max_abs_error": 1e-10,
+        "worst_provider": "reference_numpy",
+        "worst_max_abs_error": 1.6276264e-05
+      },
+      {
+        "case": "bsm_call_greeks",
+        "best_provider": "reference_python_loop",
+        "best_max_abs_error": 0.0,
+        "worst_provider": "ferro_ta",
+        "worst_max_abs_error": 1.7335858e-05
+      },
+      {
+        "case": "black76_call_price",
+        "best_provider": "reference_python_loop",
+        "best_max_abs_error": 0.0,
+        "worst_provider": "ferro_ta",
+        "worst_max_abs_error": 1.6274806e-05
+      }
+    ],
+    "results": [
+      {
+        "case": "bsm_call_price",
+        "label": "BSM Call Price",
+        "provider": "ferro_ta",
+        "provider_kind": "project",
+        "sample_size": 512,
+        "accuracy_target": "expected_output",
+        "output_shape": [
+          512
+        ],
+        "max_abs_error": 1.6274806e-05,
+        "mean_abs_error": 5.249347e-06,
+        "rmse": 6.48942e-06,
+        "max_rel_error": 0.009546518154
+      },
+      {
+        "case": "bsm_call_price",
+        "label": "BSM Call Price",
+        "provider": "reference_numpy",
+        "provider_kind": "reference",
+        "sample_size": 512,
+        "accuracy_target": "expected_output",
+        "output_shape": [
+          512
+        ],
+        "max_abs_error": 1.6274806e-05,
+        "mean_abs_error": 5.249347e-06,
+        "rmse": 6.48942e-06,
+        "max_rel_error": 0.009546518154
+      },
+      {
+        "case": "bsm_call_price",
+        "label": "BSM Call Price",
+        "provider": "reference_python_loop",
+        "provider_kind": "reference",
+        "sample_size": 512,
+        "accuracy_target": "expected_output",
+        "output_shape": [
+          512
+        ],
+        "max_abs_error": 0.0,
+        "mean_abs_error": 0.0,
+        "rmse": 0.0,
+        "max_rel_error": 0.0
+      },
+      {
+        "case": "bsm_call_iv",
+        "label": "BSM Call IV Recovery",
+        "provider": "ferro_ta",
+        "provider_kind": "project",
+        "sample_size": 512,
+        "accuracy_target": "reconstructed_price",
+        "output_shape": [
+          512
+        ],
+        "max_abs_error": 1.6275836e-05,
+        "mean_abs_error": 5.249474e-06,
+        "rmse": 6.489527e-06,
+        "max_rel_error": 0.475843909884
+      },
+      {
+        "case": "bsm_call_iv",
+        "label": "BSM Call IV Recovery",
+        "provider": "reference_numpy",
+        "provider_kind": "reference",
+        "sample_size": 512,
+        "accuracy_target": "reconstructed_price",
+        "output_shape": [
+          512
+        ],
+        "max_abs_error": 1.6276264e-05,
+        "mean_abs_error": 5.249487e-06,
+        "rmse": 6.489634e-06,
+        "max_rel_error": 0.009628987742
+      },
+      {
+        "case": "bsm_call_iv",
+        "label": "BSM Call IV Recovery",
+        "provider": "reference_python_loop",
+        "provider_kind": "reference",
+        "sample_size": 512,
+        "accuracy_target": "reconstructed_price",
+        "output_shape": [
+          512
+        ],
+        "max_abs_error": 1e-10,
+        "mean_abs_error": 4.5e-11,
+        "rmse": 5.3e-11,
+        "max_rel_error": 0.00547208151
+      },
+      {
+        "case": "bsm_call_greeks",
+        "label": "BSM Call Greeks",
+        "provider": "ferro_ta",
+        "provider_kind": "project",
+        "sample_size": 512,
+        "accuracy_target": "expected_output",
+        "output_shape": [
+          512,
+          5
+        ],
+        "max_abs_error": 1.7335858e-05,
+        "mean_abs_error": 8.64081e-07,
+        "rmse": 2.444399e-06,
+        "max_rel_error": 0.002644156321,
+        "component_names": [
+          "delta",
+          "gamma",
+          "vega",
+          "theta",
+          "rho"
+        ]
+      },
+      {
+        "case": "bsm_call_greeks",
+        "label": "BSM Call Greeks",
+        "provider": "reference_numpy",
+        "provider_kind": "reference",
+        "sample_size": 512,
+        "accuracy_target": "expected_output",
+        "output_shape": [
+          512,
+          5
+        ],
+        "max_abs_error": 1.7335858e-05,
+        "mean_abs_error": 8.64081e-07,
+        "rmse": 2.444399e-06,
+        "max_rel_error": 0.002644156321,
+        "component_names": [
+          "delta",
+          "gamma",
+          "vega",
+          "theta",
+          "rho"
+        ]
+      },
+      {
+        "case": "bsm_call_greeks",
+        "label": "BSM Call Greeks",
+        "provider": "reference_python_loop",
+        "provider_kind": "reference",
+        "sample_size": 512,
+        "accuracy_target": "expected_output",
+        "output_shape": [
+          512,
+          5
+        ],
+        "max_abs_error": 0.0,
+        "mean_abs_error": 0.0,
+        "rmse": 0.0,
+        "max_rel_error": 0.0,
+        "component_names": [
+          "delta",
+          "gamma",
+          "vega",
+          "theta",
+          "rho"
+        ]
+      },
+      {
+        "case": "black76_call_price",
+        "label": "Black-76 Call Price",
+        "provider": "ferro_ta",
+        "provider_kind": "project",
+        "sample_size": 512,
+        "accuracy_target": "expected_output",
+        "output_shape": [
+          512
+        ],
+        "max_abs_error": 1.6274806e-05,
+        "mean_abs_error": 5.249347e-06,
+        "rmse": 6.48942e-06,
+        "max_rel_error": 0.009546518154
+      },
+      {
+        "case": "black76_call_price",
+        "label": "Black-76 Call Price",
+        "provider": "reference_numpy",
+        "provider_kind": "reference",
+        "sample_size": 512,
+        "accuracy_target": "expected_output",
+        "output_shape": [
+          512
+        ],
+        "max_abs_error": 1.6274806e-05,
+        "mean_abs_error": 5.249347e-06,
+        "rmse": 6.48942e-06,
+        "max_rel_error": 0.009546518154
+      },
+      {
+        "case": "black76_call_price",
+        "label": "Black-76 Call Price",
+        "provider": "reference_python_loop",
+        "provider_kind": "reference",
+        "sample_size": 512,
+        "accuracy_target": "expected_output",
+        "output_shape": [
+          512
+        ],
+        "max_abs_error": 0.0,
+        "mean_abs_error": 0.0,
+        "rmse": 0.0,
+        "max_rel_error": 0.0
+      }
+    ]
+  },
+  "speed": {
+    "summary": [
+      {
+        "case": "bsm_call_price",
+        "size": 1000,
+        "fastest_provider": "ferro_ta",
+        "fastest_median_ms": 0.0336,
+        "ranking": [
+          {
+            "provider": "ferro_ta",
+            "median_ms": 0.0336,
+            "contracts_per_s": 29761904.76
+          },
+          {
+            "provider": "reference_numpy",
+            "median_ms": 0.0456,
+            "contracts_per_s": 21929824.56
+          },
+          {
+            "provider": "reference_python_loop",
+            "median_ms": 0.8157,
+            "contracts_per_s": 1225940.91
+          }
+        ]
+      },
+      {
+        "case": "bsm_call_price",
+        "size": 10000,
+        "fastest_provider": "ferro_ta",
+        "fastest_median_ms": 0.2752,
+        "ranking": [
+          {
+            "provider": "ferro_ta",
+            "median_ms": 0.2752,
+            "contracts_per_s": 36337209.3
+          },
+          {
+            "provider": "reference_numpy",
+            "median_ms": 0.3109,
+            "contracts_per_s": 32164683.18
+          }
+        ]
+      },
+      {
+        "case": "bsm_call_iv",
+        "size": 1000,
+        "fastest_provider": "ferro_ta",
+        "fastest_median_ms": 0.4121,
+        "ranking": [
+          {
+            "provider": "ferro_ta",
+            "median_ms": 0.4121,
+            "contracts_per_s": 2426595.49
+          },
+          {
+            "provider": "reference_numpy",
+            "median_ms": 1.8036,
+            "contracts_per_s": 554446.66
+          },
+          {
+            "provider": "reference_python_loop",
+            "median_ms": 13.4274,
+            "contracts_per_s": 74474.58
+          }
+        ]
+      },
+      {
+        "case": "bsm_call_iv",
+        "size": 10000,
+        "fastest_provider": "ferro_ta",
+        "fastest_median_ms": 4.0739,
+        "ranking": [
+          {
+            "provider": "ferro_ta",
+            "median_ms": 4.0739,
+            "contracts_per_s": 2454650.34
+          },
+          {
+            "provider": "reference_numpy",
+            "median_ms": 11.7949,
+            "contracts_per_s": 847824.06
+          }
+        ]
+      },
+      {
+        "case": "bsm_call_greeks",
+        "size": 1000,
+        "fastest_provider": "ferro_ta",
+        "fastest_median_ms": 0.0497,
+        "ranking": [
+          {
+            "provider": "ferro_ta",
+            "median_ms": 0.0497,
+            "contracts_per_s": 20120724.35
+          },
+          {
+            "provider": "reference_numpy",
+            "median_ms": 0.0871,
+            "contracts_per_s": 11481056.26
+          },
+          {
+            "provider": "reference_python_loop",
+            "median_ms": 1.189,
+            "contracts_per_s": 841042.89
+          }
+        ]
+      },
+      {
+        "case": "bsm_call_greeks",
+        "size": 10000,
+        "fastest_provider": "reference_numpy",
+        "fastest_median_ms": 0.572,
+        "ranking": [
+          {
+            "provider": "reference_numpy",
+            "median_ms": 0.572,
+            "contracts_per_s": 17482517.48
+          },
+          {
+            "provider": "ferro_ta",
+            "median_ms": 0.7486,
+            "contracts_per_s": 13358268.77
+          }
+        ]
+      },
+      {
+        "case": "black76_call_price",
+        "size": 1000,
+        "fastest_provider": "ferro_ta",
+        "fastest_median_ms": 0.0254,
+        "ranking": [
+          {
+            "provider": "ferro_ta",
+            "median_ms": 0.0254,
+            "contracts_per_s": 39370078.74
+          },
+          {
+            "provider": "reference_numpy",
+            "median_ms": 0.0384,
+            "contracts_per_s": 26041666.67
+          },
+          {
+            "provider": "reference_python_loop",
+            "median_ms": 0.7358,
+            "contracts_per_s": 1359064.96
+          }
+        ]
+      },
+      {
+        "case": "black76_call_price",
+        "size": 10000,
+        "fastest_provider": "ferro_ta",
+        "fastest_median_ms": 0.2184,
+        "ranking": [
+          {
+            "provider": "ferro_ta",
+            "median_ms": 0.2184,
+            "contracts_per_s": 45787545.79
+          },
+          {
+            "provider": "reference_numpy",
+            "median_ms": 0.2823,
+            "contracts_per_s": 35423308.54
+          }
+        ]
+      }
+    ],
+    "results": [
+      {
+        "case": "bsm_call_price",
+        "label": "BSM Call Price",
+        "size": 1000,
+        "provider": "ferro_ta",
+        "provider_kind": "project",
+        "median_ms": 0.0336,
+        "contracts_per_s": 29761904.76,
+        "runs_ms": [
+          0.0337,
+          0.0404,
+          0.0336,
+          0.033,
+          0.0332,
+          0.0329,
+          0.0361
+        ],
+        "stats": {
+          "median_ms": 0.0336,
+          "mean_ms": 0.0347,
+          "min_ms": 0.0329,
+          "max_ms": 0.0404,
+          "stddev_ms": 0.0027,
+          "cv_pct": 7.901
+        },
+        "python_peak_allocation_bytes": 17861,
+        "input_layout": {
+          "dtype": "float64",
+          "contiguous": true
+        }
+      },
+      {
+        "case": "bsm_call_price",
+        "label": "BSM Call Price",
+        "size": 1000,
+        "provider": "reference_numpy",
+        "provider_kind": "reference",
+        "median_ms": 0.0456,
+        "contracts_per_s": 21929824.56,
+        "runs_ms": [
+          0.0468,
+          0.0456,
+          0.0483,
+          0.045,
+          0.0548,
+          0.0452,
+          0.0449
+        ],
+        "stats": {
+          "median_ms": 0.0456,
+          "mean_ms": 0.0472,
+          "min_ms": 0.0449,
+          "max_ms": 0.0548,
+          "stddev_ms": 0.0036,
+          "cv_pct": 7.526
+        },
+        "python_peak_allocation_bytes": 115672,
+        "input_layout": {
+          "dtype": "float64",
+          "contiguous": true
+        }
+      },
+      {
+        "case": "bsm_call_price",
+        "label": "BSM Call Price",
+        "size": 1000,
+        "provider": "reference_python_loop",
+        "provider_kind": "reference",
+        "median_ms": 0.8157,
+        "contracts_per_s": 1225940.91,
+        "runs_ms": [
+          0.8154,
+          0.8078,
+          0.8184,
+          0.8265,
+          0.8157,
+          0.8155,
+          0.8267
+        ],
+        "stats": {
+          "median_ms": 0.8157,
+          "mean_ms": 0.818,
+          "min_ms": 0.8078,
+          "max_ms": 0.8267,
+          "stddev_ms": 0.0067,
+          "cv_pct": 0.82
+        },
+        "python_peak_allocation_bytes": 39464,
+        "input_layout": {
+          "dtype": "float64",
+          "contiguous": true
+        }
+      },
+      {
+        "case": "bsm_call_price",
+        "label": "BSM Call Price",
+        "size": 10000,
+        "provider": "ferro_ta",
+        "provider_kind": "project",
+        "median_ms": 0.2752,
+        "contracts_per_s": 36337209.3,
+        "runs_ms": [
+          0.2632,
+          0.2812,
+          0.2666,
+          0.2666,
+          0.281,
+          0.2752,
+          0.276
+        ],
+        "stats": {
+          "median_ms": 0.2752,
+          "mean_ms": 0.2728,
+          "min_ms": 0.2632,
+          "max_ms": 0.2812,
+          "stddev_ms": 0.0073,
+          "cv_pct": 2.684
+        },
+        "python_peak_allocation_bytes": 17861,
+        "input_layout": {
+          "dtype": "float64",
+          "contiguous": true
+        }
+      },
+      {
+        "case": "bsm_call_price",
+        "label": "BSM Call Price",
+        "size": 10000,
+        "provider": "reference_numpy",
+        "provider_kind": "reference",
+        "median_ms": 0.3109,
+        "contracts_per_s": 32164683.18,
+        "runs_ms": [
+          0.304,
+          0.315,
+          0.3261,
+          0.309,
+          0.3218,
+          0.3109,
+          0.3084
+        ],
+        "stats": {
+          "median_ms": 0.3109,
+          "mean_ms": 0.3136,
+          "min_ms": 0.304,
+          "max_ms": 0.3261,
+          "stddev_ms": 0.0079,
+          "cv_pct": 2.515
+        },
+        "python_peak_allocation_bytes": 1132672,
+        "input_layout": {
+          "dtype": "float64",
+          "contiguous": true
+        }
+      },
+      {
+        "case": "bsm_call_iv",
+        "label": "BSM Call IV Recovery",
+        "size": 1000,
+        "provider": "ferro_ta",
+        "provider_kind": "project",
+        "median_ms": 0.4121,
+        "contracts_per_s": 2426595.49,
+        "runs_ms": [
+          0.4309,
+          0.4121,
+          0.4068,
+          0.418,
+          0.4082,
+          0.4285,
+          0.4093
+        ],
+        "stats": {
+          "median_ms": 0.4121,
+          "mean_ms": 0.4163,
+          "min_ms": 0.4068,
+          "max_ms": 0.4309,
+          "stddev_ms": 0.0099,
+          "cv_pct": 2.378
+        },
+        "python_peak_allocation_bytes": 20709,
+        "input_layout": {
+          "dtype": "float64",
+          "contiguous": true
+        }
+      },
+      {
+        "case": "bsm_call_iv",
+        "label": "BSM Call IV Recovery",
+        "size": 1000,
+        "provider": "reference_numpy",
+        "provider_kind": "reference",
+        "median_ms": 1.8036,
+        "contracts_per_s": 554446.66,
+        "runs_ms": [
+          1.8522,
+          1.8036,
+          1.8552,
+          1.7976,
+          1.7981,
+          1.8119,
+          1.7963
+        ],
+        "stats": {
+          "median_ms": 1.8036,
+          "mean_ms": 1.8164,
+          "min_ms": 1.7963,
+          "max_ms": 1.8552,
+          "stddev_ms": 0.026,
+          "cv_pct": 1.434
+        },
+        "python_peak_allocation_bytes": 149448,
+        "input_layout": {
+          "dtype": "float64",
+          "contiguous": true
+        }
+      },
+      {
+        "case": "bsm_call_iv",
+        "label": "BSM Call IV Recovery",
+        "size": 1000,
+        "provider": "reference_python_loop",
+        "provider_kind": "reference",
+        "median_ms": 13.4274,
+        "contracts_per_s": 74474.58,
+        "runs_ms": [
+          13.4787,
+          13.4274,
+          13.4138,
+          13.4148,
+          13.4643,
+          13.6664,
+          13.3763
+        ],
+        "stats": {
+          "median_ms": 13.4274,
+          "mean_ms": 13.4631,
+          "min_ms": 13.3763,
+          "max_ms": 13.6664,
+          "stddev_ms": 0.0959,
+          "cv_pct": 0.712
+        },
+        "python_peak_allocation_bytes": 39584,
+        "input_layout": {
+          "dtype": "float64",
+          "contiguous": true
+        }
+      },
+      {
+        "case": "bsm_call_iv",
+        "label": "BSM Call IV Recovery",
+        "size": 10000,
+        "provider": "ferro_ta",
+        "provider_kind": "project",
+        "median_ms": 4.0739,
+        "contracts_per_s": 2454650.34,
+        "runs_ms": [
+          4.0739,
+          4.0792,
+          3.9101,
+          4.0077,
+          4.2279,
+          4.076,
+          3.9563
+        ],
+        "stats": {
+          "median_ms": 4.0739,
+          "mean_ms": 4.0473,
+          "min_ms": 3.9101,
+          "max_ms": 4.2279,
+          "stddev_ms": 0.1032,
+          "cv_pct": 2.549
+        },
+        "python_peak_allocation_bytes": 82830,
+        "input_layout": {
+          "dtype": "float64",
+          "contiguous": true
+        }
+      },
+      {
+        "case": "bsm_call_iv",
+        "label": "BSM Call IV Recovery",
+        "size": 10000,
+        "provider": "reference_numpy",
+        "provider_kind": "reference",
+        "median_ms": 11.7949,
+        "contracts_per_s": 847824.06,
+        "runs_ms": [
+          11.713,
+          11.7014,
+          11.8743,
+          11.7949,
+          11.4815,
+          11.8635,
+          11.8188
+        ],
+        "stats": {
+          "median_ms": 11.7949,
+          "mean_ms": 11.7496,
+          "min_ms": 11.4815,
+          "max_ms": 11.8743,
+          "stddev_ms": 0.1359,
+          "cv_pct": 1.157
+        },
+        "python_peak_allocation_bytes": 1463448,
+        "input_layout": {
+          "dtype": "float64",
+          "contiguous": true
+        }
+      },
+      {
+        "case": "bsm_call_greeks",
+        "label": "BSM Call Greeks",
+        "size": 1000,
+        "provider": "ferro_ta",
+        "provider_kind": "project",
+        "median_ms": 0.0497,
+        "contracts_per_s": 20120724.35,
+        "runs_ms": [
+          0.0558,
+          0.0497,
+          0.0486,
+          0.0503,
+          0.051,
+          0.0494,
+          0.0486
+        ],
+        "stats": {
+          "median_ms": 0.0497,
+          "mean_ms": 0.0505,
+          "min_ms": 0.0486,
+          "max_ms": 0.0558,
+          "stddev_ms": 0.0025,
+          "cv_pct": 4.902
+        },
+        "python_peak_allocation_bytes": 41928,
+        "input_layout": {
+          "dtype": "float64",
+          "contiguous": true
+        }
+      },
+      {
+        "case": "bsm_call_greeks",
+        "label": "BSM Call Greeks",
+        "size": 1000,
+        "provider": "reference_numpy",
+        "provider_kind": "reference",
+        "median_ms": 0.0871,
+        "contracts_per_s": 11481056.26,
+        "runs_ms": [
+          0.0883,
+          0.0871,
+          0.0876,
+          0.0871,
+          0.0868,
+          0.0864,
+          0.1533
+        ],
+        "stats": {
+          "median_ms": 0.0871,
+          "mean_ms": 0.0967,
+          "min_ms": 0.0864,
+          "max_ms": 0.1533,
+          "stddev_ms": 0.025,
+          "cv_pct": 25.847
+        },
+        "python_peak_allocation_bytes": 138128,
+        "input_layout": {
+          "dtype": "float64",
+          "contiguous": true
+        }
+      },
+      {
+        "case": "bsm_call_greeks",
+        "label": "BSM Call Greeks",
+        "size": 1000,
+        "provider": "reference_python_loop",
+        "provider_kind": "reference",
+        "median_ms": 1.189,
+        "contracts_per_s": 841042.89,
+        "runs_ms": [
+          1.243,
+          1.3353,
+          1.189,
+          1.1827,
+          1.1821,
+          1.1827,
+          1.2165
+        ],
+        "stats": {
+          "median_ms": 1.189,
+          "mean_ms": 1.2188,
+          "min_ms": 1.1821,
+          "max_ms": 1.3353,
+          "stddev_ms": 0.0563,
+          "cv_pct": 4.619
+        },
+        "python_peak_allocation_bytes": 199408,
+        "input_layout": {
+          "dtype": "float64",
+          "contiguous": true
+        }
+      },
+      {
+        "case": "bsm_call_greeks",
+        "label": "BSM Call Greeks",
+        "size": 10000,
+        "provider": "ferro_ta",
+        "provider_kind": "project",
+        "median_ms": 0.7486,
+        "contracts_per_s": 13358268.77,
+        "runs_ms": [
+          0.7306,
+          0.7328,
+          0.7688,
+          0.732,
+          0.7792,
+          0.7486,
+          0.8081
+        ],
+        "stats": {
+          "median_ms": 0.7486,
+          "mean_ms": 0.7572,
+          "min_ms": 0.7306,
+          "max_ms": 0.8081,
+          "stddev_ms": 0.0295,
+          "cv_pct": 3.897
+        },
+        "python_peak_allocation_bytes": 401848,
+        "input_layout": {
+          "dtype": "float64",
+          "contiguous": true
+        }
+      },
+      {
+        "case": "bsm_call_greeks",
+        "label": "BSM Call Greeks",
+        "size": 10000,
+        "provider": "reference_numpy",
+        "provider_kind": "reference",
+        "median_ms": 0.572,
+        "contracts_per_s": 17482517.48,
+        "runs_ms": [
+          0.6104,
+          0.5705,
+          0.5715,
+          0.5817,
+          0.572,
+          0.5747,
+          0.5708
+        ],
+        "stats": {
+          "median_ms": 0.572,
+          "mean_ms": 0.5788,
+          "min_ms": 0.5705,
+          "max_ms": 0.6104,
+          "stddev_ms": 0.0145,
+          "cv_pct": 2.499
+        },
+        "python_peak_allocation_bytes": 1362128,
+        "input_layout": {
+          "dtype": "float64",
+          "contiguous": true
+        }
+      },
+      {
+        "case": "black76_call_price",
+        "label": "Black-76 Call Price",
+        "size": 1000,
+        "provider": "ferro_ta",
+        "provider_kind": "project",
+        "median_ms": 0.0254,
+        "contracts_per_s": 39370078.74,
+        "runs_ms": [
+          0.0286,
+          0.0263,
+          0.0258,
+          0.0254,
+          0.0253,
+          0.0253,
+          0.0254
+        ],
+        "stats": {
+          "median_ms": 0.0254,
+          "mean_ms": 0.026,
+          "min_ms": 0.0253,
+          "max_ms": 0.0286,
+          "stddev_ms": 0.0012,
+          "cv_pct": 4.639
+        },
+        "python_peak_allocation_bytes": 14717,
+        "input_layout": {
+          "dtype": "float64",
+          "contiguous": true
+        }
+      },
+      {
+        "case": "black76_call_price",
+        "label": "Black-76 Call Price",
+        "size": 1000,
+        "provider": "reference_numpy",
+        "provider_kind": "reference",
+        "median_ms": 0.0384,
+        "contracts_per_s": 26041666.67,
+        "runs_ms": [
+          0.0395,
+          0.0385,
+          0.0387,
+          0.0383,
+          0.0384,
+          0.0382,
+          0.0383
+        ],
+        "stats": {
+          "median_ms": 0.0384,
+          "mean_ms": 0.0385,
+          "min_ms": 0.0382,
+          "max_ms": 0.0395,
+          "stddev_ms": 0.0005,
+          "cv_pct": 1.22
+        },
+        "python_peak_allocation_bytes": 99448,
+        "input_layout": {
+          "dtype": "float64",
+          "contiguous": true
+        }
+      },
+      {
+        "case": "black76_call_price",
+        "label": "Black-76 Call Price",
+        "size": 1000,
+        "provider": "reference_python_loop",
+        "provider_kind": "reference",
+        "median_ms": 0.7358,
+        "contracts_per_s": 1359064.96,
+        "runs_ms": [
+          0.7271,
+          0.7251,
+          0.845,
+          0.7809,
+          0.7345,
+          0.7358,
+          0.7418
+        ],
+        "stats": {
+          "median_ms": 0.7358,
+          "mean_ms": 0.7558,
+          "min_ms": 0.7251,
+          "max_ms": 0.845,
+          "stddev_ms": 0.0436,
+          "cv_pct": 5.769
+        },
+        "python_peak_allocation_bytes": 39416,
+        "input_layout": {
+          "dtype": "float64",
+          "contiguous": true
+        }
+      },
+      {
+        "case": "black76_call_price",
+        "label": "Black-76 Call Price",
+        "size": 10000,
+        "provider": "ferro_ta",
+        "provider_kind": "project",
+        "median_ms": 0.2184,
+        "contracts_per_s": 45787545.79,
+        "runs_ms": [
+          0.2286,
+          0.2183,
+          0.219,
+          0.2184,
+          0.2223,
+          0.218,
+          0.2176
+        ],
+        "stats": {
+          "median_ms": 0.2184,
+          "mean_ms": 0.2203,
+          "min_ms": 0.2176,
+          "max_ms": 0.2286,
+          "stddev_ms": 0.004,
+          "cv_pct": 1.8
+        },
+        "python_peak_allocation_bytes": 14717,
+        "input_layout": {
+          "dtype": "float64",
+          "contiguous": true
+        }
+      },
+      {
+        "case": "black76_call_price",
+        "label": "Black-76 Call Price",
+        "size": 10000,
+        "provider": "reference_numpy",
+        "provider_kind": "reference",
+        "median_ms": 0.2823,
+        "contracts_per_s": 35423308.54,
+        "runs_ms": [
+          0.2823,
+          0.276,
+          0.275,
+          0.3064,
+          0.3196,
+          0.2835,
+          0.2734
+        ],
+        "stats": {
+          "median_ms": 0.2823,
+          "mean_ms": 0.288,
+          "min_ms": 0.2734,
+          "max_ms": 0.3196,
+          "stddev_ms": 0.0179,
+          "cv_pct": 6.201
+        },
+        "python_peak_allocation_bytes": 972448,
+        "input_layout": {
+          "dtype": "float64",
+          "contiguous": true
+        }
+      }
+    ]
+  }
+}

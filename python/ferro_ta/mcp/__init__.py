@@ -67,6 +67,7 @@ from typing import Any
 
 import numpy as np
 
+import ferro_ta as ft
 from ferro_ta.tools import (
     compute_indicator,
     describe_indicator,
@@ -392,7 +393,7 @@ def _run_stdio_fallback() -> None:  # pragma: no cover
                 "result": {
                     "protocolVersion": "2024-11-05",
                     "capabilities": {"tools": {}},
-                    "serverInfo": {"name": "ferro-ta", "version": "1.0.0"},
+                    "serverInfo": {"name": "ferro-ta", "version": ft.__version__},
                 },
             }
         elif method == "tools/list":

@@ -3,43 +3,66 @@ ferro-ta Documentation
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents
+   :caption: Core Library
 
    quickstart
    migration_talib
+   support_matrix
    pandas_api
    error_handling
    api/index
    streaming
-   extended
    batch
-   derivatives
+   extended
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Evidence and Releases
+
    benchmarks
-   plugins
    changelog
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Adjacent and Experimental
+
+   derivatives
+   adjacent_tooling
+   plugins
    contributing
 
 Overview
 --------
 
-**ferro-ta** is a fast Technical Analysis library — a drop-in alternative to TA-Lib
-powered by Rust and PyO3.
+**ferro-ta** is a Rust-powered Python technical analysis library focused on a
+TA-Lib-compatible API for NumPy-centered workloads.
 
-Features:
+.. important::
+
+   Performance varies by indicator, array layout, warmup, build flags, and
+   machine. ferro-ta is often faster on selected indicators, not universally
+   faster. See :doc:`benchmarks` for the reproducible workflow, methodology
+   notes, and the indicators where TA-Lib still wins or ties in the current
+   checked-in artifact.
+
+Core library:
 
 - 160+ indicators covering all TA-Lib categories
-- 10 extended indicators not in TA-Lib (VWAP, Supertrend, Ichimoku Cloud, …)
-- Batch execution API — run indicators on 2-D arrays of multiple series
+- TA-Lib-style imports such as ``ferro_ta.SMA(close, timeperiod=20)``
+- Pre-built wheels for the supported Python/OS matrix
 - Pure Rust core library (``crates/ferro_ta_core``) — no PyO3 / numpy dependency
+- Batch execution API — run indicators on 2-D arrays of multiple series
 - Streaming / bar-by-bar API for live trading
 - Transparent pandas.Series support
-- Math operators and transforms
 - Type stubs (.pyi) for IDE auto-completion
-- WASM binding for browser/Node.js use
-- Options/IV helpers and derivatives analytics — see :doc:`derivatives`
+- 10 extended indicators not in TA-Lib (VWAP, Supertrend, Ichimoku Cloud, ...)
+
+Adjacent and experimental tooling:
+
+- Derivatives analytics — see :doc:`derivatives`
 - Agentic workflow and LangChain tool wrappers — see `Agentic guide <https://github.com/pratikbhadane24/ferro-ta/blob/main/docs/agentic.md>`_
 - MCP server for Cursor/Claude integration — see `MCP guide <https://github.com/pratikbhadane24/ferro-ta/blob/main/docs/mcp.md>`_
-- Sphinx documentation
+- WASM, plugins, and other optional surfaces — see :doc:`adjacent_tooling`
 
 Installation
 ~~~~~~~~~~~~
@@ -70,11 +93,11 @@ Further Reading
 - `Architecture <https://github.com/pratikbhadane24/ferro-ta/blob/main/docs/architecture.md>`_ — Rust/Python layout, two-crate design, binding flow.
 - `Performance Guide <https://github.com/pratikbhadane24/ferro-ta/blob/main/docs/performance.md>`_ — when to use raw numpy vs pandas/polars, batch notes, tips.
 - `API Stability <https://github.com/pratikbhadane24/ferro-ta/blob/main/docs/stability.md>`_ — stability tiers, versioning, and deprecation policy.
+- :doc:`support_matrix` — parity status, tested wheel targets, supported Python versions, and experimental modules.
 - `Rust-First Policy <https://github.com/pratikbhadane24/ferro-ta/blob/main/docs/rust_first.md>`_ — all compute logic belongs in Rust; how to add new indicators.
 - `Out-of-Core Execution <https://github.com/pratikbhadane24/ferro-ta/blob/main/docs/out-of-core.md>`_ — chunked processing and Dask integration.
 - :doc:`derivatives` — IV helpers, options pricing/Greeks/IV, futures analytics, strategy schemas, and payoff helpers.
-- `Agentic Workflow <https://github.com/pratikbhadane24/ferro-ta/blob/main/docs/agentic.md>`_ — tools.py, workflow.py, LangChain integration.
-- `MCP Server <https://github.com/pratikbhadane24/ferro-ta/blob/main/docs/mcp.md>`_ — run ferro-ta as an MCP server in Cursor/Claude.
+- :doc:`adjacent_tooling` — optional surfaces such as derivatives, MCP, WASM, GPU, plugins, and agent-oriented integrations.
 
 Indices and tables
 ==================

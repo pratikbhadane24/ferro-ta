@@ -59,7 +59,51 @@ array([ nan,  nan, 11. , 12. , 13. , 13.5, 13.33...])
 
 from __future__ import annotations
 
+from importlib.metadata import PackageNotFoundError as _PackageNotFoundError
+from importlib.metadata import version as _dist_version
+from pathlib import Path as _Path
+import re as _re
 import sys as _sys
+
+try:
+    import tomllib as _tomllib
+except ImportError:  # pragma: no cover
+    try:
+        import tomli as _tomllib  # type: ignore[no-redef]
+    except ImportError:  # pragma: no cover
+        _tomllib = None  # type: ignore[assignment]
+
+
+def _detect_version() -> str:
+    try:
+        return _dist_version("ferro-ta")
+    except _PackageNotFoundError:
+        pass
+
+    if _tomllib is not None:
+        pyproject_toml = _Path(__file__).resolve().parents[2] / "pyproject.toml"
+        if pyproject_toml.is_file():
+            try:
+                with pyproject_toml.open("rb") as handle:
+                    data = _tomllib.load(handle)
+                return data.get("project", {}).get("version", "0+unknown")
+            except Exception:
+                pass
+
+    pyproject_toml = _Path(__file__).resolve().parents[2] / "pyproject.toml"
+    if pyproject_toml.is_file():
+        try:
+            text = pyproject_toml.read_text(encoding="utf-8")
+            match = _re.search(r'^version\s*=\s*"([^"]+)"', text, _re.MULTILINE)
+            if match:
+                return match.group(1)
+        except Exception:
+            pass
+
+    return "0+unknown"
+
+
+__version__ = _detect_version()
 
 # ---------------------------------------------------------------------------
 # Exceptions — exported at the top level for convenient catching
@@ -281,6 +325,7 @@ from ferro_ta.indicators.volume import (  # noqa: F401
 )
 
 __all__ = [
+    "__version__",
     # Overlap Studies
     "SMA",
     "EMA",
@@ -459,7 +504,9 @@ __all__ = [
     "VWMA",
     "CHOPPINESS_INDEX",
     # API discovery
+    "about",
     "indicators",
+    "methods",
     "info",
     # Logging utilities
     "enable_debug",
@@ -585,9 +632,10 @@ from ferro_ta.tools.alerts import (  # noqa: F401, E402
 )
 
 # ---------------------------------------------------------------------------
-# API discovery helpers — ferro_ta.indicators() and ferro_ta.info()
+# API discovery helpers — ferro_ta.about(), ferro_ta.methods(),
+# ferro_ta.indicators(), and ferro_ta.info()
 # ---------------------------------------------------------------------------
-from ferro_ta.tools.api_info import indicators, info  # noqa: F401, E402
+from ferro_ta.tools.api_info import about, indicators, info, methods  # noqa: F401, E402
 
 _ALIASED_SUBMODULES = {
     "batch": batch,

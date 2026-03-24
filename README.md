@@ -2,9 +2,9 @@
 
 # ⚡ ferro-ta
 
-### The Python Technical Analysis Library That Beats TA-Lib — Everywhere
+### Rust-powered Python technical analysis with a TA-Lib-compatible API
 
-**Powered by Rust. Driven by O(n) algorithms. Designed for the speed that modern quantitative trading demands.**
+**Focused on one primary job: fast, reproducible technical analysis for Python users who want TA-Lib-style ergonomics without native build friction.**
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/pratikbhadane24/ferro-ta/HEAD?labpath=examples%2Fquickstart.ipynb)
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/pratikbhadane24/ferro-ta/blob/main/examples/quickstart.ipynb)
@@ -14,95 +14,79 @@
 
 ---
 
-> **"Same API as TA-Lib. 3–5× faster. No C compiler needed. Drop it in today."**
-
-ferro-ta is a **Rust-powered, PyO3-compiled** technical analysis library that replaces TA-Lib with a pure-Rust core that runs **3× to 5× faster** on every major indicator. It runs as a pre-compiled Python wheel — no C toolchain, no system dependencies, no compilation headaches.
+> `ferro-ta` is a Rust-backed Python technical analysis library with a TA-Lib-compatible API for NumPy-first workloads.
+>
+> Performance varies by indicator, array layout, warmup, build flags, and machine. Public checked-in runs show `ferro-ta` is often faster on selected indicators, while TA-Lib still wins or ties on others. The benchmark workflow, artifacts, and caveats are published in [`benchmarks/README.md`](benchmarks/README.md).
 
 ---
 
-## 🚀 Why ferro-ta?
+## 🚀 What ferro-ta is
 
 | | TA-Lib | ferro-ta |
 |---|---|---|
-| **Speed** | C extension, O(n×period) for STOCH/etc. | Rust + O(n) algorithms for most indicators |
-| **Installation** | Requires C compiler + system libs | `pip install ferro-ta` — zero deps |
-| **Platforms** | Linux-only on many CI systems | Windows / macOS (Intel + M-series) / Linux |
-| **API** | `talib.SMA(close, 20)` | `ferro_ta.SMA(close, 20)` — identical |
-| **Extra indicators** | — | VWAP, SUPERTREND, ICHIMOKU, DONCHIAN, and 10 more |
-| **Streaming API** | — | Bar-by-bar stateful classes |
-| **GPU acceleration** | — | Optional PyTorch backend (CUDA / MPS) |
-| **WebAssembly** | — | Node.js / Browser via WASM |
-| **Type stubs** | — | Full `.pyi` + `py.typed` (PEP 561) |
+| **Primary product** | C-backed Python TA library | Rust-backed Python TA library |
+| **API shape** | `talib.SMA(close, 20)` | `ferro_ta.SMA(close, 20)` |
+| **Installation** | Often requires native/system setup | Pre-built wheels on supported targets |
+| **Performance claim** | Established baseline | Often faster on selected indicators; see reproducible benchmarks |
+| **Scope** | Technical indicators | Technical indicators first; other tooling is optional and secondary |
 
 ---
 
-## ⚡ Performance vs TA-Lib
+## ⚡ Benchmark evidence
 
-ferro-ta is optimized for high throughput and often competitive with TA-Lib, thanks to:
-- **O(n) sliding max/min** (monotonic deque) for STOCH — was O(n×period) in TA-Lib
-- **Fused TR loop** for ATR — no intermediate allocation, single pass
-- **Branchless gain/loss** for RSI — `diff.max(0.0)` instead of `if/else`
-- **O(n) rolling operators** for SMA/WMA/BBANDS — sliding window accumulators
-- **Fused fast+slow EMA loop** for MACD — single pass for both EMAs
-- **Zero-copy NumPy bridging** — input arrays read directly from buffer without copying
+The latest checked-in TA-Lib comparison artifact uses contiguous `float64`
+arrays at 10k and 100k bars on an `Apple M3 Max`, `CPython 3.13.5`, `Rust
+1.91.1`, default release profile (`lto = true`, `codegen-units = 1`), with no
+extra `RUSTFLAGS`:
 
-### 🏆 Reproducible benchmark workflow
+- `ferro-ta` is ahead outside the tie band on 6 of 12 indicators at 10k bars and 6 of 12 at 100k bars.
+- At 100k bars, the stronger public wins are `SMA` (`2.28x`), `BBANDS` (`2.34x`), `MACD` (`1.38x`), `MFI` (`3.04x`), and `WMA` (`2.39x`).
+- TA-Lib still wins on `STOCH` and `ADX` in the current checked-in 10k and 100k runs, and still wins or ties on `EMA`, `RSI`, `ATR`, and `OBV`.
+- The published JSON now includes per-run samples, variance stats, and Python-tracked allocation snapshots, not just a single median.
 
-We publish benchmark methodology and generated tables in [`benchmarks/README.md`](benchmarks/README.md).
+The point of the benchmark suite is not to claim universal wins. It is to let readers reproduce the results, inspect the raw artifact, and see where each library is stronger.
 
-- Cross-library speed suite (62 indicators × available libraries): `benchmarks/test_speed.py`
-- Head-to-head TA-Lib comparison: `benchmarks/bench_vs_talib.py`
-- Table generation from `results.json`: `benchmarks/benchmark_table.py`
+### 🏆 Reproduce the public comparison
+
+- Methodology, artifact format, and result tables: [`benchmarks/README.md`](benchmarks/README.md)
+- Latest checked-in artifact bundle: [`benchmarks/artifacts/latest/`](benchmarks/artifacts/latest/)
+- TA-Lib head-to-head script: `benchmarks/bench_vs_talib.py`
+- Cross-library suite: `benchmarks/test_speed.py`
 
 ```bash
-# Reproduce these numbers yourself
+# Reproduce the TA-Lib comparison yourself
 pip install ferro-ta ta-lib
 python benchmarks/bench_vs_talib.py --sizes 10000 100000 --json benchmark_vs_talib.json
-# or with uv:
+
+# or with uv
 uv run python benchmarks/bench_vs_talib.py --sizes 10000 100000 --json benchmark_vs_talib.json
 uv run python benchmarks/check_vs_talib_regression.py --input benchmark_vs_talib.json
 
-# full cross-library speed suite (100k bars):
+# full cross-library speed suite (100k bars)
 uv run pytest benchmarks/test_speed.py --benchmark-only --benchmark-json=benchmarks/results.json -v
-# generate markdown table from results:
+
+# generate the comparison table from results.json
 uv run python benchmarks/benchmark_table.py
 ```
 
 ---
 
-## 🎯 Features
+## 🎯 Core capabilities
 
-- **No C-compiler required** — pre-compiled wheels for Windows, macOS (Intel & Apple Silicon), and Linux
-- **Drop-in API** compatible with TA-Lib (`SMA`, `EMA`, `RSI`, `MACD`, `BBANDS`, and 155+ more)
-- **Extended Indicators** beyond TA-Lib: `VWAP`, `SUPERTREND`, `ICHIMOKU`, `DONCHIAN`, `PIVOT_POINTS`, `KELTNER_CHANNELS`, `HULL_MA`, `CHANDELIER_EXIT`, `VWMA`, `CHOPPINESS_INDEX`
-- **Streaming / Live-Trading API** — bar-by-bar stateful classes (`StreamingSMA`, `StreamingRSI`, etc.)
-- **NumPy integration** — accepts and returns NumPy arrays; reads input buffers without copying data
-- **Pandas integration** — transparently accepts `pandas.Series` / `DataFrame` and returns `Series` with original index preserved
-- **Polars integration** — transparently accepts `polars.Series` and returns `polars.Series`; install with `pip install "ferro-ta[polars]"`
-- **Indicator pipeline** — compose multiple indicators into a reusable pipeline (`ferro_ta.pipeline.Pipeline`)
-- **Configuration defaults** — set global parameter defaults, per-indicator overrides, and temporary scopes (`ferro_ta.config`)
-- **Optional GPU backend** — pass a PyTorch tensor to `ferro_ta.gpu.sma/ema/rsi` and get a tensor back (CUDA or MPS); install with `pip install "ferro-ta[gpu]"`
-- **Type stubs** (`.pyi`) + `py.typed` (PEP 561) for IDE auto-completion and `mypy`/`pyright` support
-- **WebAssembly binding** — use ferro-ta in Node.js or the browser via `wasm/` (SMA, EMA, BBANDS, RSI, ATR, OBV, MACD, MOM, STOCHF)
-- **Backtesting utilities** — minimal vectorized backtester (`ferro_ta.backtest`) with RSI, SMA crossover, and MACD crossover strategies; optional commission and slippage
-- **Plugin registry** — register and run custom or built-in indicators by name (`ferro_ta.registry`)
-- **Error model** — custom exception hierarchy (`FerroTAError`, `FerroTAValueError`, `FerroTAInputError`) with input validation helpers
-- **Sphinx documentation** in `docs/` and Jupyter notebook examples in `examples/`
-- **OHLCV resampling** — time-based and volume-bar resampling, multi-timeframe API (`ferro_ta.resampling`)
-- **Tick aggregation** — tick/volume/time bar builders from raw trades (`ferro_ta.aggregation`)
-- **Strategy DSL** — expression-based strategy evaluation (`ferro_ta.dsl`)
-- **Signal composition** — weighted/rank composite scores and screening (`ferro_ta.signals`)
-- **Portfolio analytics** — correlation, volatility, beta, drawdown (`ferro_ta.portfolio`)
-- **Cross-asset analytics** — relative strength, spread, Z-score, rolling beta (`ferro_ta.cross_asset`)
-- **Feature matrix** — multi-indicator DataFrame for ML pipelines (`ferro_ta.features`)
-- **Charting API** — matplotlib and plotly charts with indicator subplots (`ferro_ta.viz`)
-- **Data adapters** — pluggable adapter interface with CSV and in-memory implementations (`ferro_ta.adapters`)
-- **Derivatives analytics** — IV rank/percentile/z-score, options pricing/Greeks/IV, futures basis/curve/roll, strategy schemas, and multi-leg payoff helpers (`ferro_ta.analysis.*`)
-- **Agentic tools** — stable LangChain/agent tool wrappers (`ferro_ta.tools`), end-to-end workflow orchestrator (`ferro_ta.workflow`)
-- **MCP server** — Model Context Protocol server for Cursor/Claude integration; run with `python -m ferro_ta.mcp`
-- **Observability / Logging** — `ferro_ta.enable_debug()`, `ferro_ta.log_call()`, `ferro_ta.benchmark()` and `ferro_ta.traced()` decorator for instrumentation
-- **API discovery** — `ferro_ta.indicators(category=None)` lists all 160+ indicators with metadata; `ferro_ta.info(func)` returns full parameter docs
-- **Structured error codes** — every `FerroTAError` exception now carries a code (`FTERR001`–`FTERR006`) and an actionable `suggestion` hint
+- **TA-Lib-style API** for 160+ indicators, including the common `SMA`, `EMA`, `RSI`, `MACD`, and `BBANDS` entry points.
+- **Pre-built wheels** for supported Python and OS targets, so the common install path stays `pip install ferro-ta`.
+- **NumPy-first execution** with pandas and polars adapters, plus explicit guidance on contiguous-array fast paths.
+- **Batch and streaming APIs** for multi-series and bar-by-bar workloads.
+- **Compatibility and support docs** covering parity status, supported wheels, supported Python versions, and experimental modules.
+- **Type stubs, error model, API discovery, and examples** for day-to-day library use.
+
+## 🧪 Adjacent and experimental modules
+
+These ship in the repo, but they are not the primary product story:
+
+- **Adjacent analytics:** derivatives helpers, backtesting utilities, portfolio and cross-asset analysis, feature generation, and charting.
+- **Experimental or optional tooling:** GPU backend, plugin system, WASM package, agent/tool wrappers, and the MCP server.
+- **Docs posture:** these modules are now called out separately in the docs nav and support matrix so the core TA library remains the main narrative.
 
 ---
 
@@ -180,7 +164,7 @@ import talib
 sma = talib.SMA(close, timeperiod=20)
 rsi = talib.RSI(close, timeperiod=14)
 
-# After (ferro-ta — same call signature, faster result)
+# After (ferro-ta — same call signature)
 import ferro_ta
 sma = ferro_ta.SMA(close, timeperiod=20)
 rsi = ferro_ta.RSI(close, timeperiod=14)

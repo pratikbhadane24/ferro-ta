@@ -1,55 +1,42 @@
-Changelog
-=========
+Release Notes
+=============
 
-1.0.0 (2026)
-------------
+These docs track package version ``1.0.3``.
 
-**Candlestick Pattern Parity (61/61)**
+1.0.3 (2026-03-24)
+------------------
 
-- All 61 TA-Lib candlestick patterns implemented in Rust
-- ``{-100, 0, 100}`` convention, consistent with TA-Lib
+- Added top-level package metadata helpers such as ``ferro_ta.__version__``,
+  ``ferro_ta.about()``, and ``ferro_ta.methods()``.
+- Added a standalone derivatives benchmark artifact for selected options
+  pricing, IV, Greeks, and Black-76 comparisons.
+- Simplified release version bumps with a single script and updated release
+  guidance.
 
-**Numerical Parity**
+1.0.2 (2026-03-24)
+------------------
 
-- RSI, ATR/NATR, CCI, BETA, STOCH, STOCHRSI, ADX/DX/DI/DM all rewritten to match TA-Lib seeding
-- Removed dependency on ``ta`` crate for these indicators
+- Improved rolling statistical kernels and several Python analysis hotspots.
+- Added reproducible perf-contract artifacts, TA-Lib regression guards, and
+  updated benchmark tooling.
+- Tightened the public benchmark documentation so claims, caveats, and evidence
+  live closer together.
 
-**Streaming / Incremental API**
+1.0.1 (2026-03-24)
+------------------
 
-- New :mod:`ferro_ta.streaming` module with bar-by-bar stateful classes
-- ``StreamingSMA``, ``StreamingEMA``, ``StreamingRSI``, ``StreamingATR``, ``StreamingBBands``, ``StreamingMACD``, ``StreamingStoch``, ``StreamingVWAP``, ``StreamingSupertrend``
+- Improved release automation for PyPI, crates.io, and npm.
+- Fixed CI workflow issues that caused otherwise healthy release jobs to fail.
+- Ensured the published WASM package includes its built ``pkg/`` artifacts.
 
-**Pandas Integration**
+1.0.0 (2026-03-23)
+------------------
 
-- All indicators transparently accept ``pandas.Series`` and return ``Series`` with original index preserved
-- Multi-output functions return tuples of ``Series``
+- First stable release of the Rust-backed Python technical analysis library.
+- Shipped broad TA-Lib coverage, streaming APIs, extended indicators, and the
+  initial Sphinx documentation set.
+- Added the benchmark suite, release playbook, and compatibility/testing
+  scaffolding for stable releases.
 
-**Math Operators / Transforms**
-
-- 24 functions: arithmetic (ADD/SUB/MULT/DIV), rolling (SUM/MAX/MIN/MAXINDEX/MININDEX), element-wise math transforms
-- SUM uses vectorized cumsum (220× faster than a naive loop)
-
-**Documentation**
-
-- Sphinx documentation setup with API reference, quickstart guide, and benchmarks page
-
-**Benchmarking Suite**
-
-- ``benchmarks/test_speed.py`` for authoritative ``pytest-benchmark`` speed runs
-- ``benchmarks/bench_vs_talib.py`` for TA-Lib head-to-head comparisons
-
-**Extended Indicators**
-
-- ``VWAP`` — cumulative or rolling window
-- ``SUPERTREND`` — ATR-based trend signal
-
-**Additional Extended Indicators**
-
-- ``ICHIMOKU`` — Ichimoku Cloud (Tenkan, Kijun, Senkou A/B, Chikou)
-- ``DONCHIAN`` — Donchian Channels (upper, middle, lower)
-- ``PIVOT_POINTS`` — Classic, Fibonacci, and Camarilla pivot points
-
-**Type Stubs & Packaging**
-
-- ``python/ferro_ta/__init__.pyi`` type stub for IDE auto-completion
-- ``pyproject.toml``: added optional extras (benchmark, pandas, docs, all), project URLs, Python 3.10–3.13 classifiers
+For the canonical project changelog, including the full per-version details,
+see `CHANGELOG.md <https://github.com/pratikbhadane24/ferro-ta/blob/main/CHANGELOG.md>`_.

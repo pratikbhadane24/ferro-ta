@@ -1,43 +1,45 @@
 """
 ferro_ta vs TA-Lib speed comparison.
 
-Measures throughput (M bars/s) for both libraries on the same data and parameters,
-and reports speedup (talib_time / ferro_ta_time; > 1 means ferro_ta is faster).
+Measures throughput (M bars/s) for both libraries on the same synthetic data
+and parameters. The output is intentionally evidence-heavy:
 
-Requirements:
-    pip install ta-lib   # or conda install ta-lib
+- median timings
+- per-run timing samples
+- variability stats
+- Python-tracked peak allocation snapshots
+- machine, runtime, and build metadata
 
-Run:
-    python benchmarks/bench_vs_talib.py
-    python benchmarks/bench_vs_talib.py --json results.json
-    python benchmarks/bench_vs_talib.py --sizes 10000 100000  # default: 10k, 100k, 1M
-
-If ta-lib is not installed, the script still runs and reports ferro_ta timings only (no speedup).
-Methodology: same synthetic data, same parameters, median of 7 runs after warmup.
-Environment: document Python version and OS when publishing results.
+This is meant to support a narrow claim: ferro-ta is often faster on selected
+indicators, not universally faster.
 """
 
 from __future__ import annotations
 
 import argparse
-from datetime import datetime, timezone
 import json
-import platform
-import subprocess
+import math
 import sys
 import time
+import tracemalloc
 from typing import Any
 
 import numpy as np
 
 try:
     import talib  # noqa: F401
+
     TALIB_AVAILABLE = True
 except ImportError:
     TALIB_AVAILABLE = False
     talib = None  # type: ignore[assignment]
 
 import ferro_ta
+
+try:
+    from benchmarks.metadata import benchmark_metadata, package_versions
+except ModuleNotFoundError:  # pragma: no cover - script execution fallback
+    from metadata import benchmark_metadata, package_versions
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -46,100 +48,138 @@ import ferro_ta
 N_WARMUP = 1
 N_RUNS = 7
 DEFAULT_SIZES = [10_000, 100_000, 1_000_000]
+TIE_EPSILON = 0.05
 
 _rng = np.random.default_rng(42)
 
 
-def _git_info() -> dict[str, Any]:
-    """Best-effort git metadata for benchmark reproducibility."""
-    try:
-        commit = subprocess.check_output(
-            ["git", "rev-parse", "HEAD"], text=True, stderr=subprocess.DEVNULL
-        ).strip()
-    except Exception:
-        commit = None
-
-    try:
-        dirty = bool(
-            subprocess.check_output(
-                ["git", "status", "--porcelain"],
-                text=True,
-                stderr=subprocess.DEVNULL,
-            ).strip()
-        )
-    except Exception:
-        dirty = None
-
-    return {"commit": commit, "dirty": dirty}
+def _median(values: list[float]) -> float:
+    ordered = sorted(values)
+    mid = len(ordered) // 2
+    if len(ordered) % 2:
+        return ordered[mid]
+    return (ordered[mid - 1] + ordered[mid]) / 2.0
 
 
-def _runtime_info() -> dict[str, Any]:
+def _summary_stats(samples_ms: list[float]) -> dict[str, float]:
+    if not samples_ms:
+        return {
+            "median_ms": 0.0,
+            "mean_ms": 0.0,
+            "min_ms": 0.0,
+            "max_ms": 0.0,
+            "stddev_ms": 0.0,
+            "cv_pct": 0.0,
+        }
+
+    mean_ms = sum(samples_ms) / len(samples_ms)
+    variance = (
+        sum((sample - mean_ms) ** 2 for sample in samples_ms) / (len(samples_ms) - 1)
+        if len(samples_ms) > 1
+        else 0.0
+    )
+    stddev_ms = math.sqrt(variance)
+    cv_pct = (stddev_ms / mean_ms * 100.0) if mean_ms else 0.0
     return {
-        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
-        "python_version": sys.version.split()[0],
-        "platform": platform.platform(),
-        "machine": platform.machine(),
+        "median_ms": round(_median(samples_ms), 4),
+        "mean_ms": round(mean_ms, 4),
+        "min_ms": round(min(samples_ms), 4),
+        "max_ms": round(max(samples_ms), 4),
+        "stddev_ms": round(stddev_ms, 4),
+        "cv_pct": round(cv_pct, 3),
     }
 
 
+def _outcome(speedup: float) -> str:
+    if speedup > 1.0 + TIE_EPSILON:
+        return "ferro_ta_win"
+    if speedup < 1.0 - TIE_EPSILON:
+        return "talib_win"
+    return "tie"
+
+
 def _summary_for_size(results: list[dict[str, Any]], size: int) -> dict[str, Any]:
-    rows = [r for r in results if r.get("size") == size and "speedup" in r]
+    rows = [row for row in results if row.get("size") == size and "speedup" in row]
     if not rows:
         return {"size": size, "rows": 0}
 
-    speedups = [float(r["speedup"]) for r in rows]
-    wins = sum(1 for s in speedups if s > 1.0)
-    speedups_sorted = sorted(speedups)
-    mid = len(speedups_sorted) // 2
-    if len(speedups_sorted) % 2:
-        median = speedups_sorted[mid]
-    else:
-        median = (speedups_sorted[mid - 1] + speedups_sorted[mid]) / 2.0
-
+    speedups = [float(row["speedup"]) for row in rows]
+    wins = sum(1 for row in rows if row.get("outcome") == "ferro_ta_win")
+    ties = sum(1 for row in rows if row.get("outcome") == "tie")
+    losses = sum(1 for row in rows if row.get("outcome") == "talib_win")
     return {
         "size": size,
         "rows": len(rows),
         "wins": wins,
-        "win_rate": wins / len(rows),
-        "median_speedup": round(median, 4),
+        "ties": ties,
+        "losses": losses,
+        "win_rate": round(wins / len(rows), 4),
+        "non_loss_rate": round((wins + ties) / len(rows), 4),
+        "median_speedup": round(_median(speedups), 4),
         "min_speedup": round(min(speedups), 4),
         "max_speedup": round(max(speedups), 4),
+        "talib_wins_or_ties": [
+            row["indicator"]
+            for row in rows
+            if row.get("outcome") in {"talib_win", "tie"}
+        ],
     }
 
 
-def _synthetic_ohlcv(n: int) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    # Generate OHLCV so that ta crate DataItem constraints hold: low >= 0, volume >= 0,
-    # and low <= open, close <= high, high >= open (see ta DataItemBuilder::build).
+def _synthetic_ohlcv(
+    n: int,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    # Generate OHLCV so that ta crate DataItem constraints hold: low >= 0,
+    # volume >= 0, and low <= open, close <= high, high >= open.
     close = 100.0 + np.cumsum(_rng.standard_normal(n) * 0.5)
     open_ = close + _rng.standard_normal(n) * 0.2
     high = np.maximum(open_, close) + np.abs(_rng.standard_normal(n) * 0.3)
     low = np.minimum(open_, close) - np.abs(_rng.standard_normal(n) * 0.3)
-    # Enforce high >= low and low >= 0 (ta requires non-negative prices)
     high = np.maximum(high, low)
     low = np.maximum(low, 0.0)
-    high = np.maximum(high, low)  # again after clamping low
+    high = np.maximum(high, low)
     open_ = np.clip(open_, low, high)
     close = np.clip(close, low, high)
     volume = np.abs(_rng.standard_normal(n) * 1_000_000) + 500_000
     return open_, high, low, close, volume
 
 
-def _median_time_ms(fn, *args, **kwargs) -> float:
+def _timed_runs_ms(fn, *args, **kwargs) -> list[float]:
     for _ in range(N_WARMUP):
         fn(*args, **kwargs)
-    times = []
+
+    samples_ms: list[float] = []
     for _ in range(N_RUNS):
         t0 = time.perf_counter()
         fn(*args, **kwargs)
-        times.append((time.perf_counter() - t0) * 1000)
-    times.sort()
-    return times[len(times) // 2]
+        samples_ms.append((time.perf_counter() - t0) * 1000.0)
+    return samples_ms
 
 
-# Each entry: (label, ferro_ta_callable, talib_callable, needs_ohlcv)
-# ferro_ta_callable / talib_callable receive (open_, high, low, close, volume) and size;
-# they return (args, ft_kwargs, ta_kwargs) or we use a simpler convention:
-# we pass (o, h, l, c, v) and size; each runner knows how to slice and call.
+def _python_peak_bytes(fn, *args, **kwargs) -> int | None:
+    try:
+        tracemalloc.start()
+        tracemalloc.reset_peak()
+        fn(*args, **kwargs)
+        _, peak = tracemalloc.get_traced_memory()
+        return int(peak)
+    except Exception:
+        return None
+    finally:
+        tracemalloc.stop()
+
+
+def _throughput_m_bars_s(size: int, median_ms: float) -> float:
+    if median_ms <= 0:
+        return 0.0
+    return (size / 1e6) / (median_ms / 1000.0)
+
+
+# ---------------------------------------------------------------------------
+# Benchmarked callables
+# ---------------------------------------------------------------------------
+
+
 def _run_ft_sma(o, h, l, c, v, n):
     return ferro_ta.SMA(c[:n], timeperiod=14)
 
@@ -236,7 +276,6 @@ def _run_ta_wma(o, h, l, c, v, n):
     return talib.WMA(c[:n], timeperiod=14)
 
 
-# List of (indicator_name, ft_runner, ta_runner); skip 1M for very slow indicators if needed
 COMPARISON_CASES = [
     ("SMA", _run_ft_sma, _run_ta_sma),
     ("EMA", _run_ft_ema, _run_ta_ema),
@@ -252,14 +291,14 @@ COMPARISON_CASES = [
     ("WMA", _run_ft_wma, _run_ta_wma),
 ]
 
-# For STOCH/ADX and other heavier indicators, optionally skip 1M to keep runtime reasonable
 SKIP_1M_FOR = {"STOCH", "ADX"}
 
 
 def run_comparison(sizes: list[int], json_path: str | None) -> list[dict[str, Any]]:
     max_size = max(sizes)
     open_, high, low, close, volume = _synthetic_ohlcv(max_size)
-    results = []
+    results: list[dict[str, Any]] = []
+
     col_label = 10
     col_size = 10
     col_ft_ms = 12
@@ -269,12 +308,13 @@ def run_comparison(sizes: list[int], json_path: str | None) -> list[dict[str, An
     col_ta_m = 12
 
     if not TALIB_AVAILABLE:
-        print("Note: ta-lib not installed — reporting ferro_ta timings only (no speedup).")
+        print("Note: ta-lib not installed. Reporting ferro_ta timings only.")
         print("Install with: pip install ta-lib (or conda install ta-lib) for comparison.\n")
 
-    print(f"\nferro_ta vs TA-Lib — median of {N_RUNS} runs (after {N_WARMUP} warmup)")
+    print(f"\nferro_ta vs TA-Lib — median of {N_RUNS} measured runs after {N_WARMUP} warmup")
     print(f"Sizes: {sizes}")
     print()
+
     header = (
         f"{'Indicator':<{col_label}} {'Size':<{col_size}} "
         f"{'ferro_ta(ms)':<{col_ft_ms}} {'TA-Lib(ms)':<{col_ta_ms}} "
@@ -287,82 +327,140 @@ def run_comparison(sizes: list[int], json_path: str | None) -> list[dict[str, An
         for size in sizes:
             if size == 1_000_000 and name in SKIP_1M_FOR:
                 continue
-            ms_ft = _median_time_ms(ft_run, open_, high, low, close, volume, size)
+
+            ft_samples_ms = _timed_runs_ms(ft_run, open_, high, low, close, volume, size)
+            ft_stats = _summary_stats(ft_samples_ms)
+            ft_median_ms = float(ft_stats["median_ms"])
+            ft_m_bars_s = _throughput_m_bars_s(size, ft_median_ms)
+            ft_peak_bytes = _python_peak_bytes(ft_run, open_, high, low, close, volume, size)
+
+            row: dict[str, Any] = {
+                "indicator": name,
+                "size": size,
+                "input_layout": {
+                    "dtype": "float64",
+                    "contiguous": True,
+                },
+                "ferro_ta_ms": round(ft_median_ms, 4),
+                "ferro_ta_m_bars_s": round(ft_m_bars_s, 2),
+                "ferro_ta_runs_ms": [round(sample, 4) for sample in ft_samples_ms],
+                "ferro_ta_stats": ft_stats,
+                "python_peak_allocation_bytes": {
+                    "ferro_ta": ft_peak_bytes,
+                },
+            }
+
             if TALIB_AVAILABLE:
-                ms_ta = _median_time_ms(ta_run, open_, high, low, close, volume, size)
-                speedup = ms_ta / ms_ft if ms_ft > 0 else float("inf")
-                m_bars_ft = (size / 1e6) / (ms_ft / 1000) if ms_ft > 0 else 0
-                m_bars_ta = (size / 1e6) / (ms_ta / 1000) if ms_ta > 0 else 0
+                ta_samples_ms = _timed_runs_ms(ta_run, open_, high, low, close, volume, size)
+                ta_stats = _summary_stats(ta_samples_ms)
+                ta_median_ms = float(ta_stats["median_ms"])
+                ta_m_bars_s = _throughput_m_bars_s(size, ta_median_ms)
+                speedup = ta_median_ms / ft_median_ms if ft_median_ms > 0 else float("inf")
+                outcome = _outcome(speedup)
+                ta_peak_bytes = _python_peak_bytes(
+                    ta_run, open_, high, low, close, volume, size
+                )
+
                 print(
                     f"{name:<{col_label}} {size:<{col_size}} "
-                    f"{ms_ft:<{col_ft_ms}.3f} {ms_ta:<{col_ta_ms}.3f} "
-                    f"{speedup:<{col_speedup}.2f}x {m_bars_ft:<{col_ft_m}.1f} {m_bars_ta:<{col_ta_m}.1f}"
+                    f"{ft_median_ms:<{col_ft_ms}.3f} {ta_median_ms:<{col_ta_ms}.3f} "
+                    f"{speedup:<{col_speedup}.2f}x {ft_m_bars_s:<{col_ft_m}.1f} {ta_m_bars_s:<{col_ta_m}.1f}"
                 )
-                row = {
-                    "indicator": name,
-                    "size": size,
-                    "ferro_ta_ms": round(ms_ft, 4),
-                    "talib_ms": round(ms_ta, 4),
-                    "speedup": round(speedup, 4),
-                    "ferro_ta_m_bars_s": round(m_bars_ft, 2),
-                    "talib_m_bars_s": round(m_bars_ta, 2),
-                }
+
+                row.update(
+                    {
+                        "talib_ms": round(ta_median_ms, 4),
+                        "talib_m_bars_s": round(ta_m_bars_s, 2),
+                        "talib_runs_ms": [round(sample, 4) for sample in ta_samples_ms],
+                        "talib_stats": ta_stats,
+                        "speedup": round(speedup, 4),
+                        "outcome": outcome,
+                    }
+                )
+                row["python_peak_allocation_bytes"]["talib"] = ta_peak_bytes
             else:
-                m_bars_ft = (size / 1e6) / (ms_ft / 1000) if ms_ft > 0 else 0
                 print(
                     f"{name:<{col_label}} {size:<{col_size}} "
-                    f"{ms_ft:<{col_ft_ms}.3f} {'N/A':<{col_ta_ms}} "
-                    f"{'N/A':<{col_speedup}} {m_bars_ft:<{col_ft_m}.1f} {'N/A':<{col_ta_m}}"
+                    f"{ft_median_ms:<{col_ft_ms}.3f} {'N/A':<{col_ta_ms}} "
+                    f"{'N/A':<{col_speedup}} {ft_m_bars_s:<{col_ft_m}.1f} {'N/A':<{col_ta_m}}"
                 )
-                row = {
-                    "indicator": name,
-                    "size": size,
-                    "ferro_ta_ms": round(ms_ft, 4),
-                    "ferro_ta_m_bars_s": round(m_bars_ft, 2),
-                }
+
             results.append(row)
 
     print()
     if TALIB_AVAILABLE and results:
-        wins = sum(1 for r in results if r.get("speedup", 0) > 1)
-        total = len(results)
-        print(f"Summary: ferro_ta faster on {wins}/{total} rows (speedup > 1).")
+        wins = sum(1 for row in results if row.get("outcome") == "ferro_ta_win")
+        total = len([row for row in results if "speedup" in row])
+        print(f"Summary: ferro_ta ahead outside the tie band on {wins}/{total} rows.")
     print()
+
     if json_path:
+        metadata = benchmark_metadata(
+            "benchmark_vs_talib",
+            extra={
+                "dataset": {
+                    "generator": "synthetic_ohlcv",
+                    "sizes": sizes,
+                    "dtype": "float64",
+                    "array_layout": "C-contiguous",
+                    "seed": 42,
+                },
+                "methodology": {
+                    "warmup_runs": N_WARMUP,
+                    "measured_runs": N_RUNS,
+                    "reported_metric": "median_ms",
+                    "speedup_definition": "talib_median_ms / ferro_ta_median_ms",
+                    "tie_band": f"{1.0 - TIE_EPSILON:.2f} to {1.0 + TIE_EPSILON:.2f}",
+                    "input_layout_notes": (
+                        "Benchmarks use contiguous float64 arrays. If your workload "
+                        "passes non-contiguous arrays or other dtypes, benchmark that "
+                        "separately because wrapper overhead can dominate."
+                    ),
+                    "allocation_notes": (
+                        "python_peak_allocation_bytes is a tracemalloc snapshot of "
+                        "Python-tracked allocations only; it is not a full native RSS "
+                        "or allocator profile."
+                    ),
+                },
+                "packages": package_versions("numpy", "ferro-ta", "TA-Lib"),
+            },
+        )
         out = {
-            "schema_version": 1,
-            "command": "python benchmarks/bench_vs_talib.py",
+            "schema_version": 2,
+            "command": " ".join(["python", *sys.argv]),
             "n_warmup": N_WARMUP,
             "n_runs": N_RUNS,
             "sizes": sizes,
             "talib_available": TALIB_AVAILABLE,
-            "runtime": _runtime_info(),
-            "git": _git_info(),
+            "runtime": metadata["runtime"],
+            "git": metadata["git"],
+            "metadata": metadata,
             "summary": {
                 "total_rows": len(results),
-                "by_size": [_summary_for_size(results, s) for s in sizes],
+                "by_size": [_summary_for_size(results, size) for size in sizes],
             },
             "results": results,
         }
         if not TALIB_AVAILABLE:
-            out["note"] = "ferro_ta only — ta-lib not installed"
-        with open(json_path, "w") as f:
-            json.dump(out, f, indent=2)
+            out["note"] = "ferro_ta only; ta-lib not installed"
+        with open(json_path, "w", encoding="utf-8") as handle:
+            json.dump(out, handle, indent=2)
         print(f"Results written to {json_path}")
+
     return results
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description="ferro_ta vs TA-Lib speed comparison")
-    ap.add_argument("--json", default=None, help="Write results to JSON file")
-    ap.add_argument(
+    parser = argparse.ArgumentParser(description="ferro_ta vs TA-Lib speed comparison")
+    parser.add_argument("--json", default=None, help="Write results to JSON file")
+    parser.add_argument(
         "--sizes",
         type=int,
         nargs="+",
         default=DEFAULT_SIZES,
         help="Bar counts to benchmark (default: 10000 100000 1000000)",
     )
-    args = ap.parse_args()
+    args = parser.parse_args()
     run_comparison(args.sizes, args.json)
     return 0
 

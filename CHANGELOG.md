@@ -9,6 +9,29 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.0.3] — 2026-03-24
+
+### Added
+
+- Public package metadata helpers: `ferro_ta.__version__`, `ferro_ta.about()`,
+  and `ferro_ta.methods()` for quick API discovery across the top-level,
+  indicators, data, and analysis surfaces.
+- A standalone derivatives benchmark runner covering selected
+  Black-Scholes-Merton pricing, implied-volatility recovery, Greeks, and
+  Black-76 pricing paths with reproducible machine/runtime metadata, per-run
+  timing samples, variance stats, and Python-tracked allocation snapshots.
+- A one-command version bump helper, `scripts/bump_version.py`, plus `make version
+  VERSION=X.Y.Z` for aligned Cargo, Python, WASM, Conda, and docs release
+  surfaces.
+
+### Changed
+
+- Tightened the homepage and docs product narrative so the core Rust-backed
+  Python TA library leads, while adjacent tooling is called out separately.
+- Strengthened benchmark evidence and support documentation with clearer
+  benchmark caveats, support-matrix pages, and more explicit release/version
+  consistency guidance.
+
 ## [1.0.2] — 2026-03-24
 
 ### Performance
@@ -293,7 +316,8 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ---
 
-[Unreleased]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.0.2...HEAD
+[Unreleased]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.0.3...HEAD
+[1.0.3]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/pratikbhadane24/ferro-ta/releases/tag/v1.0.0

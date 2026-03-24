@@ -1,7 +1,7 @@
 # ferro-ta development Makefile
 # Usage: make <target>
 
-.PHONY: help dev build test lint typecheck fmt docs clean bench
+.PHONY: help dev build test lint typecheck fmt docs clean bench version
 
 # Default target
 help:
@@ -15,6 +15,7 @@ help:
 	@echo "  make typecheck  Run mypy + pyright type checkers"
 	@echo "  make docs       Build the Sphinx documentation"
 	@echo "  make bench      Run Rust criterion benchmarks (ferro_ta_core)"
+	@echo "  make version    Bump tracked version strings (set VERSION=X.Y.Z)"
 	@echo "  make audit      Run cargo-audit + pip-audit"
 	@echo "  make clean      Remove build artefacts"
 
@@ -47,6 +48,10 @@ docs:
 
 bench:
 	cargo bench -p ferro_ta_core
+
+version:
+	@test -n "$(VERSION)" || (echo "Usage: make version VERSION=X.Y.Z" && exit 1)
+	python3 scripts/bump_version.py "$(VERSION)"
 
 audit:
 	cargo audit

@@ -1,14 +1,21 @@
 # ferro-ta Benchmark Suite
 
-> **62 indicators × 6 libraries** — accuracy and speed verified on **100,000 bars** (LARGE dataset).
+> Reproducible speed and accuracy comparisons across 62 indicators and the
+> libraries available in your environment.
 
 ## Overview
 
-The benchmark suite compares **ferro-ta** against five popular Python technical-analysis libraries on a common dataset and shared wrappers so timings are directly comparable.
+The benchmark suite compares **ferro-ta** against other Python
+technical-analysis libraries on a common dataset and shared wrappers so the
+results are easier to reproduce and critique.
+
+It is not designed to prove that ferro-ta wins everywhere. It is designed to
+show where ferro-ta is faster, where it only ties, and where another library
+still wins.
 
 | Library   | Notes |
 |-----------|-------|
-| **TA-Lib** | C extension; gold standard for accuracy and speed |
+| **TA-Lib** | C extension; widely used comparison baseline |
 | **pandas-ta** | Pure Python; broad indicator set |
 | **ta** | Simple API; some indicators use O(n²) loops and are very slow |
 | **Tulipy** | C extension; truncated output (no leading NaN padding) |
@@ -37,8 +44,22 @@ from benchmarks.data_generator import SMALL, MEDIUM, LARGE
 
 - **Harness:** [pytest-benchmark](https://pytest-benchmark.readthedocs.io/) with `benchmark.pedantic(..., iterations=5, rounds=20, warmup_rounds=2)`.
 - **Reported metric:** **Median time per call** in **microseconds (µs)** — lower is better.
-- **Machine info:** Stored in `benchmarks/results.json` (`machine_info`, `commit_info`) for reproducibility.
+- **TA-Lib head-to-head JSON:** `benchmarks/bench_vs_talib.py` records per-run samples, variance stats, machine/runtime/build metadata, and Python-tracked peak allocation snapshots.
+- **Machine info:** Stored in the generated JSON artifacts for reproducibility.
 - **Libraries:** Only libraries present in the environment are benchmarked; missing ones are skipped.
+
+## Current checked-in TA-Lib artifact
+
+The checked-in `benchmarks/artifacts/latest/benchmark_vs_talib.json` artifact
+uses contiguous `float64` arrays at 10k and 100k bars on an Apple M3 Max,
+CPython 3.13.5, and Rust 1.91.1 with the default release profile
+(`lto = true`, `codegen-units = 1`).
+
+- ferro-ta is ahead outside the tie band on 6 of 12 rows at 10k bars and 6 of 12 rows at 100k bars.
+- TA-Lib still wins in the current artifact on `STOCH` and `ADX`, and remains close on `EMA`, `RSI`, `ATR`, and `OBV` depending on size.
+- The public claim should therefore be read as "often faster on selected indicators," not "faster everywhere."
+- When publishing performance statements, point readers to the raw JSON artifact, not just the summary table.
+- The artifact now includes per-run samples, variance stats, and Python-tracked allocation snapshots for each compared indicator.
 
 ## Reproducible Perf Artifacts
 
@@ -140,7 +161,7 @@ The speed table includes **all 62 indicators**. **Number** = median µs; **N/A**
 **Takeaways:**
 
 - **`ta`** is 20–350× slower on ATR, CCI, ADX, MFI (O(n²) Python loops).
-- **ferro-ta** is typically 2–4× faster than **pandas-ta** across indicators.
+- **ferro-ta** is often materially faster than **pandas-ta** on the checked-in 100k-bar table.
 - **TA-Lib** and **Tulipy** (C extensions) are strong; ferro-ta is competitive and avoids native dependencies.
 
 ---
@@ -160,8 +181,13 @@ uv run pytest benchmarks/test_speed.py --benchmark-only -k "test_large_dataset" 
 # Regenerate the Speed Comparison markdown table from results.json
 uv run python benchmarks/benchmark_table.py
 
-# TA-Lib head-to-head with machine-readable summary + git/runtime metadata
+# TA-Lib head-to-head with machine/runtime/build metadata, per-run samples,
+# variance stats, and Python-tracked allocation snapshots
 uv run python benchmarks/bench_vs_talib.py --sizes 10000 100000 --json benchmark_vs_talib.json
+
+# Selected derivatives analytics comparison (BSM price, IV, Greeks, Black-76)
+# against built-in analytical references plus optional installed libraries
+uv run python benchmarks/bench_derivatives_compare.py --sizes 1000 10000 --json benchmark_derivatives_compare.json
 
 # Optional regression check used in CI
 uv run python benchmarks/check_vs_talib_regression.py --input benchmark_vs_talib.json
@@ -183,6 +209,25 @@ uv run python benchmarks/run_perf_contract.py --output-dir benchmarks/artifacts/
 ```
 
 Without `uv`: use `pytest` and `python` from the same environment where `ferro_ta` and optional libs (e.g. `talib`, `pandas_ta`, `ta`, `tulipy`, `finta`) are installed.
+
+### Derivatives analytics
+
+`benchmarks/bench_derivatives_compare.py` focuses on selected options-analytics
+paths rather than the full surface area:
+
+- `BSM` call pricing
+- call implied-volatility recovery
+- call Greeks
+- `Black-76` call pricing
+
+The script always includes two analytical baselines:
+
+- `reference_numpy` — pure NumPy formulas with vectorized IV bisection
+- `reference_python_loop` — scalar `math`-based reference for sanity checking
+
+If `py_vollib` is installed, it is added automatically as an extra baseline.
+The output JSON includes runtime/build metadata, per-run timing samples,
+variance stats, and Python-tracked peak allocation snapshots.
 
 ### WASM
 

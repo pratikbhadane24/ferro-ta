@@ -1,6 +1,6 @@
 {
-  "schema_version": 1,
-  "command": "python benchmarks/bench_vs_talib.py",
+  "schema_version": 2,
+  "command": "python benchmarks/bench_vs_talib.py --sizes 10000 100000 --json benchmarks/artifacts/latest/benchmark_vs_talib.json",
   "n_warmup": 1,
   "n_runs": 7,
   "sizes": [
@@ -9,14 +9,80 @@
   ],
   "talib_available": true,
   "runtime": {
-    "generated_at_utc": "2026-03-23T20:26:40.738132+00:00",
+    "generated_at_utc": "2026-03-24T05:39:25.532319+00:00",
     "python_version": "3.13.5",
+    "python_implementation": "CPython",
+    "python_executable": "/Users/pratikbhadane/Work/Projects/ferro-ta/.venv/bin/python3",
     "platform": "macOS-26.3.1-arm64-arm-64bit-Mach-O",
-    "machine": "arm64"
+    "system": "Darwin",
+    "release": "25.3.0",
+    "machine": "arm64",
+    "processor": "arm",
+    "cpu_model": "Apple M3 Max",
+    "cpu_count_logical": 14,
+    "total_memory_bytes": 38654705664
   },
   "git": {
-    "commit": "9011250f992119170242cf17a67834c67b91bcdb",
-    "dirty": true
+    "commit": "0382c4e3024c96809ffd89dd76d820efcd56479d",
+    "dirty": true,
+    "branch": "main"
+  },
+  "metadata": {
+    "suite": "benchmark_vs_talib",
+    "runtime": {
+      "generated_at_utc": "2026-03-24T05:39:25.532319+00:00",
+      "python_version": "3.13.5",
+      "python_implementation": "CPython",
+      "python_executable": "/Users/pratikbhadane/Work/Projects/ferro-ta/.venv/bin/python3",
+      "platform": "macOS-26.3.1-arm64-arm-64bit-Mach-O",
+      "system": "Darwin",
+      "release": "25.3.0",
+      "machine": "arm64",
+      "processor": "arm",
+      "cpu_model": "Apple M3 Max",
+      "cpu_count_logical": 14,
+      "total_memory_bytes": 38654705664
+    },
+    "git": {
+      "commit": "0382c4e3024c96809ffd89dd76d820efcd56479d",
+      "dirty": true,
+      "branch": "main"
+    },
+    "build": {
+      "rustc": "rustc 1.91.1 (ed61e7d7e 2025-11-07) (Homebrew)\nbinary: rustc\ncommit-hash: ed61e7d7e242494fb7057f2657300d9e77bb4fcb\ncommit-date: 2025-11-07\nhost: aarch64-apple-darwin\nrelease: 1.91.1\nLLVM version: 21.1.5",
+      "cargo": "cargo 1.91.1 (Homebrew)",
+      "cargo_release_profile": {
+        "lto": true,
+        "codegen-units": 1
+      },
+      "rustflags": null,
+      "cargo_build_rustflags": null,
+      "maturin_flags": null
+    },
+    "packages": {
+      "numpy": "2.2.6",
+      "ferro-ta": "1.0.3",
+      "TA-Lib": "0.6.8"
+    },
+    "dataset": {
+      "generator": "synthetic_ohlcv",
+      "sizes": [
+        10000,
+        100000
+      ],
+      "dtype": "float64",
+      "array_layout": "C-contiguous",
+      "seed": 42
+    },
+    "methodology": {
+      "warmup_runs": 1,
+      "measured_runs": 7,
+      "reported_metric": "median_ms",
+      "speedup_definition": "talib_median_ms / ferro_ta_median_ms",
+      "tie_band": "0.95 to 1.05",
+      "input_layout_notes": "Benchmarks use contiguous float64 arrays. If your workload passes non-contiguous arrays or other dtypes, benchmark that separately because wrapper overhead can dominate.",
+      "allocation_notes": "python_peak_allocation_bytes is a tracemalloc snapshot of Python-tracked allocations only; it is not a full native RSS or allocator profile."
+    }
   },
   "summary": {
     "total_rows": 24,
@@ -24,20 +90,42 @@
       {
         "size": 10000,
         "rows": 12,
-        "wins": 8,
-        "win_rate": 0.6666666666666666,
-        "median_speedup": 1.0546,
-        "min_speedup": 0.7174,
-        "max_speedup": 2.0135
+        "wins": 5,
+        "ties": 4,
+        "losses": 3,
+        "win_rate": 0.4167,
+        "non_loss_rate": 0.75,
+        "median_speedup": 1.0383,
+        "min_speedup": 0.4887,
+        "max_speedup": 1.9422,
+        "talib_wins_or_ties": [
+          "EMA",
+          "RSI",
+          "ATR",
+          "STOCH",
+          "ADX",
+          "OBV",
+          "MFI"
+        ]
       },
       {
         "size": 100000,
         "rows": 12,
         "wins": 7,
-        "win_rate": 0.5833333333333334,
-        "median_speedup": 1.0896,
-        "min_speedup": 0.4965,
-        "max_speedup": 3.6029
+        "ties": 3,
+        "losses": 2,
+        "win_rate": 0.5833,
+        "non_loss_rate": 0.8333,
+        "median_speedup": 1.1748,
+        "min_speedup": 0.4609,
+        "max_speedup": 3.246,
+        "talib_wins_or_ties": [
+          "EMA",
+          "ATR",
+          "STOCH",
+          "ADX",
+          "OBV"
+        ]
       }
     ]
   },
@@ -45,218 +133,1250 @@
     {
       "indicator": "SMA",
       "size": 10000,
-      "ferro_ta_ms": 0.0093,
-      "talib_ms": 0.0167,
-      "speedup": 1.7937,
-      "ferro_ta_m_bars_s": 1076.19,
-      "talib_m_bars_s": 599.99
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_ms": 0.01,
+      "ferro_ta_m_bars_s": 1000.0,
+      "ferro_ta_runs_ms": [
+        0.0227,
+        0.0112,
+        0.0095,
+        0.01,
+        0.0095,
+        0.0105,
+        0.0094
+      ],
+      "ferro_ta_stats": {
+        "median_ms": 0.01,
+        "mean_ms": 0.0118,
+        "min_ms": 0.0094,
+        "max_ms": 0.0227,
+        "stddev_ms": 0.0048,
+        "cv_pct": 40.884
+      },
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 704,
+        "talib": 80400
+      },
+      "talib_ms": 0.0168,
+      "talib_m_bars_s": 595.24,
+      "talib_runs_ms": [
+        0.0214,
+        0.0176,
+        0.0168,
+        0.0166,
+        0.0165,
+        0.0165,
+        0.0168
+      ],
+      "talib_stats": {
+        "median_ms": 0.0168,
+        "mean_ms": 0.0175,
+        "min_ms": 0.0165,
+        "max_ms": 0.0214,
+        "stddev_ms": 0.0018,
+        "cv_pct": 10.191
+      },
+      "speedup": 1.68,
+      "outcome": "ferro_ta_win"
     },
     {
       "indicator": "SMA",
       "size": 100000,
-      "ferro_ta_ms": 0.0765,
-      "talib_ms": 0.1346,
-      "speedup": 1.7589,
-      "ferro_ta_m_bars_s": 1306.49,
-      "talib_m_bars_s": 742.8
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_ms": 0.0758,
+      "ferro_ta_m_bars_s": 1319.26,
+      "ferro_ta_runs_ms": [
+        0.0773,
+        0.0764,
+        0.0756,
+        0.0765,
+        0.0755,
+        0.0757,
+        0.0758
+      ],
+      "ferro_ta_stats": {
+        "median_ms": 0.0758,
+        "mean_ms": 0.0761,
+        "min_ms": 0.0755,
+        "max_ms": 0.0773,
+        "stddev_ms": 0.0006,
+        "cv_pct": 0.816
+      },
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 768,
+        "talib": 800464
+      },
+      "talib_ms": 0.1466,
+      "talib_m_bars_s": 682.13,
+      "talib_runs_ms": [
+        0.1467,
+        0.1465,
+        0.1462,
+        0.1466,
+        0.1466,
+        0.1467,
+        0.1467
+      ],
+      "talib_stats": {
+        "median_ms": 0.1466,
+        "mean_ms": 0.1466,
+        "min_ms": 0.1462,
+        "max_ms": 0.1467,
+        "stddev_ms": 0.0002,
+        "cv_pct": 0.118
+      },
+      "speedup": 1.934,
+      "outcome": "ferro_ta_win"
     },
     {
       "indicator": "EMA",
       "size": 10000,
-      "ferro_ta_ms": 0.02,
-      "talib_ms": 0.0214,
-      "speedup": 1.0687,
-      "ferro_ta_m_bars_s": 500.0,
-      "talib_m_bars_s": 467.84
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_ms": 0.0217,
+      "ferro_ta_m_bars_s": 460.83,
+      "ferro_ta_runs_ms": [
+        0.0228,
+        0.0218,
+        0.0216,
+        0.0218,
+        0.0216,
+        0.0216,
+        0.0217
+      ],
+      "ferro_ta_stats": {
+        "median_ms": 0.0217,
+        "mean_ms": 0.0219,
+        "min_ms": 0.0216,
+        "max_ms": 0.0228,
+        "stddev_ms": 0.0004,
+        "cv_pct": 1.995
+      },
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 768,
+        "talib": 80464
+      },
+      "talib_ms": 0.0213,
+      "talib_m_bars_s": 469.48,
+      "talib_runs_ms": [
+        0.0236,
+        0.0215,
+        0.0213,
+        0.0213,
+        0.0212,
+        0.0213,
+        0.0207
+      ],
+      "talib_stats": {
+        "median_ms": 0.0213,
+        "mean_ms": 0.0216,
+        "min_ms": 0.0207,
+        "max_ms": 0.0236,
+        "stddev_ms": 0.0009,
+        "cv_pct": 4.343
+      },
+      "speedup": 0.9816,
+      "outcome": "tie"
     },
     {
       "indicator": "EMA",
       "size": 100000,
-      "ferro_ta_ms": 0.1998,
-      "talib_ms": 0.1883,
-      "speedup": 0.9425,
-      "ferro_ta_m_bars_s": 500.42,
-      "talib_m_bars_s": 530.97
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_ms": 0.2016,
+      "ferro_ta_m_bars_s": 496.03,
+      "ferro_ta_runs_ms": [
+        0.2009,
+        0.201,
+        0.2004,
+        0.2194,
+        0.2132,
+        0.2016,
+        0.2017
+      ],
+      "ferro_ta_stats": {
+        "median_ms": 0.2016,
+        "mean_ms": 0.2055,
+        "min_ms": 0.2004,
+        "max_ms": 0.2194,
+        "stddev_ms": 0.0076,
+        "cv_pct": 3.719
+      },
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 768,
+        "talib": 800464
+      },
+      "talib_ms": 0.1992,
+      "talib_m_bars_s": 502.01,
+      "talib_runs_ms": [
+        0.2218,
+        0.2057,
+        0.1995,
+        0.1987,
+        0.1992,
+        0.199,
+        0.1991
+      ],
+      "talib_stats": {
+        "median_ms": 0.1992,
+        "mean_ms": 0.2033,
+        "min_ms": 0.1987,
+        "max_ms": 0.2218,
+        "stddev_ms": 0.0085,
+        "cv_pct": 4.187
+      },
+      "speedup": 0.9881,
+      "outcome": "tie"
     },
     {
       "indicator": "RSI",
       "size": 10000,
-      "ferro_ta_ms": 0.0475,
-      "talib_ms": 0.048,
-      "speedup": 1.0088,
-      "ferro_ta_m_bars_s": 210.34,
-      "talib_m_bars_s": 208.52
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_ms": 0.0503,
+      "ferro_ta_m_bars_s": 198.81,
+      "ferro_ta_runs_ms": [
+        0.0661,
+        0.0508,
+        0.0503,
+        0.0502,
+        0.0496,
+        0.0496,
+        0.0533
+      ],
+      "ferro_ta_stats": {
+        "median_ms": 0.0503,
+        "mean_ms": 0.0529,
+        "min_ms": 0.0496,
+        "max_ms": 0.0661,
+        "stddev_ms": 0.006,
+        "cv_pct": 11.32
+      },
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 768,
+        "talib": 80464
+      },
+      "talib_ms": 0.0519,
+      "talib_m_bars_s": 192.68,
+      "talib_runs_ms": [
+        0.0539,
+        0.0566,
+        0.0519,
+        0.0594,
+        0.0505,
+        0.0494,
+        0.0492
+      ],
+      "talib_stats": {
+        "median_ms": 0.0519,
+        "mean_ms": 0.053,
+        "min_ms": 0.0492,
+        "max_ms": 0.0594,
+        "stddev_ms": 0.0039,
+        "cv_pct": 7.331
+      },
+      "speedup": 1.0318,
+      "outcome": "tie"
     },
     {
       "indicator": "RSI",
       "size": 100000,
-      "ferro_ta_ms": 0.4804,
-      "talib_ms": 0.4635,
-      "speedup": 0.9647,
-      "ferro_ta_m_bars_s": 208.15,
-      "talib_m_bars_s": 215.77
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_ms": 0.4901,
+      "ferro_ta_m_bars_s": 204.04,
+      "ferro_ta_runs_ms": [
+        0.491,
+        0.4958,
+        0.486,
+        0.4802,
+        0.4845,
+        0.4901,
+        0.637
+      ],
+      "ferro_ta_stats": {
+        "median_ms": 0.4901,
+        "mean_ms": 0.5092,
+        "min_ms": 0.4802,
+        "max_ms": 0.637,
+        "stddev_ms": 0.0566,
+        "cv_pct": 11.109
+      },
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 768,
+        "talib": 800464
+      },
+      "talib_ms": 0.5758,
+      "talib_m_bars_s": 173.67,
+      "talib_runs_ms": [
+        1.3746,
+        1.1246,
+        0.612,
+        0.5758,
+        0.5376,
+        0.5296,
+        0.4994
+      ],
+      "talib_stats": {
+        "median_ms": 0.5758,
+        "mean_ms": 0.7505,
+        "min_ms": 0.4994,
+        "max_ms": 1.3746,
+        "stddev_ms": 0.3503,
+        "cv_pct": 46.676
+      },
+      "speedup": 1.1749,
+      "outcome": "ferro_ta_win"
     },
     {
       "indicator": "BBANDS",
       "size": 10000,
-      "ferro_ta_ms": 0.0215,
-      "talib_ms": 0.0433,
-      "speedup": 2.0135,
-      "ferro_ta_m_bars_s": 465.12,
-      "talib_m_bars_s": 230.99
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_ms": 0.0225,
+      "ferro_ta_m_bars_s": 444.44,
+      "ferro_ta_runs_ms": [
+        0.0335,
+        0.0233,
+        0.0236,
+        0.0225,
+        0.0222,
+        0.0223,
+        0.0223
+      ],
+      "ferro_ta_stats": {
+        "median_ms": 0.0225,
+        "mean_ms": 0.0242,
+        "min_ms": 0.0222,
+        "max_ms": 0.0335,
+        "stddev_ms": 0.0041,
+        "cv_pct": 17.058
+      },
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 1056,
+        "talib": 240656
+      },
+      "talib_ms": 0.0437,
+      "talib_m_bars_s": 228.83,
+      "talib_runs_ms": [
+        0.0513,
+        0.038,
+        0.0346,
+        0.046,
+        0.034,
+        0.0437,
+        0.0455
+      ],
+      "talib_stats": {
+        "median_ms": 0.0437,
+        "mean_ms": 0.0419,
+        "min_ms": 0.034,
+        "max_ms": 0.0513,
+        "stddev_ms": 0.0065,
+        "cv_pct": 15.452
+      },
+      "speedup": 1.9422,
+      "outcome": "ferro_ta_win"
     },
     {
       "indicator": "BBANDS",
       "size": 100000,
-      "ferro_ta_ms": 0.1686,
-      "talib_ms": 0.4275,
-      "speedup": 2.535,
-      "ferro_ta_m_bars_s": 593.03,
-      "talib_m_bars_s": 233.94
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_ms": 0.2213,
+      "ferro_ta_m_bars_s": 451.88,
+      "ferro_ta_runs_ms": [
+        0.2213,
+        0.1875,
+        0.1854,
+        0.3602,
+        0.2683,
+        0.4328,
+        0.1858
+      ],
+      "ferro_ta_stats": {
+        "median_ms": 0.2213,
+        "mean_ms": 0.263,
+        "min_ms": 0.1854,
+        "max_ms": 0.4328,
+        "stddev_ms": 0.0981,
+        "cv_pct": 37.295
+      },
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 1056,
+        "talib": 2400656
+      },
+      "talib_ms": 0.435,
+      "talib_m_bars_s": 229.89,
+      "talib_runs_ms": [
+        0.4471,
+        0.4443,
+        0.3104,
+        0.4334,
+        0.435,
+        0.435,
+        0.7457
+      ],
+      "talib_stats": {
+        "median_ms": 0.435,
+        "mean_ms": 0.4644,
+        "min_ms": 0.3104,
+        "max_ms": 0.7457,
+        "stddev_ms": 0.1331,
+        "cv_pct": 28.655
+      },
+      "speedup": 1.9657,
+      "outcome": "ferro_ta_win"
     },
     {
       "indicator": "MACD",
       "size": 10000,
-      "ferro_ta_ms": 0.0495,
-      "talib_ms": 0.065,
-      "speedup": 1.3134,
-      "ferro_ta_m_bars_s": 202.19,
-      "talib_m_bars_s": 153.95
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_ms": 0.0484,
+      "ferro_ta_m_bars_s": 206.61,
+      "ferro_ta_runs_ms": [
+        0.0513,
+        0.049,
+        0.0484,
+        0.0484,
+        0.0484,
+        0.0484,
+        0.0485
+      ],
+      "ferro_ta_stats": {
+        "median_ms": 0.0484,
+        "mean_ms": 0.0489,
+        "min_ms": 0.0484,
+        "max_ms": 0.0513,
+        "stddev_ms": 0.0011,
+        "cv_pct": 2.212
+      },
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 1056,
+        "talib": 240656
+      },
+      "talib_ms": 0.0682,
+      "talib_m_bars_s": 146.63,
+      "talib_runs_ms": [
+        0.0688,
+        0.0677,
+        0.0678,
+        0.0675,
+        0.0718,
+        0.0688,
+        0.0682
+      ],
+      "talib_stats": {
+        "median_ms": 0.0682,
+        "mean_ms": 0.0687,
+        "min_ms": 0.0675,
+        "max_ms": 0.0718,
+        "stddev_ms": 0.0015,
+        "cv_pct": 2.158
+      },
+      "speedup": 1.4091,
+      "outcome": "ferro_ta_win"
     },
     {
       "indicator": "MACD",
       "size": 100000,
-      "ferro_ta_ms": 0.4459,
-      "talib_ms": 0.6334,
-      "speedup": 1.4205,
-      "ferro_ta_m_bars_s": 224.28,
-      "talib_m_bars_s": 157.88
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_ms": 0.4458,
+      "ferro_ta_m_bars_s": 224.32,
+      "ferro_ta_runs_ms": [
+        0.4366,
+        0.4381,
+        0.4476,
+        0.4458,
+        0.4425,
+        0.4682,
+        0.4476
+      ],
+      "ferro_ta_stats": {
+        "median_ms": 0.4458,
+        "mean_ms": 0.4466,
+        "min_ms": 0.4366,
+        "max_ms": 0.4682,
+        "stddev_ms": 0.0105,
+        "cv_pct": 2.344
+      },
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 1056,
+        "talib": 2400656
+      },
+      "talib_ms": 0.6455,
+      "talib_m_bars_s": 154.92,
+      "talib_runs_ms": [
+        0.6515,
+        0.6455,
+        0.6527,
+        0.6437,
+        0.6419,
+        0.6406,
+        0.6479
+      ],
+      "talib_stats": {
+        "median_ms": 0.6455,
+        "mean_ms": 0.6463,
+        "min_ms": 0.6406,
+        "max_ms": 0.6527,
+        "stddev_ms": 0.0047,
+        "cv_pct": 0.722
+      },
+      "speedup": 1.448,
+      "outcome": "ferro_ta_win"
     },
     {
       "indicator": "ATR",
       "size": 10000,
-      "ferro_ta_ms": 0.0483,
-      "talib_ms": 0.0502,
-      "speedup": 1.0405,
-      "ferro_ta_m_bars_s": 207.07,
-      "talib_m_bars_s": 199.0
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_ms": 0.0513,
+      "ferro_ta_m_bars_s": 194.93,
+      "ferro_ta_runs_ms": [
+        0.0539,
+        0.0521,
+        0.0515,
+        0.0511,
+        0.051,
+        0.0511,
+        0.0513
+      ],
+      "ferro_ta_stats": {
+        "median_ms": 0.0513,
+        "mean_ms": 0.0517,
+        "min_ms": 0.051,
+        "max_ms": 0.0539,
+        "stddev_ms": 0.001,
+        "cv_pct": 1.984
+      },
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 960,
+        "talib": 80656
+      },
+      "talib_ms": 0.0536,
+      "talib_m_bars_s": 186.57,
+      "talib_runs_ms": [
+        0.0547,
+        0.0539,
+        0.0536,
+        0.0535,
+        0.0535,
+        0.0537,
+        0.0535
+      ],
+      "talib_stats": {
+        "median_ms": 0.0536,
+        "mean_ms": 0.0538,
+        "min_ms": 0.0535,
+        "max_ms": 0.0547,
+        "stddev_ms": 0.0004,
+        "cv_pct": 0.821
+      },
+      "speedup": 1.0448,
+      "outcome": "tie"
     },
     {
       "indicator": "ATR",
       "size": 100000,
-      "ferro_ta_ms": 0.4705,
-      "talib_ms": 0.4788,
-      "speedup": 1.0174,
-      "ferro_ta_m_bars_s": 212.52,
-      "talib_m_bars_s": 208.88
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_ms": 0.5035,
+      "ferro_ta_m_bars_s": 198.61,
+      "ferro_ta_runs_ms": [
+        1.087,
+        1.2821,
+        0.6468,
+        0.4903,
+        0.4988,
+        0.5035,
+        0.5035
+      ],
+      "ferro_ta_stats": {
+        "median_ms": 0.5035,
+        "mean_ms": 0.716,
+        "min_ms": 0.4903,
+        "max_ms": 1.2821,
+        "stddev_ms": 0.3295,
+        "cv_pct": 46.019
+      },
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 960,
+        "talib": 800656
+      },
+      "talib_ms": 0.5014,
+      "talib_m_bars_s": 199.44,
+      "talib_runs_ms": [
+        0.5028,
+        0.5014,
+        0.5011,
+        0.5012,
+        0.5015,
+        0.5019,
+        0.5009
+      ],
+      "talib_stats": {
+        "median_ms": 0.5014,
+        "mean_ms": 0.5016,
+        "min_ms": 0.5009,
+        "max_ms": 0.5028,
+        "stddev_ms": 0.0006,
+        "cv_pct": 0.128
+      },
+      "speedup": 0.9958,
+      "outcome": "tie"
     },
     {
       "indicator": "STOCH",
       "size": 10000,
-      "ferro_ta_ms": 0.0915,
-      "talib_ms": 0.066,
-      "speedup": 0.721,
-      "ferro_ta_m_bars_s": 109.24,
-      "talib_m_bars_s": 151.52
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_ms": 0.096,
+      "ferro_ta_m_bars_s": 104.17,
+      "ferro_ta_runs_ms": [
+        0.1497,
+        0.1153,
+        0.1002,
+        0.093,
+        0.096,
+        0.0924,
+        0.0953
+      ],
+      "ferro_ta_stats": {
+        "median_ms": 0.096,
+        "mean_ms": 0.106,
+        "min_ms": 0.0924,
+        "max_ms": 0.1497,
+        "stddev_ms": 0.0208,
+        "cv_pct": 19.611
+      },
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 864,
+        "talib": 160632
+      },
+      "talib_ms": 0.0631,
+      "talib_m_bars_s": 158.48,
+      "talib_runs_ms": [
+        0.0937,
+        0.0757,
+        0.067,
+        0.0631,
+        0.061,
+        0.06,
+        0.0598
+      ],
+      "talib_stats": {
+        "median_ms": 0.0631,
+        "mean_ms": 0.0686,
+        "min_ms": 0.0598,
+        "max_ms": 0.0937,
+        "stddev_ms": 0.0124,
+        "cv_pct": 18.057
+      },
+      "speedup": 0.6573,
+      "outcome": "talib_win"
     },
     {
       "indicator": "STOCH",
       "size": 100000,
-      "ferro_ta_ms": 1.5285,
-      "talib_ms": 0.7589,
-      "speedup": 0.4965,
-      "ferro_ta_m_bars_s": 65.42,
-      "talib_m_bars_s": 131.77
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_ms": 1.7758,
+      "ferro_ta_m_bars_s": 56.31,
+      "ferro_ta_runs_ms": [
+        1.7758,
+        1.6216,
+        1.6815,
+        1.5798,
+        1.8748,
+        1.9274,
+        1.9022
+      ],
+      "ferro_ta_stats": {
+        "median_ms": 1.7758,
+        "mean_ms": 1.7662,
+        "min_ms": 1.5798,
+        "max_ms": 1.9274,
+        "stddev_ms": 0.1409,
+        "cv_pct": 7.98
+      },
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 864,
+        "talib": 1600632
+      },
+      "talib_ms": 0.8185,
+      "talib_m_bars_s": 122.17,
+      "talib_runs_ms": [
+        0.8212,
+        0.7786,
+        0.741,
+        0.8185,
+        0.9159,
+        0.8522,
+        0.8129
+      ],
+      "talib_stats": {
+        "median_ms": 0.8185,
+        "mean_ms": 0.8201,
+        "min_ms": 0.741,
+        "max_ms": 0.9159,
+        "stddev_ms": 0.0551,
+        "cv_pct": 6.723
+      },
+      "speedup": 0.4609,
+      "outcome": "talib_win"
     },
     {
       "indicator": "ADX",
       "size": 10000,
-      "ferro_ta_ms": 0.0692,
-      "talib_ms": 0.0522,
-      "speedup": 0.7538,
-      "ferro_ta_m_bars_s": 144.49,
-      "talib_m_bars_s": 191.7
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_ms": 0.0927,
+      "ferro_ta_m_bars_s": 107.87,
+      "ferro_ta_runs_ms": [
+        0.1071,
+        0.0943,
+        0.092,
+        0.0919,
+        0.0927,
+        0.0941,
+        0.0918
+      ],
+      "ferro_ta_stats": {
+        "median_ms": 0.0927,
+        "mean_ms": 0.0948,
+        "min_ms": 0.0918,
+        "max_ms": 0.1071,
+        "stddev_ms": 0.0055,
+        "cv_pct": 5.821
+      },
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 960,
+        "talib": 80656
+      },
+      "talib_ms": 0.0453,
+      "talib_m_bars_s": 220.75,
+      "talib_runs_ms": [
+        0.0503,
+        0.0453,
+        0.0451,
+        0.0452,
+        0.045,
+        0.046,
+        0.0473
+      ],
+      "talib_stats": {
+        "median_ms": 0.0453,
+        "mean_ms": 0.0463,
+        "min_ms": 0.045,
+        "max_ms": 0.0503,
+        "stddev_ms": 0.0019,
+        "cv_pct": 4.159
+      },
+      "speedup": 0.4887,
+      "outcome": "talib_win"
     },
     {
       "indicator": "ADX",
       "size": 100000,
-      "ferro_ta_ms": 0.6209,
-      "talib_ms": 0.5731,
-      "speedup": 0.923,
-      "ferro_ta_m_bars_s": 161.05,
-      "talib_m_bars_s": 174.49
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_ms": 0.8133,
+      "ferro_ta_m_bars_s": 122.96,
+      "ferro_ta_runs_ms": [
+        0.8158,
+        0.822,
+        0.8091,
+        0.8133,
+        0.8103,
+        0.8056,
+        0.8565
+      ],
+      "ferro_ta_stats": {
+        "median_ms": 0.8133,
+        "mean_ms": 0.8189,
+        "min_ms": 0.8056,
+        "max_ms": 0.8565,
+        "stddev_ms": 0.0174,
+        "cv_pct": 2.12
+      },
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 960,
+        "talib": 800656
+      },
+      "talib_ms": 0.5973,
+      "talib_m_bars_s": 167.42,
+      "talib_runs_ms": [
+        0.6249,
+        0.5973,
+        0.6002,
+        0.6206,
+        0.5958,
+        0.5625,
+        0.5594
+      ],
+      "talib_stats": {
+        "median_ms": 0.5973,
+        "mean_ms": 0.5944,
+        "min_ms": 0.5594,
+        "max_ms": 0.6249,
+        "stddev_ms": 0.0255,
+        "cv_pct": 4.289
+      },
+      "speedup": 0.7344,
+      "outcome": "talib_win"
     },
     {
       "indicator": "CCI",
       "size": 10000,
-      "ferro_ta_ms": 0.0731,
-      "talib_ms": 0.0829,
-      "speedup": 1.1333,
-      "ferro_ta_m_bars_s": 136.75,
-      "talib_m_bars_s": 120.66
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_ms": 0.0733,
+      "ferro_ta_m_bars_s": 136.43,
+      "ferro_ta_runs_ms": [
+        0.0784,
+        0.1066,
+        0.1122,
+        0.0733,
+        0.0728,
+        0.0728,
+        0.0729
+      ],
+      "ferro_ta_stats": {
+        "median_ms": 0.0733,
+        "mean_ms": 0.0841,
+        "min_ms": 0.0728,
+        "max_ms": 0.1122,
+        "stddev_ms": 0.0174,
+        "cv_pct": 20.73
+      },
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 960,
+        "talib": 80656
+      },
+      "talib_ms": 0.0847,
+      "talib_m_bars_s": 118.06,
+      "talib_runs_ms": [
+        0.0875,
+        0.085,
+        0.0846,
+        0.0847,
+        0.0847,
+        0.0845,
+        0.0845
+      ],
+      "talib_stats": {
+        "median_ms": 0.0847,
+        "mean_ms": 0.0851,
+        "min_ms": 0.0845,
+        "max_ms": 0.0875,
+        "stddev_ms": 0.0011,
+        "cv_pct": 1.278
+      },
+      "speedup": 1.1555,
+      "outcome": "ferro_ta_win"
     },
     {
       "indicator": "CCI",
       "size": 100000,
-      "ferro_ta_ms": 0.7028,
-      "talib_ms": 0.8164,
-      "speedup": 1.1617,
-      "ferro_ta_m_bars_s": 142.3,
-      "talib_m_bars_s": 122.49
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_ms": 0.7092,
+      "ferro_ta_m_bars_s": 141.0,
+      "ferro_ta_runs_ms": [
+        0.7092,
+        0.7093,
+        0.7083,
+        0.7103,
+        0.7097,
+        0.7079,
+        0.7072
+      ],
+      "ferro_ta_stats": {
+        "median_ms": 0.7092,
+        "mean_ms": 0.7088,
+        "min_ms": 0.7072,
+        "max_ms": 0.7103,
+        "stddev_ms": 0.0011,
+        "cv_pct": 0.155
+      },
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 960,
+        "talib": 800656
+      },
+      "talib_ms": 0.8331,
+      "talib_m_bars_s": 120.03,
+      "talib_runs_ms": [
+        0.81,
+        0.8331,
+        0.8616,
+        0.8557,
+        0.8671,
+        0.8245,
+        0.823
+      ],
+      "talib_stats": {
+        "median_ms": 0.8331,
+        "mean_ms": 0.8393,
+        "min_ms": 0.81,
+        "max_ms": 0.8671,
+        "stddev_ms": 0.0221,
+        "cv_pct": 2.629
+      },
+      "speedup": 1.1747,
+      "outcome": "ferro_ta_win"
     },
     {
       "indicator": "OBV",
       "size": 10000,
-      "ferro_ta_ms": 0.0156,
-      "talib_ms": 0.0112,
-      "speedup": 0.7174,
-      "ferro_ta_m_bars_s": 640.0,
-      "talib_m_bars_s": 892.14
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_ms": 0.015,
+      "ferro_ta_m_bars_s": 666.67,
+      "ferro_ta_runs_ms": [
+        0.0298,
+        0.0203,
+        0.0174,
+        0.015,
+        0.0137,
+        0.013,
+        0.0127
+      ],
+      "ferro_ta_stats": {
+        "median_ms": 0.015,
+        "mean_ms": 0.0174,
+        "min_ms": 0.0127,
+        "max_ms": 0.0298,
+        "stddev_ms": 0.0061,
+        "cv_pct": 35.135
+      },
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 624,
+        "talib": 80440
+      },
+      "talib_ms": 0.0096,
+      "talib_m_bars_s": 1041.67,
+      "talib_runs_ms": [
+        0.0238,
+        0.0128,
+        0.0107,
+        0.0096,
+        0.0092,
+        0.0094,
+        0.0094
+      ],
+      "talib_stats": {
+        "median_ms": 0.0096,
+        "mean_ms": 0.0121,
+        "min_ms": 0.0092,
+        "max_ms": 0.0238,
+        "stddev_ms": 0.0053,
+        "cv_pct": 43.726
+      },
+      "speedup": 0.64,
+      "outcome": "talib_win"
     },
     {
       "indicator": "OBV",
       "size": 100000,
-      "ferro_ta_ms": 0.2953,
-      "talib_ms": 0.2808,
-      "speedup": 0.9509,
-      "ferro_ta_m_bars_s": 338.6,
-      "talib_m_bars_s": 356.08
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_ms": 0.2921,
+      "ferro_ta_m_bars_s": 342.35,
+      "ferro_ta_runs_ms": [
+        0.3101,
+        0.2992,
+        0.2921,
+        0.2989,
+        0.2872,
+        0.2857,
+        0.2768
+      ],
+      "ferro_ta_stats": {
+        "median_ms": 0.2921,
+        "mean_ms": 0.2929,
+        "min_ms": 0.2768,
+        "max_ms": 0.3101,
+        "stddev_ms": 0.0109,
+        "cv_pct": 3.729
+      },
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 624,
+        "talib": 800440
+      },
+      "talib_ms": 0.2993,
+      "talib_m_bars_s": 334.11,
+      "talib_runs_ms": [
+        0.3088,
+        0.2993,
+        0.2989,
+        0.2908,
+        0.2864,
+        0.3134,
+        0.3574
+      ],
+      "talib_stats": {
+        "median_ms": 0.2993,
+        "mean_ms": 0.3079,
+        "min_ms": 0.2864,
+        "max_ms": 0.3574,
+        "stddev_ms": 0.0238,
+        "cv_pct": 7.716
+      },
+      "speedup": 1.0246,
+      "outcome": "tie"
     },
     {
       "indicator": "MFI",
       "size": 10000,
-      "ferro_ta_ms": 0.0239,
-      "talib_ms": 0.0203,
-      "speedup": 0.8516,
-      "ferro_ta_m_bars_s": 418.85,
-      "talib_m_bars_s": 491.81
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_ms": 0.0242,
+      "ferro_ta_m_bars_s": 413.22,
+      "ferro_ta_runs_ms": [
+        0.0282,
+        0.025,
+        0.0244,
+        0.024,
+        0.0242,
+        0.024,
+        0.0241
+      ],
+      "ferro_ta_stats": {
+        "median_ms": 0.0242,
+        "mean_ms": 0.0248,
+        "min_ms": 0.024,
+        "max_ms": 0.0282,
+        "stddev_ms": 0.0015,
+        "cv_pct": 6.145
+      },
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 1056,
+        "talib": 80752
+      },
+      "talib_ms": 0.0242,
+      "talib_m_bars_s": 413.22,
+      "talib_runs_ms": [
+        0.1135,
+        0.076,
+        0.0347,
+        0.0242,
+        0.0207,
+        0.0193,
+        0.0186
+      ],
+      "talib_stats": {
+        "median_ms": 0.0242,
+        "mean_ms": 0.0439,
+        "min_ms": 0.0186,
+        "max_ms": 0.1135,
+        "stddev_ms": 0.0368,
+        "cv_pct": 83.874
+      },
+      "speedup": 1.0,
+      "outcome": "tie"
     },
     {
       "indicator": "MFI",
       "size": 100000,
-      "ferro_ta_ms": 0.1721,
-      "talib_ms": 0.62,
-      "speedup": 3.6029,
-      "ferro_ta_m_bars_s": 581.11,
-      "talib_m_bars_s": 161.29
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_ms": 0.1736,
+      "ferro_ta_m_bars_s": 576.04,
+      "ferro_ta_runs_ms": [
+        0.1774,
+        0.175,
+        0.1739,
+        0.1734,
+        0.1729,
+        0.1736,
+        0.1732
+      ],
+      "ferro_ta_stats": {
+        "median_ms": 0.1736,
+        "mean_ms": 0.1742,
+        "min_ms": 0.1729,
+        "max_ms": 0.1774,
+        "stddev_ms": 0.0016,
+        "cv_pct": 0.89
+      },
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 1056,
+        "talib": 800752
+      },
+      "talib_ms": 0.5635,
+      "talib_m_bars_s": 177.46,
+      "talib_runs_ms": [
+        0.7288,
+        0.6983,
+        0.6053,
+        0.5635,
+        0.543,
+        0.5214,
+        0.4954
+      ],
+      "talib_stats": {
+        "median_ms": 0.5635,
+        "mean_ms": 0.5937,
+        "min_ms": 0.4954,
+        "max_ms": 0.7288,
+        "stddev_ms": 0.0891,
+        "cv_pct": 15.016
+      },
+      "speedup": 3.246,
+      "outcome": "ferro_ta_win"
     },
     {
       "indicator": "WMA",
       "size": 10000,
-      "ferro_ta_ms": 0.0105,
-      "talib_ms": 0.0203,
-      "speedup": 1.9363,
-      "ferro_ta_m_bars_s": 956.21,
-      "talib_m_bars_s": 493.83
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_ms": 0.0107,
+      "ferro_ta_m_bars_s": 934.58,
+      "ferro_ta_runs_ms": [
+        0.013,
+        0.0109,
+        0.0106,
+        0.0108,
+        0.0107,
+        0.0105,
+        0.0105
+      ],
+      "ferro_ta_stats": {
+        "median_ms": 0.0107,
+        "mean_ms": 0.011,
+        "min_ms": 0.0105,
+        "max_ms": 0.013,
+        "stddev_ms": 0.0009,
+        "cv_pct": 7.884
+      },
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 768,
+        "talib": 80464
+      },
+      "talib_ms": 0.0202,
+      "talib_m_bars_s": 495.05,
+      "talib_runs_ms": [
+        0.0215,
+        0.0204,
+        0.0201,
+        0.0202,
+        0.0202,
+        0.0204,
+        0.0202
+      ],
+      "talib_stats": {
+        "median_ms": 0.0202,
+        "mean_ms": 0.0204,
+        "min_ms": 0.0201,
+        "max_ms": 0.0215,
+        "stddev_ms": 0.0005,
+        "cv_pct": 2.395
+      },
+      "speedup": 1.8879,
+      "outcome": "ferro_ta_win"
     },
     {
       "indicator": "WMA",
       "size": 100000,
-      "ferro_ta_ms": 0.0869,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_ms": 0.0851,
+      "ferro_ta_m_bars_s": 1175.09,
+      "ferro_ta_runs_ms": [
+        0.0853,
+        0.0852,
+        0.0851,
+        0.0852,
+        0.0851,
+        0.085,
+        0.0851
+      ],
+      "ferro_ta_stats": {
+        "median_ms": 0.0851,
+        "mean_ms": 0.0851,
+        "min_ms": 0.085,
+        "max_ms": 0.0853,
+        "stddev_ms": 0.0001,
+        "cv_pct": 0.093
+      },
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 768,
+        "talib": 800464
+      },
       "talib_ms": 0.1868,
-      "speedup": 2.1506,
-      "ferro_ta_m_bars_s": 1151.08,
-      "talib_m_bars_s": 535.24
+      "talib_m_bars_s": 535.33,
+      "talib_runs_ms": [
+        0.1868,
+        0.1868,
+        0.1867,
+        0.1867,
+        0.1867,
+        0.1869,
+        0.2188
+      ],
+      "talib_stats": {
+        "median_ms": 0.1868,
+        "mean_ms": 0.1914,
+        "min_ms": 0.1867,
+        "max_ms": 0.2188,
+        "stddev_ms": 0.0121,
+        "cv_pct": 6.319
+      },
+      "speedup": 2.1951,
+      "outcome": "ferro_ta_win"
     }
   ]
 }

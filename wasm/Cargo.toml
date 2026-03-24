@@ -1,6 +1,6 @@
 [package]
 name = "ferro_ta_wasm"
-version = "1.0.2"
+version = "1.0.3"
 edition = "2021"
 description = "WebAssembly bindings for ferro-ta technical analysis indicators"
 license = "MIT"

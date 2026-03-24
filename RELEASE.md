@@ -42,6 +42,8 @@ Before starting a release:
 - [ ] `CHANGELOG.md` has a `## [X.Y.Z]` section (not `[Unreleased]`) with all
       changes since the last release documented under `### Added`, `### Changed`,
       `### Fixed`, `### Removed` headings.
+- [ ] Public docs match the release: `docs/conf.py`, `docs/changelog.rst`, and
+      `docs/support_matrix.rst` reflect the version and current support status.
 
 ---
 
@@ -62,26 +64,39 @@ Example: current version is `0.1.0` and you are adding new indicators → new ve
 
 ## Step 2 — Sync version everywhere
 
-These files must carry **the same version string** (e.g. `0.2.0`). Update all before tagging:
+These files must carry **the same version string** (e.g. `0.2.0`). The easiest
+way to do that is:
+
+```bash
+python3 scripts/bump_version.py 0.2.0
+python3 scripts/bump_version.py --check
+```
+
+That script updates the tracked release-version carriers for you.
+
+Files covered by the bump script:
 
 | File | Location |
 |------|----------|
 | `Cargo.toml` | Root (source of truth) |
 | `crates/ferro_ta_core/Cargo.toml` | Same version for crates.io publish |
+| `crates/ferro_ta_core/README.md` | Installation snippet should show the current crate version |
 | `pyproject.toml` | Root |
-| `wasm/package.json` | `"version": "0.2.0"` |
+| `wasm/package.json` | Package version |
+| `conda/meta.yaml` | Conda recipe version |
+| `docs/conf.py` | Default Sphinx release must resolve to the same version |
 
 **`Cargo.toml`** (root):
 ```toml
 [package]
 name = "ferro_ta"
-version = "0.2.0"   # ← update here
+version = "X.Y.Z"   # ← or use scripts/bump_version.py X.Y.Z
 ```
 
 **`pyproject.toml`**:
 ```toml
 [project]
-version = "0.2.0"   # ← must match Cargo.toml exactly
+version = "X.Y.Z"   # ← must match Cargo.toml exactly
 ```
 
 > **Rule:** `Cargo.toml` is the source of truth. Sync the others to match before tagging.
@@ -91,17 +106,23 @@ version = "0.2.0"   # ← must match Cargo.toml exactly
 ## Step 3 — Update CHANGELOG.md
 
 1. Open `CHANGELOG.md`.
-2. Rename the `[Unreleased]` section to `[0.2.0] — YYYY-MM-DD` (today's date).
+2. Rename the `[Unreleased]` section to `[X.Y.Z] — YYYY-MM-DD` (today's date).
 3. Add a fresh empty `[Unreleased]` section at the top.
 4. Update the comparison links at the bottom:
 
 ```markdown
-[Unreleased]: https://github.com/pratikbhadane24/ferro-ta/compare/v0.2.0...HEAD
-[0.2.0]: https://github.com/pratikbhadane24/ferro-ta/compare/v0.1.0...v0.2.0
+[Unreleased]: https://github.com/pratikbhadane24/ferro-ta/compare/vX.Y.Z...HEAD
+[X.Y.Z]: https://github.com/pratikbhadane24/ferro-ta/compare/vPREVIOUS...vX.Y.Z
 ```
 
 Follow the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format:
 `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, `Security`.
+
+Also update the docs-facing release surfaces for the same version:
+
+- `docs/changelog.rst` with a concise release-notes entry
+- `docs/support_matrix.rst` if supported versions, tested wheels, or module
+  stability changed
 
 ---
 

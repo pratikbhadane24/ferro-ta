@@ -216,3 +216,23 @@ class TestStrategyAndPayoff:
         assert payoff[1] == pytest.approx(-3.0)
         assert greeks.delta > 0.0
         assert greeks.gamma > 0.0
+
+
+class TestDerivativesBenchmarking:
+    def test_derivatives_benchmark_smoke(self, tmp_path):
+        from benchmarks.bench_derivatives_compare import run_benchmark
+
+        output_path = tmp_path / "derivatives_benchmark.json"
+        result = run_benchmark(
+            sizes=[32],
+            accuracy_size=16,
+            json_path=str(output_path),
+        )
+
+        assert output_path.is_file()
+        assert result["accuracy"]["results"]
+        assert result["speed"]["results"]
+        assert any(
+            row["provider"] == "ferro_ta" for row in result["accuracy"]["results"]
+        )
+        assert any(row["provider"] == "ferro_ta" for row in result["speed"]["results"])

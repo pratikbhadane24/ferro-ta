@@ -21,15 +21,32 @@ Currently supported: **3.10, 3.11, 3.12, 3.13** (see `pyproject.toml`).
 
 ## Release playbook
 
-1. **Bump the version** in `Cargo.toml` and `pyproject.toml` to the new version
-   (e.g. `1.0.1`).
-2. **Update `CHANGELOG.md`**: move the `[Unreleased]` block to a new dated section
+### Fast path
+
+1. **Bump tracked version files with one command**:
+   ```bash
+   python3 scripts/bump_version.py 1.0.3
+   ```
+   or:
+   ```bash
+   make version VERSION=1.0.3
+   ```
+2. **Verify everything matches**:
+   ```bash
+   python3 scripts/bump_version.py --check
+   ```
+3. **Update `CHANGELOG.md`**: move the `[Unreleased]` block to a new dated section
    `[1.0.1] — YYYY-MM-DD` and open a fresh `[Unreleased]` block.
-3. **Commit** the version bump and changelog update with message
+4. **Commit** the version bump and changelog update with message
    `chore: release v1.0.1`.
-4. **Create a tag**: `git tag v1.0.1 && git push origin v1.0.1`.
-5. **Create a GitHub Release** for tag `v1.0.1` — the CI `build-wheels` and
+5. **Create a tag**: `git tag v1.0.1 && git push origin v1.0.1`.
+6. **Create a GitHub Release** for tag `v1.0.1` — the CI `build-wheels` and
    `publish` jobs trigger automatically on `release: published`.
+
+The bump script updates the tracked release-version carriers that are easy to
+miss manually: root Cargo, Python packaging, the core crate, the core crate
+README install snippet, the WASM package, the Conda recipe, and the docs pages
+that show the current released version.
 
 ## Breaking-change policy
 
