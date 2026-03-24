@@ -1,5 +1,5 @@
 # Pre-commit hooks for ferro-ta
-# Install: pre-commit install
+# Install: pre-commit install --hook-type pre-commit --hook-type pre-push
 # Run: pre-commit run --all-files
 default_language_version:
   python: python3
@@ -31,3 +31,13 @@ repos:
   #       entry: mypy python/ferro_ta --ignore-missing-imports
   #       language: system
   #       pass_filenames: false
+
+  - repo: local
+    hooks:
+      - id: ci-basic-pre-push
+        name: ci basic pre-push
+        entry: scripts/pre_push_checks.sh
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]

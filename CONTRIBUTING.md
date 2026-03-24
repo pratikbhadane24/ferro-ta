@@ -36,6 +36,34 @@ uv run ruff check python/ tests/
 uv run mypy python/ferro_ta --ignore-missing-imports
 ```
 
+## Git hooks and pre-push checks
+
+Install the repo-managed git hooks after syncing your environment:
+
+```bash
+make hooks
+```
+
+That installs both the existing `pre-commit` hook and a `pre-push` hook that
+runs the local CI gate before anything is pushed.
+
+To run the same gate manually:
+
+```bash
+make prepush
+```
+
+To run only part of it while iterating:
+
+```bash
+make prepush CHECKS="version changelog python_lint"
+```
+
+The pre-push runner covers the basic required CI categories we can execute
+locally: version/changelog checks, Rust fmt/clippy/core checks, Python
+lint/typecheck/tests, docs, and WASM. It intentionally skips the multi-version
+matrix, audit, and benchmark-regression jobs.
+
 ## Alternative: set up with plain pip
 
 ```bash

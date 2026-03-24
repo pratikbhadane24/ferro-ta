@@ -1,7 +1,7 @@
 # ferro-ta development Makefile
 # Usage: make <target>
 
-.PHONY: help dev build test lint typecheck fmt docs clean bench version
+.PHONY: help dev build test lint typecheck fmt docs clean bench version audit prepush hooks
 
 # Default target
 help:
@@ -17,12 +17,14 @@ help:
 	@echo "  make bench      Run Rust criterion benchmarks (ferro_ta_core)"
 	@echo "  make version    Bump tracked version strings (set VERSION=X.Y.Z)"
 	@echo "  make audit      Run cargo-audit + pip-audit"
+	@echo "  make prepush    Run the local pre-push CI gate (set CHECKS='version rust_fmt' to scope it)"
+	@echo "  make hooks      Install pre-commit and pre-push git hooks"
 	@echo "  make clean      Remove build artefacts"
 
 dev:
 	pip install uv
 	uv pip install --system maturin numpy pytest pytest-cov pandas polars hypothesis pyyaml \
-	    sphinx sphinx-rtd-theme ruff mypy pyright
+	    sphinx sphinx-rtd-theme ruff mypy pyright pre-commit
 
 build:
 	maturin develop --release
@@ -56,6 +58,12 @@ version:
 audit:
 	cargo audit
 	uv run --with pip-audit pip-audit
+
+prepush:
+	bash scripts/pre_push_checks.sh $(CHECKS)
+
+hooks:
+	uv run --with pre-commit pre-commit install --hook-type pre-commit --hook-type pre-push
 
 clean:
 	cargo clean

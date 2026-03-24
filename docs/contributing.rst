@@ -26,6 +26,28 @@ Prerequisites: Rust stable toolchain, Python 3.10+, and ``maturin``.
    pytest tests/
 
 
+Git hooks and pre-push checks
+-----------------------------
+
+Install the repository-managed hooks after setting up the environment:
+
+.. code-block:: bash
+
+   make hooks
+
+Run the same push gate manually with:
+
+.. code-block:: bash
+
+   make prepush
+
+You can scope it to selected checks while iterating:
+
+.. code-block:: bash
+
+   make prepush CHECKS="version changelog python_lint"
+
+
 Adding a new indicator
 -----------------------
 
