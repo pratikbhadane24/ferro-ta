@@ -57,6 +57,11 @@
       "path": "benchmarks/artifacts/latest/wasm.json",
       "size_bytes": 935,
       "sha256": "f31fd871990c44e24a2259d618ae40a52866d20b95aa6047af3d38b9371c2ab7"
+    },
+    "bench_backtest": {
+      "path": "benchmarks/artifacts/latest/bench_backtest_results.json",
+      "size_bytes": 4022,
+      "sha256": "acf27cd5d5077aff51194e31936aba2b9304a8a62d993b2ec496d6f347545316"
     }
   }
 }

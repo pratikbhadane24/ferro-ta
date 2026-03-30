@@ -39,6 +39,7 @@ from ferro_ta._ferro_ta import aggregate_tick_bars as _rust_tick_bars
 from ferro_ta._ferro_ta import aggregate_time_bars as _rust_time_bars
 from ferro_ta._ferro_ta import aggregate_volume_bars_ticks as _rust_volume_bars_ticks
 from ferro_ta._utils import _to_f64
+from ferro_ta.core.exceptions import FerroTAValueError
 
 __all__ = [
     "aggregate_ticks",
@@ -61,23 +62,25 @@ def _parse_rule(rule: str) -> tuple[str, float]:
     """
     parts = rule.split(":", 1)
     if len(parts) != 2:
-        raise ValueError(
+        raise FerroTAValueError(
             f"Invalid rule format: {rule!r}. "
             "Expected 'time:<seconds>', 'volume:<threshold>', or 'tick:<n>'."
         )
     bar_type = parts[0].lower().strip()
     if bar_type not in ("time", "volume", "tick"):
-        raise ValueError(
+        raise FerroTAValueError(
             f"Unknown bar type {bar_type!r}. Supported types: 'time', 'volume', 'tick'."
         )
     try:
         param = float(parts[1].strip())
     except ValueError as exc:
-        raise ValueError(
+        raise FerroTAValueError(
             f"Cannot parse parameter {parts[1]!r} as a number in rule {rule!r}."
         ) from exc
     if param <= 0:
-        raise ValueError(f"Rule parameter must be > 0, got {param} in rule {rule!r}.")
+        raise FerroTAValueError(
+            f"Rule parameter must be > 0, got {param} in rule {rule!r}."
+        )
     return bar_type, param
 
 
@@ -171,7 +174,9 @@ def aggregate_ticks(
         extra = None
     else:  # time
         if ts_arr is None:
-            raise ValueError("Time bars require a timestamp column in the tick data.")
+            raise FerroTAValueError(
+                "Time bars require a timestamp column in the tick data."
+            )
         period_secs = int(param)
         labels = (ts_arr // period_secs).astype(np.int64)
         ro, rh, rl, rc, rv, lbl = _rust_time_bars(price_arr, size_arr, labels)

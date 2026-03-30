@@ -2,7 +2,7 @@ use crate::validation;
 use numpy::{IntoPyArray, PyArray1, PyReadonlyArray1};
 use pyo3::prelude::*;
 
-/// On Balance Volume: cumulates volume * sign(close - prev_close); bar 0 uses volume.
+/// On Balance Volume: cumulates volume * sign(close - prev_close).
 #[pyfunction]
 pub fn obv<'py>(
     py: Python<'py>,
@@ -13,15 +13,6 @@ pub fn obv<'py>(
     let vols = volume.as_slice()?;
     let n = closes.len();
     validation::validate_equal_length(&[(n, "close"), (vols.len(), "volume")])?;
-    let mut result = vec![0.0_f64; n];
-    let mut obv_val = 0.0_f64;
-    for i in 1..n {
-        if closes[i] > closes[i - 1] {
-            obv_val += vols[i];
-        } else if closes[i] < closes[i - 1] {
-            obv_val -= vols[i];
-        }
-        result[i] = obv_val;
-    }
+    let result = ferro_ta_core::volume::obv(closes, vols);
     Ok(result.into_pyarray(py))
 }

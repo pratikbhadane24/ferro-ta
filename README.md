@@ -31,9 +31,10 @@ The latest checked-in TA-Lib comparison artifact uses contiguous `float64`
 arrays at 10k and 100k bars on an `Apple M3 Max`, `CPython 3.13.5`, and `Rust
 1.91.1`.
 
-- `ferro-ta` is ahead outside the tie band on 6 of 12 indicators at both 10k and 100k bars.
-- Strong public wins in the latest 100k-bar artifact include `SMA` (`2.28x`), `BBANDS` (`2.34x`), `MFI` (`3.04x`), and `WMA` (`2.39x`).
-- TA-Lib still wins or ties on parts of the suite, including `STOCH`, `ADX`, and some current `EMA` / `RSI` / `ATR` runs.
+- `ferro-ta` achieves competitive parity with TA-Lib, winning on 7 of 12 tested indicators at 100k bars (5 of 12 at 10k bars).
+- Strong performance wins at 100k bars include `MFI` (`3.25×`), `WMA` (`2.20×`), `BBANDS` (`1.97×`), and `SMA` (`1.93×`) vs TA-Lib.
+- TA-Lib maintains performance advantages on `STOCH` and `ADX`; `EMA`, `ATR`, and `OBV` are statistical ties.
+- Compared to pure-Python libraries like Tulipy, `ferro-ta` provides 150-350x speedups through Rust-optimized implementations.
 
 See the benchmark methodology and artifacts:
 

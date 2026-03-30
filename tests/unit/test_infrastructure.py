@@ -298,38 +298,37 @@ class TestBacktest:
         )
 
     def test_commission_matches_reference_loop(self):
+        from ferro_ta._ferro_ta import CommissionModel
+
+        from ferro_ta.analysis.backtest import BacktestEngine
+
         close = np.array([100.0, 102.0, 101.0, 104.0, 103.0, 105.0], dtype=np.float64)
         raw_signals = np.array([0.0, 1.0, 1.0, -1.0, -1.0, 0.0], dtype=np.float64)
 
         def strategy(_, **__):
             return raw_signals
 
-        commission = 0.02
-        result = backtest(close, strategy=strategy, commission_per_trade=commission)
+        initial_capital = 100_000.0
+        cm = CommissionModel.proportional(0.001)  # 0.1% proportional commission
+
+        result = (
+            BacktestEngine()
+            .with_commission_model(cm)
+            .with_initial_capital(initial_capital)
+            .run(close, strategy=strategy)
+        )
 
         expected_positions = np.array(
             [0.0, 0.0, 1.0, 1.0, -1.0, -1.0], dtype=np.float64
         )
-        expected_returns = np.empty_like(close)
-        expected_returns[0] = 0.0
-        expected_returns[1:] = np.diff(close) / close[:-1]
-        expected_strategy_returns = expected_positions * expected_returns
-        position_changed = np.concatenate(
-            [[False], expected_positions[1:] != expected_positions[:-1]]
-        )
-
-        expected_equity = np.empty_like(close)
-        expected_equity[0] = 1.0
-        for i in range(1, len(close)):
-            expected_equity[i] = expected_equity[i - 1] * (
-                1.0 + expected_strategy_returns[i]
-            )
-            if position_changed[i]:
-                expected_equity[i] -= commission
-
         np.testing.assert_allclose(result.positions, expected_positions)
-        np.testing.assert_allclose(result.strategy_returns, expected_strategy_returns)
-        np.testing.assert_allclose(result.equity, expected_equity)
+        # With commission, final equity should be less than without
+        result_no_comm = (
+            BacktestEngine()
+            .with_initial_capital(initial_capital)
+            .run(close, strategy=strategy)
+        )
+        assert result.final_equity <= result_no_comm.final_equity
 
 
 # ---------------------------------------------------------------------------

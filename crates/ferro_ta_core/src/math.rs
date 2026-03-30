@@ -2,7 +2,14 @@
 
 use std::collections::VecDeque;
 
-/// Rolling sum over `timeperiod` bars.
+/// Compute the rolling sum over `timeperiod` bars.
+///
+/// Returns a `Vec<f64>` of length `n`. The first `timeperiod - 1` values
+/// are `NaN`. Uses an incremental algorithm (add new, subtract old) for O(n).
+///
+/// # Arguments
+/// * `real` - Input series.
+/// * `timeperiod` - Rolling window size (must be >= 1).
 pub fn sum(real: &[f64], timeperiod: usize) -> Vec<f64> {
     let n = real.len();
     let mut result = vec![f64::NAN; n];
@@ -18,20 +25,38 @@ pub fn sum(real: &[f64], timeperiod: usize) -> Vec<f64> {
     result
 }
 
-/// Rolling maximum over `timeperiod` bars — O(n) via monotonic deque.
+/// Compute the rolling maximum over `timeperiod` bars.
+///
+/// Delegates to [`sliding_max`] for O(n) performance via a monotonic deque.
+/// The first `timeperiod - 1` values are `NaN`.
+///
+/// # Arguments
+/// * `real` - Input series.
+/// * `timeperiod` - Rolling window size (must be >= 1).
 pub fn max(real: &[f64], timeperiod: usize) -> Vec<f64> {
     sliding_max(real, timeperiod)
 }
 
-/// Rolling minimum over `timeperiod` bars — O(n) via monotonic deque.
+/// Compute the rolling minimum over `timeperiod` bars.
+///
+/// Delegates to [`sliding_min`] for O(n) performance via a monotonic deque.
+/// The first `timeperiod - 1` values are `NaN`.
+///
+/// # Arguments
+/// * `real` - Input series.
+/// * `timeperiod` - Rolling window size (must be >= 1).
 pub fn min(real: &[f64], timeperiod: usize) -> Vec<f64> {
     sliding_min(real, timeperiod)
 }
 
-/// Sliding maximum over `timeperiod` bars — O(n) via monotonic deque.
+/// Compute the sliding maximum over `timeperiod` bars in O(n) time.
 ///
-/// Equivalent to `max` but uses a monotonic deque for O(n) total time.
-/// Leading `timeperiod - 1` values are NaN.
+/// Uses a monotonic decreasing deque so each element is pushed/popped at
+/// most once. The first `timeperiod - 1` values are `NaN`.
+///
+/// # Arguments
+/// * `real` - Input series.
+/// * `timeperiod` - Rolling window size (must be >= 1).
 pub fn sliding_max(real: &[f64], timeperiod: usize) -> Vec<f64> {
     let n = real.len();
     let mut result = vec![f64::NAN; n];
@@ -56,10 +81,14 @@ pub fn sliding_max(real: &[f64], timeperiod: usize) -> Vec<f64> {
     result
 }
 
-/// Sliding minimum over `timeperiod` bars — O(n) via monotonic deque.
+/// Compute the sliding minimum over `timeperiod` bars in O(n) time.
 ///
-/// Equivalent to `min` but uses a monotonic deque for O(n) total time.
-/// Leading `timeperiod - 1` values are NaN.
+/// Uses a monotonic increasing deque so each element is pushed/popped at
+/// most once. The first `timeperiod - 1` values are `NaN`.
+///
+/// # Arguments
+/// * `real` - Input series.
+/// * `timeperiod` - Rolling window size (must be >= 1).
 pub fn sliding_min(real: &[f64], timeperiod: usize) -> Vec<f64> {
     let n = real.len();
     let mut result = vec![f64::NAN; n];

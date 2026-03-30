@@ -1,11 +1,15 @@
 //! Momentum indicators.
 
-use crate::math::{sliding_max, sliding_min};
 
-/// Relative Strength Index — TA-Lib compatible Wilder smoothing.
+/// Compute the Relative Strength Index (RSI).
 ///
-/// Seeds avg_gain/avg_loss with SMA of first `timeperiod` changes.
-/// Uses branchless gain/loss split: `gain = diff.max(0.0)`, `loss = (-diff).max(0.0)`.
+/// Returns values in the range `[0, 100]`. Uses Wilder's smoothing method
+/// (TA-Lib compatible), seeding avg_gain/avg_loss with the SMA of the first
+/// `timeperiod` price changes. The first `timeperiod` values are `NaN`.
+///
+/// # Arguments
+/// * `close` - Price series.
+/// * `timeperiod` - Lookback period (typically 14).
 pub fn rsi(close: &[f64], timeperiod: usize) -> Vec<f64> {
     let n = close.len();
     let mut result = vec![f64::NAN; n];
@@ -46,7 +50,14 @@ pub fn rsi(close: &[f64], timeperiod: usize) -> Vec<f64> {
     result
 }
 
-/// Momentum — `close[i] - close[i - timeperiod]`.
+/// Compute the Momentum indicator: `close[i] - close[i - timeperiod]`.
+///
+/// Returns a `Vec<f64>` of length `n`. The first `timeperiod` values are `NaN`.
+/// Positive values indicate upward price movement over the lookback window.
+///
+/// # Arguments
+/// * `close` - Price series.
+/// * `timeperiod` - Number of bars to look back (must be >= 1).
 pub fn mom(close: &[f64], timeperiod: usize) -> Vec<f64> {
     let n = close.len();
     let mut result = vec![f64::NAN; n];
@@ -59,14 +70,21 @@ pub fn mom(close: &[f64], timeperiod: usize) -> Vec<f64> {
     result
 }
 
-/// Stochastic Oscillator — TA-Lib compatible.
+/// Compute the Stochastic Oscillator (TA-Lib compatible).
 ///
-/// Returns `(slowk, slowd)`.
-///  - Fast %K[i] = 100 * (close[i] - min(low, fastk_period)) / (max(high, fastk_period) - min(low, fastk_period))
-///  - Slow %K = SMA(fast %K, slowk_period)
-///  - Slow %D = SMA(slow %K, slowd_period)
+/// Returns `(slow_k, slow_d)`, both in the range `[0, 100]`.
+///  - Fast %K = 100 * (close - lowest low) / (highest high - lowest low)
+///  - Slow %K = SMA(fast %K, `slowk_period`)
+///  - Slow %D = SMA(slow %K, `slowd_period`)
 ///
-/// Uses O(n) sliding max/min via monotonic deques.
+/// Uses O(n) sliding max/min via monotonic deques. Both outputs are
+/// `NaN`-padded until slow %D becomes valid (TA-Lib convention).
+///
+/// # Arguments
+/// * `high` / `low` / `close` - OHLC price series (same length).
+/// * `fastk_period` - Lookback for highest high / lowest low.
+/// * `slowk_period` - SMA period applied to fast %K.
+/// * `slowd_period` - SMA period applied to slow %K.
 pub fn stoch(
     high: &[f64],
     low: &[f64],
@@ -84,29 +102,38 @@ pub fn stoch(
         return nan_pair();
     }
 
-    let max_h = sliding_max(high, fastk_period);
-    let min_l = sliding_min(low, fastk_period);
-
     let mut slowk = vec![f64::NAN; n];
     let mut slowd = vec![f64::NAN; n];
 
-    // Fast %K is valid from index fastk_period-1 onward.
+    // Fused pass: compute fast %K inline with sliding max/min.
+    // For typical small windows (5-14), inline scan beats VecDeque overhead.
     let fastk_start = fastk_period - 1;
-    let mut fastk_valid = vec![0.0; n - fastk_start];
+    let fk_len = n - fastk_start;
+    let mut fastk_valid = vec![0.0_f64; fk_len];
+
     for i in fastk_start..n {
-        let range = max_h[i] - min_l[i];
+        // Inline sliding max(high) and min(low) over [i - fastk_period + 1 .. i].
+        let win_start = i + 1 - fastk_period;
+        let mut hh = high[win_start];
+        let mut ll = low[win_start];
+        for j in (win_start + 1)..=i {
+            let h = high[j];
+            let l = low[j];
+            if h > hh { hh = h; }
+            if l < ll { ll = l; }
+        }
+        let range = hh - ll;
         fastk_valid[i - fastk_start] = if range != 0.0 {
-            100.0 * (close[i] - min_l[i]) / range
+            100.0 * (close[i] - ll) / range
         } else {
             0.0
         };
     }
 
-    // Slow %K = SMA(fastk_valid, slowk_period); write directly into `slowk` offset by `fastk_start`.
+    // Slow %K = SMA(fastk_valid, slowk_period).
     crate::overlap::sma_into(&fastk_valid, slowk_period, &mut slowk, fastk_start);
 
     // Slow %D = SMA(slowk, slowd_period).
-    // The valid part of slowk starts at `fastk_start + slowk_period - 1`.
     let slowk_valid_start = fastk_start + slowk_period - 1;
     let slowd_valid_start = slowk_valid_start + slowd_period - 1;
 
@@ -249,50 +276,164 @@ fn adx_inner(high: &[f64], low: &[f64], close: &[f64], period: usize) -> AdxInne
     (b_pdm, b_mdm, b_pdi, b_mdi, b_dx, b_adx)
 }
 
-/// Plus Directional Movement (Wilder smoothed). Output length = n (bar 0 is NaN).
-pub fn plus_dm(high: &[f64], low: &[f64], timeperiod: usize) -> Vec<f64> {
+/// Compute all six ADX-family outputs in a single pass.
+///
+/// Returns `(plus_dm, minus_dm, plus_di, minus_di, dx, adx)`.
+/// Use this when you need multiple ADX-family outputs to avoid redundant
+/// computation. All values are in `[0, 100]` except DM which is unbounded.
+/// Warmup: DI/DX valid from index `timeperiod`; ADX from `2 * timeperiod - 1`.
+///
+/// # Arguments
+/// * `high` / `low` / `close` - OHLC price series (same length).
+/// * `timeperiod` - Wilder smoothing period (typically 14).
+pub fn adx_all(high: &[f64], low: &[f64], close: &[f64], timeperiod: usize) -> AdxInnerOutput {
+    adx_inner(high, low, close, timeperiod)
+}
+
+/// Internal helper for plus_dm and minus_dm that doesn't allocate dummy close prices.
+/// Returns (plus_dm, minus_dm) smoothed with Wilder's method.
+fn dm_only_inner(high: &[f64], low: &[f64], period: usize) -> (Vec<f64>, Vec<f64>) {
     let n = high.len();
-    let closes = vec![0.0_f64; n];
-    let (pdm, _, _, _, _, _) = adx_inner(high, low, &closes, timeperiod);
+    let mut b_pdm = vec![f64::NAN; n];
+    let mut b_mdm = vec![f64::NAN; n];
+
+    if n < period || period < 1 || n < 2 {
+        return (b_pdm, b_mdm);
+    }
+
+    let m = n - 1;
+    let mut pdm = vec![0.0_f64; m];
+    let mut mdm = vec![0.0_f64; m];
+
+    for i in 0..m {
+        let j = i + 1;
+        let h_diff = high[j] - high[i];
+        let l_diff = low[i] - low[j];
+        pdm[i] = if h_diff > l_diff && h_diff > 0.0 {
+            h_diff
+        } else {
+            0.0
+        };
+        mdm[i] = if l_diff > h_diff && l_diff > 0.0 {
+            l_diff
+        } else {
+            0.0
+        };
+    }
+
+    if m < period {
+        return (b_pdm, b_mdm);
+    }
+
+    let mut pdm_s = pdm[..period].iter().sum::<f64>();
+    let mut mdm_s = mdm[..period].iter().sum::<f64>();
+
+    b_pdm[period] = pdm_s;
+    b_mdm[period] = mdm_s;
+
+    let decay = (period - 1) as f64 / period as f64;
+    for i in period..m {
+        pdm_s = pdm_s * decay + pdm[i];
+        mdm_s = mdm_s * decay + mdm[i];
+        b_pdm[i + 1] = pdm_s;
+        b_mdm[i + 1] = mdm_s;
+    }
+
+    (b_pdm, b_mdm)
+}
+
+/// Compute the Plus Directional Movement (+DM), Wilder smoothed.
+///
+/// Measures upward price movement. Returns a `Vec<f64>` of length `n`;
+/// the first `timeperiod` values are `NaN`.
+///
+/// # Arguments
+/// * `high` / `low` - High and low price series (same length).
+/// * `timeperiod` - Wilder smoothing period.
+pub fn plus_dm(high: &[f64], low: &[f64], timeperiod: usize) -> Vec<f64> {
+    let (pdm, _) = dm_only_inner(high, low, timeperiod);
     pdm
 }
 
-/// Minus Directional Movement (Wilder smoothed). Output length = n (bar 0 is NaN).
+/// Compute the Minus Directional Movement (-DM), Wilder smoothed.
+///
+/// Measures downward price movement. Returns a `Vec<f64>` of length `n`;
+/// the first `timeperiod` values are `NaN`.
+///
+/// # Arguments
+/// * `high` / `low` - High and low price series (same length).
+/// * `timeperiod` - Wilder smoothing period.
 pub fn minus_dm(high: &[f64], low: &[f64], timeperiod: usize) -> Vec<f64> {
-    let n = high.len();
-    let closes = vec![0.0_f64; n];
-    let (_, mdm, _, _, _, _) = adx_inner(high, low, &closes, timeperiod);
+    let (_, mdm) = dm_only_inner(high, low, timeperiod);
     mdm
 }
 
-/// Plus Directional Indicator (Wilder smoothed). Output length = n.
+/// Compute the Plus Directional Indicator (+DI), Wilder smoothed.
+///
+/// `+DI = 100 * smoothed(+DM) / smoothed(TR)`. Returns values in `[0, 100]`.
+/// The first `timeperiod` values are `NaN`.
+///
+/// # Arguments
+/// * `high` / `low` / `close` - OHLC price series (same length).
+/// * `timeperiod` - Wilder smoothing period.
 pub fn plus_di(high: &[f64], low: &[f64], close: &[f64], timeperiod: usize) -> Vec<f64> {
     let (_, _, pdi, _, _, _) = adx_inner(high, low, close, timeperiod);
     pdi
 }
 
-/// Minus Directional Indicator (Wilder smoothed). Output length = n.
+/// Compute the Minus Directional Indicator (-DI), Wilder smoothed.
+///
+/// `-DI = 100 * smoothed(-DM) / smoothed(TR)`. Returns values in `[0, 100]`.
+/// The first `timeperiod` values are `NaN`.
+///
+/// # Arguments
+/// * `high` / `low` / `close` - OHLC price series (same length).
+/// * `timeperiod` - Wilder smoothing period.
 pub fn minus_di(high: &[f64], low: &[f64], close: &[f64], timeperiod: usize) -> Vec<f64> {
     let (_, _, _, mdi, _, _) = adx_inner(high, low, close, timeperiod);
     mdi
 }
 
-/// Directional Movement Index: 100 * |+DI − −DI| / (+DI + −DI).
+/// Compute the Directional Movement Index (DX).
+///
+/// `DX = 100 * |+DI - -DI| / (+DI + -DI)`. Returns values in `[0, 100]`.
+/// The first `timeperiod` values are `NaN`.
+///
+/// # Arguments
+/// * `high` / `low` / `close` - OHLC price series (same length).
+/// * `timeperiod` - Wilder smoothing period.
 pub fn dx(high: &[f64], low: &[f64], close: &[f64], timeperiod: usize) -> Vec<f64> {
     let (_, _, _, _, dx_vals, _) = adx_inner(high, low, close, timeperiod);
     dx_vals
 }
 
-/// Average Directional Movement Index (Wilder smoothing of DX).
+/// Compute the Average Directional Movement Index (ADX).
+///
+/// ADX is Wilder's smoothing of DX, measuring trend strength regardless of
+/// direction. Returns values in `[0, 100]`. The first `2 * timeperiod - 1`
+/// values are `NaN` (DX warmup + ADX smoothing warmup).
+///
+/// # Arguments
+/// * `high` / `low` / `close` - OHLC price series (same length).
+/// * `timeperiod` - Wilder smoothing period (typically 14).
 pub fn adx(high: &[f64], low: &[f64], close: &[f64], timeperiod: usize) -> Vec<f64> {
     let (_, _, _, _, _, adx_vals) = adx_inner(high, low, close, timeperiod);
     adx_vals
 }
 
-/// ADX Rating: (ADX[i] + ADX[i − timeperiod]) / 2.
+/// Compute the ADX Rating (ADXR).
+///
+/// `ADXR[i] = (ADX[i] + ADX[i - timeperiod]) / 2`. Smooths ADX further
+/// by averaging current ADX with its value `timeperiod` bars ago.
+/// Returns values in `[0, 100]`.
+///
+/// # Arguments
+/// * `high` / `low` / `close` - OHLC price series (same length).
+/// * `timeperiod` - Wilder smoothing period (typically 14).
 pub fn adxr(high: &[f64], low: &[f64], close: &[f64], timeperiod: usize) -> Vec<f64> {
     let n = high.len();
-    let adx_vals = adx(high, low, close, timeperiod);
+    // Reuse adx_all to compute ADX once, then derive ADXR from it
+    let (_, _, _, _, _, adx_vals) = adx_inner(high, low, close, timeperiod);
     let mut result = vec![f64::NAN; n];
     for i in timeperiod..n {
         if !adx_vals[i].is_nan() && !adx_vals[i - timeperiod].is_nan() {

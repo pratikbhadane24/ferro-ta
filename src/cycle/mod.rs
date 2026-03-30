@@ -3,8 +3,6 @@
 //!
 //! All functions use a 63-bar lookback period (first 63 values are NaN).
 
-mod common;
-
 mod ht_dcperiod;
 mod ht_dcphase;
 mod ht_phasor;

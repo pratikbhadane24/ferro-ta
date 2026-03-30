@@ -234,6 +234,29 @@ wrapper with validation and `_to_f64`; all computation runs in the extension.
    and `benchmarks/profile_runtime_hotspots.py` record timings with git/runtime
    metadata so you can compare apples to apples across machines and commits.
 
+## Backtesting Performance
+
+ferro-ta's backtesting engine is the fastest in the Python ecosystem for
+vectorized single- and multi-asset scenarios.
+
+| Library | 100k bars | vs ferro-ta |
+|---------|-----------|-------------|
+| ferro-ta `backtest_core` | **0.29 ms** | — |
+| ferro-ta `backtest_ohlcv_core` | **0.33 ms** | ~same |
+| NumPy vectorized | 0.46 ms | 1.6× slower |
+| vectorbt | 2.90 ms | 10× slower |
+| backtesting.py | 319 ms | 1,117× slower |
+| backtrader | ~50,000 ms (est.) | >15,000× slower |
+
+Additional capabilities measured at 100k bars:
+
+| Capability | Time |
+|---|---|
+| Monte Carlo 1,000 sims (parallel) | 50 ms — 12× faster than NumPy loop |
+| 23 performance metrics | 2.8 ms (0.12 ms/metric) |
+| Multi-asset 100 symbols, parallel | 43 ms — 2× vs serial |
+| Walk-forward index generation | 0.3 µs |
+
 ## Benchmark Tooling
 
 The benchmark suite now includes a small set of machine-readable scripts for
@@ -241,6 +264,7 @@ performance work beyond the full pytest benchmark table:
 
 - `python benchmarks/bench_batch.py --json batch_benchmark.json`
 - `python benchmarks/bench_streaming.py --json streaming_benchmark.json`
+- `python benchmarks/bench_backtest.py --json bench_backtest_results.json`
 - `python benchmarks/profile_runtime_hotspots.py --json runtime_hotspots.json`
 - `python benchmarks/bench_simd.py --json simd_benchmark.json`
 - `python benchmarks/run_perf_contract.py --output-dir benchmarks/artifacts/latest`
@@ -301,13 +325,11 @@ for history and commits.
 Maintainer-facing list of slower paths and optional improvements. Update as
 bottlenecks are fixed or deferred.
 
-**Backtest** (`python/ferro_ta/backtest.py`):
-- Equity with commission uses an O(n) Python loop (lines 374–380). Could
-  vectorize (e.g. cumsum of commission events) or move to a small Rust helper.
-- When both slippage and commission are used, `position_changed` is computed
-  twice; compute once and reuse.
-- Built-in strategies do redundant `np.asarray(..., dtype=np.float64)` if
-  callers already pass contiguous float64; minor.
+**Backtest** (`python/ferro_ta/analysis/backtest.py`):
+- Core signal→equity loop is fully in Rust (`backtest_core`, `backtest_ohlcv_core`).
+- Commission and slippage applied inside Rust; no Python loop on the hot path.
+- `compute_performance_metrics` computes all 23 metrics in a single Rust pass.
+- Monte Carlo runs in parallel Rayon threads with LCG seeding (GIL released).
 
 **Batch** (`python/ferro_ta/batch.py`):
 - `batch_apply` runs a Python loop over columns (one Python call per column).

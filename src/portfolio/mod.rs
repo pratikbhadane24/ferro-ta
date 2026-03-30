@@ -1,4 +1,4 @@
-//! Portfolio Analytics — Rust implementations.
+//! Portfolio Analytics — thin PyO3 wrappers delegating to `ferro_ta_core::portfolio`.
 //!
 //! Compute-intensive portfolio metrics implemented in Rust:
 //! - `portfolio_volatility`  — sqrt(w' Σ w) given weights and a covariance matrix
@@ -43,16 +43,11 @@ pub fn portfolio_volatility<'py>(
             "cov_matrix must be ({n}, {n}), got ({rows}, {cols})"
         )));
     }
-    // variance = w' Σ w
-    let mut variance = 0.0_f64;
-    for i in 0..n {
-        let mut row_sum = 0.0_f64;
-        for j in 0..n {
-            row_sum += w[j] * cov[[i, j]];
-        }
-        variance += w[i] * row_sum;
-    }
-    Ok(variance.max(0.0).sqrt())
+    // Convert ndarray rows to Vec<Vec<f64>> for core
+    let cov_rows: Vec<Vec<f64>> = (0..rows)
+        .map(|i| (0..cols).map(|j| cov[[i, j]]).collect())
+        .collect();
+    Ok(ferro_ta_core::portfolio::portfolio_volatility(&cov_rows, w))
 }
 
 // ---------------------------------------------------------------------------
@@ -83,22 +78,7 @@ pub fn beta_full<'py>(
             "asset_returns and benchmark_returns must have equal length >= 2",
         ));
     }
-    let mean_a: f64 = a.iter().sum::<f64>() / n as f64;
-    let mean_b: f64 = b.iter().sum::<f64>() / n as f64;
-    let mut cov = 0.0_f64;
-    let mut var_b = 0.0_f64;
-    for i in 0..n {
-        let da = a[i] - mean_a;
-        let db = b[i] - mean_b;
-        cov += da * db;
-        var_b += db * db;
-    }
-    if var_b == 0.0 {
-        return Err(PyValueError::new_err(
-            "benchmark_returns has zero variance; cannot compute beta",
-        ));
-    }
-    Ok(cov / var_b)
+    Ok(ferro_ta_core::portfolio::beta_full(a, b))
 }
 
 // ---------------------------------------------------------------------------
@@ -134,23 +114,7 @@ pub fn rolling_beta<'py>(
             "asset and benchmark must be non-empty and equal length",
         ));
     }
-    let mut result = vec![f64::NAN; n];
-    for i in (window - 1)..n {
-        let start = i + 1 - window;
-        let a_win = &a[start..=i];
-        let b_win = &b[start..=i];
-        let mean_a: f64 = a_win.iter().sum::<f64>() / window as f64;
-        let mean_b: f64 = b_win.iter().sum::<f64>() / window as f64;
-        let mut cov = 0.0_f64;
-        let mut var_b = 0.0_f64;
-        for k in 0..window {
-            let da = a_win[k] - mean_a;
-            let db = b_win[k] - mean_b;
-            cov += da * db;
-            var_b += db * db;
-        }
-        result[i] = if var_b == 0.0 { f64::NAN } else { cov / var_b };
-    }
+    let result = ferro_ta_core::portfolio::rolling_beta(a, b, window);
     Ok(result.into_pyarray(py))
 }
 
@@ -177,27 +141,10 @@ pub fn drawdown_series<'py>(
     equity: PyReadonlyArray1<'py, f64>,
 ) -> PyResult<(Bound<'py, PyArray1<f64>>, f64)> {
     let eq = equity.as_slice()?;
-    let n = eq.len();
-    if n == 0 {
+    if eq.is_empty() {
         return Err(PyValueError::new_err("equity must be non-empty"));
     }
-    let mut dd = vec![0.0_f64; n];
-    let mut peak = eq[0];
-    let mut max_dd = 0.0_f64;
-    for i in 0..n {
-        if eq[i] > peak {
-            peak = eq[i];
-        }
-        let d = if peak == 0.0 {
-            0.0
-        } else {
-            (eq[i] - peak) / peak
-        };
-        dd[i] = d;
-        if d < max_dd {
-            max_dd = d;
-        }
-    }
+    let (dd, max_dd) = ferro_ta_core::portfolio::drawdown_series(eq);
     Ok((dd.into_pyarray(py), max_dd))
 }
 
@@ -224,45 +171,18 @@ pub fn correlation_matrix<'py>(
     if n_bars < 2 {
         return Err(PyValueError::new_err("data must have at least 2 rows"));
     }
+    // Core expects column vectors: data[j][i] = asset j at bar i
+    let columns: Vec<Vec<f64>> = (0..n_assets)
+        .map(|j| (0..n_bars).map(|i| arr[[i, j]]).collect())
+        .collect();
+    let corr = ferro_ta_core::portfolio::correlation_matrix(&columns);
+    // Convert Vec<Vec<f64>> back to ndarray::Array2
     let mut result = Array2::<f64>::zeros((n_assets, n_assets));
-
-    // Compute means
-    let mut means = vec![0.0_f64; n_assets];
-    for j in 0..n_assets {
-        let mut sum = 0.0;
-        for i in 0..n_bars {
-            sum += arr[[i, j]];
-        }
-        means[j] = sum / n_bars as f64;
-    }
-
-    // Compute std devs and covariances
-    let mut stds = vec![0.0_f64; n_assets];
-    for j in 0..n_assets {
-        let mut var = 0.0;
-        for i in 0..n_bars {
-            let d = arr[[i, j]] - means[j];
-            var += d * d;
-        }
-        stds[j] = (var / n_bars as f64).sqrt();
-    }
-
     for j1 in 0..n_assets {
         for j2 in 0..n_assets {
-            if j1 == j2 {
-                result[[j1, j2]] = 1.0;
-            } else {
-                let mut cov = 0.0;
-                for i in 0..n_bars {
-                    cov += (arr[[i, j1]] - means[j1]) * (arr[[i, j2]] - means[j2]);
-                }
-                cov /= n_bars as f64;
-                let denom = stds[j1] * stds[j2];
-                result[[j1, j2]] = if denom == 0.0 { f64::NAN } else { cov / denom };
-            }
+            result[[j1, j2]] = corr[j1][j2];
         }
     }
-
     Ok(result.into_pyarray(py))
 }
 
@@ -297,18 +217,7 @@ pub fn relative_strength<'py>(
             "asset_returns and benchmark_returns must be non-empty and equal length",
         ));
     }
-    let mut result = vec![0.0_f64; n];
-    let mut cum_a = 1.0_f64;
-    let mut cum_b = 1.0_f64;
-    for i in 0..n {
-        cum_a *= 1.0 + a[i];
-        cum_b *= 1.0 + b[i];
-        result[i] = if cum_b == 0.0 {
-            f64::NAN
-        } else {
-            cum_a / cum_b
-        };
-    }
+    let result = ferro_ta_core::portfolio::relative_strength(a, b);
     Ok(result.into_pyarray(py))
 }
 
@@ -342,11 +251,7 @@ pub fn spread<'py>(
             "a and b must be non-empty and equal length",
         ));
     }
-    let result: Vec<f64> = av
-        .iter()
-        .zip(bv.iter())
-        .map(|(x, y)| x - hedge * y)
-        .collect();
+    let result = ferro_ta_core::portfolio::spread(av, bv, hedge);
     Ok(result.into_pyarray(py))
 }
 
@@ -371,11 +276,7 @@ pub fn ratio<'py>(
             "a and b must be non-empty and equal length",
         ));
     }
-    let result: Vec<f64> = av
-        .iter()
-        .zip(bv.iter())
-        .map(|(&x, &y)| if y == 0.0 { f64::NAN } else { x / y })
-        .collect();
+    let result = ferro_ta_core::portfolio::ratio(av, bv);
     Ok(result.into_pyarray(py))
 }
 
@@ -406,22 +307,10 @@ pub fn zscore_series<'py>(
         return Err(PyValueError::new_err("window must be >= 2"));
     }
     let xv = x.as_slice()?;
-    let n = xv.len();
-    if n == 0 {
+    if xv.is_empty() {
         return Err(PyValueError::new_err("x must be non-empty"));
     }
-    let mut result = vec![f64::NAN; n];
-    for i in (window - 1)..n {
-        let win = &xv[i + 1 - window..=i];
-        let mean: f64 = win.iter().sum::<f64>() / window as f64;
-        let var: f64 = win.iter().map(|v| (v - mean).powi(2)).sum::<f64>() / window as f64;
-        let std = var.sqrt();
-        result[i] = if std == 0.0 {
-            f64::NAN
-        } else {
-            (xv[i] - mean) / std
-        };
-    }
+    let result = ferro_ta_core::portfolio::zscore_series(xv, window);
     Ok(result.into_pyarray(py))
 }
 
@@ -455,14 +344,11 @@ pub fn compose_weighted<'py>(
             n_sigs
         )));
     }
-    let mut result = vec![0.0_f64; n_bars];
-    for i in 0..n_bars {
-        let mut s = 0.0;
-        for j in 0..n_sigs {
-            s += arr[[i, j]] * w[j];
-        }
-        result[i] = s;
-    }
+    // Core expects column vectors: data[j][i] = signal j at bar i
+    let columns: Vec<Vec<f64>> = (0..n_sigs)
+        .map(|j| (0..n_bars).map(|i| arr[[i, j]]).collect())
+        .collect();
+    let result = ferro_ta_core::portfolio::compose_weighted(&columns, w);
     Ok(result.into_pyarray(py))
 }
 

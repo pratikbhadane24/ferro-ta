@@ -5,7 +5,7 @@ resolver = "2"
 
 [package]
 name = "ferro_ta"
-version = "1.0.6"
+version = "1.2.0"
 edition = "2021"
 description = "Rust-powered Python technical analysis library with a TA-Lib-compatible API"
 license = "MIT"
@@ -30,7 +30,7 @@ ndarray = "0.16"
 rayon = "1.10"
 log = "0.4"
 pyo3-log = "0.12"
-ferro_ta_core = { path = "crates/ferro_ta_core", version = "1.0.6" }
+ferro_ta_core = { path = "crates/ferro_ta_core", version = "1.2.0", features = ["serde"] }
 
 [dev-dependencies]
 criterion = { version = "0.8", features = ["html_reports"] }

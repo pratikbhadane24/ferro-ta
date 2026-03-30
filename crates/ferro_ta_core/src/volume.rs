@@ -1,6 +1,14 @@
 //! Volume indicators.
 
-/// On-Balance Volume.
+/// Compute On-Balance Volume (OBV).
+///
+/// OBV is a cumulative indicator that adds volume on up-close bars and
+/// subtracts volume on down-close bars. Unchanged closes contribute zero.
+/// Returns a `Vec<f64>` of length `n` with no `NaN` values.
+///
+/// # Arguments
+/// * `close` - Price series.
+/// * `volume` - Volume series (same length as `close`).
 pub fn obv(close: &[f64], volume: &[f64]) -> Vec<f64> {
     let n = close.len();
     let mut result = vec![0.0_f64; n];
@@ -21,11 +29,17 @@ pub fn obv(close: &[f64], volume: &[f64]) -> Vec<f64> {
     result
 }
 
-/// Money Flow Index — O(n) sliding-window implementation without per-bar allocation.
+/// Compute the Money Flow Index (MFI).
 ///
-/// MFI = 100 - 100 / (1 + positive_flow / negative_flow) over `timeperiod` bars.
-/// typical_price = (high + low + close) / 3; raw_money_flow = typical_price * volume.
-/// Leading `timeperiod` values are NaN.
+/// MFI is a volume-weighted RSI, returning values in `[0, 100]`.
+/// `typical_price = (H + L + C) / 3`; money flow is positive when
+/// typical price rises, negative when it falls. The first `timeperiod`
+/// values are `NaN`.
+///
+/// # Arguments
+/// * `high` / `low` / `close` - OHLC price series (same length).
+/// * `volume` - Volume series (same length).
+/// * `timeperiod` - Lookback window (typically 14).
 pub fn mfi(
     high: &[f64],
     low: &[f64],
@@ -78,6 +92,51 @@ pub fn mfi(
     result
 }
 
+/// Chaikin Accumulation/Distribution Line.
+///
+/// Cumulates `(close - low - (high - close)) / (high - low) * volume`.
+pub fn ad(high: &[f64], low: &[f64], close: &[f64], volume: &[f64]) -> Vec<f64> {
+    let n = high.len();
+    let mut result = vec![0.0_f64; n];
+    let mut ad_val = 0.0_f64;
+    for i in 0..n {
+        let hl = high[i] - low[i];
+        let clv = if hl != 0.0 {
+            ((close[i] - low[i]) - (high[i] - close[i])) / hl
+        } else {
+            0.0
+        };
+        ad_val += clv * volume[i];
+        result[i] = ad_val;
+    }
+    result
+}
+
+/// Chaikin A/D Oscillator: fast EMA of AD minus slow EMA of AD.
+///
+/// Uses the core EMA implementation from `overlap::ema`.
+pub fn adosc(
+    high: &[f64],
+    low: &[f64],
+    close: &[f64],
+    volume: &[f64],
+    fastperiod: usize,
+    slowperiod: usize,
+) -> Vec<f64> {
+    let n = high.len();
+    let ad_vals = ad(high, low, close, volume);
+    let fast_ema = crate::overlap::ema(&ad_vals, fastperiod);
+    let slow_ema = crate::overlap::ema(&ad_vals, slowperiod);
+    let warmup = slowperiod - 1;
+    let mut result = vec![f64::NAN; n];
+    for i in warmup..n {
+        if !fast_ema[i].is_nan() && !slow_ema[i].is_nan() {
+            result[i] = fast_ema[i] - slow_ema[i];
+        }
+    }
+    result
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -90,6 +149,33 @@ mod tests {
         assert!((result[0] - 100.0).abs() < 1e-10);
         assert!((result[1] - 300.0).abs() < 1e-10);
         assert!((result[2] - 600.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn ad_basic() {
+        let h = vec![10.0, 12.0, 11.0];
+        let l = vec![8.0, 9.0, 9.0];
+        let c = vec![9.0, 11.0, 10.0];
+        let v = vec![1000.0, 2000.0, 1500.0];
+        let result = ad(&h, &l, &c, &v);
+        assert_eq!(result.len(), 3);
+        // CLV[0] = ((9-8) - (10-9)) / (10-8) = (1 - 1) / 2 = 0
+        assert!((result[0] - 0.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn adosc_basic() {
+        let n = 30;
+        let h: Vec<f64> = (1..=n).map(|i| i as f64 + 1.0).collect();
+        let l: Vec<f64> = (1..=n).map(|i| i as f64 - 1.0).collect();
+        let c: Vec<f64> = (1..=n).map(|i| i as f64).collect();
+        let v: Vec<f64> = vec![1000.0; n];
+        let result = adosc(&h, &l, &c, &v, 3, 10);
+        assert_eq!(result.len(), n);
+        // Warmup period should be NaN
+        for i in 0..9 {
+            assert!(result[i].is_nan());
+        }
     }
 
     #[test]

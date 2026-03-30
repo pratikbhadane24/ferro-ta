@@ -19,11 +19,6 @@ pub fn wclprice<'py>(
         (lows.len(), "low"),
         (closes.len(), "close"),
     ])?;
-    let result: Vec<f64> = highs
-        .iter()
-        .zip(lows.iter())
-        .zip(closes.iter())
-        .map(|((&h, &l), &c)| (h + l + c * 2.0) / 4.0)
-        .collect();
+    let result = ferro_ta_core::price_transform::wclprice(highs, lows, closes);
     Ok(result.into_pyarray(py))
 }

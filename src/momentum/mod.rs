@@ -47,6 +47,7 @@ pub fn register(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(pyo3::wrap_pyfunction!(self::adx::dx, m)?)?;
     m.add_function(pyo3::wrap_pyfunction!(self::adx::adx, m)?)?;
     m.add_function(pyo3::wrap_pyfunction!(self::adx::adxr, m)?)?;
+    m.add_function(pyo3::wrap_pyfunction!(self::adx::adx_all, m)?)?;
     m.add_function(pyo3::wrap_pyfunction!(self::trix::trix, m)?)?;
     m.add_function(pyo3::wrap_pyfunction!(self::ultosc::ultosc, m)?)?;
     Ok(())

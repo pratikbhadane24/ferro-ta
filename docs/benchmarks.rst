@@ -13,8 +13,91 @@ The authoritative benchmark workflow lives in ``benchmarks/``:
 - Cross-library speed suite: ``benchmarks/test_speed.py``
 - Cross-library accuracy suite: ``benchmarks/test_accuracy.py``
 - TA-Lib head-to-head script: ``benchmarks/bench_vs_talib.py``
+- Backtesting engine benchmark: ``benchmarks/bench_backtest.py``
 - Table generation from benchmark JSON: ``benchmarks/benchmark_table.py``
 - Perf-contract artifact bundle: ``benchmarks/run_perf_contract.py``
+
+Backtesting engine — competitor comparison
+------------------------------------------
+
+Measured on Apple M-series, Python 3.13, Rust 1.91, using an SMA(20/50)
+crossover strategy with 0.1% commission and 5 bps slippage.  Median of 5 runs.
+
+.. list-table:: Speed vs backtesting libraries (signal → equity curve)
+   :header-rows: 1
+
+   * - Library
+     - 1k bars
+     - 10k bars
+     - 100k bars
+     - vs ferro-ta core (100k)
+   * - **ferro-ta** ``backtest_core``
+     - 0.004 ms
+     - 0.033 ms
+     - 0.286 ms
+     - —
+   * - **ferro-ta** ``backtest_ohlcv_core``
+     - 0.004 ms
+     - 0.037 ms
+     - 0.332 ms
+     - ~same
+   * - NumPy vectorized (manual)
+     - 0.013 ms
+     - 0.042 ms
+     - 0.459 ms
+     - 1.6× slower
+   * - vectorbt 0.28
+     - 1.32 ms
+     - 1.31 ms
+     - 2.90 ms
+     - **10× slower**
+   * - backtesting.py
+     - 10.5 ms
+     - 42.3 ms
+     - 319.6 ms
+     - **1,117× slower**
+   * - backtrader 1.9
+     - 53.9 ms
+     - 518 ms
+     - n/a (skipped)
+     - **>15,000× slower**
+
+Accuracy: ferro-ta positions and bar-returns are **bit-exact** against the NumPy
+reference implementation (max per-bar equity diff = 0.00e+00 with zero
+commission/slippage).
+
+Additional ferro-ta capabilities not present in the libraries above:
+
+.. list-table::
+   :header-rows: 1
+
+   * - Capability
+     - ferro-ta result
+     - NumPy baseline
+     - Speedup
+   * - Monte Carlo 1,000 sims (100k bars)
+     - 50 ms (parallel Rayon + LCG)
+     - 612 ms (Python loop)
+     - **12×**
+   * - 23 performance metrics, single call (100k bars)
+     - 2.8 ms
+     - 0.36 ms (2 metrics only)
+     - 0.12 ms / metric
+   * - Multi-asset 100 assets (100k bars)
+     - 43 ms parallel / 88 ms serial
+     - —
+     - 2× parallel speedup
+   * - Walk-forward fold indices (100k bars)
+     - 0.3 µs
+     - —
+     - —
+
+Reproduce the backtest benchmark:
+
+.. code-block:: bash
+
+   python benchmarks/bench_backtest.py --sizes 10000 100000 \
+       --json benchmarks/artifacts/latest/bench_backtest_results.json
 
 Latest checked-in TA-Lib artifact
 ---------------------------------

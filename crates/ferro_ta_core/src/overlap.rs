@@ -3,7 +3,14 @@
 //! All functions return a `Vec<f64>` of the same length as the input.
 //! Leading values are `f64::NAN` for the warm-up period.
 
-/// Simple Moving Average over `timeperiod` bars.
+/// Compute the Simple Moving Average (SMA) over a rolling window.
+///
+/// Returns a `Vec<f64>` of the same length as `close`. The first
+/// `timeperiod - 1` values are `NaN` (warmup period).
+///
+/// # Arguments
+/// * `close` - Price series.
+/// * `timeperiod` - Rolling window size (must be >= 1).
 ///
 /// # Edge Cases
 /// Returns all-NaN when `timeperiod < 1` or `close.len() < timeperiod`.
@@ -14,8 +21,17 @@ pub fn sma(close: &[f64], timeperiod: usize) -> Vec<f64> {
     result
 }
 
-/// Simple Moving Average written directly into `dest` starting at `dest_offset`.
-/// Leaves values before `dest_offset + timeperiod - 1` untouched (e.g. they can be NaN).
+/// Write a Simple Moving Average directly into a pre-allocated buffer.
+///
+/// Values before `dest_offset + timeperiod - 1` are left untouched.
+/// This avoids an intermediate allocation when composing indicators
+/// (e.g., Stochastic slow %K and slow %D).
+///
+/// # Arguments
+/// * `src` - Input price series.
+/// * `timeperiod` - Rolling window size (must be >= 1).
+/// * `dest` - Output buffer (must be at least `dest_offset + src.len()` long).
+/// * `dest_offset` - Starting index in `dest` to write results.
 pub fn sma_into(src: &[f64], timeperiod: usize, dest: &mut [f64], dest_offset: usize) {
     let n = src.len();
     if timeperiod < 1 || n < timeperiod {
@@ -66,7 +82,15 @@ pub fn sma_into(src: &[f64], timeperiod: usize, dest: &mut [f64], dest_offset: u
     }
 }
 
-/// Exponential Moving Average — seeded with SMA of first `timeperiod` bars.
+/// Compute the Exponential Moving Average (EMA).
+///
+/// The EMA is seeded with the SMA of the first `timeperiod` bars and uses
+/// a smoothing factor of `k = 2 / (timeperiod + 1)`. Returns a `Vec<f64>`
+/// of the same length as `close`; the first `timeperiod - 1` values are `NaN`.
+///
+/// # Arguments
+/// * `close` - Price series.
+/// * `timeperiod` - Lookback period (must be >= 1).
 pub fn ema(close: &[f64], timeperiod: usize) -> Vec<f64> {
     let n = close.len();
     let mut result = vec![f64::NAN; n];
@@ -82,10 +106,15 @@ pub fn ema(close: &[f64], timeperiod: usize) -> Vec<f64> {
     result
 }
 
-/// Weighted Moving Average — O(n) incremental algorithm using running weighted sum.
+/// Compute the Weighted Moving Average (WMA).
 ///
-/// Recurrence: `T[i] = T[i-1] + n*close[i] - S[i-1]`
-/// where `S[i]` is the rolling sum over `timeperiod` bars.
+/// Assigns linearly increasing weights (1, 2, ..., timeperiod) to the window.
+/// Uses an O(n) incremental recurrence to avoid recomputing weights each bar.
+/// Returns a `Vec<f64>` of length `n`; the first `timeperiod - 1` values are `NaN`.
+///
+/// # Arguments
+/// * `close` - Price series.
+/// * `timeperiod` - Rolling window size (must be >= 1).
 pub fn wma(close: &[f64], timeperiod: usize) -> Vec<f64> {
     let n = close.len();
     let mut result = vec![f64::NAN; n];
@@ -157,10 +186,43 @@ pub fn wma(close: &[f64], timeperiod: usize) -> Vec<f64> {
     result
 }
 
-/// Bollinger Bands — returns `(upper, middle, lower)`.
+/// Compute Bollinger Bands, returning `(upper, middle, lower)`.
 ///
-/// Middle is SMA; bands are `± nbdev * stddev`.
-/// Uses O(n) sliding `sum` and `sum_sq` windows for mean and variance.
+/// The middle band is the SMA; upper and lower bands are offset by
+/// `nbdevup` and `nbdevdn` standard deviations respectively. Uses
+/// Welford's rolling algorithm for numerically stable variance in O(n).
+///
+/// # Arguments
+/// * `close` - Price series.
+/// * `timeperiod` - SMA / standard deviation window (must be >= 1).
+/// * `nbdevup` - Number of standard deviations above the mean for the upper band.
+/// * `nbdevdn` - Number of standard deviations below the mean for the lower band.
+///
+/// # Returns
+/// `(upper, middle, lower)` -- each `Vec<f64>` of length `n`. The first
+/// `timeperiod - 1` values in each vector are `NaN`.
+///
+/// ## Welford's rolling algorithm
+///
+/// We maintain `mean` and `m2` (sum of squared deviations from the current
+/// mean) across a sliding window of size `N`.  When a new value `x_new`
+/// replaces an old value `x_old` (window size stays constant):
+///
+/// ```text
+/// delta     = x_new - x_old
+/// old_mean  = mean
+/// mean     += delta / N
+/// m2       += delta * ((x_new - mean) + (x_old - old_mean))
+///
+/// variance  = m2 / N               // population variance
+/// stddev    = sqrt(variance)
+/// ```
+///
+/// The initial window is seeded using the standard (non-rolling) Welford
+/// incremental algorithm.
+///
+/// This avoids the catastrophic cancellation inherent in the naïve
+/// `Σx²/N − mean²` formula when values are large but close together.
 pub fn bbands(
     close: &[f64],
     timeperiod: usize,
@@ -177,90 +239,135 @@ pub fn bbands(
     let mut lower = vec![f64::NAN; n];
     let p = timeperiod as f64;
 
-    // Seed sliding sums for the first window.
-    #[cfg(feature = "simd")]
-    let (mut sum, mut sum_sq) = {
-        use wide::f64x4;
-        let p_data = &close[..timeperiod];
-        let mut sum_simd = f64x4::splat(0.0);
-        let mut sq_simd = f64x4::splat(0.0);
-        let mut chunks = p_data.chunks_exact(4);
-        for chunk in &mut chunks {
-            let vals = f64x4::new([chunk[0], chunk[1], chunk[2], chunk[3]]);
-            sum_simd += vals;
-            sq_simd += vals * vals;
-        }
-        let s_arr = sum_simd.to_array();
-        let sq_arr = sq_simd.to_array();
-        let mut sum = s_arr[0] + s_arr[1] + s_arr[2] + s_arr[3];
-        let mut sum_sq = sq_arr[0] + sq_arr[1] + sq_arr[2] + sq_arr[3];
-        for &v in chunks.remainder() {
-            sum += v;
-            sum_sq += v * v;
-        }
-        (sum, sum_sq)
-    };
+    // --- Seed: build initial mean and m2 for the first window using
+    //     Welford's incremental (non-rolling) algorithm. ---
+    let mut mean = 0.0_f64;
+    let mut m2 = 0.0_f64;
+    for (k, &x) in close[..timeperiod].iter().enumerate() {
+        let count = (k + 1) as f64;
+        let delta = x - mean;
+        mean += delta / count;
+        let delta2 = x - mean;
+        m2 += delta * delta2;
+    }
 
-    #[cfg(not(feature = "simd"))]
-    let (mut sum, mut sum_sq) = {
-        let s: f64 = close[..timeperiod].iter().sum();
-        let sq: f64 = close[..timeperiod].iter().map(|&x| x * x).sum();
-        (s, sq)
-    };
-
-    let mean = sum / p;
-    let var = (sum_sq / p - mean * mean).max(0.0);
+    let var = (m2 / p).max(0.0);
     let std = var.sqrt();
     middle[timeperiod - 1] = mean;
     upper[timeperiod - 1] = mean + nbdevup * std;
     lower[timeperiod - 1] = mean - nbdevdn * std;
 
+    // --- Rolling phase: slide the window one element at a time,
+    //     removing the oldest value and adding the newest. ---
+
+    /// Inline helper: replace `x_old` with `x_new` in the Welford accumulator
+    /// (constant window size `p`), then write band values into the output slots.
+    ///
+    /// Combined rolling Welford update (window size stays constant at N):
+    ///
+    /// ```text
+    /// delta     = x_new - x_old
+    /// old_mean  = mean
+    /// mean     += delta / N
+    /// m2       += delta * ((x_new - mean) + (x_old - old_mean))
+    /// ```
+    ///
+    /// This is algebraically equivalent to removing `x_old` and adding `x_new`
+    /// in two separate Welford steps, but avoids the intermediate N-1 state.
+    #[inline(always)]
+    #[allow(clippy::too_many_arguments)]
+    fn welford_step(
+        x_old: f64,
+        x_new: f64,
+        mean: &mut f64,
+        m2: &mut f64,
+        p: f64,
+        nbdevup: f64,
+        nbdevdn: f64,
+        upper: &mut f64,
+        middle: &mut f64,
+        lower: &mut f64,
+    ) {
+        let delta = x_new - x_old;
+        let old_mean = *mean;
+        *mean += delta / p;
+        // Update m2 using both old and new deviations.
+        *m2 += delta * ((x_new - *mean) + (x_old - old_mean));
+
+        // Clamp m2 to zero to guard against floating-point drift.
+        if *m2 < 0.0 {
+            *m2 = 0.0;
+        }
+
+        let var = *m2 / p;
+        let std = var.sqrt();
+        *middle = *mean;
+        *upper = *mean + nbdevup * std;
+        *lower = *mean - nbdevdn * std;
+    }
+
+    // Process two iterations at a time (loop unrolling) for throughput.
     let mut i = timeperiod;
     while i + 1 < n {
-        let old0 = close[i - timeperiod];
-        sum += close[i] - old0;
-        sum_sq += close[i] * close[i] - old0 * old0;
-        let mean = sum / p;
-        let var = (sum_sq / p - mean * mean).max(0.0);
-        let std = var.sqrt();
-        middle[i] = mean;
-        upper[i] = mean + nbdevup * std;
-        lower[i] = mean - nbdevdn * std;
-
-        let old1 = close[i + 1 - timeperiod];
-        sum += close[i + 1] - old1;
-        sum_sq += close[i + 1] * close[i + 1] - old1 * old1;
-        let mean1 = sum / p;
-        let var1 = (sum_sq / p - mean1 * mean1).max(0.0);
-        let std1 = var1.sqrt();
-        middle[i + 1] = mean1;
-        upper[i + 1] = mean1 + nbdevup * std1;
-        lower[i + 1] = mean1 - nbdevdn * std1;
-
+        welford_step(
+            close[i - timeperiod],
+            close[i],
+            &mut mean,
+            &mut m2,
+            p,
+            nbdevup,
+            nbdevdn,
+            &mut upper[i],
+            &mut middle[i],
+            &mut lower[i],
+        );
+        welford_step(
+            close[i + 1 - timeperiod],
+            close[i + 1],
+            &mut mean,
+            &mut m2,
+            p,
+            nbdevup,
+            nbdevdn,
+            &mut upper[i + 1],
+            &mut middle[i + 1],
+            &mut lower[i + 1],
+        );
         i += 2;
     }
     if i < n {
-        let old = close[i - timeperiod];
-        sum += close[i] - old;
-        sum_sq += close[i] * close[i] - old * old;
-        let mean = sum / p;
-        let var = (sum_sq / p - mean * mean).max(0.0);
-        let std = var.sqrt();
-        middle[i] = mean;
-        upper[i] = mean + nbdevup * std;
-        lower[i] = mean - nbdevdn * std;
+        welford_step(
+            close[i - timeperiod],
+            close[i],
+            &mut mean,
+            &mut m2,
+            p,
+            nbdevup,
+            nbdevdn,
+            &mut upper[i],
+            &mut middle[i],
+            &mut lower[i],
+        );
     }
+
     (upper, middle, lower)
 }
 
-/// MACD — EMA(fastperiod) minus EMA(slowperiod), signal = EMA(macd, signalperiod).
+/// Compute the Moving Average Convergence/Divergence (MACD).
 ///
-/// Returns `(macd_line, signal_line, histogram)`, each of length `n`.
-/// Leading values are `NaN` during warmup.
-/// `fastperiod` must be less than `slowperiod`.
+/// `MACD = EMA(close, fastperiod) - EMA(close, slowperiod)`.
+/// The signal line is `EMA(macd, signalperiod)` and the histogram is
+/// `macd - signal`. TA-Lib compatible: leading values are `NaN` up to
+/// the point where all three outputs are valid.
 ///
-/// Fast and slow EMAs are computed in a **single combined loop** to minimise
-/// memory round-trips, then the signal EMA is computed in a second pass.
+/// # Arguments
+/// * `close` - Price series.
+/// * `fastperiod` - Fast EMA period (must be < `slowperiod`).
+/// * `slowperiod` - Slow EMA period.
+/// * `signalperiod` - Signal line EMA period.
+///
+/// # Returns
+/// `(macd_line, signal_line, histogram)` -- each `Vec<f64>` of length `n`.
 pub fn macd(
     close: &[f64],
     fastperiod: usize,
@@ -381,6 +488,74 @@ mod tests {
         assert!((middle[2] - 2.0).abs() < 1e-10);
         assert!((upper[2] - 2.0).abs() < 1e-10); // std = 0
         assert!((lower[2] - 2.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn bbands_varying_prices() {
+        // Verify against hand-computed values for a small window.
+        let prices = vec![1.0, 2.0, 3.0, 4.0, 5.0];
+        let (upper, middle, lower) = bbands(&prices, 3, 2.0, 2.0);
+
+        // First two values should be NaN (warmup).
+        assert!(middle[0].is_nan());
+        assert!(middle[1].is_nan());
+
+        // Window [1,2,3]: mean = 2.0, pop_var = 2/3, std = sqrt(2/3)
+        let expected_mean = 2.0;
+        let expected_std = (2.0_f64 / 3.0).sqrt();
+        assert!((middle[2] - expected_mean).abs() < 1e-10);
+        assert!((upper[2] - (expected_mean + 2.0 * expected_std)).abs() < 1e-10);
+        assert!((lower[2] - (expected_mean - 2.0 * expected_std)).abs() < 1e-10);
+
+        // Window [2,3,4]: mean = 3.0, pop_var = 2/3, std = sqrt(2/3)
+        assert!((middle[3] - 3.0).abs() < 1e-10);
+        assert!((upper[3] - (3.0 + 2.0 * expected_std)).abs() < 1e-10);
+
+        // Window [3,4,5]: mean = 4.0, pop_var = 2/3, std = sqrt(2/3)
+        assert!((middle[4] - 4.0).abs() < 1e-10);
+        assert!((upper[4] - (4.0 + 2.0 * expected_std)).abs() < 1e-10);
+    }
+
+    #[test]
+    fn bbands_numerical_stability() {
+        // Large offset with tiny variation — this is where the naïve sum_sq
+        // formula suffers from catastrophic cancellation.
+        let base = 1e12;
+        let prices: Vec<f64> = (0..100).map(|i| base + (i as f64) * 0.01).collect();
+        let (upper, middle, lower) = bbands(&prices, 20, 2.0, 2.0);
+
+        // Check that middle band matches SMA.
+        for i in 19..100 {
+            let window = &prices[i - 19..=i];
+            let expected_mean: f64 = window.iter().sum::<f64>() / 20.0;
+            assert!(
+                (middle[i] - expected_mean).abs() < 1e-4,
+                "mean mismatch at {i}: got {} expected {}",
+                middle[i],
+                expected_mean,
+            );
+            // Bands should be above/below middle.
+            assert!(upper[i] >= middle[i]);
+            assert!(lower[i] <= middle[i]);
+        }
+    }
+
+    #[test]
+    fn bbands_edge_cases() {
+        // timeperiod == 1: every bar should have std = 0, bands == price.
+        let prices = vec![10.0, 20.0, 30.0];
+        let (upper, middle, lower) = bbands(&prices, 1, 2.0, 2.0);
+        for i in 0..3 {
+            assert!((middle[i] - prices[i]).abs() < 1e-10);
+            assert!((upper[i] - prices[i]).abs() < 1e-10);
+            assert!((lower[i] - prices[i]).abs() < 1e-10);
+        }
+
+        // Input shorter than timeperiod: all NaN.
+        let (u, m, l) = bbands(&[1.0, 2.0], 5, 2.0, 2.0);
+        assert!(u.iter().all(|v| v.is_nan()));
+        assert!(m.iter().all(|v| v.is_nan()));
+        assert!(l.iter().all(|v| v.is_nan()));
     }
 
     #[test]

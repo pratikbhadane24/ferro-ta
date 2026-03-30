@@ -68,23 +68,7 @@ fn from_vec(v: Vec<f64>) -> Float64Array {
 #[wasm_bindgen]
 pub fn sma(close: &Float64Array, timeperiod: usize) -> Float64Array {
     let prices = to_vec(close);
-    let n = prices.len();
-    let mut result = vec![f64::NAN; n];
-
-    if timeperiod == 0 || n < timeperiod {
-        return from_vec(result);
-    }
-
-    // Seed: sum of first window
-    let mut window_sum: f64 = prices[..timeperiod].iter().sum();
-    result[timeperiod - 1] = window_sum / timeperiod as f64;
-
-    for i in timeperiod..n {
-        window_sum += prices[i] - prices[i - timeperiod];
-        result[i] = window_sum / timeperiod as f64;
-    }
-
-    from_vec(result)
+    from_vec(ferro_ta_core::overlap::sma(&prices, timeperiod))
 }
 
 // ---------------------------------------------------------------------------
@@ -102,27 +86,7 @@ pub fn sma(close: &Float64Array, timeperiod: usize) -> Float64Array {
 #[wasm_bindgen]
 pub fn ema(close: &Float64Array, timeperiod: usize) -> Float64Array {
     let prices = to_vec(close);
-    let n = prices.len();
-    let mut result = vec![f64::NAN; n];
-
-    if timeperiod == 0 || n < timeperiod {
-        return from_vec(result);
-    }
-
-    let k = 2.0 / (timeperiod as f64 + 1.0);
-
-    // Seed with SMA of first window
-    let seed: f64 = prices[..timeperiod].iter().sum::<f64>() / timeperiod as f64;
-    result[timeperiod - 1] = seed;
-    let mut prev = seed;
-
-    for i in timeperiod..n {
-        let val = prices[i] * k + prev * (1.0 - k);
-        result[i] = val;
-        prev = val;
-    }
-
-    from_vec(result)
+    from_vec(ferro_ta_core::overlap::ema(&prices, timeperiod))
 }
 
 // ---------------------------------------------------------------------------
@@ -148,29 +112,7 @@ pub fn bbands(
     nbdevdn: f64,
 ) -> Array {
     let prices = to_vec(close);
-    let n = prices.len();
-    let mut upper = vec![f64::NAN; n];
-    let mut middle = vec![f64::NAN; n];
-    let mut lower = vec![f64::NAN; n];
-
-    if timeperiod == 0 || n < timeperiod {
-        let out = Array::new();
-        out.push(&from_vec(upper));
-        out.push(&from_vec(middle));
-        out.push(&from_vec(lower));
-        return out;
-    }
-
-    for i in (timeperiod - 1)..n {
-        let window = &prices[(i + 1 - timeperiod)..=i];
-        let mean = window.iter().sum::<f64>() / timeperiod as f64;
-        let variance = window.iter().map(|&x| (x - mean).powi(2)).sum::<f64>() / timeperiod as f64;
-        let stddev = variance.sqrt();
-        middle[i] = mean;
-        upper[i] = mean + nbdevup * stddev;
-        lower[i] = mean - nbdevdn * stddev;
-    }
-
+    let (upper, middle, lower) = ferro_ta_core::overlap::bbands(&prices, timeperiod, nbdevup, nbdevdn);
     let out = Array::new();
     out.push(&from_vec(upper));
     out.push(&from_vec(middle));
@@ -193,44 +135,7 @@ pub fn bbands(
 #[wasm_bindgen]
 pub fn rsi(close: &Float64Array, timeperiod: usize) -> Float64Array {
     let prices = to_vec(close);
-    let n = prices.len();
-    let mut result = vec![f64::NAN; n];
-
-    if timeperiod == 0 || n <= timeperiod {
-        return from_vec(result);
-    }
-
-    // Compute gains and losses
-    let diffs: Vec<f64> = prices.windows(2).map(|w| w[1] - w[0]).collect();
-
-    // Seed average gain / loss over first `timeperiod` bars
-    let mut avg_gain: f64 = diffs[..timeperiod]
-        .iter()
-        .map(|&d| if d > 0.0 { d } else { 0.0 })
-        .sum::<f64>()
-        / timeperiod as f64;
-    let mut avg_loss: f64 = diffs[..timeperiod]
-        .iter()
-        .map(|&d| if d < 0.0 { -d } else { 0.0 })
-        .sum::<f64>()
-        / timeperiod as f64;
-
-    // First RSI value at index `timeperiod`
-    let rs = if avg_loss == 0.0 { f64::INFINITY } else { avg_gain / avg_loss };
-    result[timeperiod] = 100.0 - 100.0 / (1.0 + rs);
-
-    // Wilder smoothing for remaining values
-    for i in (timeperiod + 1)..n {
-        let diff = diffs[i - 1];
-        let gain = if diff > 0.0 { diff } else { 0.0 };
-        let loss = if diff < 0.0 { -diff } else { 0.0 };
-        avg_gain = (avg_gain * (timeperiod as f64 - 1.0) + gain) / timeperiod as f64;
-        avg_loss = (avg_loss * (timeperiod as f64 - 1.0) + loss) / timeperiod as f64;
-        let rs = if avg_loss == 0.0 { f64::INFINITY } else { avg_gain / avg_loss };
-        result[i] = 100.0 - 100.0 / (1.0 + rs);
-    }
-
-    from_vec(result)
+    from_vec(ferro_ta_core::momentum::rsi(&prices, timeperiod))
 }
 
 // ---------------------------------------------------------------------------
@@ -257,38 +162,7 @@ pub fn atr(
     let h = to_vec(high);
     let l = to_vec(low);
     let c = to_vec(close);
-    let n = h.len();
-    let mut result = vec![f64::NAN; n];
-
-    if timeperiod == 0 || n <= timeperiod {
-        return from_vec(result);
-    }
-    if l.len() != n || c.len() != n {
-        return from_vec(result);
-    }
-
-    // True Range for each bar
-    let mut tr = vec![0.0f64; n];
-    tr[0] = h[0] - l[0]; // first bar: no previous close
-    for i in 1..n {
-        let hl = h[i] - l[i];
-        let hpc = (h[i] - c[i - 1]).abs();
-        let lpc = (l[i] - c[i - 1]).abs();
-        tr[i] = hl.max(hpc).max(lpc);
-    }
-
-    // Seed: SMA of first `timeperiod` true ranges
-    let seed: f64 = tr[1..=timeperiod].iter().sum::<f64>() / timeperiod as f64;
-    result[timeperiod] = seed;
-    let mut prev = seed;
-
-    for i in (timeperiod + 1)..n {
-        let val = (prev * (timeperiod as f64 - 1.0) + tr[i]) / timeperiod as f64;
-        result[i] = val;
-        prev = val;
-    }
-
-    from_vec(result)
+    from_vec(ferro_ta_core::volatility::atr(&h, &l, &c, timeperiod))
 }
 
 // ---------------------------------------------------------------------------
@@ -307,25 +181,7 @@ pub fn atr(
 pub fn obv(close: &Float64Array, volume: &Float64Array) -> Float64Array {
     let c = to_vec(close);
     let v = to_vec(volume);
-    let n = c.len();
-    let mut result = vec![0.0f64; n];
-
-    if n == 0 || v.len() != n {
-        return from_vec(result);
-    }
-
-    result[0] = v[0];
-    for i in 1..n {
-        if c[i] > c[i - 1] {
-            result[i] = result[i - 1] + v[i];
-        } else if c[i] < c[i - 1] {
-            result[i] = result[i - 1] - v[i];
-        } else {
-            result[i] = result[i - 1];
-        }
-    }
-
-    from_vec(result)
+    from_vec(ferro_ta_core::volume::obv(&c, &v))
 }
 
 // ---------------------------------------------------------------------------
@@ -361,18 +217,7 @@ pub fn wma(close: &Float64Array, timeperiod: usize) -> Float64Array {
 #[wasm_bindgen]
 pub fn mom(close: &Float64Array, timeperiod: usize) -> Float64Array {
     let prices = to_vec(close);
-    let n = prices.len();
-    let mut result = vec![f64::NAN; n];
-
-    if timeperiod == 0 || n <= timeperiod {
-        return from_vec(result);
-    }
-
-    for i in timeperiod..n {
-        result[i] = prices[i] - prices[i - timeperiod];
-    }
-
-    from_vec(result)
+    from_vec(ferro_ta_core::momentum::mom(&prices, timeperiod))
 }
 
 // ---------------------------------------------------------------------------
@@ -401,53 +246,8 @@ pub fn stochf(
     let h = to_vec(high);
     let l = to_vec(low);
     let c = to_vec(close);
-    let n = c.len();
-
-    let nan_out = || {
-        let out = Array::new();
-        out.push(&from_vec(vec![f64::NAN; n]));
-        out.push(&from_vec(vec![f64::NAN; n]));
-        out
-    };
-
-    if fastk_period == 0 || fastd_period == 0 || n < fastk_period {
-        return nan_out();
-    }
-    if h.len() != n || l.len() != n {
-        return nan_out();
-    }
-
-    // Fast %K: (close - lowest_low) / (highest_high - lowest_low) * 100
-    let mut fastk = vec![f64::NAN; n];
-    for i in (fastk_period - 1)..n {
-        let low_min = l[(i + 1 - fastk_period)..=i]
-            .iter()
-            .cloned()
-            .fold(f64::INFINITY, f64::min);
-        let high_max = h[(i + 1 - fastk_period)..=i]
-            .iter()
-            .cloned()
-            .fold(f64::NEG_INFINITY, f64::max);
-        let range = high_max - low_min;
-        fastk[i] = if range > 0.0 {
-            (c[i] - low_min) / range * 100.0
-        } else {
-            50.0 // all bars at same price — neutral
-        };
-    }
-
-    // Fast %D: SMA(fastd_period) of fast %K
-    let mut fastd = vec![f64::NAN; n];
-    let k_start = fastk_period - 1;
-    if n >= k_start + fastd_period {
-        for i in (k_start + fastd_period - 1)..n {
-            let window = &fastk[(i + 1 - fastd_period)..=i];
-            if window.iter().all(|x| x.is_finite()) {
-                fastd[i] = window.iter().sum::<f64>() / fastd_period as f64;
-            }
-        }
-    }
-
+    // stoch with slowk_period=1 yields fastk as slowk, fastd as slowd
+    let (fastk, fastd) = ferro_ta_core::momentum::stoch(&h, &l, &c, fastk_period, 1, fastd_period);
     let out = Array::new();
     out.push(&from_vec(fastk));
     out.push(&from_vec(fastd));
@@ -541,87 +341,920 @@ pub fn macd(
     signalperiod: usize,
 ) -> Array {
     let prices = to_vec(close);
-    let n = prices.len();
-    let nan_result = || {
-        let out = Array::new();
-        out.push(&from_vec(vec![f64::NAN; n]));
-        out.push(&from_vec(vec![f64::NAN; n]));
-        out.push(&from_vec(vec![f64::NAN; n]));
-        out
-    };
-
-    if fastperiod == 0 || slowperiod == 0 || signalperiod == 0 || fastperiod >= slowperiod {
-        return nan_result();
-    }
-    if n < slowperiod {
-        return nan_result();
-    }
-
-    // Helper: SMA-seeded EMA
-    let ema_vec = |data: &[f64], period: usize| -> Vec<f64> {
-        let len = data.len();
-        let mut result = vec![f64::NAN; len];
-        if period == 0 || len < period {
-            return result;
-        }
-        let k = 2.0 / (period as f64 + 1.0);
-        let seed: f64 = data[..period].iter().sum::<f64>() / period as f64;
-        result[period - 1] = seed;
-        for i in period..len {
-            result[i] = data[i] * k + result[i - 1] * (1.0 - k);
-        }
-        result
-    };
-
-    let fast_ema = ema_vec(&prices, fastperiod);
-    let slow_ema = ema_vec(&prices, slowperiod);
-
-    // MACD line = fast EMA − slow EMA (valid from index slowperiod - 1)
-    let mut macd_line = vec![f64::NAN; n];
-    for i in (slowperiod - 1)..n {
-        if fast_ema[i].is_finite() && slow_ema[i].is_finite() {
-            macd_line[i] = fast_ema[i] - slow_ema[i];
-        }
-    }
-
-    // Signal line = EMA(signalperiod) of macd_line, seeded at index slowperiod - 1
-    let macd_start = slowperiod - 1;
-    let mut signal_line = vec![f64::NAN; n];
-    let signal_seed_end = macd_start + signalperiod;
-    if signal_seed_end > n {
-        let out = Array::new();
-        out.push(&from_vec(macd_line.clone()));
-        out.push(&from_vec(signal_line));
-        out.push(&from_vec(vec![f64::NAN; n]));
-        return out;
-    }
-
-    // Seed: SMA of first signalperiod MACD values
-    let seed: f64 = macd_line[macd_start..signal_seed_end]
-        .iter()
-        .sum::<f64>()
-        / signalperiod as f64;
-    signal_line[signal_seed_end - 1] = seed;
-    let k = 2.0 / (signalperiod as f64 + 1.0);
-    for i in signal_seed_end..n {
-        if macd_line[i].is_finite() {
-            signal_line[i] = macd_line[i] * k + signal_line[i - 1] * (1.0 - k);
-        }
-    }
-
-    // Histogram = MACD − signal
-    let mut histogram = vec![f64::NAN; n];
-    for i in (signal_seed_end - 1)..n {
-        if macd_line[i].is_finite() && signal_line[i].is_finite() {
-            histogram[i] = macd_line[i] - signal_line[i];
-        }
-    }
-
+    let (macd_line, signal_line, histogram) =
+        ferro_ta_core::overlap::macd(&prices, fastperiod, slowperiod, signalperiod);
     let out = Array::new();
     out.push(&from_vec(macd_line));
     out.push(&from_vec(signal_line));
     out.push(&from_vec(histogram));
     out
+}
+
+// ---------------------------------------------------------------------------
+// CommissionModel — advanced commission and tax model for Indian and global markets
+// ---------------------------------------------------------------------------
+
+/// Advanced commission and tax model (WASM binding).
+///
+/// All `_rate` fields are fractions (e.g. 0.001 = 0.1%).
+/// Per-unit fields (`flat_per_order`, `per_lot`) are in base currency units (e.g. INR).
+///
+/// Use the static factory methods for built-in presets, or construct and
+/// set fields individually.
+#[wasm_bindgen]
+pub struct CommissionModel {
+    inner: ferro_ta_core::commission::CommissionModel,
+}
+
+#[wasm_bindgen]
+impl CommissionModel {
+    /// Create a zero-commission model.
+    #[wasm_bindgen(constructor)]
+    pub fn new() -> Self {
+        Self { inner: ferro_ta_core::commission::CommissionModel::default() }
+    }
+
+    // ---- Field getters/setters ------------------------------------------
+
+    #[wasm_bindgen(getter)] pub fn flat_per_order(&self) -> f64 { self.inner.flat_per_order }
+    #[wasm_bindgen(setter)] pub fn set_flat_per_order(&mut self, v: f64) { self.inner.flat_per_order = v; }
+
+    #[wasm_bindgen(getter)] pub fn rate_of_value(&self) -> f64 { self.inner.rate_of_value }
+    #[wasm_bindgen(setter)] pub fn set_rate_of_value(&mut self, v: f64) { self.inner.rate_of_value = v; }
+
+    #[wasm_bindgen(getter)] pub fn per_lot(&self) -> f64 { self.inner.per_lot }
+    #[wasm_bindgen(setter)] pub fn set_per_lot(&mut self, v: f64) { self.inner.per_lot = v; }
+
+    #[wasm_bindgen(getter)] pub fn max_brokerage(&self) -> f64 { self.inner.max_brokerage }
+    #[wasm_bindgen(setter)] pub fn set_max_brokerage(&mut self, v: f64) { self.inner.max_brokerage = v; }
+
+    #[wasm_bindgen(getter)] pub fn stt_rate(&self) -> f64 { self.inner.stt_rate }
+    #[wasm_bindgen(setter)] pub fn set_stt_rate(&mut self, v: f64) { self.inner.stt_rate = v; }
+
+    #[wasm_bindgen(getter)] pub fn stt_on_buy(&self) -> bool { self.inner.stt_on_buy }
+    #[wasm_bindgen(setter)] pub fn set_stt_on_buy(&mut self, v: bool) { self.inner.stt_on_buy = v; }
+
+    #[wasm_bindgen(getter)] pub fn stt_on_sell(&self) -> bool { self.inner.stt_on_sell }
+    #[wasm_bindgen(setter)] pub fn set_stt_on_sell(&mut self, v: bool) { self.inner.stt_on_sell = v; }
+
+    #[wasm_bindgen(getter)] pub fn exchange_charges_rate(&self) -> f64 { self.inner.exchange_charges_rate }
+    #[wasm_bindgen(setter)] pub fn set_exchange_charges_rate(&mut self, v: f64) { self.inner.exchange_charges_rate = v; }
+
+    #[wasm_bindgen(getter)] pub fn regulatory_charges_rate(&self) -> f64 { self.inner.regulatory_charges_rate }
+    #[wasm_bindgen(setter)] pub fn set_regulatory_charges_rate(&mut self, v: f64) { self.inner.regulatory_charges_rate = v; }
+
+    #[wasm_bindgen(getter)] pub fn gst_rate(&self) -> f64 { self.inner.gst_rate }
+    #[wasm_bindgen(setter)] pub fn set_gst_rate(&mut self, v: f64) { self.inner.gst_rate = v; }
+
+    #[wasm_bindgen(getter)] pub fn stamp_duty_rate(&self) -> f64 { self.inner.stamp_duty_rate }
+    #[wasm_bindgen(setter)] pub fn set_stamp_duty_rate(&mut self, v: f64) { self.inner.stamp_duty_rate = v; }
+
+    #[wasm_bindgen(getter)] pub fn lot_size(&self) -> f64 { self.inner.lot_size }
+    #[wasm_bindgen(setter)] pub fn set_lot_size(&mut self, v: f64) { self.inner.lot_size = v; }
+
+    // ---- Compute --------------------------------------------------------
+
+    /// Total transaction cost in absolute currency units.
+    pub fn total_cost(&self, trade_value: f64, num_lots: f64, is_buy: bool) -> f64 {
+        self.inner.total_cost(trade_value, num_lots, is_buy)
+    }
+
+    /// Cost as fraction of `initial_capital` (for normalised equity loops).
+    pub fn cost_fraction(&self, trade_value: f64, num_lots: f64, is_buy: bool, initial_capital: f64) -> f64 {
+        self.inner.cost_fraction(trade_value, num_lots, is_buy, initial_capital)
+    }
+
+    // ---- Presets (static constructors) ----------------------------------
+
+    /// Zero-commission model.
+    pub fn zero() -> CommissionModel {
+        CommissionModel { inner: ferro_ta_core::commission::CommissionModel::zero() }
+    }
+
+    /// Indian equity delivery preset.
+    pub fn equity_delivery_india() -> CommissionModel {
+        CommissionModel { inner: ferro_ta_core::commission::CommissionModel::equity_delivery_india() }
+    }
+
+    /// Indian equity intraday preset.
+    pub fn equity_intraday_india() -> CommissionModel {
+        CommissionModel { inner: ferro_ta_core::commission::CommissionModel::equity_intraday_india() }
+    }
+
+    /// Indian index futures preset.
+    pub fn futures_india() -> CommissionModel {
+        CommissionModel { inner: ferro_ta_core::commission::CommissionModel::futures_india() }
+    }
+
+    /// Indian index options preset.
+    pub fn options_india() -> CommissionModel {
+        CommissionModel { inner: ferro_ta_core::commission::CommissionModel::options_india() }
+    }
+
+    /// Simple proportional model (no taxes, `rate` fraction both ways).
+    pub fn proportional(rate: f64) -> CommissionModel {
+        CommissionModel { inner: ferro_ta_core::commission::CommissionModel::proportional(rate) }
+    }
+
+    // ---- JSON (minimal manual serialization — no serde in WASM) ----------
+
+    /// Serialize key fields to a JSON string (no serde dependency).
+    pub fn to_json_string(&self) -> String {
+        let m = &self.inner;
+        format!(
+            r#"{{"flat_per_order":{},"rate_of_value":{},"per_lot":{},"max_brokerage":{},"stt_rate":{},"stt_on_buy":{},"stt_on_sell":{},"exchange_charges_rate":{},"regulatory_charges_rate":{},"gst_rate":{},"stamp_duty_rate":{},"lot_size":{},"spread_bps":{},"short_borrow_rate_annual":{}}}"#,
+            m.flat_per_order, m.rate_of_value, m.per_lot, m.max_brokerage,
+            m.stt_rate, m.stt_on_buy, m.stt_on_sell,
+            m.exchange_charges_rate, m.regulatory_charges_rate,
+            m.gst_rate, m.stamp_duty_rate, m.lot_size,
+            m.spread_bps, m.short_borrow_rate_annual,
+        )
+    }
+}
+
+// ===========================================================================
+// Price Transform
+// ===========================================================================
+
+/// Average Price: (open + high + low + close) / 4.
+#[wasm_bindgen]
+pub fn avgprice(
+    open: &Float64Array,
+    high: &Float64Array,
+    low: &Float64Array,
+    close: &Float64Array,
+) -> Float64Array {
+    let o = to_vec(open);
+    let h = to_vec(high);
+    let l = to_vec(low);
+    let c = to_vec(close);
+    from_vec(ferro_ta_core::price_transform::avgprice(&o, &h, &l, &c))
+}
+
+/// Median Price: (high + low) / 2.
+#[wasm_bindgen]
+pub fn medprice(high: &Float64Array, low: &Float64Array) -> Float64Array {
+    let h = to_vec(high);
+    let l = to_vec(low);
+    from_vec(ferro_ta_core::price_transform::medprice(&h, &l))
+}
+
+/// Typical Price: (high + low + close) / 3.
+#[wasm_bindgen]
+pub fn typprice(
+    high: &Float64Array,
+    low: &Float64Array,
+    close: &Float64Array,
+) -> Float64Array {
+    let h = to_vec(high);
+    let l = to_vec(low);
+    let c = to_vec(close);
+    from_vec(ferro_ta_core::price_transform::typprice(&h, &l, &c))
+}
+
+/// Weighted Close Price: (high + low + close * 2) / 4.
+#[wasm_bindgen]
+pub fn wclprice(
+    high: &Float64Array,
+    low: &Float64Array,
+    close: &Float64Array,
+) -> Float64Array {
+    let h = to_vec(high);
+    let l = to_vec(low);
+    let c = to_vec(close);
+    from_vec(ferro_ta_core::price_transform::wclprice(&h, &l, &c))
+}
+
+// ===========================================================================
+// Alerts
+// ===========================================================================
+
+/// Fire an alert when series crosses a threshold level.
+/// direction: 1 = cross above, -1 = cross below.
+/// Returns Int8Array: 1 at crossing bars, 0 elsewhere.
+#[wasm_bindgen]
+pub fn check_threshold(series: &Float64Array, level: f64, direction: i32) -> js_sys::Int8Array {
+    let s = to_vec(series);
+    let result = ferro_ta_core::alerts::check_threshold(&s, level, direction);
+    let arr = js_sys::Int8Array::new_with_length(result.len() as u32);
+    arr.copy_from(&result);
+    arr
+}
+
+/// Detect cross-over/cross-under events between fast and slow series.
+/// Returns Int8Array: 1 = bullish, -1 = bearish, 0 = none.
+#[wasm_bindgen]
+pub fn check_cross(fast: &Float64Array, slow: &Float64Array) -> js_sys::Int8Array {
+    let f = to_vec(fast);
+    let s = to_vec(slow);
+    let result = ferro_ta_core::alerts::check_cross(&f, &s);
+    let arr = js_sys::Int8Array::new_with_length(result.len() as u32);
+    arr.copy_from(&result);
+    arr
+}
+
+/// Collect bar indices where mask is non-zero.
+#[wasm_bindgen]
+pub fn collect_alert_bars(mask: &js_sys::Int8Array) -> Float64Array {
+    let n = mask.length() as usize;
+    let mut m = vec![0i8; n];
+    mask.copy_to(&mut m);
+    let result = ferro_ta_core::alerts::collect_alert_bars(&m);
+    let out: Vec<f64> = result.into_iter().map(|v| v as f64).collect();
+    from_vec(out)
+}
+
+// ===========================================================================
+// Signals
+// ===========================================================================
+
+/// Compute fractional rank of each element (1-based, ascending).
+#[wasm_bindgen]
+pub fn rank_series(x: &Float64Array) -> Float64Array {
+    let xv = to_vec(x);
+    from_vec(ferro_ta_core::signals::rank_values(&xv))
+}
+
+/// Return indices of the N largest values.
+#[wasm_bindgen]
+pub fn top_n_indices(x: &Float64Array, n: usize) -> Float64Array {
+    let xv = to_vec(x);
+    let result = ferro_ta_core::signals::top_n_indices(&xv, n);
+    let out: Vec<f64> = result.into_iter().map(|v| v as f64).collect();
+    from_vec(out)
+}
+
+/// Return indices of the N smallest values.
+#[wasm_bindgen]
+pub fn bottom_n_indices(x: &Float64Array, n: usize) -> Float64Array {
+    let xv = to_vec(x);
+    let result = ferro_ta_core::signals::bottom_n_indices(&xv, n);
+    let out: Vec<f64> = result.into_iter().map(|v| v as f64).collect();
+    from_vec(out)
+}
+
+// ===========================================================================
+// Crypto
+// ===========================================================================
+
+/// Cumulative PnL from funding rate payments.
+#[wasm_bindgen]
+pub fn funding_cumulative_pnl(
+    position_size: &Float64Array,
+    funding_rate: &Float64Array,
+) -> Float64Array {
+    let pos = to_vec(position_size);
+    let rate = to_vec(funding_rate);
+    from_vec(ferro_ta_core::crypto::funding_cumulative_pnl(&pos, &rate))
+}
+
+/// Assign sequential integer labels based on fixed period size.
+#[wasm_bindgen]
+pub fn continuous_bar_labels(n_bars: usize, period_bars: usize) -> Float64Array {
+    let result = ferro_ta_core::crypto::continuous_bar_labels(n_bars, period_bars);
+    let out: Vec<f64> = result.into_iter().map(|v| v as f64).collect();
+    from_vec(out)
+}
+
+// ===========================================================================
+// Math Ops
+// ===========================================================================
+
+/// Rolling sum over timeperiod bars.
+#[wasm_bindgen]
+pub fn rolling_sum(real: &Float64Array, timeperiod: usize) -> Float64Array {
+    let prices = to_vec(real);
+    from_vec(ferro_ta_core::math_ops::rolling_sum(&prices, timeperiod))
+}
+
+/// Rolling maximum over timeperiod bars.
+#[wasm_bindgen]
+pub fn rolling_max(real: &Float64Array, timeperiod: usize) -> Float64Array {
+    let prices = to_vec(real);
+    from_vec(ferro_ta_core::math_ops::rolling_max(&prices, timeperiod))
+}
+
+/// Rolling minimum over timeperiod bars.
+#[wasm_bindgen]
+pub fn rolling_min(real: &Float64Array, timeperiod: usize) -> Float64Array {
+    let prices = to_vec(real);
+    from_vec(ferro_ta_core::math_ops::rolling_min(&prices, timeperiod))
+}
+
+/// Index of rolling maximum over timeperiod bars.
+#[wasm_bindgen]
+pub fn rolling_maxindex(real: &Float64Array, timeperiod: usize) -> Float64Array {
+    let prices = to_vec(real);
+    let result = ferro_ta_core::math_ops::rolling_maxindex(&prices, timeperiod);
+    let out: Vec<f64> = result.into_iter().map(|v| v as f64).collect();
+    from_vec(out)
+}
+
+/// Index of rolling minimum over timeperiod bars.
+#[wasm_bindgen]
+pub fn rolling_minindex(real: &Float64Array, timeperiod: usize) -> Float64Array {
+    let prices = to_vec(real);
+    let result = ferro_ta_core::math_ops::rolling_minindex(&prices, timeperiod);
+    let out: Vec<f64> = result.into_iter().map(|v| v as f64).collect();
+    from_vec(out)
+}
+
+// ===========================================================================
+// Regime
+// ===========================================================================
+
+/// Label bars as trend (1), range (0), or NaN (-1) based on ADX threshold.
+#[wasm_bindgen]
+pub fn regime_adx(adx: &Float64Array, threshold: f64) -> js_sys::Int8Array {
+    let a = to_vec(adx);
+    let result = ferro_ta_core::regime::regime_adx(&a, threshold);
+    let arr = js_sys::Int8Array::new_with_length(result.len() as u32);
+    arr.copy_from(&result);
+    arr
+}
+
+/// Label bars using ADX + ATR-ratio combined rule.
+#[wasm_bindgen]
+pub fn regime_combined(
+    adx: &Float64Array,
+    atr: &Float64Array,
+    close: &Float64Array,
+    adx_threshold: f64,
+    atr_pct_threshold: f64,
+) -> js_sys::Int8Array {
+    let a = to_vec(adx);
+    let r = to_vec(atr);
+    let c = to_vec(close);
+    let result = ferro_ta_core::regime::regime_combined(&a, &r, &c, adx_threshold, atr_pct_threshold);
+    let arr = js_sys::Int8Array::new_with_length(result.len() as u32);
+    arr.copy_from(&result);
+    arr
+}
+
+/// Detect structural breaks using CUSUM approach.
+#[wasm_bindgen]
+pub fn detect_breaks_cusum(
+    series: &Float64Array,
+    window: usize,
+    threshold: f64,
+    slack: f64,
+) -> js_sys::Int8Array {
+    let s = to_vec(series);
+    let result = ferro_ta_core::regime::detect_breaks_cusum(&s, window, threshold, slack);
+    let arr = js_sys::Int8Array::new_with_length(result.len() as u32);
+    arr.copy_from(&result);
+    arr
+}
+
+/// Detect volatility regime breaks using rolling variance ratio.
+#[wasm_bindgen]
+pub fn rolling_variance_break(
+    series: &Float64Array,
+    short_window: usize,
+    long_window: usize,
+    threshold: f64,
+) -> js_sys::Int8Array {
+    let s = to_vec(series);
+    let result = ferro_ta_core::regime::rolling_variance_break(&s, short_window, long_window, threshold);
+    let arr = js_sys::Int8Array::new_with_length(result.len() as u32);
+    arr.copy_from(&result);
+    arr
+}
+
+// ===========================================================================
+// Chunked
+// ===========================================================================
+
+/// Remove first overlap elements from an array.
+#[wasm_bindgen]
+pub fn trim_overlap(chunk_out: &Float64Array, overlap: usize) -> Float64Array {
+    let s = to_vec(chunk_out);
+    from_vec(ferro_ta_core::chunked::trim_overlap(&s, overlap))
+}
+
+/// Compute (start, end) index pairs for chunked processing.
+/// Returns flat Float64Array: [start0, end0, start1, end1, ...].
+#[wasm_bindgen]
+pub fn make_chunk_ranges(n: usize, chunk_size: usize, overlap: usize) -> Float64Array {
+    let result = ferro_ta_core::chunked::make_chunk_ranges(n, chunk_size, overlap);
+    let out: Vec<f64> = result.into_iter().map(|v| v as f64).collect();
+    from_vec(out)
+}
+
+/// Forward-fill NaN values in a 1-D array.
+#[wasm_bindgen]
+pub fn forward_fill_nan(values: &Float64Array) -> Float64Array {
+    let input = to_vec(values);
+    from_vec(ferro_ta_core::chunked::forward_fill_nan(&input))
+}
+
+// ===========================================================================
+// Extended Indicators (Sprint 2)
+// ===========================================================================
+
+/// Volume Weighted Average Price (cumulative or rolling).
+#[wasm_bindgen]
+pub fn vwap(
+    high: &Float64Array,
+    low: &Float64Array,
+    close: &Float64Array,
+    volume: &Float64Array,
+    timeperiod: usize,
+) -> Float64Array {
+    let h = to_vec(high);
+    let l = to_vec(low);
+    let c = to_vec(close);
+    let v = to_vec(volume);
+    from_vec(ferro_ta_core::extended::vwap(&h, &l, &c, &v, timeperiod))
+}
+
+/// Volume Weighted Moving Average.
+#[wasm_bindgen]
+pub fn vwma(close: &Float64Array, volume: &Float64Array, timeperiod: usize) -> Float64Array {
+    let c = to_vec(close);
+    let v = to_vec(volume);
+    from_vec(ferro_ta_core::extended::vwma(&c, &v, timeperiod))
+}
+
+/// ATR-based Supertrend indicator.
+/// Returns `[supertrend_line, direction_as_f64]`.
+#[wasm_bindgen]
+pub fn supertrend(
+    high: &Float64Array,
+    low: &Float64Array,
+    close: &Float64Array,
+    timeperiod: usize,
+    multiplier: f64,
+) -> Array {
+    let h = to_vec(high);
+    let l = to_vec(low);
+    let c = to_vec(close);
+    let (line, direction) = ferro_ta_core::extended::supertrend(&h, &l, &c, timeperiod, multiplier);
+    let dir_f64: Vec<f64> = direction.iter().map(|&d| d as f64).collect();
+    let out = Array::new();
+    out.push(&from_vec(line));
+    out.push(&from_vec(dir_f64));
+    out
+}
+
+/// Donchian Channels — rolling highest high / lowest low.
+/// Returns `[upper, middle, lower]`.
+#[wasm_bindgen]
+pub fn donchian(high: &Float64Array, low: &Float64Array, timeperiod: usize) -> Array {
+    let h = to_vec(high);
+    let l = to_vec(low);
+    let (upper, middle, lower) = ferro_ta_core::extended::donchian(&h, &l, timeperiod);
+    let out = Array::new();
+    out.push(&from_vec(upper));
+    out.push(&from_vec(middle));
+    out.push(&from_vec(lower));
+    out
+}
+
+/// Choppiness Index — measures market choppiness vs trending.
+#[wasm_bindgen]
+pub fn choppiness_index(
+    high: &Float64Array,
+    low: &Float64Array,
+    close: &Float64Array,
+    timeperiod: usize,
+) -> Float64Array {
+    let h = to_vec(high);
+    let l = to_vec(low);
+    let c = to_vec(close);
+    from_vec(ferro_ta_core::extended::choppiness_index(&h, &l, &c, timeperiod))
+}
+
+/// Keltner Channels — EMA +/- (multiplier x ATR).
+/// Returns `[upper, middle, lower]`.
+#[wasm_bindgen]
+pub fn keltner_channels(
+    high: &Float64Array,
+    low: &Float64Array,
+    close: &Float64Array,
+    timeperiod: usize,
+    atr_period: usize,
+    multiplier: f64,
+) -> Array {
+    let h = to_vec(high);
+    let l = to_vec(low);
+    let c = to_vec(close);
+    let (upper, middle, lower) =
+        ferro_ta_core::extended::keltner_channels(&h, &l, &c, timeperiod, atr_period, multiplier);
+    let out = Array::new();
+    out.push(&from_vec(upper));
+    out.push(&from_vec(middle));
+    out.push(&from_vec(lower));
+    out
+}
+
+/// Hull Moving Average (HMA).
+#[wasm_bindgen]
+pub fn hull_ma(close: &Float64Array, timeperiod: usize) -> Float64Array {
+    let c = to_vec(close);
+    from_vec(ferro_ta_core::extended::hull_ma(&c, timeperiod))
+}
+
+/// Chandelier Exit — ATR-based trailing stop levels.
+/// Returns `[long_exit, short_exit]`.
+#[wasm_bindgen]
+pub fn chandelier_exit(
+    high: &Float64Array,
+    low: &Float64Array,
+    close: &Float64Array,
+    timeperiod: usize,
+    multiplier: f64,
+) -> Array {
+    let h = to_vec(high);
+    let l = to_vec(low);
+    let c = to_vec(close);
+    let (long_exit, short_exit) =
+        ferro_ta_core::extended::chandelier_exit(&h, &l, &c, timeperiod, multiplier);
+    let out = Array::new();
+    out.push(&from_vec(long_exit));
+    out.push(&from_vec(short_exit));
+    out
+}
+
+/// Ichimoku Cloud (Ichimoku Kinko Hyo).
+/// Returns `[tenkan, kijun, senkou_a, senkou_b, chikou]`.
+#[wasm_bindgen]
+pub fn ichimoku(
+    high: &Float64Array,
+    low: &Float64Array,
+    close: &Float64Array,
+    tenkan: usize,
+    kijun: usize,
+    senkou_b: usize,
+    displacement: usize,
+) -> Array {
+    let h = to_vec(high);
+    let l = to_vec(low);
+    let c = to_vec(close);
+    let (tenkan_out, kijun_out, senkou_a_out, senkou_b_out, chikou_out) =
+        ferro_ta_core::extended::ichimoku(&h, &l, &c, tenkan, kijun, senkou_b, displacement);
+    let out = Array::new();
+    out.push(&from_vec(tenkan_out));
+    out.push(&from_vec(kijun_out));
+    out.push(&from_vec(senkou_a_out));
+    out.push(&from_vec(senkou_b_out));
+    out.push(&from_vec(chikou_out));
+    out
+}
+
+/// Pivot Points — support / resistance levels.
+/// Returns `[pivot, r1, s1, r2, s2]`.
+#[wasm_bindgen(js_name = "pivot_points")]
+pub fn pivot_points(
+    high: &Float64Array,
+    low: &Float64Array,
+    close: &Float64Array,
+    method: &str,
+) -> Array {
+    let h = to_vec(high);
+    let l = to_vec(low);
+    let c = to_vec(close);
+    let (pivot, r1, s1, r2, s2) = ferro_ta_core::extended::pivot_points(&h, &l, &c, method);
+    let out = Array::new();
+    out.push(&from_vec(pivot));
+    out.push(&from_vec(r1));
+    out.push(&from_vec(s1));
+    out.push(&from_vec(r2));
+    out.push(&from_vec(s2));
+    out
+}
+
+// ===========================================================================
+// Portfolio Analytics (Sprint 2)
+// ===========================================================================
+
+/// Full-sample OLS beta of asset vs benchmark returns.
+#[wasm_bindgen]
+pub fn beta_full(asset_returns: &Float64Array, benchmark_returns: &Float64Array) -> f64 {
+    let a = to_vec(asset_returns);
+    let b = to_vec(benchmark_returns);
+    ferro_ta_core::portfolio::beta_full(&a, &b)
+}
+
+/// Rolling beta of asset vs benchmark over a sliding window.
+#[wasm_bindgen]
+pub fn rolling_beta(
+    asset: &Float64Array,
+    benchmark: &Float64Array,
+    window: usize,
+) -> Float64Array {
+    let a = to_vec(asset);
+    let b = to_vec(benchmark);
+    from_vec(ferro_ta_core::portfolio::rolling_beta(&a, &b, window))
+}
+
+/// Drawdown series and maximum drawdown for an equity curve.
+/// Returns `[dd_array, max_dd_as_single_element]`.
+#[wasm_bindgen]
+pub fn drawdown_series(equity: &Float64Array) -> Array {
+    let eq = to_vec(equity);
+    let (dd, max_dd) = ferro_ta_core::portfolio::drawdown_series(&eq);
+    let out = Array::new();
+    out.push(&from_vec(dd));
+    out.push(&from_vec(vec![max_dd]));
+    out
+}
+
+/// Relative strength of asset vs benchmark (cumulative return ratio).
+#[wasm_bindgen]
+pub fn relative_strength(
+    asset_returns: &Float64Array,
+    benchmark_returns: &Float64Array,
+) -> Float64Array {
+    let a = to_vec(asset_returns);
+    let b = to_vec(benchmark_returns);
+    from_vec(ferro_ta_core::portfolio::relative_strength(&a, &b))
+}
+
+/// Spread between two series: a - hedge * b.
+#[wasm_bindgen]
+pub fn spread(a: &Float64Array, b: &Float64Array, hedge: f64) -> Float64Array {
+    let av = to_vec(a);
+    let bv = to_vec(b);
+    from_vec(ferro_ta_core::portfolio::spread(&av, &bv, hedge))
+}
+
+/// Ratio between two series: a / b (NaN where b is zero).
+#[wasm_bindgen]
+pub fn ratio(a: &Float64Array, b: &Float64Array) -> Float64Array {
+    let av = to_vec(a);
+    let bv = to_vec(b);
+    from_vec(ferro_ta_core::portfolio::ratio(&av, &bv))
+}
+
+/// Rolling Z-score of a 1-D series.
+#[wasm_bindgen]
+pub fn zscore_series(x: &Float64Array, window: usize) -> Float64Array {
+    let xv = to_vec(x);
+    from_vec(ferro_ta_core::portfolio::zscore_series(&xv, window))
+}
+
+// ===========================================================================
+// Attribution (Sprint 2)
+// ===========================================================================
+
+/// Trade-level statistics from trade PnL and hold durations.
+/// Returns `[win_rate, avg_win, avg_loss, profit_factor, avg_hold_bars]` as Float64Array.
+#[wasm_bindgen]
+pub fn trade_stats(pnl: &Float64Array, hold_bars: &Float64Array) -> Array {
+    let p = to_vec(pnl);
+    let h = to_vec(hold_bars);
+    let (win_rate, avg_win, avg_loss, profit_factor, avg_hold) =
+        ferro_ta_core::attribution::trade_stats(&p, &h);
+    let out = Array::new();
+    out.push(&from_vec(vec![win_rate, avg_win, avg_loss, profit_factor, avg_hold]));
+    out
+}
+
+/// Group per-bar returns by month index and sum each month's contribution.
+/// Returns `[months_as_f64, contributions]`.
+#[wasm_bindgen]
+pub fn monthly_contribution(
+    bar_returns: &Float64Array,
+    month_index: &Float64Array,
+) -> Array {
+    let ret = to_vec(bar_returns);
+    let mi_f64 = to_vec(month_index);
+    let mi: Vec<i64> = mi_f64.iter().map(|&v| v as i64).collect();
+    let (months, contributions) = ferro_ta_core::attribution::monthly_contribution(&ret, &mi);
+    let months_f64: Vec<f64> = months.iter().map(|&m| m as f64).collect();
+    let out = Array::new();
+    out.push(&from_vec(months_f64));
+    out.push(&from_vec(contributions));
+    out
+}
+
+/// Attribute per-bar returns to each signal label.
+/// Returns `[labels_as_f64, contributions]`.
+#[wasm_bindgen]
+pub fn signal_attribution(
+    bar_returns: &Float64Array,
+    signal_labels: &Float64Array,
+) -> Array {
+    let ret = to_vec(bar_returns);
+    let sl_f64 = to_vec(signal_labels);
+    let sl: Vec<i64> = sl_f64.iter().map(|&v| v as i64).collect();
+    let (labels, contributions) = ferro_ta_core::attribution::signal_attribution(&ret, &sl);
+    let labels_f64: Vec<f64> = labels.iter().map(|&l| l as f64).collect();
+    let out = Array::new();
+    out.push(&from_vec(labels_f64));
+    out.push(&from_vec(contributions));
+    out
+}
+
+/// Extract trade PnL and hold durations from positions and strategy returns.
+/// Returns `[pnl, hold_durations]`.
+#[wasm_bindgen]
+pub fn extract_trades(
+    positions: &Float64Array,
+    strategy_returns: &Float64Array,
+) -> Array {
+    let pos = to_vec(positions);
+    let sr = to_vec(strategy_returns);
+    let (pnl, hold) = ferro_ta_core::attribution::extract_trades(&pos, &sr);
+    let out = Array::new();
+    out.push(&from_vec(pnl));
+    out.push(&from_vec(hold));
+    out
+}
+
+// ===========================================================================
+// Resampling (Sprint 2)
+// ===========================================================================
+
+/// Aggregate OHLCV data into volume bars of a fixed volume threshold.
+/// Returns `[open, high, low, close, volume]`.
+#[wasm_bindgen]
+pub fn volume_bars(
+    open: &Float64Array,
+    high: &Float64Array,
+    low: &Float64Array,
+    close: &Float64Array,
+    volume: &Float64Array,
+    volume_threshold: f64,
+) -> Array {
+    let o = to_vec(open);
+    let h = to_vec(high);
+    let l = to_vec(low);
+    let c = to_vec(close);
+    let v = to_vec(volume);
+    let (ro, rh, rl, rc, rv) =
+        ferro_ta_core::resampling::volume_bars(&o, &h, &l, &c, &v, volume_threshold);
+    let out = Array::new();
+    out.push(&from_vec(ro));
+    out.push(&from_vec(rh));
+    out.push(&from_vec(rl));
+    out.push(&from_vec(rc));
+    out.push(&from_vec(rv));
+    out
+}
+
+/// Aggregate OHLCV bars by integer group labels.
+/// Returns `[open, high, low, close, volume]`.
+#[wasm_bindgen]
+pub fn ohlcv_agg(
+    open: &Float64Array,
+    high: &Float64Array,
+    low: &Float64Array,
+    close: &Float64Array,
+    volume: &Float64Array,
+    labels: &Float64Array,
+) -> Array {
+    let o = to_vec(open);
+    let h = to_vec(high);
+    let l = to_vec(low);
+    let c = to_vec(close);
+    let v = to_vec(volume);
+    let lbl_f64 = to_vec(labels);
+    let lbl: Vec<i64> = lbl_f64.iter().map(|&x| x as i64).collect();
+    let (ro, rh, rl, rc, rv) =
+        ferro_ta_core::resampling::ohlcv_agg(&o, &h, &l, &c, &v, &lbl);
+    let out = Array::new();
+    out.push(&from_vec(ro));
+    out.push(&from_vec(rh));
+    out.push(&from_vec(rl));
+    out.push(&from_vec(rc));
+    out.push(&from_vec(rv));
+    out
+}
+
+// ===========================================================================
+// Aggregation (Sprint 2)
+// ===========================================================================
+
+/// Aggregate tick/trade data into tick bars (every N ticks become one bar).
+/// Returns `[open, high, low, close, volume]`.
+#[wasm_bindgen]
+pub fn aggregate_tick_bars(
+    price: &Float64Array,
+    size: &Float64Array,
+    ticks_per_bar: usize,
+) -> Array {
+    let p = to_vec(price);
+    let s = to_vec(size);
+    let (o, h, l, c, v) = ferro_ta_core::aggregation::aggregate_tick_bars(&p, &s, ticks_per_bar);
+    let out = Array::new();
+    out.push(&from_vec(o));
+    out.push(&from_vec(h));
+    out.push(&from_vec(l));
+    out.push(&from_vec(c));
+    out.push(&from_vec(v));
+    out
+}
+
+/// Aggregate tick data into volume bars (fixed volume threshold).
+/// Returns `[open, high, low, close, volume]`.
+#[wasm_bindgen]
+pub fn aggregate_volume_bars_ticks(
+    price: &Float64Array,
+    size: &Float64Array,
+    volume_threshold: f64,
+) -> Array {
+    let p = to_vec(price);
+    let s = to_vec(size);
+    let (o, h, l, c, v) =
+        ferro_ta_core::aggregation::aggregate_volume_bars_ticks(&p, &s, volume_threshold);
+    let out = Array::new();
+    out.push(&from_vec(o));
+    out.push(&from_vec(h));
+    out.push(&from_vec(l));
+    out.push(&from_vec(c));
+    out.push(&from_vec(v));
+    out
+}
+
+/// Aggregate tick data into time bars using pre-computed integer bucket labels.
+/// Returns `[open, high, low, close, volume, labels_as_f64]`.
+#[wasm_bindgen]
+pub fn aggregate_time_bars(
+    price: &Float64Array,
+    size: &Float64Array,
+    labels: &Float64Array,
+) -> Array {
+    let p = to_vec(price);
+    let s = to_vec(size);
+    let lbl_f64 = to_vec(labels);
+    let lbl: Vec<i64> = lbl_f64.iter().map(|&x| x as i64).collect();
+    let (o, h, l, c, v, out_labels) =
+        ferro_ta_core::aggregation::aggregate_time_bars(&p, &s, &lbl);
+    let labels_out: Vec<f64> = out_labels.iter().map(|&x| x as f64).collect();
+    let out = Array::new();
+    out.push(&from_vec(o));
+    out.push(&from_vec(h));
+    out.push(&from_vec(l));
+    out.push(&from_vec(c));
+    out.push(&from_vec(v));
+    out.push(&from_vec(labels_out));
+    out
+}
+
+// ===========================================================================
+// Cycle Indicators
+// ===========================================================================
+
+#[wasm_bindgen]
+pub fn ht_trendline(close: &Float64Array) -> Float64Array {
+    let c = to_vec(close);
+    from_vec(ferro_ta_core::cycle::ht_trendline(&c))
+}
+
+#[wasm_bindgen]
+pub fn ht_dcperiod(close: &Float64Array) -> Float64Array {
+    let c = to_vec(close);
+    from_vec(ferro_ta_core::cycle::ht_dcperiod(&c))
+}
+
+#[wasm_bindgen]
+pub fn ht_dcphase(close: &Float64Array) -> Float64Array {
+    let c = to_vec(close);
+    from_vec(ferro_ta_core::cycle::ht_dcphase(&c))
+}
+
+#[wasm_bindgen]
+pub fn ht_phasor(close: &Float64Array) -> Array {
+    let c = to_vec(close);
+    let (inphase, quad) = ferro_ta_core::cycle::ht_phasor(&c);
+    let arr = Array::new();
+    arr.push(&from_vec(inphase)); arr.push(&from_vec(quad));
+    arr
+}
+
+#[wasm_bindgen]
+pub fn ht_sine(close: &Float64Array) -> Array {
+    let c = to_vec(close);
+    let (sine, leadsine) = ferro_ta_core::cycle::ht_sine(&c);
+    let arr = Array::new();
+    arr.push(&from_vec(sine)); arr.push(&from_vec(leadsine));
+    arr
+}
+
+#[wasm_bindgen]
+pub fn ht_trendmode(close: &Float64Array) -> Float64Array {
+    let c = to_vec(close);
+    let result = ferro_ta_core::cycle::ht_trendmode(&c);
+    let out: Vec<f64> = result.into_iter().map(|v| v as f64).collect();
+    from_vec(out)
+}
+
+// ===========================================================================
+// Volume (additional exports)
+// ===========================================================================
+
+#[wasm_bindgen]
+pub fn ad(high: &Float64Array, low: &Float64Array, close: &Float64Array, volume: &Float64Array) -> Float64Array {
+    let h = to_vec(high); let l = to_vec(low); let c = to_vec(close); let v = to_vec(volume);
+    from_vec(ferro_ta_core::volume::ad(&h, &l, &c, &v))
+}
+
+#[wasm_bindgen]
+pub fn adosc(high: &Float64Array, low: &Float64Array, close: &Float64Array, volume: &Float64Array, fastperiod: usize, slowperiod: usize) -> Float64Array {
+    let h = to_vec(high); let l = to_vec(low); let c = to_vec(close); let v = to_vec(volume);
+    from_vec(ferro_ta_core::volume::adosc(&h, &l, &c, &v, fastperiod, slowperiod))
 }
 
 // ---------------------------------------------------------------------------

@@ -13,10 +13,6 @@ pub fn medprice<'py>(
     let lows = low.as_slice()?;
     let n = highs.len();
     validation::validate_equal_length(&[(n, "high"), (lows.len(), "low")])?;
-    let result: Vec<f64> = highs
-        .iter()
-        .zip(lows.iter())
-        .map(|(&h, &l)| (h + l) / 2.0)
-        .collect();
+    let result = ferro_ta_core::price_transform::medprice(highs, lows);
     Ok(result.into_pyarray(py))
 }

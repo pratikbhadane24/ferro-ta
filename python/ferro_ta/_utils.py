@@ -74,7 +74,12 @@ def _to_f64(data: ArrayLike) -> np.ndarray:
             data = np.array(data.to_list(), dtype=np.float64)  # type: ignore[union-attr]
     arr = np.ascontiguousarray(data, dtype=np.float64)
     if arr.ndim != 1:
-        raise ValueError("Input must be a 1-D array or list of prices.")
+        from ferro_ta.core.exceptions import FerroTAInputError
+
+        raise FerroTAInputError(
+            f"Input must be a 1-D array or list of prices, got {arr.ndim}-D array.",
+            suggestion="Flatten your array with .ravel() or pass a 1-D Series/list.",
+        )
     return arr
 
 
