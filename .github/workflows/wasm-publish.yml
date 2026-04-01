@@ -3,6 +3,7 @@ name: Publish WASM to npm
 on:
   release:
     types: [published]
+  workflow_dispatch:
 
 permissions:
   contents: read
