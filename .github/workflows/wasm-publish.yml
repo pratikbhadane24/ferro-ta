@@ -47,4 +47,4 @@ jobs:
 
       - name: Publish to npm
         working-directory: wasm
-        run: npm publish --access public
+        run: npm publish --access public --provenance
