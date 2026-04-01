@@ -1442,17 +1442,17 @@ mod tests {
     #[wasm_bindgen_test]
     fn test_obv_known_values() {
         // close: 10 → 11 (up, +200) → 10 (dn, -150) → 12 (up, +300) → 11 (dn, -250)
-        // OBV:   100, 300, 150, 450, 200
+        // OBV starts at 0: 0, 200, 50, 350, 100
         let close  = make_arr(&[10.0, 11.0, 10.0, 12.0, 11.0]);
         let volume = make_arr(&[100.0, 200.0, 150.0, 300.0, 250.0]);
         let out = obv(&close, &volume);
         let mut vals = vec![0.0f64; 5];
         out.copy_to(&mut vals);
-        assert!((vals[0] - 100.0).abs() < 1e-10);
-        assert!((vals[1] - 300.0).abs() < 1e-10);
-        assert!((vals[2] - 150.0).abs() < 1e-10);
-        assert!((vals[3] - 450.0).abs() < 1e-10);
-        assert!((vals[4] - 200.0).abs() < 1e-10);
+        assert!((vals[0] - 0.0).abs() < 1e-10);
+        assert!((vals[1] - 200.0).abs() < 1e-10);
+        assert!((vals[2] - 50.0).abs() < 1e-10);
+        assert!((vals[3] - 350.0).abs() < 1e-10);
+        assert!((vals[4] - 100.0).abs() < 1e-10);
     }
 
     // -----------------------------------------------------------------------
