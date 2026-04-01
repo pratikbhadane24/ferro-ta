@@ -1257,6 +1257,1473 @@ pub fn adosc(high: &Float64Array, low: &Float64Array, close: &Float64Array, volu
     from_vec(ferro_ta_core::volume::adosc(&h, &l, &c, &v, fastperiod, slowperiod))
 }
 
+// ===========================================================================
+// Momentum (additional exports)
+// ===========================================================================
+
+/// Full Stochastic Oscillator (slow %K and slow %D).
+#[wasm_bindgen]
+pub fn stoch(
+    high: &Float64Array,
+    low: &Float64Array,
+    close: &Float64Array,
+    fastk_period: usize,
+    slowk_period: usize,
+    slowd_period: usize,
+) -> Array {
+    let h = to_vec(high);
+    let l = to_vec(low);
+    let c = to_vec(close);
+    let (slowk, slowd) = ferro_ta_core::momentum::stoch(&h, &l, &c, fastk_period, slowk_period, slowd_period);
+    let out = Array::new();
+    out.push(&from_vec(slowk));
+    out.push(&from_vec(slowd));
+    out
+}
+
+/// Plus Directional Movement (+DM).
+#[wasm_bindgen]
+pub fn plus_dm(high: &Float64Array, low: &Float64Array, timeperiod: usize) -> Float64Array {
+    let h = to_vec(high);
+    let l = to_vec(low);
+    from_vec(ferro_ta_core::momentum::plus_dm(&h, &l, timeperiod))
+}
+
+/// Minus Directional Movement (-DM).
+#[wasm_bindgen]
+pub fn minus_dm(high: &Float64Array, low: &Float64Array, timeperiod: usize) -> Float64Array {
+    let h = to_vec(high);
+    let l = to_vec(low);
+    from_vec(ferro_ta_core::momentum::minus_dm(&h, &l, timeperiod))
+}
+
+/// Plus Directional Indicator (+DI).
+#[wasm_bindgen]
+pub fn plus_di(high: &Float64Array, low: &Float64Array, close: &Float64Array, timeperiod: usize) -> Float64Array {
+    let h = to_vec(high);
+    let l = to_vec(low);
+    let c = to_vec(close);
+    from_vec(ferro_ta_core::momentum::plus_di(&h, &l, &c, timeperiod))
+}
+
+/// Minus Directional Indicator (-DI).
+#[wasm_bindgen]
+pub fn minus_di(high: &Float64Array, low: &Float64Array, close: &Float64Array, timeperiod: usize) -> Float64Array {
+    let h = to_vec(high);
+    let l = to_vec(low);
+    let c = to_vec(close);
+    from_vec(ferro_ta_core::momentum::minus_di(&h, &l, &c, timeperiod))
+}
+
+/// Directional Movement Index (DX).
+#[wasm_bindgen]
+pub fn dx(high: &Float64Array, low: &Float64Array, close: &Float64Array, timeperiod: usize) -> Float64Array {
+    let h = to_vec(high);
+    let l = to_vec(low);
+    let c = to_vec(close);
+    from_vec(ferro_ta_core::momentum::dx(&h, &l, &c, timeperiod))
+}
+
+/// Average Directional Movement Index Rating (ADXR).
+#[wasm_bindgen]
+pub fn adxr(high: &Float64Array, low: &Float64Array, close: &Float64Array, timeperiod: usize) -> Float64Array {
+    let h = to_vec(high);
+    let l = to_vec(low);
+    let c = to_vec(close);
+    from_vec(ferro_ta_core::momentum::adxr(&h, &l, &c, timeperiod))
+}
+
+/// All ADX components: returns [+DM, -DM, +DI, -DI, DX, ADX].
+#[wasm_bindgen]
+pub fn adx_all(high: &Float64Array, low: &Float64Array, close: &Float64Array, timeperiod: usize) -> Array {
+    let h = to_vec(high);
+    let l = to_vec(low);
+    let c = to_vec(close);
+    let (pdm, mdm, pdi, mdi, dxv, adxv) = ferro_ta_core::momentum::adx_all(&h, &l, &c, timeperiod);
+    let out = Array::new();
+    out.push(&from_vec(pdm));
+    out.push(&from_vec(mdm));
+    out.push(&from_vec(pdi));
+    out.push(&from_vec(mdi));
+    out.push(&from_vec(dxv));
+    out.push(&from_vec(adxv));
+    out
+}
+
+// ===========================================================================
+// Overlap Studies (additional exports)
+// ===========================================================================
+
+/// Double Exponential Moving Average.
+#[wasm_bindgen]
+pub fn dema(close: &Float64Array, timeperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::overlap::dema(&to_vec(close), timeperiod))
+}
+
+/// Triple Exponential Moving Average.
+#[wasm_bindgen]
+pub fn tema(close: &Float64Array, timeperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::overlap::tema(&to_vec(close), timeperiod))
+}
+
+/// Triangular Moving Average.
+#[wasm_bindgen]
+pub fn trima(close: &Float64Array, timeperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::overlap::trima(&to_vec(close), timeperiod))
+}
+
+/// Kaufman Adaptive Moving Average.
+#[wasm_bindgen]
+pub fn kama(close: &Float64Array, timeperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::overlap::kama(&to_vec(close), timeperiod))
+}
+
+/// Tillson T3.
+#[wasm_bindgen]
+pub fn t3(close: &Float64Array, timeperiod: usize, vfactor: f64) -> Float64Array {
+    from_vec(ferro_ta_core::overlap::t3(&to_vec(close), timeperiod, vfactor))
+}
+
+/// Parabolic SAR.
+#[wasm_bindgen]
+pub fn sar(high: &Float64Array, low: &Float64Array, acceleration: f64, maximum: f64) -> Float64Array {
+    from_vec(ferro_ta_core::overlap::sar(&to_vec(high), &to_vec(low), acceleration, maximum))
+}
+
+/// Parabolic SAR Extended.
+#[wasm_bindgen]
+#[allow(clippy::too_many_arguments)]
+pub fn sarext(
+    high: &Float64Array, low: &Float64Array,
+    startvalue: f64, offsetonreverse: f64,
+    accelerationinitlong: f64, accelerationlong: f64, accelerationmaxlong: f64,
+    accelerationinitshort: f64, accelerationshort: f64, accelerationmaxshort: f64,
+) -> Float64Array {
+    from_vec(ferro_ta_core::overlap::sarext(
+        &to_vec(high), &to_vec(low),
+        startvalue, offsetonreverse,
+        accelerationinitlong, accelerationlong, accelerationmaxlong,
+        accelerationinitshort, accelerationshort, accelerationmaxshort,
+    ))
+}
+
+/// MESA Adaptive Moving Average. Returns [mama, fama].
+#[wasm_bindgen]
+pub fn mama(close: &Float64Array, fastlimit: f64, slowlimit: f64) -> Array {
+    let (m, f) = ferro_ta_core::overlap::mama(&to_vec(close), fastlimit, slowlimit);
+    let out = Array::new();
+    out.push(&from_vec(m));
+    out.push(&from_vec(f));
+    out
+}
+
+/// Midpoint over rolling window.
+#[wasm_bindgen]
+pub fn midpoint(close: &Float64Array, timeperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::overlap::midpoint(&to_vec(close), timeperiod))
+}
+
+/// MidPrice over rolling window.
+#[wasm_bindgen]
+pub fn midprice(high: &Float64Array, low: &Float64Array, timeperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::overlap::midprice(&to_vec(high), &to_vec(low), timeperiod))
+}
+
+/// MACD with fixed 12/26 periods. Returns [macd, signal, histogram].
+#[wasm_bindgen]
+pub fn macdfix(close: &Float64Array, signalperiod: usize) -> Array {
+    let (m, s, h) = ferro_ta_core::overlap::macdfix(&to_vec(close), signalperiod);
+    let out = Array::new();
+    out.push(&from_vec(m));
+    out.push(&from_vec(s));
+    out.push(&from_vec(h));
+    out
+}
+
+/// MACD with configurable MA types. Returns [macd, signal, histogram].
+#[wasm_bindgen]
+#[allow(clippy::too_many_arguments)]
+pub fn macdext(
+    close: &Float64Array, fastperiod: usize, fastmatype: u8,
+    slowperiod: usize, slowmatype: u8, signalperiod: usize, signalmatype: u8,
+) -> Array {
+    let (m, s, h) = ferro_ta_core::overlap::macdext(
+        &to_vec(close), fastperiod, fastmatype, slowperiod, slowmatype, signalperiod, signalmatype,
+    );
+    let out = Array::new();
+    out.push(&from_vec(m));
+    out.push(&from_vec(s));
+    out.push(&from_vec(h));
+    out
+}
+
+/// Generic Moving Average (matype: 0=SMA, 1=EMA, 2=WMA, 3=DEMA, 4=TEMA, 5=TRIMA, 6=KAMA, 7=T3).
+#[wasm_bindgen]
+pub fn ma(close: &Float64Array, timeperiod: usize, matype: u8) -> Float64Array {
+    from_vec(ferro_ta_core::overlap::ma(&to_vec(close), timeperiod, matype))
+}
+
+/// Moving Average with Variable Period.
+#[wasm_bindgen]
+pub fn mavp(close: &Float64Array, periods: &Float64Array, minperiod: usize, maxperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::overlap::mavp(&to_vec(close), &to_vec(periods), minperiod, maxperiod))
+}
+
+// ===========================================================================
+// Momentum (additional exports — new core indicators)
+// ===========================================================================
+
+/// Rate of Change: `(close[i] - close[i-p]) / close[i-p] * 100`.
+#[wasm_bindgen]
+pub fn roc(close: &Float64Array, timeperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::momentum::roc(&to_vec(close), timeperiod))
+}
+
+/// Rate of Change Percentage.
+#[wasm_bindgen]
+pub fn rocp(close: &Float64Array, timeperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::momentum::rocp(&to_vec(close), timeperiod))
+}
+
+/// Rate of Change Ratio.
+#[wasm_bindgen]
+pub fn rocr(close: &Float64Array, timeperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::momentum::rocr(&to_vec(close), timeperiod))
+}
+
+/// Rate of Change Ratio x 100.
+#[wasm_bindgen]
+pub fn rocr100(close: &Float64Array, timeperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::momentum::rocr100(&to_vec(close), timeperiod))
+}
+
+/// Williams %R.
+#[wasm_bindgen]
+pub fn willr(high: &Float64Array, low: &Float64Array, close: &Float64Array, timeperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::momentum::willr(&to_vec(high), &to_vec(low), &to_vec(close), timeperiod))
+}
+
+/// Aroon indicator. Returns [aroon_down, aroon_up].
+#[wasm_bindgen]
+pub fn aroon(high: &Float64Array, low: &Float64Array, timeperiod: usize) -> Array {
+    let (down, up) = ferro_ta_core::momentum::aroon(&to_vec(high), &to_vec(low), timeperiod);
+    let out = Array::new();
+    out.push(&from_vec(down));
+    out.push(&from_vec(up));
+    out
+}
+
+/// Aroon Oscillator.
+#[wasm_bindgen]
+pub fn aroonosc(high: &Float64Array, low: &Float64Array, timeperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::momentum::aroonosc(&to_vec(high), &to_vec(low), timeperiod))
+}
+
+/// Commodity Channel Index.
+#[wasm_bindgen]
+pub fn cci(high: &Float64Array, low: &Float64Array, close: &Float64Array, timeperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::momentum::cci(&to_vec(high), &to_vec(low), &to_vec(close), timeperiod))
+}
+
+/// Balance of Power.
+#[wasm_bindgen]
+pub fn bop(open: &Float64Array, high: &Float64Array, low: &Float64Array, close: &Float64Array) -> Float64Array {
+    from_vec(ferro_ta_core::momentum::bop(&to_vec(open), &to_vec(high), &to_vec(low), &to_vec(close)))
+}
+
+/// Stochastic RSI. Returns [fastk, fastd].
+#[wasm_bindgen]
+pub fn stochrsi(close: &Float64Array, timeperiod: usize, fastk_period: usize, fastd_period: usize) -> Array {
+    let (k, d) = ferro_ta_core::momentum::stochrsi(&to_vec(close), timeperiod, fastk_period, fastd_period);
+    let out = Array::new();
+    out.push(&from_vec(k));
+    out.push(&from_vec(d));
+    out
+}
+
+/// Absolute Price Oscillator.
+#[wasm_bindgen]
+pub fn apo(close: &Float64Array, fastperiod: usize, slowperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::momentum::apo(&to_vec(close), fastperiod, slowperiod))
+}
+
+/// Percentage Price Oscillator. Returns [ppo, signal, histogram].
+#[wasm_bindgen]
+pub fn ppo(close: &Float64Array, fastperiod: usize, slowperiod: usize, signalperiod: usize) -> Array {
+    let (p, s, h) = ferro_ta_core::momentum::ppo(&to_vec(close), fastperiod, slowperiod, signalperiod);
+    let out = Array::new();
+    out.push(&from_vec(p));
+    out.push(&from_vec(s));
+    out.push(&from_vec(h));
+    out
+}
+
+/// Chande Momentum Oscillator.
+#[wasm_bindgen]
+pub fn cmo(close: &Float64Array, timeperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::momentum::cmo(&to_vec(close), timeperiod))
+}
+
+/// TRIX: 1-period rate of change of triple-smoothed EMA.
+#[wasm_bindgen]
+pub fn trix_indicator(close: &Float64Array, timeperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::momentum::trix(&to_vec(close), timeperiod))
+}
+
+/// Ultimate Oscillator.
+#[wasm_bindgen]
+pub fn ultosc(high: &Float64Array, low: &Float64Array, close: &Float64Array, timeperiod1: usize, timeperiod2: usize, timeperiod3: usize) -> Float64Array {
+    from_vec(ferro_ta_core::momentum::ultosc(&to_vec(high), &to_vec(low), &to_vec(close), timeperiod1, timeperiod2, timeperiod3))
+}
+
+// ===========================================================================
+// Volatility (additional exports)
+// ===========================================================================
+
+/// True Range.
+#[wasm_bindgen]
+pub fn trange(high: &Float64Array, low: &Float64Array, close: &Float64Array) -> Float64Array {
+    let h = to_vec(high);
+    let l = to_vec(low);
+    let c = to_vec(close);
+    from_vec(ferro_ta_core::volatility::trange(&h, &l, &c))
+}
+
+/// Normalized Average True Range: ATR / close * 100.
+#[wasm_bindgen]
+pub fn natr(high: &Float64Array, low: &Float64Array, close: &Float64Array, timeperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::volatility::natr(&to_vec(high), &to_vec(low), &to_vec(close), timeperiod))
+}
+
+// ===========================================================================
+// Statistic (additional exports)
+// ===========================================================================
+
+/// Rolling population standard deviation scaled by `nbdev`.
+#[wasm_bindgen]
+pub fn stddev(close: &Float64Array, timeperiod: usize, nbdev: f64) -> Float64Array {
+    from_vec(ferro_ta_core::statistic::stddev(&to_vec(close), timeperiod, nbdev))
+}
+
+/// Rolling population variance scaled by `nbdev²`.
+#[wasm_bindgen]
+pub fn var(close: &Float64Array, timeperiod: usize, nbdev: f64) -> Float64Array {
+    from_vec(ferro_ta_core::statistic::var(&to_vec(close), timeperiod, nbdev))
+}
+
+/// Linear regression fitted value.
+#[wasm_bindgen]
+pub fn linearreg(close: &Float64Array, timeperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::statistic::linearreg(&to_vec(close), timeperiod))
+}
+
+/// Linear regression slope.
+#[wasm_bindgen]
+pub fn linearreg_slope(close: &Float64Array, timeperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::statistic::linearreg_slope(&to_vec(close), timeperiod))
+}
+
+/// Linear regression intercept.
+#[wasm_bindgen]
+pub fn linearreg_intercept(close: &Float64Array, timeperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::statistic::linearreg_intercept(&to_vec(close), timeperiod))
+}
+
+/// Linear regression angle in degrees.
+#[wasm_bindgen]
+pub fn linearreg_angle(close: &Float64Array, timeperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::statistic::linearreg_angle(&to_vec(close), timeperiod))
+}
+
+/// Time Series Forecast.
+#[wasm_bindgen]
+pub fn tsf(close: &Float64Array, timeperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::statistic::tsf(&to_vec(close), timeperiod))
+}
+
+/// Rolling beta (return-based regression).
+#[wasm_bindgen]
+pub fn beta_rolling(real0: &Float64Array, real1: &Float64Array, timeperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::statistic::beta(&to_vec(real0), &to_vec(real1), timeperiod))
+}
+
+/// Rolling Pearson correlation.
+#[wasm_bindgen]
+pub fn correl(real0: &Float64Array, real1: &Float64Array, timeperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::statistic::correl(&to_vec(real0), &to_vec(real1), timeperiod))
+}
+
+// ===========================================================================
+// Streaming / Stateful API
+// ===========================================================================
+
+/// Streaming Simple Moving Average.
+#[wasm_bindgen]
+pub struct WasmStreamingSMA {
+    inner: ferro_ta_core::streaming::StreamingSMA,
+}
+
+#[wasm_bindgen]
+impl WasmStreamingSMA {
+    #[wasm_bindgen(constructor)]
+    pub fn new(period: usize) -> Result<WasmStreamingSMA, JsError> {
+        let inner = ferro_ta_core::streaming::StreamingSMA::new(period)
+            .map_err(|e| JsError::new(&e.0))?;
+        Ok(Self { inner })
+    }
+    pub fn update(&mut self, value: f64) -> f64 { self.inner.update(value) }
+    pub fn reset(&mut self) { self.inner.reset(); }
+    #[wasm_bindgen(getter)]
+    pub fn period(&self) -> usize { self.inner.period() }
+}
+
+/// Streaming Exponential Moving Average.
+#[wasm_bindgen]
+pub struct WasmStreamingEMA {
+    inner: ferro_ta_core::streaming::StreamingEMA,
+}
+
+#[wasm_bindgen]
+impl WasmStreamingEMA {
+    #[wasm_bindgen(constructor)]
+    pub fn new(period: usize) -> Result<WasmStreamingEMA, JsError> {
+        let inner = ferro_ta_core::streaming::StreamingEMA::new(period)
+            .map_err(|e| JsError::new(&e.0))?;
+        Ok(Self { inner })
+    }
+    pub fn update(&mut self, value: f64) -> f64 { self.inner.update(value) }
+    pub fn reset(&mut self) { self.inner.reset(); }
+    #[wasm_bindgen(getter)]
+    pub fn period(&self) -> usize { self.inner.period() }
+}
+
+/// Streaming Relative Strength Index.
+#[wasm_bindgen]
+pub struct WasmStreamingRSI {
+    inner: ferro_ta_core::streaming::StreamingRSI,
+}
+
+#[wasm_bindgen]
+impl WasmStreamingRSI {
+    #[wasm_bindgen(constructor)]
+    pub fn new(period: usize) -> Result<WasmStreamingRSI, JsError> {
+        let inner = ferro_ta_core::streaming::StreamingRSI::new(period)
+            .map_err(|e| JsError::new(&e.0))?;
+        Ok(Self { inner })
+    }
+    pub fn update(&mut self, value: f64) -> f64 { self.inner.update(value) }
+    pub fn reset(&mut self) { self.inner.reset(); }
+    #[wasm_bindgen(getter)]
+    pub fn period(&self) -> usize { self.inner.period() }
+}
+
+/// Streaming Average True Range.
+#[wasm_bindgen]
+pub struct WasmStreamingATR {
+    inner: ferro_ta_core::streaming::StreamingATR,
+}
+
+#[wasm_bindgen]
+impl WasmStreamingATR {
+    #[wasm_bindgen(constructor)]
+    pub fn new(period: usize) -> Result<WasmStreamingATR, JsError> {
+        let inner = ferro_ta_core::streaming::StreamingATR::new(period)
+            .map_err(|e| JsError::new(&e.0))?;
+        Ok(Self { inner })
+    }
+    pub fn update(&mut self, high: f64, low: f64, close: f64) -> f64 {
+        self.inner.update(high, low, close)
+    }
+    pub fn reset(&mut self) { self.inner.reset(); }
+    #[wasm_bindgen(getter)]
+    pub fn period(&self) -> usize { self.inner.period() }
+}
+
+/// Streaming Bollinger Bands. Returns [upper, middle, lower] from `update()`.
+#[wasm_bindgen]
+pub struct WasmStreamingBBands {
+    inner: ferro_ta_core::streaming::StreamingBBands,
+}
+
+#[wasm_bindgen]
+impl WasmStreamingBBands {
+    #[wasm_bindgen(constructor)]
+    pub fn new(period: usize, nbdevup: f64, nbdevdn: f64) -> Result<WasmStreamingBBands, JsError> {
+        let inner = ferro_ta_core::streaming::StreamingBBands::new(period, nbdevup, nbdevdn)
+            .map_err(|e| JsError::new(&e.0))?;
+        Ok(Self { inner })
+    }
+    pub fn update(&mut self, value: f64) -> Array {
+        let (u, m, l) = self.inner.update(value);
+        let out = Array::new();
+        out.push(&JsValue::from_f64(u));
+        out.push(&JsValue::from_f64(m));
+        out.push(&JsValue::from_f64(l));
+        out
+    }
+    pub fn reset(&mut self) { self.inner.reset(); }
+    #[wasm_bindgen(getter)]
+    pub fn period(&self) -> usize { self.inner.period() }
+}
+
+/// Streaming MACD. Returns [macd, signal, histogram] from `update()`.
+#[wasm_bindgen]
+pub struct WasmStreamingMACD {
+    inner: ferro_ta_core::streaming::StreamingMACD,
+}
+
+#[wasm_bindgen]
+impl WasmStreamingMACD {
+    #[wasm_bindgen(constructor)]
+    pub fn new(fastperiod: usize, slowperiod: usize, signalperiod: usize) -> Result<WasmStreamingMACD, JsError> {
+        let inner = ferro_ta_core::streaming::StreamingMACD::new(fastperiod, slowperiod, signalperiod)
+            .map_err(|e| JsError::new(&e.0))?;
+        Ok(Self { inner })
+    }
+    pub fn update(&mut self, value: f64) -> Array {
+        let (m, s, h) = self.inner.update(value);
+        let out = Array::new();
+        out.push(&JsValue::from_f64(m));
+        out.push(&JsValue::from_f64(s));
+        out.push(&JsValue::from_f64(h));
+        out
+    }
+    pub fn reset(&mut self) { self.inner.reset(); }
+    #[wasm_bindgen(getter)]
+    pub fn fast_period(&self) -> usize { self.inner.fast_period() }
+    #[wasm_bindgen(getter)]
+    pub fn slow_period(&self) -> usize { self.inner.slow_period() }
+    #[wasm_bindgen(getter)]
+    pub fn signal_period(&self) -> usize { self.inner.signal_period() }
+}
+
+/// Streaming Stochastic Oscillator. Returns [slowk, slowd] from `update()`.
+#[wasm_bindgen]
+pub struct WasmStreamingStoch {
+    inner: ferro_ta_core::streaming::StreamingStoch,
+}
+
+#[wasm_bindgen]
+impl WasmStreamingStoch {
+    #[wasm_bindgen(constructor)]
+    pub fn new(fastk_period: usize, slowk_period: usize, slowd_period: usize) -> Result<WasmStreamingStoch, JsError> {
+        let inner = ferro_ta_core::streaming::StreamingStoch::new(fastk_period, slowk_period, slowd_period)
+            .map_err(|e| JsError::new(&e.0))?;
+        Ok(Self { inner })
+    }
+    pub fn update(&mut self, high: f64, low: f64, close: f64) -> Array {
+        let (sk, sd) = self.inner.update(high, low, close);
+        let out = Array::new();
+        out.push(&JsValue::from_f64(sk));
+        out.push(&JsValue::from_f64(sd));
+        out
+    }
+    pub fn reset(&mut self) { self.inner.reset(); }
+    #[wasm_bindgen(getter)]
+    pub fn period(&self) -> usize { self.inner.period() }
+}
+
+/// Streaming cumulative VWAP.
+#[wasm_bindgen]
+pub struct WasmStreamingVWAP {
+    inner: ferro_ta_core::streaming::StreamingVWAP,
+}
+
+#[wasm_bindgen]
+impl WasmStreamingVWAP {
+    #[wasm_bindgen(constructor)]
+    pub fn new() -> WasmStreamingVWAP {
+        Self { inner: ferro_ta_core::streaming::StreamingVWAP::new() }
+    }
+    pub fn update(&mut self, high: f64, low: f64, close: f64, volume: f64) -> f64 {
+        self.inner.update(high, low, close, volume)
+    }
+    pub fn reset(&mut self) { self.inner.reset(); }
+}
+
+/// Streaming Supertrend. Returns [line, direction] from `update()`.
+#[wasm_bindgen]
+pub struct WasmStreamingSupertrend {
+    inner: ferro_ta_core::streaming::StreamingSupertrend,
+}
+
+#[wasm_bindgen]
+impl WasmStreamingSupertrend {
+    #[wasm_bindgen(constructor)]
+    pub fn new(period: usize, multiplier: f64) -> Result<WasmStreamingSupertrend, JsError> {
+        let inner = ferro_ta_core::streaming::StreamingSupertrend::new(period, multiplier)
+            .map_err(|e| JsError::new(&e.0))?;
+        Ok(Self { inner })
+    }
+    pub fn update(&mut self, high: f64, low: f64, close: f64) -> Array {
+        let (line, dir) = self.inner.update(high, low, close);
+        let out = Array::new();
+        out.push(&JsValue::from_f64(line));
+        out.push(&JsValue::from_f64(dir as f64));
+        out
+    }
+    pub fn reset(&mut self) { self.inner.reset(); }
+    #[wasm_bindgen(getter)]
+    pub fn period(&self) -> usize { self.inner.period() }
+}
+
+// ===========================================================================
+// Batch Operations
+// ===========================================================================
+
+/// Convert a js_sys::Array of Float64Array into Vec<Vec<f64>>.
+fn array_of_f64arr_to_vecs(arr: &Array) -> Vec<Vec<f64>> {
+    (0..arr.length())
+        .map(|i| {
+            let item: Float64Array = arr.get(i).unchecked_into();
+            to_vec(&item)
+        })
+        .collect()
+}
+
+/// Convert Vec<Vec<f64>> into a js_sys::Array of Float64Array.
+fn vecs_to_array_of_f64arr(data: Vec<Vec<f64>>) -> Array {
+    let out = Array::new();
+    for v in data {
+        out.push(&from_vec(v));
+    }
+    out
+}
+
+/// Batch SMA: compute SMA on each column of 2D data.
+#[wasm_bindgen]
+pub fn batch_sma(data: &Array, timeperiod: usize) -> Array {
+    let vecs = array_of_f64arr_to_vecs(data);
+    match ferro_ta_core::batch::batch_sma(&vecs, timeperiod) {
+        Ok(r) => vecs_to_array_of_f64arr(r),
+        Err(_) => Array::new(),
+    }
+}
+
+/// Batch EMA: compute EMA on each column of 2D data.
+#[wasm_bindgen]
+pub fn batch_ema(data: &Array, timeperiod: usize) -> Array {
+    let vecs = array_of_f64arr_to_vecs(data);
+    match ferro_ta_core::batch::batch_ema(&vecs, timeperiod) {
+        Ok(r) => vecs_to_array_of_f64arr(r),
+        Err(_) => Array::new(),
+    }
+}
+
+/// Batch RSI: compute RSI on each column of 2D data.
+#[wasm_bindgen]
+pub fn batch_rsi(data: &Array, timeperiod: usize) -> Array {
+    let vecs = array_of_f64arr_to_vecs(data);
+    match ferro_ta_core::batch::batch_rsi(&vecs, timeperiod) {
+        Ok(r) => vecs_to_array_of_f64arr(r),
+        Err(_) => Array::new(),
+    }
+}
+
+// ===========================================================================
+// Portfolio (additional exports)
+// ===========================================================================
+
+/// Portfolio volatility: sqrt(w' * cov * w).
+#[wasm_bindgen]
+pub fn portfolio_volatility(cov_matrix: &Array, weights: &Float64Array) -> f64 {
+    let cov = array_of_f64arr_to_vecs(cov_matrix);
+    let w = to_vec(weights);
+    ferro_ta_core::portfolio::portfolio_volatility(&cov, &w)
+}
+
+/// Pairwise correlation matrix.
+#[wasm_bindgen]
+pub fn correlation_matrix(data: &Array) -> Array {
+    let vecs = array_of_f64arr_to_vecs(data);
+    vecs_to_array_of_f64arr(ferro_ta_core::portfolio::correlation_matrix(&vecs))
+}
+
+/// Weighted composite of multiple series.
+#[wasm_bindgen]
+pub fn compose_weighted(data: &Array, weights: &Float64Array) -> Float64Array {
+    let vecs = array_of_f64arr_to_vecs(data);
+    let w = to_vec(weights);
+    from_vec(ferro_ta_core::portfolio::compose_weighted(&vecs, &w))
+}
+
+// ===========================================================================
+// Crypto (additional exports)
+// ===========================================================================
+
+/// Mark session boundaries from nanosecond timestamps.
+#[wasm_bindgen]
+pub fn mark_session_boundaries(timestamps_ns: &Float64Array) -> Float64Array {
+    let ts: Vec<i64> = to_vec(timestamps_ns).iter().map(|&v| v as i64).collect();
+    let result = ferro_ta_core::crypto::mark_session_boundaries(&ts);
+    from_vec(result.iter().map(|&v| v as f64).collect())
+}
+
+// ===========================================================================
+// Chunked (additional exports)
+// ===========================================================================
+
+/// Stitch multiple chunks into a single array.
+#[wasm_bindgen]
+pub fn stitch_chunks(chunks: &Array) -> Float64Array {
+    let vecs = array_of_f64arr_to_vecs(chunks);
+    let slices: Vec<&[f64]> = vecs.iter().map(|v| v.as_slice()).collect();
+    from_vec(ferro_ta_core::chunked::stitch_chunks(&slices))
+}
+
+// ===========================================================================
+// Math Operators & Transforms
+// ===========================================================================
+
+/// Element-wise addition.
+#[wasm_bindgen]
+pub fn math_add(a: &Float64Array, b: &Float64Array) -> Float64Array {
+    from_vec(ferro_ta_core::math::add(&to_vec(a), &to_vec(b)))
+}
+
+/// Element-wise subtraction.
+#[wasm_bindgen]
+pub fn math_sub(a: &Float64Array, b: &Float64Array) -> Float64Array {
+    from_vec(ferro_ta_core::math::sub(&to_vec(a), &to_vec(b)))
+}
+
+/// Element-wise multiplication.
+#[wasm_bindgen]
+pub fn math_mult(a: &Float64Array, b: &Float64Array) -> Float64Array {
+    from_vec(ferro_ta_core::math::mult(&to_vec(a), &to_vec(b)))
+}
+
+/// Element-wise division.
+#[wasm_bindgen]
+pub fn math_div(a: &Float64Array, b: &Float64Array) -> Float64Array {
+    from_vec(ferro_ta_core::math::div(&to_vec(a), &to_vec(b)))
+}
+
+macro_rules! math_transform_wrapper {
+    ($wasm_name:ident, $core_name:ident) => {
+        #[wasm_bindgen]
+        pub fn $wasm_name(real: &Float64Array) -> Float64Array {
+            from_vec(ferro_ta_core::math::$core_name(&to_vec(real)))
+        }
+    };
+}
+
+math_transform_wrapper!(transform_acos, math_acos);
+math_transform_wrapper!(transform_asin, math_asin);
+math_transform_wrapper!(transform_atan, math_atan);
+math_transform_wrapper!(transform_ceil, math_ceil);
+math_transform_wrapper!(transform_cos, math_cos);
+math_transform_wrapper!(transform_cosh, math_cosh);
+math_transform_wrapper!(transform_exp, math_exp);
+math_transform_wrapper!(transform_floor, math_floor);
+math_transform_wrapper!(transform_ln, math_ln);
+math_transform_wrapper!(transform_log10, math_log10);
+math_transform_wrapper!(transform_sin, math_sin);
+math_transform_wrapper!(transform_sinh, math_sinh);
+math_transform_wrapper!(transform_sqrt, math_sqrt);
+math_transform_wrapper!(transform_tan, math_tan);
+math_transform_wrapper!(transform_tanh, math_tanh);
+
+// ===========================================================================
+// Candlestick Patterns (61 functions via macro)
+// ===========================================================================
+
+/// Convert a `Vec<i32>` into a `js_sys::Int32Array`.
+fn from_i32_vec(v: Vec<i32>) -> js_sys::Int32Array {
+    let arr = js_sys::Int32Array::new_with_length(v.len() as u32);
+    arr.copy_from(&v);
+    arr
+}
+
+macro_rules! cdl_wrapper {
+    ($($name:ident),* $(,)?) => {$(
+        #[wasm_bindgen]
+        pub fn $name(
+            open: &Float64Array,
+            high: &Float64Array,
+            low: &Float64Array,
+            close: &Float64Array,
+        ) -> js_sys::Int32Array {
+            let o = to_vec(open);
+            let h = to_vec(high);
+            let l = to_vec(low);
+            let c = to_vec(close);
+            from_i32_vec(ferro_ta_core::pattern::$name(&o, &h, &l, &c))
+        }
+    )*};
+}
+
+cdl_wrapper!(
+    cdl2crows,
+    cdl3blackcrows,
+    cdl3inside,
+    cdl3linestrike,
+    cdl3outside,
+    cdl3starsinsouth,
+    cdl3whitesoldiers,
+    cdlabandonedbaby,
+    cdladvanceblock,
+    cdlbelthold,
+    cdlbreakaway,
+    cdlclosingmarubozu,
+    cdlconcealbabyswall,
+    cdlcounterattack,
+    cdldarkcloudcover,
+    cdldoji,
+    cdldojistar,
+    cdldragonflydoji,
+    cdlengulfing,
+    cdleveningdojistar,
+    cdleveningstar,
+    cdlgapsidesidewhite,
+    cdlgravestonedoji,
+    cdlhammer,
+    cdlhangingman,
+    cdlharami,
+    cdlharamicross,
+    cdlhighwave,
+    cdlhikkake,
+    cdlhikkakemod,
+    cdlhomingpigeon,
+    cdlidentical3crows,
+    cdlinneck,
+    cdlinvertedhammer,
+    cdlkicking,
+    cdlkickingbylength,
+    cdlladderbottom,
+    cdllongleggeddoji,
+    cdllongline,
+    cdlmarubozu,
+    cdlmatchinglow,
+    cdlmathold,
+    cdlmorningdojistar,
+    cdlmorningstar,
+    cdlonneck,
+    cdlpiercing,
+    cdlrickshawman,
+    cdlrisefall3methods,
+    cdlseparatinglines,
+    cdlshootingstar,
+    cdlshortline,
+    cdlspinningtop,
+    cdlstalledpattern,
+    cdlsticksandwich,
+    cdltakuri,
+    cdltasukigap,
+    cdlthrusting,
+    cdltristar,
+    cdlunique3river,
+    cdlupsidegap2crows,
+    cdlxsidegap3methods,
+);
+
+// ===========================================================================
+// Signals (additional)
+// ===========================================================================
+
+/// Rank values (percentile ranking [0, 100]).
+#[wasm_bindgen]
+pub fn rank_values(x: &Float64Array) -> Float64Array {
+    from_vec(ferro_ta_core::signals::rank_values(&to_vec(x)))
+}
+
+/// Composite rank across multiple signal arrays.
+#[wasm_bindgen]
+pub fn compose_rank(signals: &Array) -> Float64Array {
+    let vecs = array_of_f64arr_to_vecs(signals);
+    let slices: Vec<&[f64]> = vecs.iter().map(|v| v.as_slice()).collect();
+    from_vec(ferro_ta_core::signals::compose_rank(&slices))
+}
+
+// ===========================================================================
+// Batch (additional)
+// ===========================================================================
+
+/// Batch ATR across multiple HLC column sets.
+#[wasm_bindgen]
+pub fn batch_atr(high: &Array, low: &Array, close: &Array, timeperiod: usize) -> Array {
+    let h = array_of_f64arr_to_vecs(high);
+    let l = array_of_f64arr_to_vecs(low);
+    let c = array_of_f64arr_to_vecs(close);
+    match ferro_ta_core::batch::batch_atr(&h, &l, &c, timeperiod) {
+        Ok(r) => vecs_to_array_of_f64arr(r),
+        Err(_) => Array::new(),
+    }
+}
+
+/// Batch Stochastic across multiple HLC column sets. Returns [Array[slowk_cols], Array[slowd_cols]].
+#[wasm_bindgen]
+pub fn batch_stoch(high: &Array, low: &Array, close: &Array, fastk_period: usize, slowk_period: usize, slowd_period: usize) -> Array {
+    let h = array_of_f64arr_to_vecs(high);
+    let l = array_of_f64arr_to_vecs(low);
+    let c = array_of_f64arr_to_vecs(close);
+    match ferro_ta_core::batch::batch_stoch(&h, &l, &c, fastk_period, slowk_period, slowd_period) {
+        Ok((sk, sd)) => {
+            let out = Array::new();
+            out.push(&vecs_to_array_of_f64arr(sk));
+            out.push(&vecs_to_array_of_f64arr(sd));
+            out
+        }
+        Err(_) => Array::new(),
+    }
+}
+
+/// Batch ADX across multiple HLC column sets.
+#[wasm_bindgen]
+pub fn batch_adx(high: &Array, low: &Array, close: &Array, timeperiod: usize) -> Array {
+    let h = array_of_f64arr_to_vecs(high);
+    let l = array_of_f64arr_to_vecs(low);
+    let c = array_of_f64arr_to_vecs(close);
+    match ferro_ta_core::batch::batch_adx(&h, &l, &c, timeperiod) {
+        Ok(r) => vecs_to_array_of_f64arr(r),
+        Err(_) => Array::new(),
+    }
+}
+
+// ===========================================================================
+// Options Analytics
+// ===========================================================================
+
+fn parse_option_kind(kind: &str) -> ferro_ta_core::options::OptionKind {
+    match kind.to_lowercase().as_str() {
+        "put" | "p" => ferro_ta_core::options::OptionKind::Put,
+        _ => ferro_ta_core::options::OptionKind::Call,
+    }
+}
+
+fn parse_pricing_model(model: &str) -> ferro_ta_core::options::PricingModel {
+    match model.to_lowercase().as_str() {
+        "black76" | "b76" => ferro_ta_core::options::PricingModel::Black76,
+        _ => ferro_ta_core::options::PricingModel::BlackScholes,
+    }
+}
+
+/// Black-Scholes-Merton option price.
+#[wasm_bindgen]
+pub fn black_scholes_price(
+    spot: f64, strike: f64, rate: f64, dividend_yield: f64,
+    time_to_expiry: f64, volatility: f64, kind: &str,
+) -> f64 {
+    ferro_ta_core::options::pricing::black_scholes_price(
+        spot, strike, rate, dividend_yield, time_to_expiry, volatility, parse_option_kind(kind),
+    )
+}
+
+/// Black-76 option price (futures).
+#[wasm_bindgen]
+pub fn black_76_price(
+    forward: f64, strike: f64, rate: f64,
+    time_to_expiry: f64, volatility: f64, kind: &str,
+) -> f64 {
+    ferro_ta_core::options::pricing::black_76_price(
+        forward, strike, rate, time_to_expiry, volatility, parse_option_kind(kind),
+    )
+}
+
+/// Black-Scholes Greeks. Returns [delta, gamma, vega, theta, rho].
+#[wasm_bindgen]
+pub fn black_scholes_greeks(
+    spot: f64, strike: f64, rate: f64, dividend_yield: f64,
+    time_to_expiry: f64, volatility: f64, kind: &str,
+) -> Array {
+    let g = ferro_ta_core::options::greeks::black_scholes_greeks(
+        spot, strike, rate, dividend_yield, time_to_expiry, volatility, parse_option_kind(kind),
+    );
+    let out = Array::new();
+    out.push(&JsValue::from_f64(g.delta));
+    out.push(&JsValue::from_f64(g.gamma));
+    out.push(&JsValue::from_f64(g.vega));
+    out.push(&JsValue::from_f64(g.theta));
+    out.push(&JsValue::from_f64(g.rho));
+    out
+}
+
+/// Black-76 Greeks. Returns [delta, gamma, vega, theta, rho].
+#[wasm_bindgen]
+pub fn black_76_greeks(
+    forward: f64, strike: f64, rate: f64,
+    time_to_expiry: f64, volatility: f64, kind: &str,
+) -> Array {
+    let g = ferro_ta_core::options::greeks::black_76_greeks(
+        forward, strike, rate, time_to_expiry, volatility, parse_option_kind(kind),
+    );
+    let out = Array::new();
+    out.push(&JsValue::from_f64(g.delta));
+    out.push(&JsValue::from_f64(g.gamma));
+    out.push(&JsValue::from_f64(g.vega));
+    out.push(&JsValue::from_f64(g.theta));
+    out.push(&JsValue::from_f64(g.rho));
+    out
+}
+
+/// Implied volatility via Newton-Raphson.
+#[wasm_bindgen]
+pub fn implied_volatility(
+    model: &str, underlying: f64, strike: f64, rate: f64, carry: f64,
+    time_to_expiry: f64, kind: &str, target_price: f64,
+    initial_guess: f64, tolerance: f64, max_iterations: usize,
+) -> f64 {
+    use ferro_ta_core::options::*;
+    let contract = OptionContract {
+        model: parse_pricing_model(model),
+        underlying, strike, rate, carry, time_to_expiry,
+        kind: parse_option_kind(kind),
+    };
+    let config = IvSolverConfig { initial_guess, tolerance, max_iterations };
+    iv::implied_volatility(contract, target_price, config)
+}
+
+/// IV Rank over a rolling window.
+#[wasm_bindgen]
+pub fn iv_rank(iv_series: &Float64Array, window: usize) -> Float64Array {
+    from_vec(ferro_ta_core::options::iv::iv_rank(&to_vec(iv_series), window))
+}
+
+/// IV Percentile over a rolling window.
+#[wasm_bindgen]
+pub fn iv_percentile(iv_series: &Float64Array, window: usize) -> Float64Array {
+    from_vec(ferro_ta_core::options::iv::iv_percentile(&to_vec(iv_series), window))
+}
+
+/// IV Z-Score over a rolling window.
+#[wasm_bindgen]
+pub fn iv_zscore(iv_series: &Float64Array, window: usize) -> Float64Array {
+    from_vec(ferro_ta_core::options::iv::iv_zscore(&to_vec(iv_series), window))
+}
+
+/// ATM index in a strikes array.
+#[wasm_bindgen]
+pub fn atm_index(strikes: &Float64Array, reference_price: f64) -> f64 {
+    match ferro_ta_core::options::chain::atm_index(&to_vec(strikes), reference_price) {
+        Some(idx) => idx as f64,
+        None => f64::NAN,
+    }
+}
+
+/// Label moneyness of strikes. Returns Int8Array.
+#[wasm_bindgen]
+pub fn label_moneyness(strikes: &Float64Array, reference_price: f64, kind: &str) -> js_sys::Int8Array {
+    let result = ferro_ta_core::options::chain::label_moneyness(
+        &to_vec(strikes), reference_price, parse_option_kind(kind),
+    );
+    let arr = js_sys::Int8Array::new_with_length(result.len() as u32);
+    arr.copy_from(&result);
+    arr
+}
+
+/// Model-dispatched option price (model: "bs" or "b76").
+#[wasm_bindgen]
+pub fn model_price(
+    model: &str, underlying: f64, strike: f64, rate: f64, carry: f64,
+    time_to_expiry: f64, volatility: f64, kind: &str,
+) -> f64 {
+    use ferro_ta_core::options::*;
+    let input = OptionEvaluation {
+        contract: OptionContract {
+            model: parse_pricing_model(model), underlying, strike, rate, carry, time_to_expiry,
+            kind: parse_option_kind(kind),
+        },
+        volatility,
+    };
+    pricing::model_price(input)
+}
+
+/// Model-dispatched Greeks. Returns [delta, gamma, vega, theta, rho].
+#[wasm_bindgen]
+pub fn model_greeks(
+    model: &str, underlying: f64, strike: f64, rate: f64, carry: f64,
+    time_to_expiry: f64, volatility: f64, kind: &str,
+) -> Array {
+    use ferro_ta_core::options::*;
+    let input = OptionEvaluation {
+        contract: OptionContract {
+            model: parse_pricing_model(model), underlying, strike, rate, carry, time_to_expiry,
+            kind: parse_option_kind(kind),
+        },
+        volatility,
+    };
+    let g = greeks::model_greeks(input);
+    let out = Array::new();
+    out.push(&JsValue::from_f64(g.delta));
+    out.push(&JsValue::from_f64(g.gamma));
+    out.push(&JsValue::from_f64(g.vega));
+    out.push(&JsValue::from_f64(g.theta));
+    out.push(&JsValue::from_f64(g.rho));
+    out
+}
+
+/// Model theta (numerical).
+#[wasm_bindgen]
+pub fn model_theta(
+    model: &str, underlying: f64, strike: f64, rate: f64, carry: f64,
+    time_to_expiry: f64, volatility: f64, kind: &str,
+) -> f64 {
+    use ferro_ta_core::options::*;
+    let input = OptionEvaluation {
+        contract: OptionContract {
+            model: parse_pricing_model(model), underlying, strike, rate, carry, time_to_expiry,
+            kind: parse_option_kind(kind),
+        },
+        volatility,
+    };
+    greeks::model_theta(input)
+}
+
+/// Price lower bound.
+#[wasm_bindgen]
+pub fn price_lower_bound(
+    model: &str, underlying: f64, strike: f64, rate: f64, carry: f64,
+    time_to_expiry: f64, kind: &str,
+) -> f64 {
+    use ferro_ta_core::options::*;
+    let contract = OptionContract {
+        model: parse_pricing_model(model), underlying, strike, rate, carry, time_to_expiry,
+        kind: parse_option_kind(kind),
+    };
+    pricing::price_lower_bound(contract)
+}
+
+/// Price upper bound.
+#[wasm_bindgen]
+pub fn price_upper_bound(
+    model: &str, underlying: f64, strike: f64, rate: f64, carry: f64,
+    time_to_expiry: f64, kind: &str,
+) -> f64 {
+    use ferro_ta_core::options::*;
+    let contract = OptionContract {
+        model: parse_pricing_model(model), underlying, strike, rate, carry, time_to_expiry,
+        kind: parse_option_kind(kind),
+    };
+    pricing::price_upper_bound(contract)
+}
+
+/// Select strike by offset from ATM.
+#[wasm_bindgen]
+pub fn select_strike_by_offset(strikes: &Float64Array, reference_price: f64, offset: i32) -> f64 {
+    match ferro_ta_core::options::chain::select_strike_by_offset(
+        &to_vec(strikes), reference_price, offset as isize,
+    ) {
+        Some(v) => v,
+        None => f64::NAN,
+    }
+}
+
+/// Smile metrics. Returns [atm_iv, risk_reversal_25d, butterfly_25d, skew_slope, convexity].
+#[wasm_bindgen]
+#[allow(clippy::too_many_arguments)]
+pub fn smile_metrics(
+    strikes: &Float64Array, vols: &Float64Array, reference_price: f64,
+    rate: f64, carry: f64, time_to_expiry: f64, model: &str,
+) -> Array {
+    let m = ferro_ta_core::options::surface::smile_metrics(
+        &to_vec(strikes), &to_vec(vols), reference_price,
+        rate, carry, time_to_expiry, parse_pricing_model(model),
+    );
+    let out = Array::new();
+    out.push(&JsValue::from_f64(m.atm_iv));
+    out.push(&JsValue::from_f64(m.risk_reversal_25d));
+    out.push(&JsValue::from_f64(m.butterfly_25d));
+    out.push(&JsValue::from_f64(m.skew_slope));
+    out.push(&JsValue::from_f64(m.convexity));
+    out
+}
+
+/// Linear interpolation helper.
+#[wasm_bindgen]
+pub fn linear_interpolate(xs: &Float64Array, ys: &Float64Array, target: f64) -> f64 {
+    ferro_ta_core::options::surface::linear_interpolate(&to_vec(xs), &to_vec(ys), target)
+}
+
+/// Select strike by delta target.
+#[wasm_bindgen]
+#[allow(clippy::too_many_arguments)]
+pub fn select_strike_by_delta(
+    strikes: &Float64Array, vols: &Float64Array,
+    model: &str, reference_price: f64, rate: f64, carry: f64,
+    time_to_expiry: f64, kind: &str, target_delta: f64,
+) -> f64 {
+    use ferro_ta_core::options::*;
+    let ctx = ChainGreeksContext {
+        model: parse_pricing_model(model),
+        reference_price, rate, carry, time_to_expiry,
+        kind: parse_option_kind(kind),
+    };
+    match chain::select_strike_by_delta(&to_vec(strikes), &to_vec(vols), ctx, target_delta) {
+        Some(v) => v,
+        None => f64::NAN,
+    }
+}
+
+/// ATM implied volatility interpolated from strikes/vols.
+#[wasm_bindgen]
+pub fn atm_iv(strikes: &Float64Array, vols: &Float64Array, reference_price: f64) -> f64 {
+    ferro_ta_core::options::surface::atm_iv(&to_vec(strikes), &to_vec(vols), reference_price)
+}
+
+/// Term structure slope.
+#[wasm_bindgen]
+pub fn term_structure_slope(tenors: &Float64Array, atm_ivs: &Float64Array) -> f64 {
+    ferro_ta_core::options::surface::term_structure_slope(&to_vec(tenors), &to_vec(atm_ivs))
+}
+
+// ===========================================================================
+// Futures Analytics
+// ===========================================================================
+
+/// Futures basis: future - spot.
+#[wasm_bindgen]
+pub fn futures_basis(spot: f64, future: f64) -> f64 {
+    ferro_ta_core::futures::basis::basis(spot, future)
+}
+
+/// Annualized basis.
+#[wasm_bindgen]
+pub fn annualized_basis(spot: f64, future: f64, time_to_expiry: f64) -> f64 {
+    ferro_ta_core::futures::basis::annualized_basis(spot, future, time_to_expiry)
+}
+
+/// Implied carry rate.
+#[wasm_bindgen]
+pub fn implied_carry_rate(spot: f64, future: f64, time_to_expiry: f64) -> f64 {
+    ferro_ta_core::futures::basis::implied_carry_rate(spot, future, time_to_expiry)
+}
+
+/// Carry spread.
+#[wasm_bindgen]
+pub fn carry_spread(spot: f64, future: f64, rate: f64, time_to_expiry: f64) -> f64 {
+    ferro_ta_core::futures::basis::carry_spread(spot, future, rate, time_to_expiry)
+}
+
+/// Calendar spreads between consecutive futures prices.
+#[wasm_bindgen]
+pub fn calendar_spreads(futures_prices: &Float64Array) -> Float64Array {
+    from_vec(ferro_ta_core::futures::curve::calendar_spreads(&to_vec(futures_prices)))
+}
+
+/// Curve slope (linear regression).
+#[wasm_bindgen]
+pub fn curve_slope(tenors: &Float64Array, futures_prices: &Float64Array) -> f64 {
+    ferro_ta_core::futures::curve::curve_slope(&to_vec(tenors), &to_vec(futures_prices))
+}
+
+/// Curve summary. Returns [front_basis, average_basis, slope, is_contango (1.0 or 0.0)].
+#[wasm_bindgen]
+pub fn curve_summary(spot: f64, tenors: &Float64Array, futures_prices: &Float64Array) -> Array {
+    let s = ferro_ta_core::futures::curve::curve_summary(spot, &to_vec(tenors), &to_vec(futures_prices));
+    let out = Array::new();
+    out.push(&JsValue::from_f64(s.front_basis));
+    out.push(&JsValue::from_f64(s.average_basis));
+    out.push(&JsValue::from_f64(s.slope));
+    out.push(&JsValue::from_f64(if s.is_contango { 1.0 } else { 0.0 }));
+    out
+}
+
+/// Roll yield.
+#[wasm_bindgen]
+pub fn roll_yield(front_price: f64, next_price: f64, time_to_expiry: f64) -> f64 {
+    ferro_ta_core::futures::roll::roll_yield(front_price, next_price, time_to_expiry)
+}
+
+/// Weighted continuous contract.
+#[wasm_bindgen]
+pub fn weighted_continuous(front: &Float64Array, next: &Float64Array, next_weights: &Float64Array) -> Float64Array {
+    from_vec(ferro_ta_core::futures::roll::weighted_continuous(&to_vec(front), &to_vec(next), &to_vec(next_weights)))
+}
+
+/// Back-adjusted continuous contract.
+#[wasm_bindgen]
+pub fn back_adjusted_continuous(front: &Float64Array, next: &Float64Array, next_weights: &Float64Array) -> Float64Array {
+    from_vec(ferro_ta_core::futures::roll::back_adjusted_continuous(&to_vec(front), &to_vec(next), &to_vec(next_weights)))
+}
+
+/// Ratio-adjusted continuous contract.
+#[wasm_bindgen]
+pub fn ratio_adjusted_continuous(front: &Float64Array, next: &Float64Array, next_weights: &Float64Array) -> Float64Array {
+    from_vec(ferro_ta_core::futures::roll::ratio_adjusted_continuous(&to_vec(front), &to_vec(next), &to_vec(next_weights)))
+}
+
+/// Synthetic forward price from put-call parity.
+#[wasm_bindgen]
+pub fn synthetic_forward(call_price: f64, put_price: f64, strike: f64, rate: f64, time_to_expiry: f64) -> f64 {
+    ferro_ta_core::futures::synthetic::synthetic_forward(call_price, put_price, strike, rate, time_to_expiry)
+}
+
+/// Synthetic spot implied by put-call parity.
+#[wasm_bindgen]
+pub fn synthetic_spot(call_price: f64, put_price: f64, strike: f64, rate: f64, carry: f64, time_to_expiry: f64) -> f64 {
+    ferro_ta_core::futures::synthetic::synthetic_spot(call_price, put_price, strike, rate, carry, time_to_expiry)
+}
+
+/// Put-call parity residual.
+#[wasm_bindgen]
+pub fn parity_gap(call_price: f64, put_price: f64, spot: f64, strike: f64, rate: f64, carry: f64, time_to_expiry: f64) -> f64 {
+    ferro_ta_core::futures::synthetic::parity_gap(call_price, put_price, spot, strike, rate, carry, time_to_expiry)
+}
+
+// ===========================================================================
+// Backtesting (signal generators + utilities)
+// ===========================================================================
+
+/// Backtest core: close-only vectorized backtest. Returns [positions, bar_returns, strategy_returns, equity].
+#[wasm_bindgen]
+pub fn backtest_core(
+    close: &Float64Array, signals: &Float64Array,
+    slippage_bps: f64, initial_capital: f64, commission_per_trade: f64,
+) -> Array {
+    match ferro_ta_core::backtest::backtest_core(
+        &to_vec(close), &to_vec(signals), None, slippage_bps, initial_capital, commission_per_trade,
+    ) {
+        Ok(result) => {
+            let out = Array::new();
+            out.push(&from_vec(result.positions));
+            out.push(&from_vec(result.bar_returns));
+            out.push(&from_vec(result.strategy_returns));
+            out.push(&from_vec(result.equity));
+            out
+        }
+        Err(_) => Array::new(),
+    }
+}
+
+/// Simple single-asset backtest. Returns [positions, strategy_returns, equity].
+#[wasm_bindgen]
+pub fn single_asset_backtest(
+    close: &Float64Array, signals: &Float64Array,
+    commission_per_trade: f64, slippage_bps: f64,
+) -> Array {
+    let (pos, strat_ret, eq) = ferro_ta_core::backtest::single_asset_backtest(
+        &to_vec(close), &to_vec(signals), commission_per_trade, slippage_bps,
+    );
+    let out = Array::new();
+    out.push(&from_vec(pos));
+    out.push(&from_vec(strat_ret));
+    out.push(&from_vec(eq));
+    out
+}
+
+/// Walk-forward train/test indices. Returns flat array [train_start, train_end, test_start, test_end, ...].
+#[wasm_bindgen]
+pub fn walk_forward_indices(
+    n_bars: usize, train_bars: usize, test_bars: usize, anchored: bool, step_bars: usize,
+) -> Float64Array {
+    match ferro_ta_core::backtest::walk_forward_indices(n_bars, train_bars, test_bars, anchored, step_bars) {
+        Ok(indices) => {
+            let flat: Vec<f64> = indices.iter()
+                .flat_map(|fold| vec![fold[0] as f64, fold[1] as f64, fold[2] as f64, fold[3] as f64])
+                .collect();
+            from_vec(flat)
+        }
+        Err(_) => from_vec(vec![]),
+    }
+}
+
+/// Monte Carlo bootstrap of strategy returns. Returns Array of Float64Array (one per simulation).
+#[wasm_bindgen]
+pub fn monte_carlo_bootstrap(
+    strategy_returns: &Float64Array, n_sims: usize, seed: f64, block_size: usize,
+) -> Array {
+    match ferro_ta_core::backtest::monte_carlo_bootstrap(
+        &to_vec(strategy_returns), n_sims, seed as u64, block_size,
+    ) {
+        Ok(sims) => vecs_to_array_of_f64arr(sims),
+        Err(_) => Array::new(),
+    }
+}
+
+/// Kelly fraction.
+#[wasm_bindgen]
+pub fn kelly_fraction(win_rate: f64, avg_win: f64, avg_loss: f64) -> f64 {
+    ferro_ta_core::backtest::kelly_fraction(win_rate, avg_win, avg_loss).unwrap_or(f64::NAN)
+}
+
+/// Half-Kelly fraction.
+#[wasm_bindgen]
+pub fn half_kelly_fraction(win_rate: f64, avg_win: f64, avg_loss: f64) -> f64 {
+    ferro_ta_core::backtest::half_kelly_fraction(win_rate, avg_win, avg_loss).unwrap_or(f64::NAN)
+}
+
+/// Compute performance metrics from strategy returns and equity.
+/// Returns Float64Array with 22 metrics in order:
+/// [total_return, cagr, annualized_vol, sharpe, sortino, calmar, max_drawdown,
+///  avg_drawdown, max_dd_duration, avg_dd_duration, ulcer_index, omega_ratio,
+///  win_rate, profit_factor, r_expectancy, avg_win, avg_loss, tail_ratio,
+///  skewness, kurtosis, best_bar, worst_bar]
+#[wasm_bindgen]
+pub fn compute_performance_metrics(
+    strategy_returns: &Float64Array, equity: &Float64Array,
+    periods_per_year: f64, risk_free_rate: f64,
+) -> Float64Array {
+    match ferro_ta_core::backtest::compute_performance_metrics(
+        &to_vec(strategy_returns), &to_vec(equity), periods_per_year, risk_free_rate, None,
+    ) {
+        Ok(m) => from_vec(vec![
+            m.total_return, m.cagr, m.annualized_vol, m.sharpe, m.sortino, m.calmar,
+            m.max_drawdown, m.avg_drawdown, m.max_drawdown_duration_bars as f64,
+            m.avg_drawdown_duration_bars, m.ulcer_index, m.omega_ratio,
+            m.win_rate, m.profit_factor, m.r_expectancy, m.avg_win, m.avg_loss,
+            m.tail_ratio, m.skewness, m.kurtosis, m.best_bar, m.worst_bar,
+        ]),
+        Err(_) => from_vec(vec![]),
+    }
+}
+
+/// OHLCV-aware backtest. Returns [positions, fill_prices, bar_returns, strategy_returns, equity].
+#[wasm_bindgen]
+#[allow(clippy::too_many_arguments)]
+pub fn backtest_ohlcv(
+    open: &Float64Array, high: &Float64Array, low: &Float64Array, close: &Float64Array,
+    signals: &Float64Array, slippage_bps: f64, initial_capital: f64, commission_per_trade: f64,
+    stop_loss_pct: f64, take_profit_pct: f64, trailing_stop_pct: f64, max_hold_bars: usize,
+) -> Array {
+    let mut config = ferro_ta_core::backtest::BacktestConfig::default();
+    config.slippage_bps = slippage_bps;
+    config.initial_capital = initial_capital;
+    config.commission_per_trade = commission_per_trade;
+    config.stop_loss_pct = stop_loss_pct;
+    config.take_profit_pct = take_profit_pct;
+    config.trailing_stop_pct = trailing_stop_pct;
+    config.max_hold_bars = max_hold_bars;
+    match ferro_ta_core::backtest::backtest_ohlcv_core(
+        &to_vec(open), &to_vec(high), &to_vec(low), &to_vec(close),
+        &to_vec(signals), &config, None,
+    ) {
+        Ok(r) => {
+            let out = Array::new();
+            out.push(&from_vec(r.positions));
+            out.push(&from_vec(r.fill_prices));
+            out.push(&from_vec(r.bar_returns));
+            out.push(&from_vec(r.strategy_returns));
+            out.push(&from_vec(r.equity));
+            out
+        }
+        Err(_) => Array::new(),
+    }
+}
+
+/// RSI threshold signals.
+#[wasm_bindgen]
+pub fn rsi_threshold_signals(close: &Float64Array, timeperiod: usize, oversold: f64, overbought: f64) -> Float64Array {
+    from_vec(ferro_ta_core::backtest::rsi_threshold_signals(&to_vec(close), timeperiod, oversold, overbought))
+}
+
+/// SMA crossover signals.
+#[wasm_bindgen]
+pub fn sma_crossover_signals(close: &Float64Array, fast: usize, slow: usize) -> Float64Array {
+    match ferro_ta_core::backtest::sma_crossover_signals(&to_vec(close), fast, slow) {
+        Ok(v) => from_vec(v),
+        Err(_) => from_vec(vec![f64::NAN; close.length() as usize]),
+    }
+}
+
+/// MACD crossover signals.
+#[wasm_bindgen]
+pub fn macd_crossover_signals(close: &Float64Array, fastperiod: usize, slowperiod: usize, signalperiod: usize) -> Float64Array {
+    match ferro_ta_core::backtest::macd_crossover_signals(&to_vec(close), fastperiod, slowperiod, signalperiod) {
+        Ok(v) => from_vec(v),
+        Err(_) => from_vec(vec![f64::NAN; close.length() as usize]),
+    }
+}
+
 // ---------------------------------------------------------------------------
 // WASM tests (run with `wasm-pack test --node`)
 // ---------------------------------------------------------------------------

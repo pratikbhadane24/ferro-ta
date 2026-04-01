@@ -62,6 +62,22 @@ pub fn trange(high: &[f64], low: &[f64], close: &[f64]) -> Vec<f64> {
     result
 }
 
+/// Normalized Average True Range: `ATR / close * 100`.
+pub fn natr(high: &[f64], low: &[f64], close: &[f64], timeperiod: usize) -> Vec<f64> {
+    let atr_vals = atr(high, low, close, timeperiod);
+    atr_vals
+        .iter()
+        .zip(close.iter())
+        .map(|(&a, &c)| {
+            if a.is_nan() || c == 0.0 {
+                f64::NAN
+            } else {
+                a / c * 100.0
+            }
+        })
+        .collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

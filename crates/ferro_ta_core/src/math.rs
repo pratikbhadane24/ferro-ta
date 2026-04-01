@@ -113,6 +113,61 @@ pub fn sliding_min(real: &[f64], timeperiod: usize) -> Vec<f64> {
     result
 }
 
+// ---------------------------------------------------------------------------
+// Element-wise arithmetic operators
+// ---------------------------------------------------------------------------
+
+/// Element-wise addition of two arrays.
+pub fn add(a: &[f64], b: &[f64]) -> Vec<f64> {
+    a.iter().zip(b.iter()).map(|(&x, &y)| x + y).collect()
+}
+
+/// Element-wise subtraction of two arrays.
+pub fn sub(a: &[f64], b: &[f64]) -> Vec<f64> {
+    a.iter().zip(b.iter()).map(|(&x, &y)| x - y).collect()
+}
+
+/// Element-wise multiplication of two arrays.
+pub fn mult(a: &[f64], b: &[f64]) -> Vec<f64> {
+    a.iter().zip(b.iter()).map(|(&x, &y)| x * y).collect()
+}
+
+/// Element-wise division of two arrays (NaN where b=0).
+pub fn div(a: &[f64], b: &[f64]) -> Vec<f64> {
+    a.iter()
+        .zip(b.iter())
+        .map(|(&x, &y)| if y != 0.0 { x / y } else { f64::NAN })
+        .collect()
+}
+
+// ---------------------------------------------------------------------------
+// Element-wise math transforms
+// ---------------------------------------------------------------------------
+
+macro_rules! unary_transform {
+    ($name:ident, $method:ident) => {
+        pub fn $name(real: &[f64]) -> Vec<f64> {
+            real.iter().map(|&x| x.$method()).collect()
+        }
+    };
+}
+
+unary_transform!(math_acos, acos);
+unary_transform!(math_asin, asin);
+unary_transform!(math_atan, atan);
+unary_transform!(math_ceil, ceil);
+unary_transform!(math_cos, cos);
+unary_transform!(math_cosh, cosh);
+unary_transform!(math_exp, exp);
+unary_transform!(math_floor, floor);
+unary_transform!(math_ln, ln);
+unary_transform!(math_log10, log10);
+unary_transform!(math_sin, sin);
+unary_transform!(math_sinh, sinh);
+unary_transform!(math_sqrt, sqrt);
+unary_transform!(math_tan, tan);
+unary_transform!(math_tanh, tanh);
+
 #[cfg(test)]
 mod tests {
     use super::*;

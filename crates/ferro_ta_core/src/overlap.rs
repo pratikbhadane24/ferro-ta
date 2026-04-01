@@ -447,6 +447,526 @@ pub fn macd(
     (macd_line, signal_line, histogram)
 }
 
+// ---------------------------------------------------------------------------
+// DEMA — Double Exponential Moving Average
+// ---------------------------------------------------------------------------
+
+/// Double Exponential Moving Average: `2*EMA - EMA(EMA)`.
+pub fn dema(close: &[f64], timeperiod: usize) -> Vec<f64> {
+    let n = close.len();
+    let mut result = vec![f64::NAN; n];
+    if timeperiod == 0 {
+        return result;
+    }
+    let warmup = 2 * (timeperiod - 1);
+    let ema1 = ema(close, timeperiod);
+    let ema2 = ema(&ema1, timeperiod);
+    for i in warmup..n {
+        if !ema1[i].is_nan() && !ema2[i].is_nan() {
+            result[i] = 2.0 * ema1[i] - ema2[i];
+        }
+    }
+    result
+}
+
+// ---------------------------------------------------------------------------
+// TEMA — Triple Exponential Moving Average
+// ---------------------------------------------------------------------------
+
+/// Triple Exponential Moving Average: `3*EMA - 3*EMA(EMA) + EMA(EMA(EMA))`.
+pub fn tema(close: &[f64], timeperiod: usize) -> Vec<f64> {
+    let n = close.len();
+    let mut result = vec![f64::NAN; n];
+    if timeperiod == 0 {
+        return result;
+    }
+    let warmup = 3 * (timeperiod - 1);
+    let ema1 = ema(close, timeperiod);
+    let ema2 = ema(&ema1, timeperiod);
+    let ema3 = ema(&ema2, timeperiod);
+    for i in warmup..n {
+        if !ema1[i].is_nan() && !ema2[i].is_nan() && !ema3[i].is_nan() {
+            result[i] = 3.0 * ema1[i] - 3.0 * ema2[i] + ema3[i];
+        }
+    }
+    result
+}
+
+// ---------------------------------------------------------------------------
+// TRIMA — Triangular Moving Average
+// ---------------------------------------------------------------------------
+
+/// Triangular Moving Average (triangle-weighted).
+pub fn trima(close: &[f64], timeperiod: usize) -> Vec<f64> {
+    let n = close.len();
+    let mut result = vec![f64::NAN; n];
+    if timeperiod == 0 || n < timeperiod {
+        return result;
+    }
+    let half = timeperiod.div_ceil(2);
+    let mut weights = Vec::with_capacity(timeperiod);
+    for i in 1..=timeperiod {
+        let w = if i <= half { i } else { timeperiod + 1 - i };
+        weights.push(w as f64);
+    }
+    let weight_sum: f64 = weights.iter().sum();
+    for i in (timeperiod - 1)..n {
+        let mut val = 0.0_f64;
+        for (j, &w) in weights.iter().enumerate() {
+            val += close[i - (timeperiod - 1 - j)] * w;
+        }
+        result[i] = val / weight_sum;
+    }
+    result
+}
+
+// ---------------------------------------------------------------------------
+// KAMA — Kaufman Adaptive Moving Average
+// ---------------------------------------------------------------------------
+
+/// Kaufman Adaptive Moving Average.
+pub fn kama(close: &[f64], timeperiod: usize) -> Vec<f64> {
+    let n = close.len();
+    let mut result = vec![f64::NAN; n];
+    if timeperiod == 0 || n < timeperiod {
+        return result;
+    }
+    let fast_sc = 2.0 / 3.0_f64;
+    let slow_sc = 2.0 / 31.0_f64;
+    let mut kama_val = close[timeperiod - 1];
+    result[timeperiod - 1] = kama_val;
+    for i in timeperiod..n {
+        let direction = (close[i] - close[i - timeperiod]).abs();
+        let mut volatility = 0.0_f64;
+        for j in 1..=timeperiod {
+            volatility += (close[i - j + 1] - close[i - j]).abs();
+        }
+        let er = if volatility > 0.0 {
+            direction / volatility
+        } else {
+            0.0
+        };
+        let sc = (er * (fast_sc - slow_sc) + slow_sc).powi(2);
+        kama_val += sc * (close[i] - kama_val);
+        result[i] = kama_val;
+    }
+    result
+}
+
+// ---------------------------------------------------------------------------
+// T3 — Tillson T3
+// ---------------------------------------------------------------------------
+
+/// Tillson T3: 6x smoothed EMA with volume factor.
+pub fn t3(close: &[f64], timeperiod: usize, vfactor: f64) -> Vec<f64> {
+    let n = close.len();
+    let mut result = vec![f64::NAN; n];
+    if timeperiod == 0 {
+        return result;
+    }
+    let k = 2.0 / (timeperiod as f64 + 1.0);
+    let v = vfactor;
+    let c1 = -(v * v * v);
+    let c2 = 3.0 * v * v + 3.0 * v * v * v;
+    let c3 = -6.0 * v * v - 3.0 * v - 3.0 * v * v * v;
+    let c4 = 1.0 + 3.0 * v + v * v * v + 3.0 * v * v;
+    let warmup = 6 * (timeperiod - 1);
+    let mut e = [0.0_f64; 6];
+    for (i, &price) in close.iter().enumerate() {
+        if i == 0 {
+            for ej in e.iter_mut() {
+                *ej = price;
+            }
+        } else {
+            e[0] += k * (price - e[0]);
+            for j in 1..6 {
+                e[j] += k * (e[j - 1] - e[j]);
+            }
+        }
+        if i >= warmup {
+            result[i] = c1 * e[5] + c2 * e[4] + c3 * e[3] + c4 * e[2];
+        }
+    }
+    result
+}
+
+// ---------------------------------------------------------------------------
+// SAR — Parabolic SAR
+// ---------------------------------------------------------------------------
+
+/// Parabolic SAR.
+pub fn sar(high: &[f64], low: &[f64], acceleration: f64, maximum: f64) -> Vec<f64> {
+    let n = high.len();
+    if n < 2 {
+        return vec![f64::NAN; n];
+    }
+    let mut result = vec![f64::NAN; n];
+    let mut is_rising = high[1] >= high[0];
+    let mut af = acceleration;
+    let (mut ep, mut sar_val) = if is_rising {
+        (high[1], low[0])
+    } else {
+        (low[1], high[0])
+    };
+    result[1] = sar_val;
+    for i in 2..n {
+        let prev_sar = sar_val;
+        sar_val = prev_sar + af * (ep - prev_sar);
+        if is_rising {
+            sar_val = sar_val.min(low[i - 1]).min(low[i - 2]);
+            if low[i] < sar_val {
+                is_rising = false;
+                sar_val = ep;
+                ep = low[i];
+                af = acceleration;
+            } else if high[i] > ep {
+                ep = high[i];
+                af = (af + acceleration).min(maximum);
+            }
+        } else {
+            sar_val = sar_val.max(high[i - 1]).max(high[i - 2]);
+            if high[i] > sar_val {
+                is_rising = true;
+                sar_val = ep;
+                ep = high[i];
+                af = acceleration;
+            } else if low[i] < ep {
+                ep = low[i];
+                af = (af + acceleration).min(maximum);
+            }
+        }
+        result[i] = sar_val;
+    }
+    result
+}
+
+// ---------------------------------------------------------------------------
+// SAREXT — Extended Parabolic SAR
+// ---------------------------------------------------------------------------
+
+/// Parabolic SAR Extended with configurable acceleration factors.
+#[allow(clippy::too_many_arguments)]
+pub fn sarext(
+    high: &[f64],
+    low: &[f64],
+    startvalue: f64,
+    offsetonreverse: f64,
+    accelerationinitlong: f64,
+    accelerationlong: f64,
+    accelerationmaxlong: f64,
+    accelerationinitshort: f64,
+    accelerationshort: f64,
+    accelerationmaxshort: f64,
+) -> Vec<f64> {
+    let n = high.len();
+    if n < 2 {
+        return vec![f64::NAN; n];
+    }
+    let mut result = vec![f64::NAN; n];
+    let mut is_rising = high[1] >= high[0];
+    let (mut af, mut af_step_cur, mut af_max_cur) = if is_rising {
+        (accelerationinitlong, accelerationlong, accelerationmaxlong)
+    } else {
+        (
+            accelerationinitshort,
+            accelerationshort,
+            accelerationmaxshort,
+        )
+    };
+    let (mut ep, mut sar_val) = if is_rising {
+        (
+            high[1],
+            if startvalue != 0.0 {
+                startvalue
+            } else {
+                low[0]
+            },
+        )
+    } else {
+        (
+            low[1],
+            if startvalue != 0.0 {
+                -startvalue
+            } else {
+                high[0]
+            },
+        )
+    };
+    result[1] = sar_val;
+    for i in 2..n {
+        let prev_sar = sar_val;
+        sar_val = prev_sar + af * (ep - prev_sar);
+        if is_rising {
+            sar_val = sar_val.min(low[i - 1]).min(low[i - 2]);
+            if low[i] < sar_val {
+                is_rising = false;
+                sar_val = ep + sar_val.abs() * offsetonreverse;
+                ep = low[i];
+                af = accelerationinitshort;
+                af_step_cur = accelerationshort;
+                af_max_cur = accelerationmaxshort;
+            } else if high[i] > ep {
+                ep = high[i];
+                af = (af + af_step_cur).min(af_max_cur);
+            }
+        } else {
+            sar_val = sar_val.max(high[i - 1]).max(high[i - 2]);
+            if high[i] > sar_val {
+                is_rising = true;
+                sar_val = ep - sar_val.abs() * offsetonreverse;
+                ep = high[i];
+                af = accelerationinitlong;
+                af_step_cur = accelerationlong;
+                af_max_cur = accelerationmaxlong;
+            } else if low[i] < ep {
+                ep = low[i];
+                af = (af + af_step_cur).min(af_max_cur);
+            }
+        }
+        result[i] = sar_val;
+    }
+    result
+}
+
+// ---------------------------------------------------------------------------
+// MAMA — MESA Adaptive Moving Average
+// ---------------------------------------------------------------------------
+
+/// MESA Adaptive Moving Average. Returns `(mama, fama)`.
+pub fn mama(close: &[f64], fastlimit: f64, slowlimit: f64) -> (Vec<f64>, Vec<f64>) {
+    let n = close.len();
+    let lookback = 32;
+    let mut mama_arr = vec![f64::NAN; n];
+    let mut fama_arr = vec![f64::NAN; n];
+    if n <= lookback {
+        return (mama_arr, fama_arr);
+    }
+
+    let mut smooth = vec![0.0f64; n];
+    for i in 0..n {
+        smooth[i] = if i >= 3 {
+            (4.0 * close[i] + 3.0 * close[i - 1] + 2.0 * close[i - 2] + close[i - 3]) / 10.0
+        } else {
+            close[i]
+        };
+    }
+
+    let mut detrender = vec![0.0f64; n];
+    let mut q1 = vec![0.0f64; n];
+    let mut i1 = vec![0.0f64; n];
+    let mut ji = vec![0.0f64; n];
+    let mut jq = vec![0.0f64; n];
+    let mut i2 = vec![0.0f64; n];
+    let mut q2 = vec![0.0f64; n];
+    let mut re = vec![0.0f64; n];
+    let mut im = vec![0.0f64; n];
+    let mut period = vec![0.0f64; n];
+    let mut phase = vec![0.0f64; n];
+    let mut mama_val = close[0];
+    let mut fama_val = close[0];
+
+    for i in 6..n {
+        let prev_period = period[i - 1].max(1.0);
+        let alpha = 0.075 * prev_period + 0.54;
+        detrender[i] = (0.0962 * smooth[i] + 0.5769 * smooth[i - 2]
+            - 0.5769 * smooth[i - 4]
+            - 0.0962 * smooth[i - 6])
+            * alpha;
+        if i >= 12 {
+            q1[i] = (0.0962 * detrender[i] + 0.5769 * detrender[i - 2]
+                - 0.5769 * detrender[i - 4]
+                - 0.0962 * detrender[i - 6])
+                * alpha;
+        }
+        if i >= 9 {
+            i1[i] = detrender[i - 3];
+        }
+        if i >= 15 {
+            ji[i] = (0.0962 * i1[i] + 0.5769 * i1[i - 2] - 0.5769 * i1[i - 4] - 0.0962 * i1[i - 6])
+                * alpha;
+        }
+        if i >= 18 {
+            jq[i] = (0.0962 * q1[i] + 0.5769 * q1[i - 2] - 0.5769 * q1[i - 4] - 0.0962 * q1[i - 6])
+                * alpha;
+        }
+        let i2_raw = i1[i] - jq[i];
+        let q2_raw = q1[i] + ji[i];
+        i2[i] = 0.2 * i2_raw + 0.8 * i2[i - 1];
+        q2[i] = 0.2 * q2_raw + 0.8 * q2[i - 1];
+        re[i] = 0.2 * (i2[i] * i2[i - 1] + q2[i] * q2[i - 1]) + 0.8 * re[i - 1];
+        im[i] = 0.2 * (i2[i] * q2[i - 1] - q2[i] * i2[i - 1]) + 0.8 * im[i - 1];
+        let mut p = if re[i] != 0.0 && im[i] != 0.0 && re[i] > 0.0 {
+            std::f64::consts::PI * 2.0 / (im[i] / re[i]).atan()
+        } else {
+            prev_period
+        };
+        p = p
+            .clamp(0.67 * prev_period, 1.5 * prev_period)
+            .clamp(6.0, 50.0);
+        period[i] = 0.2 * p + 0.8 * prev_period;
+        phase[i] = if i1[i] != 0.0 {
+            q1[i].atan2(i1[i]) * 180.0 / std::f64::consts::PI
+        } else if q1[i] > 0.0 {
+            90.0
+        } else if q1[i] < 0.0 {
+            -90.0
+        } else {
+            0.0
+        };
+        let mut delta_phase = phase[i - 1] - phase[i];
+        if delta_phase < 1.0 {
+            delta_phase = 1.0;
+        }
+        let adaptive_alpha = (fastlimit / delta_phase).clamp(slowlimit, fastlimit);
+        if i >= lookback {
+            mama_val = adaptive_alpha * close[i] + (1.0 - adaptive_alpha) * mama_val;
+            fama_val = 0.5 * adaptive_alpha * mama_val + (1.0 - 0.5 * adaptive_alpha) * fama_val;
+            mama_arr[i] = mama_val;
+            fama_arr[i] = fama_val;
+        } else {
+            mama_val = close[i];
+            fama_val = close[i];
+        }
+    }
+    (mama_arr, fama_arr)
+}
+
+// ---------------------------------------------------------------------------
+// MIDPOINT / MIDPRICE
+// ---------------------------------------------------------------------------
+
+/// Midpoint: `(max(close) + min(close)) / 2` over rolling window.
+pub fn midpoint(close: &[f64], timeperiod: usize) -> Vec<f64> {
+    let n = close.len();
+    let mut result = vec![f64::NAN; n];
+    if timeperiod == 0 || n < timeperiod {
+        return result;
+    }
+    for i in (timeperiod - 1)..n {
+        let window = &close[(i + 1 - timeperiod)..=i];
+        let mx = window.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+        let mn = window.iter().cloned().fold(f64::INFINITY, f64::min);
+        result[i] = (mx + mn) / 2.0;
+    }
+    result
+}
+
+/// MidPrice: `(highest_high + lowest_low) / 2` over rolling window.
+pub fn midprice(high: &[f64], low: &[f64], timeperiod: usize) -> Vec<f64> {
+    let n = high.len();
+    let mut result = vec![f64::NAN; n];
+    if timeperiod == 0 || n < timeperiod {
+        return result;
+    }
+    for i in (timeperiod - 1)..n {
+        let start = i + 1 - timeperiod;
+        let mx = high[start..=i]
+            .iter()
+            .cloned()
+            .fold(f64::NEG_INFINITY, f64::max);
+        let mn = low[start..=i].iter().cloned().fold(f64::INFINITY, f64::min);
+        result[i] = (mx + mn) / 2.0;
+    }
+    result
+}
+
+// ---------------------------------------------------------------------------
+// MACDFIX / MACDEXT
+// ---------------------------------------------------------------------------
+
+/// MACD with fixed 12/26 periods.
+pub fn macdfix(close: &[f64], signalperiod: usize) -> (Vec<f64>, Vec<f64>, Vec<f64>) {
+    macd(close, 12, 26, signalperiod)
+}
+
+/// Compute MA by type: 0=SMA, 1=EMA, 2=WMA, 3=DEMA, 4=TEMA, 5=TRIMA, 6=KAMA, 7=T3.
+fn compute_ma_by_type(close: &[f64], timeperiod: usize, matype: u8) -> Vec<f64> {
+    match matype {
+        0 => sma(close, timeperiod),
+        1 => ema(close, timeperiod),
+        2 => wma(close, timeperiod),
+        3 => dema(close, timeperiod),
+        4 => tema(close, timeperiod),
+        5 => trima(close, timeperiod),
+        6 => kama(close, timeperiod),
+        7 => t3(close, timeperiod, 0.7),
+        _ => sma(close, timeperiod),
+    }
+}
+
+/// MACD with configurable MA types for fast/slow/signal.
+pub fn macdext(
+    close: &[f64],
+    fastperiod: usize,
+    fastmatype: u8,
+    slowperiod: usize,
+    slowmatype: u8,
+    signalperiod: usize,
+    signalmatype: u8,
+) -> (Vec<f64>, Vec<f64>, Vec<f64>) {
+    let n = close.len();
+    let nan3 = || (vec![f64::NAN; n], vec![f64::NAN; n], vec![f64::NAN; n]);
+    if fastperiod == 0 || slowperiod == 0 || signalperiod == 0 || fastperiod >= slowperiod {
+        return nan3();
+    }
+    let fast_ma = compute_ma_by_type(close, fastperiod, fastmatype);
+    let slow_ma = compute_ma_by_type(close, slowperiod, slowmatype);
+    let macd_start = slowperiod - 1;
+    let mut macd_line = vec![f64::NAN; n];
+    for i in macd_start..n {
+        if !fast_ma[i].is_nan() && !slow_ma[i].is_nan() {
+            macd_line[i] = fast_ma[i] - slow_ma[i];
+        }
+    }
+    let macd_valid: Vec<f64> = macd_line[macd_start..].to_vec();
+    let signal_slice = compute_ma_by_type(&macd_valid, signalperiod, signalmatype);
+    let mut signal_line = vec![f64::NAN; n];
+    let warmup = macd_start + signalperiod - 1;
+    #[allow(clippy::needless_range_loop)]
+    for i in warmup..n {
+        let j = i - macd_start;
+        if j < signal_slice.len() && !signal_slice[j].is_nan() {
+            signal_line[i] = signal_slice[j];
+        }
+    }
+    let mut histogram = vec![f64::NAN; n];
+    for i in 0..n {
+        if !macd_line[i].is_nan() && !signal_line[i].is_nan() {
+            histogram[i] = macd_line[i] - signal_line[i];
+        }
+    }
+    (macd_line, signal_line, histogram)
+}
+
+// ---------------------------------------------------------------------------
+// MA (generic dispatcher) / MAVP (variable period)
+// ---------------------------------------------------------------------------
+
+/// Generic Moving Average. matype: 0=SMA, 1=EMA, 2=WMA, 3=DEMA, 4=TEMA, 5=TRIMA, 6=KAMA, 7=T3.
+pub fn ma(close: &[f64], timeperiod: usize, matype: u8) -> Vec<f64> {
+    compute_ma_by_type(close, timeperiod, matype)
+}
+
+/// Moving Average with Variable Period per bar (SMA over period from periods array).
+pub fn mavp(close: &[f64], periods: &[f64], minperiod: usize, maxperiod: usize) -> Vec<f64> {
+    let n = close.len();
+    let mut result = vec![f64::NAN; n];
+    if minperiod == 0 || maxperiod < minperiod {
+        return result;
+    }
+    for i in 0..n {
+        if i >= periods.len() {
+            break;
+        }
+        let p = (periods[i].round() as usize).clamp(minperiod, maxperiod);
+        if i + 1 >= p {
+            let sum: f64 = close[(i + 1 - p)..=i].iter().sum();
+            result[i] = sum / p as f64;
+        }
+    }
+    result
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

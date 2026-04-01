@@ -9,6 +9,24 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.1.1] — 2026-04-01
+
+### Added
+
+- Full feature parity across Rust core, Python, and WASM targets.
+- 56 new pure-Rust indicator functions in ferro_ta_core: ROC/ROCP/ROCR/ROCR100,
+  WILLR, AROON/AROONOSC, CCI, BOP, STOCHRSI, APO, PPO, CMO, TRIX, ULTOSC,
+  DEMA, TEMA, TRIMA, KAMA, T3, SAR, SAREXT, MAMA, MIDPOINT, MIDPRICE,
+  MACDFIX, MACDEXT, MA (generic dispatcher), MAVP, VAR, LINEARREG variants,
+  TSF, BETA, CORREL, NATR, and 19 math operators/transforms.
+- 120+ new WASM bindings: all 61 candlestick patterns (via macro), 9 streaming
+  API structs, options pricing/greeks/IV/chain/surface, futures basis/roll/curve/
+  synthetic, backtest engine (close-only + OHLCV), walk-forward analysis,
+  Monte Carlo bootstrap, performance metrics, batch operations, portfolio
+  analytics, and signal utilities.
+- `workflow_dispatch` trigger added to `wasm-publish.yml` for manual npm
+  publishing.
+
 ## [1.0.6] — 2026-03-24
 
 ### Added

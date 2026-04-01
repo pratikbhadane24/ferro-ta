@@ -446,6 +446,435 @@ pub fn adxr(high: &[f64], low: &[f64], close: &[f64], timeperiod: usize) -> Vec<
     result
 }
 
+// ---------------------------------------------------------------------------
+// Rate of Change variants
+// ---------------------------------------------------------------------------
+
+/// Rate of Change: `(close[i] - close[i-p]) / close[i-p] * 100`.
+pub fn roc(close: &[f64], timeperiod: usize) -> Vec<f64> {
+    let n = close.len();
+    let mut result = vec![f64::NAN; n];
+    if timeperiod == 0 {
+        return result;
+    }
+    for i in timeperiod..n {
+        let prev = close[i - timeperiod];
+        if prev != 0.0 {
+            result[i] = (close[i] - prev) / prev * 100.0;
+        }
+    }
+    result
+}
+
+/// Rate of Change Percentage: `(close[i] - close[i-p]) / close[i-p]`.
+pub fn rocp(close: &[f64], timeperiod: usize) -> Vec<f64> {
+    let n = close.len();
+    let mut result = vec![f64::NAN; n];
+    if timeperiod == 0 {
+        return result;
+    }
+    for i in timeperiod..n {
+        let prev = close[i - timeperiod];
+        if prev != 0.0 {
+            result[i] = (close[i] - prev) / prev;
+        }
+    }
+    result
+}
+
+/// Rate of Change Ratio: `close[i] / close[i-p]`.
+pub fn rocr(close: &[f64], timeperiod: usize) -> Vec<f64> {
+    let n = close.len();
+    let mut result = vec![f64::NAN; n];
+    if timeperiod == 0 {
+        return result;
+    }
+    for i in timeperiod..n {
+        let prev = close[i - timeperiod];
+        if prev != 0.0 {
+            result[i] = close[i] / prev;
+        }
+    }
+    result
+}
+
+/// Rate of Change Ratio x 100: `close[i] / close[i-p] * 100`.
+pub fn rocr100(close: &[f64], timeperiod: usize) -> Vec<f64> {
+    let n = close.len();
+    let mut result = vec![f64::NAN; n];
+    if timeperiod == 0 {
+        return result;
+    }
+    for i in timeperiod..n {
+        let prev = close[i - timeperiod];
+        if prev != 0.0 {
+            result[i] = close[i] / prev * 100.0;
+        }
+    }
+    result
+}
+
+// ---------------------------------------------------------------------------
+// Williams %R
+// ---------------------------------------------------------------------------
+
+/// Williams %R: `-100 * (HH - close) / (HH - LL)` over the window.
+/// Returns values in `[-100, 0]`.
+pub fn willr(high: &[f64], low: &[f64], close: &[f64], timeperiod: usize) -> Vec<f64> {
+    let n = high.len();
+    let mut result = vec![f64::NAN; n];
+    if timeperiod == 0 || n < timeperiod {
+        return result;
+    }
+    for i in (timeperiod - 1)..n {
+        let start = i + 1 - timeperiod;
+        let mut highest = f64::NEG_INFINITY;
+        let mut lowest = f64::INFINITY;
+        for j in start..=i {
+            if high[j] > highest {
+                highest = high[j];
+            }
+            if low[j] < lowest {
+                lowest = low[j];
+            }
+        }
+        let range = highest - lowest;
+        result[i] = if range != 0.0 {
+            -100.0 * (highest - close[i]) / range
+        } else {
+            -50.0
+        };
+    }
+    result
+}
+
+// ---------------------------------------------------------------------------
+// Aroon
+// ---------------------------------------------------------------------------
+
+/// Aroon indicator. Returns `(aroon_down, aroon_up)`.
+pub fn aroon(high: &[f64], low: &[f64], timeperiod: usize) -> (Vec<f64>, Vec<f64>) {
+    let n = high.len();
+    let mut aroon_down = vec![f64::NAN; n];
+    let mut aroon_up = vec![f64::NAN; n];
+    if timeperiod == 0 || n <= timeperiod {
+        return (aroon_down, aroon_up);
+    }
+    let period_f = timeperiod as f64;
+    let window_size = timeperiod + 1;
+    for i in timeperiod..n {
+        let start = i + 1 - window_size;
+        let mut max_val = high[start];
+        let mut min_val = low[start];
+        let mut max_idx = 0usize;
+        let mut min_idx = 0usize;
+        for j in 0..window_size {
+            if high[start + j] >= max_val {
+                max_val = high[start + j];
+                max_idx = j;
+            }
+            if low[start + j] <= min_val {
+                min_val = low[start + j];
+                min_idx = j;
+            }
+        }
+        aroon_up[i] = 100.0 * (max_idx as f64) / period_f;
+        aroon_down[i] = 100.0 * (min_idx as f64) / period_f;
+    }
+    (aroon_down, aroon_up)
+}
+
+/// Aroon Oscillator: `aroon_up - aroon_down`.
+pub fn aroonosc(high: &[f64], low: &[f64], timeperiod: usize) -> Vec<f64> {
+    let (down, up) = aroon(high, low, timeperiod);
+    up.iter()
+        .zip(down.iter())
+        .map(|(&u, &d)| {
+            if u.is_nan() || d.is_nan() {
+                f64::NAN
+            } else {
+                u - d
+            }
+        })
+        .collect()
+}
+
+// ---------------------------------------------------------------------------
+// CCI
+// ---------------------------------------------------------------------------
+
+/// Commodity Channel Index: `(tp - SMA(tp)) / (0.015 * MAD)`.
+pub fn cci(high: &[f64], low: &[f64], close: &[f64], timeperiod: usize) -> Vec<f64> {
+    let n = high.len();
+    let mut result = vec![f64::NAN; n];
+    if timeperiod == 0 || n < timeperiod {
+        return result;
+    }
+    let tp: Vec<f64> = high
+        .iter()
+        .zip(low.iter())
+        .zip(close.iter())
+        .map(|((&h, &l), &c)| (h + l + c) / 3.0)
+        .collect();
+    for i in (timeperiod - 1)..n {
+        let window = &tp[(i + 1 - timeperiod)..=i];
+        let mean: f64 = window.iter().sum::<f64>() / timeperiod as f64;
+        let mad: f64 = window.iter().map(|&x| (x - mean).abs()).sum::<f64>() / timeperiod as f64;
+        result[i] = if mad != 0.0 {
+            (tp[i] - mean) / (0.015 * mad)
+        } else {
+            0.0
+        };
+    }
+    result
+}
+
+// ---------------------------------------------------------------------------
+// BOP
+// ---------------------------------------------------------------------------
+
+/// Balance of Power: `(close - open) / (high - low)`.
+pub fn bop(open: &[f64], high: &[f64], low: &[f64], close: &[f64]) -> Vec<f64> {
+    open.iter()
+        .zip(high.iter())
+        .zip(low.iter())
+        .zip(close.iter())
+        .map(|(((&o, &h), &l), &c)| {
+            let range = h - l;
+            if range != 0.0 {
+                (c - o) / range
+            } else {
+                0.0
+            }
+        })
+        .collect()
+}
+
+// ---------------------------------------------------------------------------
+// Stochastic RSI
+// ---------------------------------------------------------------------------
+
+/// Stochastic RSI. Returns `(fastk, fastd)`.
+pub fn stochrsi(
+    close: &[f64],
+    timeperiod: usize,
+    fastk_period: usize,
+    fastd_period: usize,
+) -> (Vec<f64>, Vec<f64>) {
+    let n = close.len();
+    let nan_pair = || (vec![f64::NAN; n], vec![f64::NAN; n]);
+    if timeperiod == 0 || fastk_period == 0 || fastd_period == 0 {
+        return nan_pair();
+    }
+
+    let rsi_vals = rsi(close, timeperiod);
+    let rsi_warmup = timeperiod;
+    let k_warmup = rsi_warmup + fastk_period - 1;
+    let d_warmup = k_warmup + fastd_period - 1;
+
+    let mut fastk = vec![f64::NAN; n];
+    let mut fastd = vec![f64::NAN; n];
+
+    for i in k_warmup..n {
+        if rsi_vals[i].is_nan() {
+            continue;
+        }
+        let start = i + 1 - fastk_period;
+        if (start..=i).any(|j| rsi_vals[j].is_nan()) {
+            continue;
+        }
+        let mx = rsi_vals[start..=i]
+            .iter()
+            .cloned()
+            .fold(f64::NEG_INFINITY, f64::max);
+        let mn = rsi_vals[start..=i]
+            .iter()
+            .cloned()
+            .fold(f64::INFINITY, f64::min);
+        fastk[i] = if mx != mn {
+            100.0 * (rsi_vals[i] - mn) / (mx - mn)
+        } else {
+            50.0
+        };
+    }
+
+    for i in d_warmup..n {
+        let start = i + 1 - fastd_period;
+        let window = &fastk[start..=i];
+        if window.iter().all(|v| !v.is_nan()) {
+            fastd[i] = window.iter().sum::<f64>() / fastd_period as f64;
+        }
+    }
+    (fastk, fastd)
+}
+
+// ---------------------------------------------------------------------------
+// APO / PPO
+// ---------------------------------------------------------------------------
+
+/// Absolute Price Oscillator: `fast EMA - slow EMA`.
+pub fn apo(close: &[f64], fastperiod: usize, slowperiod: usize) -> Vec<f64> {
+    let n = close.len();
+    let mut result = vec![f64::NAN; n];
+    if fastperiod == 0 || slowperiod == 0 || fastperiod >= slowperiod {
+        return result;
+    }
+    let fast = crate::overlap::ema(close, fastperiod);
+    let slow = crate::overlap::ema(close, slowperiod);
+    let warmup = slowperiod - 1;
+    for i in warmup..n {
+        if !fast[i].is_nan() && !slow[i].is_nan() {
+            result[i] = fast[i] - slow[i];
+        }
+    }
+    result
+}
+
+/// Percentage Price Oscillator: `(fast EMA - slow EMA) / slow EMA * 100`.
+/// Returns `(ppo_line, signal_line, histogram)`.
+pub fn ppo(
+    close: &[f64],
+    fastperiod: usize,
+    slowperiod: usize,
+    signalperiod: usize,
+) -> (Vec<f64>, Vec<f64>, Vec<f64>) {
+    let n = close.len();
+    let nan3 = || (vec![f64::NAN; n], vec![f64::NAN; n], vec![f64::NAN; n]);
+    if fastperiod == 0 || slowperiod == 0 || signalperiod == 0 || fastperiod >= slowperiod {
+        return nan3();
+    }
+    let fast = crate::overlap::ema(close, fastperiod);
+    let slow = crate::overlap::ema(close, slowperiod);
+    let warmup = slowperiod - 1;
+
+    let mut ppo_line = vec![f64::NAN; n];
+    for i in warmup..n {
+        if !fast[i].is_nan() && !slow[i].is_nan() && slow[i] != 0.0 {
+            ppo_line[i] = (fast[i] - slow[i]) / slow[i] * 100.0;
+        }
+    }
+
+    // Signal line = EMA of PPO line (only over valid values)
+    let signal = crate::overlap::ema(&ppo_line, signalperiod);
+    let mut signal_line = vec![f64::NAN; n];
+    let mut hist = vec![f64::NAN; n];
+    let sig_warmup = warmup + signalperiod - 1;
+    for i in sig_warmup..n {
+        if !ppo_line[i].is_nan() && !signal[i].is_nan() {
+            signal_line[i] = signal[i];
+            hist[i] = ppo_line[i] - signal[i];
+        }
+    }
+    (ppo_line, signal_line, hist)
+}
+
+// ---------------------------------------------------------------------------
+// CMO
+// ---------------------------------------------------------------------------
+
+/// Chande Momentum Oscillator: `100 * (sum_gains - sum_losses) / (sum_gains + sum_losses)`.
+pub fn cmo(close: &[f64], timeperiod: usize) -> Vec<f64> {
+    let n = close.len();
+    let mut result = vec![f64::NAN; n];
+    if timeperiod == 0 || n < timeperiod + 1 {
+        return result;
+    }
+    let changes: Vec<f64> = close.windows(2).map(|w| w[1] - w[0]).collect();
+    for i in timeperiod..n {
+        let mut ups = 0.0_f64;
+        let mut downs = 0.0_f64;
+        for ch in &changes[(i - timeperiod)..i] {
+            if *ch > 0.0 {
+                ups += ch;
+            } else {
+                downs -= ch;
+            }
+        }
+        let denom = ups + downs;
+        result[i] = if denom != 0.0 {
+            100.0 * (ups - downs) / denom
+        } else {
+            0.0
+        };
+    }
+    result
+}
+
+// ---------------------------------------------------------------------------
+// TRIX
+// ---------------------------------------------------------------------------
+
+/// TRIX: 1-period rate of change of triple-smoothed EMA.
+pub fn trix(close: &[f64], timeperiod: usize) -> Vec<f64> {
+    let n = close.len();
+    let mut result = vec![f64::NAN; n];
+    if timeperiod == 0 {
+        return result;
+    }
+    let warmup = 3 * (timeperiod - 1);
+
+    // Triple EMA: EMA(EMA(EMA(close)))
+    let ema1 = crate::overlap::ema(close, timeperiod);
+    let ema2 = crate::overlap::ema(&ema1, timeperiod);
+    let ema3 = crate::overlap::ema(&ema2, timeperiod);
+
+    for i in (warmup + 1)..n {
+        let prev = ema3[i - 1];
+        if !ema3[i].is_nan() && !prev.is_nan() && prev != 0.0 {
+            result[i] = (ema3[i] - prev) / prev * 100.0;
+        }
+    }
+    result
+}
+
+// ---------------------------------------------------------------------------
+// Ultimate Oscillator
+// ---------------------------------------------------------------------------
+
+/// Ultimate Oscillator: weighted average of buying pressure over three periods.
+pub fn ultosc(
+    high: &[f64],
+    low: &[f64],
+    close: &[f64],
+    timeperiod1: usize,
+    timeperiod2: usize,
+    timeperiod3: usize,
+) -> Vec<f64> {
+    let n = high.len();
+    let mut result = vec![f64::NAN; n];
+    if timeperiod1 == 0 || timeperiod2 == 0 || timeperiod3 == 0 || n < 2 {
+        return result;
+    }
+    let max_period = timeperiod1.max(timeperiod2).max(timeperiod3);
+    if n <= max_period {
+        return result;
+    }
+
+    let mut bp = vec![0.0_f64; n];
+    let mut tr = vec![0.0_f64; n];
+    for i in 1..n {
+        let true_low = low[i].min(close[i - 1]);
+        let true_high = high[i].max(close[i - 1]);
+        bp[i] = close[i] - true_low;
+        tr[i] = true_high - true_low;
+    }
+
+    for i in max_period..n {
+        let avg = |period: usize| -> f64 {
+            let sum_bp: f64 = bp[(i + 1 - period)..=i].iter().sum();
+            let sum_tr: f64 = tr[(i + 1 - period)..=i].iter().sum();
+            if sum_tr != 0.0 {
+                sum_bp / sum_tr
+            } else {
+                0.0
+            }
+        };
+        result[i] =
+            100.0 * (4.0 * avg(timeperiod1) + 2.0 * avg(timeperiod2) + avg(timeperiod3)) / 7.0;
+    }
+    result
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
