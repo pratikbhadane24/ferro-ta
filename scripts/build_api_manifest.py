@@ -192,7 +192,7 @@ def _extract_wasm_exports(root: Path) -> list[str]:
             return sorted(exports)
 
     # Fallback to generated declarations if source parsing did not find exports.
-    dts_path = root / "wasm" / "pkg" / "ferro_ta_wasm.d.ts"
+    dts_path = root / "wasm" / "node" / "ferro_ta_wasm.d.ts"
     if dts_path.exists():
         for line in dts_path.read_text(encoding="utf-8").splitlines():
             line = line.strip()

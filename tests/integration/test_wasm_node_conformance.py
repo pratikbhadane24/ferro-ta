@@ -19,7 +19,7 @@ SCRIPT = WASM_DIR / "conformance_node.js"
 def _write_node_conformance_script(path: Path) -> None:
     path.write_text(
         """
-const wasm = require("./pkg/ferro_ta_wasm.js");
+const wasm = require("./node/ferro_ta_wasm.js");
 
 function toArray(x) {
   return Array.from(x, (v) => (Number.isNaN(v) ? null : Number(v)));

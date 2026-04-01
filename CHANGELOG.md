@@ -9,6 +9,19 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.1.2] — 2026-04-01
+
+### Changed
+
+- WASM npm package now ships both Node.js (CommonJS) and browser/web worker
+  (ESM) builds via conditional exports in package.json.
+- Fixed wasm-publish.yml: added job condition, workflow_dispatch inputs, and
+  pre-publish test gate.
+- Fixed CI.yml: SBOM job now waits for both PyPI and crates.io publish.
+- Aligned Node.js version to 20 across all CI workflows.
+- Rewrote wasm/README.md and ferro_ta_core/README.md to reflect full feature
+  parity (200+ WASM exports, 22 core modules).
+
 ## [1.1.1] — 2026-04-01
 
 ### Added

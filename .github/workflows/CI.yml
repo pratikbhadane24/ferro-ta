@@ -339,7 +339,9 @@ jobs:
   sbom:
     name: Generate SBOM (Python + Rust)
     runs-on: ubuntu-latest
-    needs: publish
+    needs:
+      - publish
+      - publish-cratesio
     if: (github.event_name == 'release' && github.event.action == 'published') || (github.event_name == 'workflow_dispatch' && inputs.release)
     permissions:
       contents: write

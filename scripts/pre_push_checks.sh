@@ -132,7 +132,7 @@ run_wasm() {
     cd wasm
     trap 'rm -f "$benchmark_json"' EXIT
     run_cmd wasm-pack test --node
-    run_cmd wasm-pack build --target nodejs --out-dir pkg
+    run_cmd npm run build
     run_cmd node bench.js --json "$benchmark_json"
   )
 }

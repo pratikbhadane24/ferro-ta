@@ -71,6 +71,6 @@ pip install ferro-ta --no-binary ferro-ta
 
 ## Known limitations
 
-- WASM binding: only 6 indicators exposed (see `wasm/README.md`).
+- WASM binding: full feature parity with 200+ exports including all TA-Lib indicators, candlestick patterns, streaming API, options, futures, and backtesting (see `wasm/README.md`).
 - Python 3.14+: untested; may work with `PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1`.
 - 32-bit platforms: not officially supported; source builds may succeed.

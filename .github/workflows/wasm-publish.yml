@@ -4,6 +4,11 @@ on:
   release:
     types: [published]
   workflow_dispatch:
+    inputs:
+      release:
+        description: "Publish WASM package to npm"
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -13,13 +18,16 @@ jobs:
   publish:
     name: Build and publish to npm
     runs-on: ubuntu-latest
+    if: >-
+      (github.event_name == 'release' && github.event.action == 'published')
+      || (github.event_name == 'workflow_dispatch' && inputs.release)
     steps:
       - uses: actions/checkout@v6
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: "24"
+          node-version: "20"
           registry-url: "https://registry.npmjs.org"
 
       - name: Install Rust and wasm-pack
@@ -27,6 +35,10 @@ jobs:
         with:
           targets: wasm32-unknown-unknown
       - run: cargo install wasm-pack
+
+      - name: Run WASM tests
+        working-directory: wasm
+        run: wasm-pack test --node
 
       - name: Build WASM package
         run: |

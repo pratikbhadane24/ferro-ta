@@ -2,7 +2,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { performance } = require("node:perf_hooks");
 
-const wasm = require("./pkg/ferro_ta_wasm.js");
+const wasm = require("./node/ferro_ta_wasm.js");
 
 function parseArgs(argv) {
   const args = { bars: 100000, json: null };

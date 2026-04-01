@@ -1,53 +1,42 @@
 # ferro-ta WASM
 
-WebAssembly bindings for the [ferro-ta](https://github.com/pratikbhadane24/ferro-ta) technical analysis library.
+WebAssembly bindings for the [ferro-ta](https://github.com/pratikbhadane24/ferro-ta) technical analysis library. Full feature parity with the Python and Rust core packages.
 
 ## Install from npm
-
-Once published, install the Node.js build from npm:
 
 ```bash
 npm install ferro-ta-wasm
 ```
 
 ```javascript
-const { sma, ema, wma, rsi, adx, mfi, bbands, atr, obv, macd } = require('ferro-ta-wasm');
+const ferro = require('ferro-ta-wasm');
 
 const close = new Float64Array([44.34, 44.09, 44.15, 43.61, 44.33, 44.83, 45.10]);
-const smaOut = sma(close, 3);
-console.log('SMA:', Array.from(smaOut));
+console.log('SMA:', Array.from(ferro.sma(close, 3)));
+console.log('RSI:', Array.from(ferro.rsi(close, 14)));
 ```
 
-> **Decision**: We chose WebAssembly (wasm-bindgen / wasm-pack) as the second binding because it runs in
-> browsers *and* Node.js without any native addons, and shares zero unsafe FFI surface with the Python
-> build.  Node.js users get a pure-JS entry point; browser users get the same `.wasm` file.
+## Available Indicators (200+ exports)
 
-## Available Indicators
-
-| Category   | Function      | Parameters                                         | Returns |
-|------------|---------------|----------------------------------------------------|---------|
-| Overlap    | `sma`         | `close: Float64Array, timeperiod: number`          | `Float64Array` |
-| Overlap    | `ema`         | `close: Float64Array, timeperiod: number`          | `Float64Array` |
-| Overlap    | `wma`         | `close: Float64Array, timeperiod: number`          | `Float64Array` |
-| Overlap    | `bbands`      | `close, timeperiod, nbdevup, nbdevdn`              | `Array[upper, middle, lower]` |
-| Momentum   | `rsi`         | `close: Float64Array, timeperiod: number`          | `Float64Array` |
-| Momentum   | `adx`         | `high, low, close: Float64Array, timeperiod`       | `Float64Array` |
-| Momentum   | `macd`        | `close, fastperiod, slowperiod, signalperiod`      | `Array[macd, signal, hist]` |
-| Momentum   | `mom`         | `close: Float64Array, timeperiod: number`          | `Float64Array` |
-| Momentum   | `stochf`      | `high, low, close, fastk_period, fastd_period`     | `Array[fastk, fastd]` |
-| Volatility | `atr`         | `high, low, close: Float64Array, timeperiod`       | `Float64Array` |
-| Volume     | `obv`         | `close: Float64Array, volume: Float64Array`        | `Float64Array` |
-| Volume     | `mfi`         | `high, low, close, volume: Float64Array, timeperiod` | `Float64Array` |
-
-### Adding more indicators
-
-WASM exports live in `src/lib.rs` and can either implement logic directly or delegate to `ferro_ta_core`.
-To add a new indicator:
-
-1. Add a `#[wasm_bindgen]` export in `src/lib.rs` (prefer delegating to `ferro_ta_core` where possible).
-2. Add at least two `#[wasm_bindgen_test]` tests covering output length and a known value.
-3. Update this README table.
-4. Run `wasm-pack test --node` to verify.
+| Category | Functions | Examples |
+|----------|-----------|----------|
+| Overlap Studies (20) | Moving averages, bands, SAR | `sma`, `ema`, `wma`, `dema`, `tema`, `trima`, `kama`, `t3`, `bbands`, `macd`, `macdfix`, `macdext`, `sar`, `sarext`, `mama`, `midpoint`, `midprice`, `ma`, `mavp`, `hull_ma` |
+| Momentum (26) | Oscillators, directional movement | `rsi`, `mom`, `stoch`, `stochf`, `adx`, `adxr`, `dx`, `plus_di`, `minus_di`, `roc`, `willr`, `aroon`, `aroonosc`, `cci`, `bop`, `stochrsi`, `apo`, `ppo`, `cmo`, `trix_indicator`, `ultosc` |
+| Candlestick Patterns (61) | All TA-Lib patterns | `cdlhammer`, `cdlengulfing`, `cdldoji`, `cdlmorningstar`, `cdlshootingstar`, ... (all 61) |
+| Volatility (3) | True range, ATR | `atr`, `natr`, `trange` |
+| Volume (6) | On-balance volume, accumulation | `obv`, `mfi`, `vwap`, `vwma`, `ad`, `adosc` |
+| Price Transforms (4) | Synthetic prices | `avgprice`, `medprice`, `typprice`, `wclprice` |
+| Cycle / Hilbert (6) | Hilbert Transform suite | `ht_trendline`, `ht_dcperiod`, `ht_dcphase`, `ht_phasor`, `ht_sine`, `ht_trendmode` |
+| Statistics (10) | Regression, correlation | `stddev`, `var`, `linearreg`, `linearreg_slope`, `linearreg_intercept`, `linearreg_angle`, `tsf`, `beta_rolling`, `correl` |
+| Math (19) | Operators and transforms | `math_add`, `math_sub`, `math_mult`, `math_div`, `transform_sin`, `transform_cos`, `transform_exp`, `transform_sqrt`, ... |
+| Extended (10) | Supertrend, channels, Ichimoku | `supertrend`, `donchian`, `keltner_channels`, `ichimoku`, `pivot_points`, `chandelier_exit`, `choppiness_index` |
+| Streaming API (9 classes) | Bar-by-bar stateful | `WasmStreamingSMA`, `WasmStreamingEMA`, `WasmStreamingRSI`, `WasmStreamingATR`, `WasmStreamingBBands`, `WasmStreamingMACD`, `WasmStreamingStoch`, `WasmStreamingVWAP`, `WasmStreamingSupertrend` |
+| Options (14) | Pricing, Greeks, IV | `black_scholes_price`, `black_76_price`, `black_scholes_greeks`, `implied_volatility`, `iv_rank`, `smile_metrics`, ... |
+| Futures (12) | Basis, roll, curve | `futures_basis`, `annualized_basis`, `roll_yield`, `weighted_continuous`, `calendar_spreads`, `curve_summary`, ... |
+| Backtesting (9) | Signal generation, engines | `backtest_core`, `backtest_ohlcv`, `rsi_threshold_signals`, `macd_crossover_signals`, `walk_forward_indices`, `monte_carlo_bootstrap`, ... |
+| Alerts & Regime (7) | Signals and regime detection | `check_threshold`, `check_cross`, `regime_adx`, `regime_combined`, `detect_breaks_cusum` |
+| Batch & Portfolio (9) | Multi-asset analytics | `batch_sma`, `batch_ema`, `batch_rsi`, `correlation_matrix`, `portfolio_volatility`, `drawdown_series` |
+| Aggregation (8) | Tick/volume/time bars | `aggregate_tick_bars`, `aggregate_volume_bars_ticks`, `volume_bars`, `ohlcv_agg` |
 
 ## Prerequisites
 
@@ -57,91 +46,64 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 # Install wasm-pack
 curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
-# OR via cargo:
-cargo install wasm-pack
 ```
 
 ## Build
 
 ```bash
 cd wasm/
-wasm-pack build --target nodejs --out-dir pkg
+
+# Build both Node.js and web targets
+npm run build
+
+# Or build individually:
+npm run build:node   # → node/
+npm run build:web    # → web/
 ```
 
-This produces a `pkg/` directory containing:
-- `ferro_ta_wasm.js` — JavaScript glue code
-- `ferro_ta_wasm_bg.wasm` — compiled WebAssembly binary
-- `ferro_ta_wasm.d.ts` — TypeScript declarations
+This produces two directories:
+- `node/` -- CommonJS glue for Node.js (`require()`)
+- `web/` -- ESM glue for browsers and web workers (`import`)
 
-For a browser build:
-
-```bash
-wasm-pack build --target web --out-dir pkg-web
-```
+Both contain `ferro_ta_wasm.js`, `ferro_ta_wasm_bg.wasm`, and `ferro_ta_wasm.d.ts`.
 
 ## Usage (Node.js)
 
 ```javascript
-const { sma, ema, wma, rsi, adx, mfi, bbands, atr, obv, macd } = require('./pkg/ferro_ta_wasm.js');
+const {
+  sma, ema, rsi, bbands, macd, atr, adx, obv, mfi,
+  cdlhammer, cdlengulfing,
+  WasmStreamingSMA,
+} = require('ferro-ta-wasm');
 
 const close = new Float64Array([44.34, 44.09, 44.15, 43.61, 44.33, 44.83, 45.10]);
+const high  = new Float64Array([45.0, 46.0, 47.0, 46.0, 45.0, 44.0, 45.0]);
+const low   = new Float64Array([43.0, 44.0, 45.0, 44.0, 43.0, 42.0, 43.0]);
 
-// Simple Moving Average (period 3)
-const smaOut = sma(close, 3);
-console.log('SMA:', Array.from(smaOut));  // [ NaN, NaN, 44.193, ... ]
+// Indicators
+console.log('SMA:', Array.from(sma(close, 3)));
+console.log('RSI:', Array.from(rsi(close, 5)));
 
-// RSI (period 5)
-const rsiOut = rsi(close, 5);
-console.log('RSI:', Array.from(rsiOut));
-
-// WMA (period 5)
-const wmaOut = wma(close, 5);
-console.log('WMA:', Array.from(wmaOut));
-
-// Bollinger Bands (period 5, ±2σ) — returns [upper, middle, lower]
+// Multi-output
 const [upper, middle, lower] = bbands(close, 5, 2.0, 2.0);
-console.log('BBANDS upper:', Array.from(upper));
+const [macdLine, signal, hist] = macd(close, 3, 5, 2);
 
-// MACD (fast=3, slow=5, signal=2) — returns [macd_line, signal_line, histogram]
-const [macdLine, signalLine, histogram] = macd(close, 3, 5, 2);
-console.log('MACD:', Array.from(macdLine));
-console.log('Signal:', Array.from(signalLine));
-console.log('Histogram:', Array.from(histogram));
-
-// ATR (period 3)
-const high   = new Float64Array([45.0, 46.0, 47.0, 46.0, 45.0, 44.0, 45.0]);
-const low    = new Float64Array([43.0, 44.0, 45.0, 44.0, 43.0, 42.0, 43.0]);
-const atrOut = atr(high, low, close, 3);
-console.log('ATR:', Array.from(atrOut));
-
-// ADX (period 3)
-const adxOut = adx(high, low, close, 3);
-console.log('ADX:', Array.from(adxOut));
-
-// OBV
-const volume  = new Float64Array([1000, 1200, 900, 1500, 800, 600, 700]);
-const obvOut  = obv(close, volume);
-console.log('OBV:', Array.from(obvOut));
-
-// MFI (period 3)
-const mfiOut = mfi(high, low, close, volume, 3);
-console.log('MFI:', Array.from(mfiOut));
+// Streaming (bar-by-bar)
+const stream = new WasmStreamingSMA(3);
+for (const price of close) {
+  console.log('streaming SMA:', stream.update(price));
+}
 ```
 
 ## Usage (Browser)
 
 ```html
 <script type="module">
-  import init, { sma, macd } from './pkg-web/ferro_ta_wasm.js';
-  await init();  // loads the .wasm binary
+  import init, { sma, rsi, macd } from './pkg-web/ferro_ta_wasm.js';
+  await init();
 
   const close = new Float64Array([44.34, 44.09, 44.15, 43.61, 44.33]);
-  const smaOut = sma(close, 3);
-  console.log('SMA:', Array.from(smaOut));
-
-  // MACD
-  const [macdLine, signal, hist] = macd(close, 3, 5, 2);
-  console.log('MACD line:', Array.from(macdLine));
+  console.log('SMA:', Array.from(sma(close, 3)));
 </script>
 ```
 
@@ -152,22 +114,12 @@ cd wasm/
 wasm-pack test --node
 ```
 
-## CI Artifact
-
-Every CI run on `main` builds the WASM package and uploads it as a GitHub Actions
-artifact named `wasm-pkg`.  To download the latest pre-built package without building
-from source:
-
-1. Go to the [Actions tab](https://github.com/pratikbhadane24/ferro-ta/actions).
-2. Open the latest successful CI run.
-3. Download the `wasm-pkg` artifact from the **Artifacts** section.
-4. Unzip and use `pkg/ferro_ta_wasm.js` directly in your project.
-
 ## Limitations
 
-- Only 12 indicators are currently exposed (SMA, EMA, WMA, BBANDS, RSI, ADX, MACD, MOM, STOCHF, ATR, OBV, MFI).
-  Additional indicators will be added following the same pattern in `src/lib.rs`.
-- Large arrays (> 10M bars) may be slow due to JS↔WASM memory copies.  For high-throughput
-  use cases prefer the Python (PyO3) binding.
-- WASM does not support multi-threading natively in browsers (SharedArrayBuffer requires
-  COOP/COEP headers).
+- Large arrays (> 10M bars) may be slow due to JS-WASM memory copies. For high-throughput use cases prefer the Python (PyO3) binding.
+- WASM does not support multi-threading natively in browsers (SharedArrayBuffer requires COOP/COEP headers).
+- The npm package ships both Node.js (`require`) and browser/web worker (`import`) builds. Conditional exports in `package.json` select the right one automatically.
+
+## License
+
+MIT

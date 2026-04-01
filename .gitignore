@@ -37,6 +37,8 @@ env/
 # WASM build output
 wasm/pkg/
 wasm/pkg-web/
+wasm/node/
+wasm/web/
 benchmark_vs_talib.json
 wasm_benchmark.json
 .wasm_benchmark.prepush.json

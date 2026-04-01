@@ -1,14 +1,29 @@
 {
   "name": "ferro-ta-wasm",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "WebAssembly bindings for ferro-ta technical analysis indicators",
-  "main": "pkg/ferro_ta_wasm.js",
-  "types": "pkg/ferro_ta_wasm.d.ts",
-  "files": ["pkg"],
+  "main": "node/ferro_ta_wasm.js",
+  "module": "web/ferro_ta_wasm.js",
+  "types": "node/ferro_ta_wasm.d.ts",
+  "exports": {
+    ".": {
+      "node": {
+        "types": "./node/ferro_ta_wasm.d.ts",
+        "require": "./node/ferro_ta_wasm.js"
+      },
+      "default": {
+        "types": "./web/ferro_ta_wasm.d.ts",
+        "import": "./web/ferro_ta_wasm.js"
+      }
+    }
+  },
+  "files": ["node", "web"],
   "scripts": {
-    "build": "wasm-pack build --target nodejs --out-dir pkg",
+    "build": "npm run build:node && npm run build:web",
+    "build:node": "wasm-pack build --target nodejs --out-dir node && node -e \"require('fs').rmSync('node/.gitignore', { force: true }); require('fs').rmSync('node/package.json', { force: true });\"",
+    "build:web": "wasm-pack build --target web --out-dir web && node -e \"require('fs').rmSync('web/.gitignore', { force: true }); require('fs').rmSync('web/package.json', { force: true });\"",
     "bench": "node bench.js",
-    "prepack": "npm run build && node -e \"require('fs').rmSync('pkg/.gitignore', { force: true })\"",
+    "prepack": "npm run build",
     "test": "wasm-pack test --node"
   },
   "license": "MIT",
