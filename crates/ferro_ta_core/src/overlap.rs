@@ -528,8 +528,9 @@ mod tests {
         for i in 19..100 {
             let window = &prices[i - 19..=i];
             let expected_mean: f64 = window.iter().sum::<f64>() / 20.0;
+            // At scale 1e12, f64 absolute precision is ~2.2e-4; use 1e-3 headroom.
             assert!(
-                (middle[i] - expected_mean).abs() < 1e-4,
+                (middle[i] - expected_mean).abs() < 1e-3,
                 "mean mismatch at {i}: got {} expected {}",
                 middle[i],
                 expected_mean,
