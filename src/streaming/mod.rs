@@ -298,13 +298,19 @@ pub struct StreamingVWAP {
     inner: core::StreamingVWAP,
 }
 
+impl Default for StreamingVWAP {
+    fn default() -> Self {
+        Self {
+            inner: core::StreamingVWAP::new(),
+        }
+    }
+}
+
 #[pymethods]
 impl StreamingVWAP {
     #[new]
     pub fn new() -> Self {
-        Self {
-            inner: core::StreamingVWAP::new(),
-        }
+        Self::default()
     }
 
     /// Add a new bar (high, low, close, volume) and return cumulative VWAP.

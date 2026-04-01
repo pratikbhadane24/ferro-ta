@@ -165,6 +165,7 @@ pub fn correlation_matrix(data: &[Vec<f64>]) -> Vec<Vec<f64>> {
     assert!(n_assets > 0, "data must contain at least one asset column");
     let n_bars = data[0].len();
     assert!(n_bars >= 2, "data must have at least 2 rows (bars)");
+    #[allow(clippy::needless_range_loop)]
     for j in 1..n_assets {
         assert!(
             data[j].len() == n_bars,
@@ -190,6 +191,7 @@ pub fn correlation_matrix(data: &[Vec<f64>]) -> Vec<Vec<f64>> {
 
     // Build correlation matrix (exploit symmetry: compute each pair once)
     let mut result = vec![vec![0.0_f64; n_assets]; n_assets];
+    #[allow(clippy::needless_range_loop)]
     for j1 in 0..n_assets {
         result[j1][j1] = 1.0;
         for j2 in (j1 + 1)..n_assets {
@@ -332,6 +334,7 @@ pub fn compose_weighted(data: &[Vec<f64>], weights: &[f64]) -> Vec<f64> {
         return vec![];
     }
     let n_bars = data[0].len();
+    #[allow(clippy::needless_range_loop)]
     for j in 1..n_sigs {
         assert!(
             data[j].len() == n_bars,

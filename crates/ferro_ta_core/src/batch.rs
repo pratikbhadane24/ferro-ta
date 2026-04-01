@@ -272,6 +272,7 @@ pub fn batch_atr(
 
 /// Apply Stochastic to each set of (high, low, close) columns.
 /// Returns `(slowk_columns, slowd_columns)`.
+#[allow(clippy::type_complexity)]
 pub fn batch_stoch(
     high: &[Vec<f64>],
     low: &[Vec<f64>],

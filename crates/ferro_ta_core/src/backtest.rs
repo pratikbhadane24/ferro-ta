@@ -1565,6 +1565,7 @@ pub struct MultiAssetBacktestResult {
 /// `weights_2d`: row-major (n_assets, n_bars)
 ///
 /// Callers must transpose from (n_bars, n_assets) if needed.
+#[allow(clippy::too_many_arguments)]
 pub fn backtest_multi_asset_core(
     close_2d: &[Vec<f64>],
     weights_2d: &[Vec<f64>],
@@ -1585,6 +1586,7 @@ pub fn backtest_multi_asset_core(
 
     // Apply portfolio constraints per bar
     let mut constrained: Vec<Vec<f64>> = weights_2d.to_vec();
+    #[allow(clippy::needless_range_loop)]
     if max_asset_weight != 1.0 || max_gross_exposure > 0.0 || max_net_exposure > 0.0 {
         for i in 0..n_bars {
             // 1. Clamp per-asset weight
@@ -1635,6 +1637,7 @@ pub fn backtest_multi_asset_core(
 
     // Portfolio return = sum of per-asset strategy returns
     let mut portfolio_returns = vec![0.0_f64; n_bars];
+    #[allow(clippy::needless_range_loop)]
     for i in 0..n_bars {
         let mut s = 0.0_f64;
         for j in 0..n_assets {

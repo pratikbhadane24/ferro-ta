@@ -231,13 +231,7 @@ pub fn supertrend(
         // Direction and output only from index timeperiod (warmup = 0, NaN)
         if i >= timeperiod {
             let prev_dir = direction[i - 1];
-            direction[i] = if prev_dir == 0 {
-                if close[i] > upper_band[i] {
-                    1
-                } else {
-                    -1
-                }
-            } else if prev_dir == -1 {
+            direction[i] = if prev_dir == 0 || prev_dir == -1 {
                 if close[i] > upper_band[i] {
                     1
                 } else {
@@ -464,6 +458,7 @@ pub fn chandelier_exit(
 ///
 /// # Returns
 /// `(tenkan, kijun, senkou_a, senkou_b, chikou)` arrays.
+#[allow(clippy::type_complexity)]
 pub fn ichimoku(
     high: &[f64],
     low: &[f64],
@@ -534,6 +529,7 @@ pub fn ichimoku(
 ///
 /// # Returns
 /// `(pivot, r1, s1, r2, s2)` arrays. Index 0 is always `NaN` (no previous bar).
+#[allow(clippy::type_complexity)]
 pub fn pivot_points(
     high: &[f64],
     low: &[f64],

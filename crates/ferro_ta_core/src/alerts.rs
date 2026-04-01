@@ -22,14 +22,10 @@ pub fn check_threshold(series: &[f64], level: f64, direction: i32) -> Vec<i8> {
         if prev.is_nan() || curr.is_nan() {
             continue;
         }
-        if direction == 1 {
-            if prev <= level && curr > level {
-                out[i] = 1;
-            }
-        } else if direction == -1 {
-            if prev >= level && curr < level {
-                out[i] = 1;
-            }
+        if (direction == 1 && prev <= level && curr > level)
+            || (direction == -1 && prev >= level && curr < level)
+        {
+            out[i] = 1;
         }
     }
     out

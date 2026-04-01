@@ -147,8 +147,7 @@ pub fn sma_crossover_signals<'py>(
     validation::validate_timeperiod(fast, "fast", 1)?;
     validation::validate_timeperiod(slow, "slow", 1)?;
     let prices = close.as_slice()?;
-    let out =
-        core_bt::sma_crossover_signals(prices, fast, slow).map_err(|e| PyValueError::new_err(e))?;
+    let out = core_bt::sma_crossover_signals(prices, fast, slow).map_err(PyValueError::new_err)?;
     Ok(out.into_pyarray(py))
 }
 
@@ -166,7 +165,7 @@ pub fn macd_crossover_signals<'py>(
     validation::validate_timeperiod(signalperiod, "signalperiod", 1)?;
     let prices = close.as_slice()?;
     let out = core_bt::macd_crossover_signals(prices, fastperiod, slowperiod, signalperiod)
-        .map_err(|e| PyValueError::new_err(e))?;
+        .map_err(PyValueError::new_err)?;
     Ok(out.into_pyarray(py))
 }
 
@@ -210,7 +209,7 @@ pub fn backtest_core<'py>(
         initial_capital,
         commission_per_trade,
     )
-    .map_err(|e| PyValueError::new_err(e))?;
+    .map_err(PyValueError::new_err)?;
 
     Ok((
         result.positions.into_pyarray(py),
@@ -314,7 +313,7 @@ pub fn backtest_ohlcv_core<'py>(
     let lp_opt: Option<&[f64]> = limit_prices.as_ref().and_then(|lp| lp.as_slice().ok());
 
     let result = core_bt::backtest_ohlcv_core(o, h, l, c, s, &config, lp_opt)
-        .map_err(|e| PyValueError::new_err(e))?;
+        .map_err(PyValueError::new_err)?;
 
     Ok((
         result.positions.into_pyarray(py),
@@ -344,7 +343,7 @@ pub fn compute_performance_metrics<'py>(
     let br = benchmark_returns.as_ref().and_then(|b| b.as_slice().ok());
 
     let metrics = core_bt::compute_performance_metrics(r, eq, periods_per_year, risk_free_rate, br)
-        .map_err(|e| PyValueError::new_err(e))?;
+        .map_err(PyValueError::new_err)?;
 
     let dict = PyDict::new(py);
     dict.set_item("total_return", metrics.total_return)?;
@@ -441,8 +440,7 @@ pub fn extract_trades_ohlcv<'py>(
         (l.len(), "low"),
     ])?;
 
-    let trades =
-        core_bt::extract_trades_ohlcv(pos, fp, h, l).map_err(|e| PyValueError::new_err(e))?;
+    let trades = core_bt::extract_trades_ohlcv(pos, fp, h, l).map_err(PyValueError::new_err)?;
 
     let mut entry_bars: Vec<i64> = Vec::with_capacity(trades.len());
     let mut exit_bars: Vec<i64> = Vec::with_capacity(trades.len());
@@ -535,6 +533,7 @@ pub fn backtest_multi_asset_core<'py>(
     // Apply portfolio constraints first via the core function's logic.
 
     // Apply constraints
+    #[allow(clippy::needless_range_loop)]
     if max_asset_weight != 1.0 || max_gross_exposure > 0.0 || max_net_exposure > 0.0 {
         for i in 0..n_bars {
             if max_asset_weight < f64::INFINITY && max_asset_weight > 0.0 {
@@ -703,7 +702,7 @@ pub fn walk_forward_indices<'py>(
     step_bars: usize,
 ) -> PyResult<Bound<'py, PyArray2<i64>>> {
     let folds = core_bt::walk_forward_indices(n_bars, train_bars, test_bars, anchored, step_bars)
-        .map_err(|e| PyValueError::new_err(e))?;
+        .map_err(PyValueError::new_err)?;
 
     let n_folds = folds.len();
     let mut arr = Array2::<i64>::zeros((n_folds, 4));
@@ -722,12 +721,12 @@ pub fn walk_forward_indices<'py>(
 
 #[pyfunction]
 pub fn kelly_fraction(win_rate: f64, avg_win: f64, avg_loss: f64) -> PyResult<f64> {
-    core_bt::kelly_fraction(win_rate, avg_win, avg_loss).map_err(|e| PyValueError::new_err(e))
+    core_bt::kelly_fraction(win_rate, avg_win, avg_loss).map_err(PyValueError::new_err)
 }
 
 #[pyfunction]
 pub fn half_kelly_fraction(win_rate: f64, avg_win: f64, avg_loss: f64) -> PyResult<f64> {
-    core_bt::half_kelly_fraction(win_rate, avg_win, avg_loss).map_err(|e| PyValueError::new_err(e))
+    core_bt::half_kelly_fraction(win_rate, avg_win, avg_loss).map_err(PyValueError::new_err)
 }
 
 // ---------------------------------------------------------------------------
