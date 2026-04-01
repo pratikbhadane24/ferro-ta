@@ -15,7 +15,7 @@ pub fn obv(close: &[f64], volume: &[f64]) -> Vec<f64> {
     if n == 0 {
         return result;
     }
-    result[0] = volume[0];
+    // result[0] stays 0; accumulation starts from bar 1
     for i in 1..n {
         result[i] = result[i - 1]
             + if close[i] > close[i - 1] {
@@ -146,9 +146,9 @@ mod tests {
         let c = vec![1.0, 2.0, 3.0];
         let v = vec![100.0, 200.0, 300.0];
         let result = obv(&c, &v);
-        assert!((result[0] - 100.0).abs() < 1e-10);
-        assert!((result[1] - 300.0).abs() < 1e-10);
-        assert!((result[2] - 600.0).abs() < 1e-10);
+        assert!((result[0] - 0.0).abs() < 1e-10);
+        assert!((result[1] - 200.0).abs() < 1e-10);
+        assert!((result[2] - 500.0).abs() < 1e-10);
     }
 
     #[test]

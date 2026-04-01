@@ -217,7 +217,15 @@ from ferro_ta._ferro_ta import (
     cdlxsidegap3methods as _cdlxsidegap3methods,
 )
 from ferro_ta._utils import _to_f64
-from ferro_ta.core.exceptions import _normalize_rust_error
+from ferro_ta.core.exceptions import FerroTAInputError, _normalize_rust_error
+
+
+def _validate_ohlc_lengths(o, h, lo, c) -> None:
+    if not (len(o) == len(h) == len(lo) == len(c)):
+        raise FerroTAInputError(
+            f"All OHLC arrays must have the same length "
+            f"(open={len(o)}, high={len(h)}, low={len(lo)}, close={len(c)}).",
+        )
 
 
 def CDL2CROWS(
@@ -238,8 +246,10 @@ def CDL2CROWS(
     numpy.ndarray[int32]
         -100 where pattern is detected, 0 otherwise.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
-        return _cdl2crows(_to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close))
+        return _cdl2crows(o, h, lo, c)
     except ValueError as e:
         _normalize_rust_error(e)
 
@@ -262,8 +272,10 @@ def CDLDOJI(
     numpy.ndarray[int32]
         100 where pattern is detected, 0 otherwise.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
-        return _cdldoji(_to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close))
+        return _cdldoji(o, h, lo, c)
     except ValueError as e:
         _normalize_rust_error(e)
 
@@ -286,8 +298,10 @@ def CDLENGULFING(
     numpy.ndarray[int32]
         100 (bullish), -100 (bearish), or 0.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
-        return _cdlengulfing(_to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close))
+        return _cdlengulfing(o, h, lo, c)
     except ValueError as e:
         _normalize_rust_error(e)
 
@@ -310,8 +324,10 @@ def CDLHAMMER(
     numpy.ndarray[int32]
         100 where pattern is detected, 0 otherwise.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
-        return _cdlhammer(_to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close))
+        return _cdlhammer(o, h, lo, c)
     except ValueError as e:
         _normalize_rust_error(e)
 
@@ -334,6 +350,8 @@ def CDLSHOOTINGSTAR(
     numpy.ndarray[int32]
         -100 where pattern is detected, 0 otherwise.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
         return _cdlshootingstar(
             _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
@@ -360,6 +378,8 @@ def CDLMORNINGSTAR(
     numpy.ndarray[int32]
         100 where pattern is detected, 0 otherwise.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
         return _cdlmorningstar(
             _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
@@ -386,6 +406,8 @@ def CDLEVENINGSTAR(
     numpy.ndarray[int32]
         -100 where pattern is detected, 0 otherwise.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
         return _cdleveningstar(
             _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
@@ -412,8 +434,10 @@ def CDLMARUBOZU(
     numpy.ndarray[int32]
         100 (bullish), -100 (bearish), or 0.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
-        return _cdlmarubozu(_to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close))
+        return _cdlmarubozu(o, h, lo, c)
     except ValueError as e:
         _normalize_rust_error(e)
 
@@ -436,6 +460,8 @@ def CDLSPINNINGTOP(
     numpy.ndarray[int32]
         100 (bullish), -100 (bearish), or 0.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
         return _cdlspinningtop(
             _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
@@ -465,6 +491,8 @@ def CDL3BLACKCROWS(
     numpy.ndarray[int32]
         -100 where pattern is detected, 0 otherwise.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
         return _cdl3blackcrows(
             _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
@@ -494,6 +522,8 @@ def CDL3WHITESOLDIERS(
     numpy.ndarray[int32]
         100 where pattern is detected, 0 otherwise.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
         return _cdl3whitesoldiers(
             _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
@@ -520,8 +550,10 @@ def CDL3INSIDE(
     numpy.ndarray[int32]
         100 (bullish Three Inside Up), -100 (bearish Three Inside Down), or 0.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
-        return _cdl3inside(_to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close))
+        return _cdl3inside(o, h, lo, c)
     except ValueError as e:
         _normalize_rust_error(e)
 
@@ -544,8 +576,10 @@ def CDL3OUTSIDE(
     numpy.ndarray[int32]
         100 (bullish Three Outside Up), -100 (bearish Three Outside Down), or 0.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
-        return _cdl3outside(_to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close))
+        return _cdl3outside(o, h, lo, c)
     except ValueError as e:
         _normalize_rust_error(e)
 
@@ -568,8 +602,10 @@ def CDLDOJISTAR(
     numpy.ndarray[int32]
         100 (bullish), -100 (bearish), or 0.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
-        return _cdldojistar(_to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close))
+        return _cdldojistar(o, h, lo, c)
     except ValueError as e:
         _normalize_rust_error(e)
 
@@ -592,6 +628,8 @@ def CDLMORNINGDOJISTAR(
     numpy.ndarray[int32]
         100 where pattern is detected, 0 otherwise.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
         return _cdlmorningdojistar(
             _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
@@ -618,6 +656,8 @@ def CDLEVENINGDOJISTAR(
     numpy.ndarray[int32]
         -100 where pattern is detected, 0 otherwise.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
         return _cdleveningdojistar(
             _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
@@ -644,8 +684,10 @@ def CDLHARAMI(
     numpy.ndarray[int32]
         100 (bullish), -100 (bearish), or 0.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
-        return _cdlharami(_to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close))
+        return _cdlharami(o, h, lo, c)
     except ValueError as e:
         _normalize_rust_error(e)
 
@@ -668,6 +710,8 @@ def CDLHARAMICROSS(
     numpy.ndarray[int32]
         100 (bullish), -100 (bearish), or 0.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
         return _cdlharamicross(
             _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
@@ -694,6 +738,8 @@ def CDL3LINESTRIKE(
     numpy.ndarray[int32]
         100 (bullish), -100 (bearish), or 0.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
         return _cdl3linestrike(
             _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
@@ -720,6 +766,8 @@ def CDL3STARSINSOUTH(
     numpy.ndarray[int32]
         100 where pattern is detected, 0 otherwise.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
         return _cdl3starsinsouth(
             _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
@@ -746,6 +794,8 @@ def CDLABANDONEDBABY(
     numpy.ndarray[int32]
         100 (bullish), -100 (bearish), or 0.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
         return _cdlabandonedbaby(
             _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
@@ -772,6 +822,8 @@ def CDLADVANCEBLOCK(
     numpy.ndarray[int32]
         -100 where pattern is detected, 0 otherwise.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
         return _cdladvanceblock(
             _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
@@ -798,8 +850,10 @@ def CDLBELTHOLD(
     numpy.ndarray[int32]
         100 (bullish), -100 (bearish), or 0.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
-        return _cdlbelthold(_to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close))
+        return _cdlbelthold(o, h, lo, c)
     except ValueError as e:
         _normalize_rust_error(e)
 
@@ -822,8 +876,10 @@ def CDLBREAKAWAY(
     numpy.ndarray[int32]
         100 (bullish), -100 (bearish), or 0.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
-        return _cdlbreakaway(_to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close))
+        return _cdlbreakaway(o, h, lo, c)
     except ValueError as e:
         _normalize_rust_error(e)
 
@@ -846,6 +902,8 @@ def CDLCLOSINGMARUBOZU(
     numpy.ndarray[int32]
         100 (bullish), -100 (bearish), or 0.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
         return _cdlclosingmarubozu(
             _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
@@ -872,6 +930,8 @@ def CDLCONCEALBABYSWALL(
     numpy.ndarray[int32]
         100 where pattern is detected, 0 otherwise.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
         return _cdlconcealbabyswall(
             _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
@@ -898,6 +958,8 @@ def CDLCOUNTERATTACK(
     numpy.ndarray[int32]
         100 (bullish), -100 (bearish), or 0.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
         return _cdlcounterattack(
             _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
@@ -924,6 +986,8 @@ def CDLDARKCLOUDCOVER(
     numpy.ndarray[int32]
         -100 where pattern is detected, 0 otherwise.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
         return _cdldarkcloudcover(
             _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
@@ -950,6 +1014,8 @@ def CDLDRAGONFLYDOJI(
     numpy.ndarray[int32]
         100 where pattern is detected, 0 otherwise.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
         return _cdldragonflydoji(
             _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
@@ -976,6 +1042,8 @@ def CDLGAPSIDESIDEWHITE(
     numpy.ndarray[int32]
         100 (upside gap), -100 (downside gap), or 0.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
         return _cdlgapsidesidewhite(
             _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
@@ -1002,6 +1070,8 @@ def CDLGRAVESTONEDOJI(
     numpy.ndarray[int32]
         -100 where pattern is detected, 0 otherwise.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
         return _cdlgravestonedoji(
             _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
@@ -1028,6 +1098,8 @@ def CDLHANGINGMAN(
     numpy.ndarray[int32]
         -100 where pattern is detected, 0 otherwise.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
         return _cdlhangingman(
             _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
@@ -1054,8 +1126,10 @@ def CDLHIGHWAVE(
     numpy.ndarray[int32]
         100 (bullish), -100 (bearish), or 0.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
-        return _cdlhighwave(_to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close))
+        return _cdlhighwave(o, h, lo, c)
     except ValueError as e:
         _normalize_rust_error(e)
 
@@ -1078,8 +1152,10 @@ def CDLHIKKAKE(
     numpy.ndarray[int32]
         100 (bullish), -100 (bearish), or 0.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
-        return _cdlhikkake(_to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close))
+        return _cdlhikkake(o, h, lo, c)
     except ValueError as e:
         _normalize_rust_error(e)
 
@@ -1102,6 +1178,8 @@ def CDLHIKKAKEMOD(
     numpy.ndarray[int32]
         100 (bullish), -100 (bearish), or 0.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
         return _cdlhikkakemod(
             _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
@@ -1128,6 +1206,8 @@ def CDLHOMINGPIGEON(
     numpy.ndarray[int32]
         100 where pattern is detected, 0 otherwise.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
         return _cdlhomingpigeon(
             _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
@@ -1154,6 +1234,8 @@ def CDLIDENTICAL3CROWS(
     numpy.ndarray[int32]
         -100 where pattern is detected, 0 otherwise.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
         return _cdlidentical3crows(
             _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
@@ -1180,8 +1262,10 @@ def CDLINNECK(
     numpy.ndarray[int32]
         -100 where pattern is detected, 0 otherwise.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
-        return _cdlinneck(_to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close))
+        return _cdlinneck(o, h, lo, c)
     except ValueError as e:
         _normalize_rust_error(e)
 
@@ -1204,6 +1288,8 @@ def CDLINVERTEDHAMMER(
     numpy.ndarray[int32]
         100 where pattern is detected, 0 otherwise.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
         return _cdlinvertedhammer(
             _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
@@ -1230,8 +1316,10 @@ def CDLKICKING(
     numpy.ndarray[int32]
         100 (bullish), -100 (bearish), or 0.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
-        return _cdlkicking(_to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close))
+        return _cdlkicking(o, h, lo, c)
     except ValueError as e:
         _normalize_rust_error(e)
 
@@ -1254,6 +1342,8 @@ def CDLKICKINGBYLENGTH(
     numpy.ndarray[int32]
         100 (bullish), -100 (bearish), or 0.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
         return _cdlkickingbylength(
             _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
@@ -1280,6 +1370,8 @@ def CDLLADDERBOTTOM(
     numpy.ndarray[int32]
         100 where pattern is detected, 0 otherwise.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
         return _cdlladderbottom(
             _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
@@ -1306,6 +1398,8 @@ def CDLLONGLEGGEDDOJI(
     numpy.ndarray[int32]
         100 where pattern is detected, 0 otherwise.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
         return _cdllongleggeddoji(
             _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
@@ -1332,8 +1426,10 @@ def CDLLONGLINE(
     numpy.ndarray[int32]
         100 (bullish), -100 (bearish), or 0.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
-        return _cdllongline(_to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close))
+        return _cdllongline(o, h, lo, c)
     except ValueError as e:
         _normalize_rust_error(e)
 
@@ -1356,6 +1452,8 @@ def CDLMATCHINGLOW(
     numpy.ndarray[int32]
         100 where pattern is detected, 0 otherwise.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
         return _cdlmatchinglow(
             _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
@@ -1382,8 +1480,10 @@ def CDLMATHOLD(
     numpy.ndarray[int32]
         100 where pattern is detected, 0 otherwise.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
-        return _cdlmathold(_to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close))
+        return _cdlmathold(o, h, lo, c)
     except ValueError as e:
         _normalize_rust_error(e)
 
@@ -1406,8 +1506,10 @@ def CDLONNECK(
     numpy.ndarray[int32]
         -100 where pattern is detected, 0 otherwise.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
-        return _cdlonneck(_to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close))
+        return _cdlonneck(o, h, lo, c)
     except ValueError as e:
         _normalize_rust_error(e)
 
@@ -1430,8 +1532,10 @@ def CDLPIERCING(
     numpy.ndarray[int32]
         100 where pattern is detected, 0 otherwise.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
-        return _cdlpiercing(_to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close))
+        return _cdlpiercing(o, h, lo, c)
     except ValueError as e:
         _normalize_rust_error(e)
 
@@ -1454,6 +1558,8 @@ def CDLRICKSHAWMAN(
     numpy.ndarray[int32]
         100 where pattern is detected, 0 otherwise.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
         return _cdlrickshawman(
             _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
@@ -1480,6 +1586,8 @@ def CDLRISEFALL3METHODS(
     numpy.ndarray[int32]
         100 (bullish), -100 (bearish), or 0.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
         return _cdlrisefall3methods(
             _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
@@ -1506,6 +1614,8 @@ def CDLSEPARATINGLINES(
     numpy.ndarray[int32]
         100 (bullish), -100 (bearish), or 0.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
         return _cdlseparatinglines(
             _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
@@ -1532,8 +1642,10 @@ def CDLSHORTLINE(
     numpy.ndarray[int32]
         100 (bullish), -100 (bearish), or 0.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
-        return _cdlshortline(_to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close))
+        return _cdlshortline(o, h, lo, c)
     except ValueError as e:
         _normalize_rust_error(e)
 
@@ -1556,6 +1668,8 @@ def CDLSTALLEDPATTERN(
     numpy.ndarray[int32]
         -100 where pattern is detected, 0 otherwise.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
         return _cdlstalledpattern(
             _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
@@ -1582,6 +1696,8 @@ def CDLSTICKSANDWICH(
     numpy.ndarray[int32]
         100 where pattern is detected, 0 otherwise.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
         return _cdlsticksandwich(
             _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
@@ -1608,8 +1724,10 @@ def CDLTAKURI(
     numpy.ndarray[int32]
         100 where pattern is detected, 0 otherwise.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
-        return _cdltakuri(_to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close))
+        return _cdltakuri(o, h, lo, c)
     except ValueError as e:
         _normalize_rust_error(e)
 
@@ -1632,8 +1750,10 @@ def CDLTASUKIGAP(
     numpy.ndarray[int32]
         100 (bullish), -100 (bearish), or 0.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
-        return _cdltasukigap(_to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close))
+        return _cdltasukigap(o, h, lo, c)
     except ValueError as e:
         _normalize_rust_error(e)
 
@@ -1656,8 +1776,10 @@ def CDLTHRUSTING(
     numpy.ndarray[int32]
         -100 where pattern is detected, 0 otherwise.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
-        return _cdlthrusting(_to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close))
+        return _cdlthrusting(o, h, lo, c)
     except ValueError as e:
         _normalize_rust_error(e)
 
@@ -1680,8 +1802,10 @@ def CDLTRISTAR(
     numpy.ndarray[int32]
         100 (bullish), -100 (bearish), or 0.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
-        return _cdltristar(_to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close))
+        return _cdltristar(o, h, lo, c)
     except ValueError as e:
         _normalize_rust_error(e)
 
@@ -1704,6 +1828,8 @@ def CDLUNIQUE3RIVER(
     numpy.ndarray[int32]
         100 where pattern is detected, 0 otherwise.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
         return _cdlunique3river(
             _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
@@ -1730,6 +1856,8 @@ def CDLUPSIDEGAP2CROWS(
     numpy.ndarray[int32]
         -100 where pattern is detected, 0 otherwise.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
         return _cdlupsidegap2crows(
             _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
@@ -1756,6 +1884,8 @@ def CDLXSIDEGAP3METHODS(
     numpy.ndarray[int32]
         100 (bullish), -100 (bearish), or 0.
     """
+    o, h, lo, c = _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
+    _validate_ohlc_lengths(o, h, lo, c)
     try:
         return _cdlxsidegap3methods(
             _to_f64(open), _to_f64(high), _to_f64(low), _to_f64(close)
