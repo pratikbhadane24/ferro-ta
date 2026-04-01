@@ -376,7 +376,7 @@ jobs:
         run: cargo install cargo-cyclonedx --locked
 
       - name: Generate Rust SBOM (CycloneDX)
-        run: cargo cyclonedx --format json --output-cdx ferro-ta-rust-sbom.cdx.json
+        run: cargo cyclonedx --format json --override-filename ferro-ta-rust-sbom.cdx
 
       - name: Upload Python SBOM to release
         uses: softprops/action-gh-release@v2
