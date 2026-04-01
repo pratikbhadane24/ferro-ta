@@ -147,8 +147,8 @@ pub fn sma_crossover_signals<'py>(
     validation::validate_timeperiod(fast, "fast", 1)?;
     validation::validate_timeperiod(slow, "slow", 1)?;
     let prices = close.as_slice()?;
-    let out = core_bt::sma_crossover_signals(prices, fast, slow)
-        .map_err(|e| PyValueError::new_err(e))?;
+    let out =
+        core_bt::sma_crossover_signals(prices, fast, slow).map_err(|e| PyValueError::new_err(e))?;
     Ok(out.into_pyarray(py))
 }
 
@@ -202,8 +202,15 @@ pub fn backtest_core<'py>(
     validation::validate_equal_length(&[(c.len(), "close"), (s.len(), "signals")])?;
 
     let cm = commission.as_ref().map(|c| &c.inner);
-    let result = core_bt::backtest_core(c, s, cm, slippage_bps, initial_capital, commission_per_trade)
-        .map_err(|e| PyValueError::new_err(e))?;
+    let result = core_bt::backtest_core(
+        c,
+        s,
+        cm,
+        slippage_bps,
+        initial_capital,
+        commission_per_trade,
+    )
+    .map_err(|e| PyValueError::new_err(e))?;
 
     Ok((
         result.positions.into_pyarray(py),
@@ -348,8 +355,14 @@ pub fn compute_performance_metrics<'py>(
     dict.set_item("calmar", metrics.calmar)?;
     dict.set_item("max_drawdown", metrics.max_drawdown)?;
     dict.set_item("avg_drawdown", metrics.avg_drawdown)?;
-    dict.set_item("max_drawdown_duration_bars", metrics.max_drawdown_duration_bars as i64)?;
-    dict.set_item("avg_drawdown_duration_bars", metrics.avg_drawdown_duration_bars)?;
+    dict.set_item(
+        "max_drawdown_duration_bars",
+        metrics.max_drawdown_duration_bars as i64,
+    )?;
+    dict.set_item(
+        "avg_drawdown_duration_bars",
+        metrics.avg_drawdown_duration_bars,
+    )?;
     dict.set_item("ulcer_index", metrics.ulcer_index)?;
     dict.set_item("omega_ratio", metrics.omega_ratio)?;
     dict.set_item("win_rate", metrics.win_rate)?;
@@ -428,8 +441,8 @@ pub fn extract_trades_ohlcv<'py>(
         (l.len(), "low"),
     ])?;
 
-    let trades = core_bt::extract_trades_ohlcv(pos, fp, h, l)
-        .map_err(|e| PyValueError::new_err(e))?;
+    let trades =
+        core_bt::extract_trades_ohlcv(pos, fp, h, l).map_err(|e| PyValueError::new_err(e))?;
 
     let mut entry_bars: Vec<i64> = Vec::with_capacity(trades.len());
     let mut exit_bars: Vec<i64> = Vec::with_capacity(trades.len());

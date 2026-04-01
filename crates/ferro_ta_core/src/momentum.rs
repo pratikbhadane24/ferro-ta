@@ -1,6 +1,5 @@
 //! Momentum indicators.
 
-
 /// Compute the Relative Strength Index (RSI).
 ///
 /// Returns values in the range `[0, 100]`. Uses Wilder's smoothing method
@@ -119,8 +118,12 @@ pub fn stoch(
         for j in (win_start + 1)..=i {
             let h = high[j];
             let l = low[j];
-            if h > hh { hh = h; }
-            if l < ll { ll = l; }
+            if h > hh {
+                hh = h;
+            }
+            if l < ll {
+                ll = l;
+            }
         }
         let range = hh - ll;
         fastk_valid[i - fastk_start] = if range != 0.0 {

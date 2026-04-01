@@ -54,12 +54,7 @@ pub fn regime_combined(
 /// Detect structural breaks using a CUSUM (cumulative sum) approach.
 ///
 /// `window` must be >= 2. Returns `Vec<i8>`: `1` at break bars, `0` elsewhere.
-pub fn detect_breaks_cusum(
-    series: &[f64],
-    window: usize,
-    threshold: f64,
-    slack: f64,
-) -> Vec<i8> {
+pub fn detect_breaks_cusum(series: &[f64], window: usize, threshold: f64, slack: f64) -> Vec<i8> {
     let n = series.len();
     let mut out = vec![0i8; n];
     if n < window || window < 2 {

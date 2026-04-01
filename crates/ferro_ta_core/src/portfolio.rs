@@ -73,7 +73,10 @@ pub fn beta_full(asset_returns: &[f64], benchmark_returns: &[f64]) -> f64 {
         cov += da * db;
         var_b += db * db;
     }
-    assert!(var_b != 0.0, "benchmark_returns has zero variance; cannot compute beta");
+    assert!(
+        var_b != 0.0,
+        "benchmark_returns has zero variance; cannot compute beta"
+    );
     cov / var_b
 }
 
@@ -225,7 +228,11 @@ pub fn relative_strength(asset_returns: &[f64], benchmark_returns: &[f64]) -> Ve
     for i in 0..n {
         cum_a *= 1.0 + asset_returns[i];
         cum_b *= 1.0 + benchmark_returns[i];
-        result[i] = if cum_b == 0.0 { f64::NAN } else { cum_a / cum_b };
+        result[i] = if cum_b == 0.0 {
+            f64::NAN
+        } else {
+            cum_a / cum_b
+        };
     }
     result
 }
@@ -243,7 +250,10 @@ pub fn spread(a: &[f64], b: &[f64], hedge: f64) -> Vec<f64> {
         n > 0 && b.len() == n,
         "a and b must be non-empty and equal length"
     );
-    a.iter().zip(b.iter()).map(|(&x, &y)| x - hedge * y).collect()
+    a.iter()
+        .zip(b.iter())
+        .map(|(&x, &y)| x - hedge * y)
+        .collect()
 }
 
 // ---------------------------------------------------------------------------
@@ -358,10 +368,7 @@ mod tests {
     #[test]
     fn test_portfolio_volatility_identity_cov() {
         // Identity covariance, equal weights => sqrt(sum(w_i^2))
-        let cov = vec![
-            vec![1.0, 0.0],
-            vec![0.0, 1.0],
-        ];
+        let cov = vec![vec![1.0, 0.0], vec![0.0, 1.0]];
         let w = vec![0.5, 0.5];
         let vol = portfolio_volatility(&cov, &w);
         // w' I w = 0.25 + 0.25 = 0.5, sqrt = 0.7071...
@@ -378,10 +385,7 @@ mod tests {
     #[test]
     fn test_portfolio_volatility_correlated() {
         // Fully correlated: cov = [[0.04, 0.04], [0.04, 0.04]]
-        let cov = vec![
-            vec![0.04, 0.04],
-            vec![0.04, 0.04],
-        ];
+        let cov = vec![vec![0.04, 0.04], vec![0.04, 0.04]];
         let w = vec![0.5, 0.5];
         // w' Σ w = 0.04, sqrt = 0.2
         let vol = portfolio_volatility(&cov, &w);
@@ -594,10 +598,7 @@ mod tests {
 
     #[test]
     fn test_compose_weighted_basic() {
-        let data = vec![
-            vec![1.0, 2.0, 3.0],
-            vec![4.0, 5.0, 6.0],
-        ];
+        let data = vec![vec![1.0, 2.0, 3.0], vec![4.0, 5.0, 6.0]];
         let weights = vec![0.3, 0.7];
         let cw = compose_weighted(&data, &weights);
         // bar 0: 1*0.3 + 4*0.7 = 3.1

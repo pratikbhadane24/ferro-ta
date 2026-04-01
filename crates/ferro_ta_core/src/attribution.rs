@@ -28,7 +28,11 @@ use std::collections::HashMap;
 pub fn trade_stats(pnl: &[f64], hold_bars: &[f64]) -> (f64, f64, f64, f64, f64) {
     let n = pnl.len();
     assert!(n > 0, "pnl must be non-empty");
-    assert_eq!(n, hold_bars.len(), "pnl and hold_bars must have equal length");
+    assert_eq!(
+        n,
+        hold_bars.len(),
+        "pnl and hold_bars must have equal length"
+    );
 
     let mut wins: Vec<f64> = Vec::new();
     let mut losses: Vec<f64> = Vec::new();

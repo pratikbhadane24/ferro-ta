@@ -46,11 +46,7 @@ fn validate_hlc_columns(
         return Ok((0, 0));
     }
     let n = high[0].len();
-    for (idx, (h, (l, c))) in high
-        .iter()
-        .zip(low.iter().zip(close.iter()))
-        .enumerate()
-    {
+    for (idx, (h, (l, c))) in high.iter().zip(low.iter().zip(close.iter())).enumerate() {
         if h.len() != n || l.len() != n || c.len() != n {
             return Err(format!(
                 "column {idx}: high len={}, low len={}, close len={} — must all be {n}",
@@ -358,24 +354,26 @@ fn compute_close_indicator(
             .collect()),
         "LINEARREG" => {
             let last_x = (timeperiod - 1) as f64;
-            Ok(rolling_linreg_apply(close, timeperiod, |slope, intercept| {
-                intercept + slope * last_x
-            }))
+            Ok(rolling_linreg_apply(
+                close,
+                timeperiod,
+                |slope, intercept| intercept + slope * last_x,
+            ))
         }
         "LINEARREG_SLOPE" => Ok(rolling_linreg_apply(close, timeperiod, |slope, _| slope)),
-        "LINEARREG_INTERCEPT" => {
-            Ok(rolling_linreg_apply(close, timeperiod, |_, intercept| {
-                intercept
-            }))
-        }
+        "LINEARREG_INTERCEPT" => Ok(rolling_linreg_apply(close, timeperiod, |_, intercept| {
+            intercept
+        })),
         "LINEARREG_ANGLE" => Ok(rolling_linreg_apply(close, timeperiod, |slope, _| {
             slope.atan() * 180.0 / std::f64::consts::PI
         })),
         "TSF" => {
             let forecast_x = timeperiod as f64;
-            Ok(rolling_linreg_apply(close, timeperiod, |slope, intercept| {
-                intercept + slope * forecast_x
-            }))
+            Ok(rolling_linreg_apply(
+                close,
+                timeperiod,
+                |slope, intercept| intercept + slope * forecast_x,
+            ))
         }
         _ => Err(format!(
             "unsupported close indicator for grouped execution: {name}"

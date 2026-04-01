@@ -932,8 +932,7 @@ mod tests {
             if i + 1 < period {
                 assert!(streaming[i].is_nan(), "bar {} should be NaN", i);
             } else {
-                let batch: f64 =
-                    data[i + 1 - period..=i].iter().sum::<f64>() / period as f64;
+                let batch: f64 = data[i + 1 - period..=i].iter().sum::<f64>() / period as f64;
                 assert!(
                     approx_eq(streaming[i], batch, 1e-10),
                     "bar {}: streaming={} batch={}",

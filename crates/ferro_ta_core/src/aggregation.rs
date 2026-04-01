@@ -21,14 +21,13 @@ type Ohlcv5AndLabels = (Vec<f64>, Vec<f64>, Vec<f64>, Vec<f64>, Vec<f64>, Vec<i6
 ///
 /// # Panics
 /// Panics if `ticks_per_bar == 0`, arrays are empty, or lengths differ.
-pub fn aggregate_tick_bars(
-    price: &[f64],
-    size: &[f64],
-    ticks_per_bar: usize,
-) -> Ohlcv5 {
+pub fn aggregate_tick_bars(price: &[f64], size: &[f64], ticks_per_bar: usize) -> Ohlcv5 {
     assert!(ticks_per_bar >= 1, "ticks_per_bar must be >= 1");
     let n = price.len();
-    assert!(n > 0 && size.len() == n, "price and size must be non-empty and equal length");
+    assert!(
+        n > 0 && size.len() == n,
+        "price and size must be non-empty and equal length"
+    );
 
     let n_bars = n.div_ceil(ticks_per_bar);
     let mut out_open = Vec::with_capacity(n_bars);
@@ -71,14 +70,13 @@ pub fn aggregate_tick_bars(
 ///
 /// # Panics
 /// Panics if `volume_threshold <= 0`, arrays are empty, or lengths differ.
-pub fn aggregate_volume_bars_ticks(
-    price: &[f64],
-    size: &[f64],
-    volume_threshold: f64,
-) -> Ohlcv5 {
+pub fn aggregate_volume_bars_ticks(price: &[f64], size: &[f64], volume_threshold: f64) -> Ohlcv5 {
     assert!(volume_threshold > 0.0, "volume_threshold must be > 0");
     let n = price.len();
-    assert!(n > 0 && size.len() == n, "price and size must be non-empty and equal length");
+    assert!(
+        n > 0 && size.len() == n,
+        "price and size must be non-empty and equal length"
+    );
 
     let mut out_open: Vec<f64> = Vec::new();
     let mut out_high: Vec<f64> = Vec::new();
@@ -140,11 +138,7 @@ pub fn aggregate_volume_bars_ticks(
 ///
 /// # Panics
 /// Panics if arrays are empty or have unequal lengths.
-pub fn aggregate_time_bars(
-    price: &[f64],
-    size: &[f64],
-    labels: &[i64],
-) -> Ohlcv5AndLabels {
+pub fn aggregate_time_bars(price: &[f64], size: &[f64], labels: &[i64]) -> Ohlcv5AndLabels {
     let n = price.len();
     assert!(
         n > 0 && size.len() == n && labels.len() == n,

@@ -38,7 +38,8 @@ pub fn volume_bars<'py>(
             "All input arrays must be non-empty and have equal length",
         ));
     }
-    let (ro, rh, rl, rc, rv) = ferro_ta_core::resampling::volume_bars(o, h, l, c, v, volume_threshold);
+    let (ro, rh, rl, rc, rv) =
+        ferro_ta_core::resampling::volume_bars(o, h, l, c, v, volume_threshold);
     Ok((
         ro.into_pyarray(py),
         rh.into_pyarray(py),

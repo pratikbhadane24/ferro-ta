@@ -71,7 +71,8 @@ pub fn aggregate_volume_bars_ticks<'py>(
             "price and size must be non-empty and equal length",
         ));
     }
-    let (ro, rh, rl, rc, rv) = ferro_ta_core::aggregation::aggregate_volume_bars_ticks(p, s, volume_threshold);
+    let (ro, rh, rl, rc, rv) =
+        ferro_ta_core::aggregation::aggregate_volume_bars_ticks(p, s, volume_threshold);
     Ok((
         ro.into_pyarray(py),
         rh.into_pyarray(py),

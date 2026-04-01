@@ -209,10 +209,7 @@ impl StreamingBBands {
     }
 
     fn __repr__(&self) -> String {
-        format!(
-            "StreamingBBands(period={})",
-            self.inner.period()
-        )
+        format!("StreamingBBands(period={})", self.inner.period())
     }
 }
 
@@ -287,10 +284,7 @@ impl StreamingStoch {
     }
 
     fn __repr__(&self) -> String {
-        format!(
-            "StreamingStoch(fastk_period={})",
-            self.inner.period()
-        )
+        format!("StreamingStoch(fastk_period={})", self.inner.period())
     }
 }
 
@@ -363,10 +357,7 @@ impl StreamingSupertrend {
     }
 
     fn __repr__(&self) -> String {
-        format!(
-            "StreamingSupertrend(period={})",
-            self.inner.period()
-        )
+        format!("StreamingSupertrend(period={})", self.inner.period())
     }
 }
 

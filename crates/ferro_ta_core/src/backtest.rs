@@ -287,7 +287,12 @@ pub struct StreamingSummary {
 // ---------------------------------------------------------------------------
 
 /// RSI threshold strategy: +1 when RSI <= oversold, -1 when RSI >= overbought, 0 otherwise.
-pub fn rsi_threshold_signals(close: &[f64], timeperiod: usize, oversold: f64, overbought: f64) -> Vec<f64> {
+pub fn rsi_threshold_signals(
+    close: &[f64],
+    timeperiod: usize,
+    oversold: f64,
+    overbought: f64,
+) -> Vec<f64> {
     let rsi = crate::momentum::rsi(close, timeperiod);
     rsi.iter()
         .map(|&v| {
@@ -1128,8 +1133,7 @@ pub fn compute_performance_metrics(
     }
 
     let mean_r: f64 = valid_r.iter().sum::<f64>() / n_valid as f64;
-    let variance: f64 =
-        valid_r.iter().map(|&v| (v - mean_r).powi(2)).sum::<f64>() / n_valid as f64;
+    let variance: f64 = valid_r.iter().map(|&v| (v - mean_r).powi(2)).sum::<f64>() / n_valid as f64;
     let std_r = variance.sqrt();
 
     let downside_sq_sum: f64 = valid_r
@@ -1253,13 +1257,19 @@ pub fn compute_performance_metrics(
         a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal)
     });
     let p5 = pct_r[idx_5];
-    let worst_bar = pct_r[..=idx_5].iter().copied().fold(f64::INFINITY, f64::min);
+    let worst_bar = pct_r[..=idx_5]
+        .iter()
+        .copied()
+        .fold(f64::INFINITY, f64::min);
     // Find 95th percentile in the remaining upper partition
     pct_r[idx_5..].select_nth_unstable_by(idx_95 - idx_5, |a, b| {
         a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal)
     });
     let p95 = pct_r[idx_95];
-    let best_bar = pct_r[idx_95..].iter().copied().fold(f64::NEG_INFINITY, f64::max);
+    let best_bar = pct_r[idx_95..]
+        .iter()
+        .copied()
+        .fold(f64::NEG_INFINITY, f64::max);
     let tail_ratio = if p5.abs() > 0.0 {
         p95.abs() / p5.abs()
     } else {
@@ -1451,10 +1461,8 @@ pub fn extract_trades_ohlcv(
             }
         } else {
             if trade_entry_price > 0.0 {
-                let unreal_high =
-                    trade_dir * (high[i] - trade_entry_price) / trade_entry_price;
-                let unreal_low =
-                    trade_dir * (low[i] - trade_entry_price) / trade_entry_price;
+                let unreal_high = trade_dir * (high[i] - trade_entry_price) / trade_entry_price;
+                let unreal_low = trade_dir * (low[i] - trade_entry_price) / trade_entry_price;
                 let bar_best = unreal_high.max(unreal_low);
                 let bar_worst = unreal_high.min(unreal_low);
                 if bar_best > trade_mfe {
@@ -1615,8 +1623,12 @@ pub fn backtest_multi_asset_core(
     // Per-asset backtests
     let asset_strategy_returns: Vec<Vec<f64>> = (0..n_assets)
         .map(|j| {
-            let (_, strat_rets, _) =
-                single_asset_backtest(&close_2d[j], &constrained[j], commission_per_trade, slippage_bps);
+            let (_, strat_rets, _) = single_asset_backtest(
+                &close_2d[j],
+                &constrained[j],
+                commission_per_trade,
+                slippage_bps,
+            );
             strat_rets
         })
         .collect();
@@ -1757,7 +1769,9 @@ pub fn walk_forward_indices(
     }
 
     if folds.is_empty() {
-        return Err("No complete folds fit within n_bars with the given train/test sizes".to_string());
+        return Err(
+            "No complete folds fit within n_bars with the given train/test sizes".to_string(),
+        );
     }
 
     Ok(folds)
@@ -2018,7 +2032,8 @@ mod tests {
         let signals: Vec<f64> = vec![0.0, 1.0, 1.0, 1.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.0];
 
         let config = BacktestConfig::default();
-        let result = backtest_ohlcv_core(&open, &high, &low, &close, &signals, &config, None).unwrap();
+        let result =
+            backtest_ohlcv_core(&open, &high, &low, &close, &signals, &config, None).unwrap();
         assert_eq!(result.equity.len(), n);
         // Equity should be positive
         assert!(*result.equity.last().unwrap() > 0.0);

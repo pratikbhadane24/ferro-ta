@@ -27,9 +27,7 @@ use rayon::prelude::*;
 /// `result[j]` is column j (one time-series of length n_samples).
 fn numpy2d_to_columns(arr: &ndarray::ArrayView2<'_, f64>) -> Vec<Vec<f64>> {
     let (_n_samples, n_series) = arr.dim();
-    (0..n_series)
-        .map(|j| arr.column(j).to_vec())
-        .collect()
+    (0..n_series).map(|j| arr.column(j).to_vec()).collect()
 }
 
 /// Convert `Vec<Vec<f64>>` (columns) back into a numpy (n_samples, n_series) array.
@@ -320,9 +318,8 @@ pub fn batch_adx<'py>(
     let c_cols = numpy2d_to_columns(&arr_c);
 
     let col_results: Vec<Vec<f64>> = py.allow_threads(|| {
-        let process = |i: usize| {
-            ferro_ta_core::momentum::adx(&h_cols[i], &l_cols[i], &c_cols[i], timeperiod)
-        };
+        let process =
+            |i: usize| ferro_ta_core::momentum::adx(&h_cols[i], &l_cols[i], &c_cols[i], timeperiod);
         if parallel {
             (0..n_series).into_par_iter().map(process).collect()
         } else {
@@ -369,8 +366,9 @@ pub fn run_close_indicators<'py>(
             .map(|r| r.map(|v| v.into_pyarray(py).unbind()).map_err(map_core_err))
             .collect()
     } else {
-        let results = ferro_ta_core::batch::run_close_indicators(close_values, &names, &timeperiods)
-            .map_err(map_core_err)?;
+        let results =
+            ferro_ta_core::batch::run_close_indicators(close_values, &names, &timeperiods)
+                .map_err(map_core_err)?;
         Ok(results
             .into_iter()
             .map(|v| v.into_pyarray(py).unbind())

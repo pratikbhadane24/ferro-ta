@@ -63,12 +63,11 @@ pub fn rolling_variance_break<'py>(
 ) -> PyResult<Bound<'py, PyArray1<i8>>> {
     validation::validate_timeperiod(short_window, "short_window", 2)?;
     if long_window <= short_window {
-        return Err(PyValueError::new_err(
-            "long_window must be > short_window",
-        ));
+        return Err(PyValueError::new_err("long_window must be > short_window"));
     }
     let s = series.as_slice()?;
-    let result = ferro_ta_core::regime::rolling_variance_break(s, short_window, long_window, threshold);
+    let result =
+        ferro_ta_core::regime::rolling_variance_break(s, short_window, long_window, threshold);
     Ok(result.into_pyarray(py))
 }
 

@@ -197,8 +197,7 @@ mod tests {
 
     #[test]
     fn test_volume_bars_single_element() {
-        let (ro, rh, rl, rc, rv) =
-            volume_bars(&[10.0], &[12.0], &[8.0], &[11.0], &[50.0], 100.0);
+        let (ro, rh, rl, rc, rv) = volume_bars(&[10.0], &[12.0], &[8.0], &[11.0], &[50.0], 100.0);
         assert_eq!(rv.len(), 1);
         assert!((rv[0] - 50.0).abs() < 1e-10);
         assert!((ro[0] - 10.0).abs() < 1e-10);

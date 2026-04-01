@@ -72,11 +72,11 @@ mod tests {
     fn test_mark_session_boundaries() {
         let ns_per_day: i64 = 86_400_000_000_000;
         let ts = vec![
-            0,                         // day 0
-            ns_per_day / 2,            // day 0
-            ns_per_day,                // day 1
+            0,                           // day 0
+            ns_per_day / 2,              // day 0
+            ns_per_day,                  // day 1
             ns_per_day + ns_per_day / 2, // day 1
-            ns_per_day * 2,            // day 2
+            ns_per_day * 2,              // day 2
         ];
         let result = mark_session_boundaries(&ts);
         assert_eq!(result, vec![0, 2, 4]);

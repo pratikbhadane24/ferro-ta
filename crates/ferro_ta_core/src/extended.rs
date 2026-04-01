@@ -215,16 +215,14 @@ pub fn supertrend(
         let lower_basic = hl2 - multiplier * atr[i];
 
         // Adjust lower band
-        lower_band[i] = if lower_basic > lower_band[i - 1] || close[i - 1] < lower_band[i - 1]
-        {
+        lower_band[i] = if lower_basic > lower_band[i - 1] || close[i - 1] < lower_band[i - 1] {
             lower_basic
         } else {
             lower_band[i - 1]
         };
 
         // Adjust upper band
-        upper_band[i] = if upper_basic < upper_band[i - 1] || close[i - 1] > upper_band[i - 1]
-        {
+        upper_band[i] = if upper_basic < upper_band[i - 1] || close[i - 1] > upper_band[i - 1] {
             upper_basic
         } else {
             upper_band[i - 1]
@@ -269,11 +267,7 @@ pub fn supertrend(
 ///
 /// # Returns
 /// `(upper, middle, lower)` arrays.
-pub fn donchian(
-    high: &[f64],
-    low: &[f64],
-    timeperiod: usize,
-) -> (Vec<f64>, Vec<f64>, Vec<f64>) {
+pub fn donchian(high: &[f64], low: &[f64], timeperiod: usize) -> (Vec<f64>, Vec<f64>, Vec<f64>) {
     let n = high.len();
     let mut upper = vec![f64::NAN; n];
     let mut lower = vec![f64::NAN; n];
@@ -305,12 +299,7 @@ pub fn donchian(
 ///
 /// Values near 100 indicate a choppy market; near 0 indicates trending.
 /// The first `timeperiod` values are `NaN`.
-pub fn choppiness_index(
-    high: &[f64],
-    low: &[f64],
-    close: &[f64],
-    timeperiod: usize,
-) -> Vec<f64> {
+pub fn choppiness_index(high: &[f64], low: &[f64], close: &[f64], timeperiod: usize) -> Vec<f64> {
     let n = high.len();
     let mut result = vec![f64::NAN; n];
     if timeperiod < 1 || n <= timeperiod {
