@@ -90,7 +90,7 @@ def correlation_matrix(returns: Any) -> Any:
             arr = returns.values.astype(np.float64, copy=False)
             arr = np.ascontiguousarray(arr)
             result = _rust_corr(arr)
-            return pd.DataFrame(result, index=cols, columns=cols)
+            return pd.DataFrame(result, index=cols, columns=cols)  # type: ignore[arg-type]
     except ImportError:
         pass
     arr = np.ascontiguousarray(returns, dtype=np.float64)

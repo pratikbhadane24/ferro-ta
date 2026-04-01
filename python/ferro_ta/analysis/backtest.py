@@ -112,9 +112,8 @@ def format_currency(amount: float, currency: _RustCurrency | None = None) -> str
     >>> format_currency(1234567.89, USD)
     '$1,234,567.89'
     """
-    if currency is None:
-        currency = INR
-    return currency.format(amount)
+    effective: _RustCurrency = currency if currency is not None else INR
+    return effective.format(amount)
 
 
 # ---------------------------------------------------------------------------
@@ -599,7 +598,7 @@ def _build_trades_df(
     )
     if len(eb) == 0:
         return pd.DataFrame(
-            columns=[
+            columns=[  # type: ignore[arg-type]
                 "entry_bar",
                 "exit_bar",
                 "direction",
