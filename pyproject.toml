@@ -143,6 +143,10 @@ reportMissingModuleSource = false
 # Sync:    uv sync --extra dev
 # Tests:   uv run pytest tests/
 # Build:   uv run maturin build --release --out dist
+constraint-dependencies = [
+    "pygments>=2.20.0",
+    "requests>=2.33.0",
+]
 
 [dependency-groups]
 dev = [
