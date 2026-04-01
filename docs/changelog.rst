@@ -1,9 +1,9 @@
 Release Notes
 =============
 
-These docs track package version ``1.2.0``.
+These docs track package version ``1.1.0``.
 
-1.2.0-audit (2026-03-28)
+1.1.0-audit (2026-03-28)
 ------------------------
 
 **Comprehensive audit: 90 findings addressed**
@@ -62,7 +62,7 @@ These docs track package version ``1.2.0``.
   formatting across all Python files.
 - **cargo fmt**: all Rust code formatted.
 
-1.2.0 (2026-03-28)
+1.1.0 (2026-03-28)
 ------------------
 
 **Phase 1 — Simulation fidelity**
