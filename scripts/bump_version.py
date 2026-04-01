@@ -60,7 +60,7 @@ CARRIERS = [
     VersionCarrier(
         "cargo_core_dep",
         ROOT / "Cargo.toml",
-        r'(ferro_ta_core = \{ path = "crates/ferro_ta_core", version = ")([^"]+)(" \})',
+        r'(ferro_ta_core = \{ path = "crates/ferro_ta_core", version = ")([^"]+)("[^}]*\})',
         r"\g<1>{version}\g<3>",
     ),
     VersionCarrier(

@@ -22,12 +22,6 @@ pub fn avgprice<'py>(
         (lows.len(), "low"),
         (closes.len(), "close"),
     ])?;
-    let result: Vec<f64> = opens
-        .iter()
-        .zip(highs.iter())
-        .zip(lows.iter())
-        .zip(closes.iter())
-        .map(|(((&o, &h), &l), &c)| (o + h + l + c) / 4.0)
-        .collect();
+    let result = ferro_ta_core::price_transform::avgprice(opens, highs, lows, closes);
     Ok(result.into_pyarray(py))
 }

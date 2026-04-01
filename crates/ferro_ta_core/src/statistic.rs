@@ -1,6 +1,14 @@
 //! Statistic functions.
 
-/// Standard deviation — population (`ddof = 0`).
+/// Compute the rolling population standard deviation, scaled by `nbdev`.
+///
+/// Uses population variance (`ddof = 0`). Returns `nbdev * stddev` for
+/// each window. The first `timeperiod - 1` values are `NaN`.
+///
+/// # Arguments
+/// * `real` - Input series.
+/// * `timeperiod` - Rolling window size (must be >= 1).
+/// * `nbdev` - Multiplier applied to the standard deviation (use 1.0 for raw stddev).
 pub fn stddev(real: &[f64], timeperiod: usize, nbdev: f64) -> Vec<f64> {
     let n = real.len();
     let mut result = vec![f64::NAN; n];

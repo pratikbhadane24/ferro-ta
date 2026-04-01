@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "ferro-ta"
-version = "1.0.6"
+version = "1.1.0"
 description = "Rust-powered Python technical analysis library with a TA-Lib-compatible API"
 readme = "README.md"
 license = { text = "MIT" }
@@ -43,6 +43,10 @@ comparison = [
     "pandas-ta>=0.3; python_version >= '3.12'",
     "ta>=0.10",
     "pandas>=1.0",
+    "vectorbt>=0.28",
+    "backtrader>=1.9",
+    "backtesting>=0.6",
+    "quantstats>=0.0.81",
 ]
 gpu = ["torch>=2.0"]
 options = []
@@ -50,6 +54,7 @@ mcp = ["mcp>=1.0"]
 all = ["pandas>=1.0", "polars>=0.19", "pytest>=7.0", "pytest-benchmark>=4.0"]
 dev = [
     "pytest>=7.0",
+    "pytest-cov>=4.0",
     "hypothesis>=6.0",
     "pandas>=1.0",
     "polars>=0.19",
@@ -71,6 +76,19 @@ Repository = "https://github.com/pratikbhadane24/ferro-ta"
 
 [tool.pytest.ini_options]
 testpaths = ["tests/unit", "tests/integration"]
+
+[tool.coverage.run]
+source = ["ferro_ta"]
+omit = ["*/_ferro_ta*", "*/mcp/*"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 65
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "if __name__ ==",
+]
 
 [tool.maturin]
 python-source = "python"

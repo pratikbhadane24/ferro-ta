@@ -1,0 +1,153 @@
+{
+  "metadata": {
+    "suite": "backtest",
+    "runtime": {
+      "generated_at_utc": "2026-03-27T16:31:53.866252+00:00",
+      "python_version": "3.13.5",
+      "python_implementation": "CPython",
+      "python_executable": "/Users/pratikbhadane/Work/Projects/ferro-ta/.venv/bin/python3",
+      "platform": "macOS-26.3.1-arm64-arm-64bit-Mach-O",
+      "system": "Darwin",
+      "release": "25.3.0",
+      "machine": "arm64",
+      "processor": "arm",
+      "cpu_model": "Apple M3 Max",
+      "cpu_count_logical": 14,
+      "total_memory_bytes": 38654705664
+    },
+    "git": {
+      "commit": "2d776b6f908fd1a4f30a696972b7df5e5fe2ca00",
+      "dirty": true,
+      "branch": "main"
+    },
+    "build": {
+      "rustc": "rustc 1.93.1 (01f6ddf75 2026-02-11)\nbinary: rustc\ncommit-hash: 01f6ddf7588f42ae2d7eb0a2f21d44e8e96674cf\ncommit-date: 2026-02-11\nhost: aarch64-apple-darwin\nrelease: 1.93.1\nLLVM version: 21.1.8",
+      "cargo": "cargo 1.93.1 (083ac5135 2025-12-15)",
+      "cargo_release_profile": {
+        "lto": true,
+        "codegen-units": 1
+      },
+      "rustflags": null,
+      "cargo_build_rustflags": null,
+      "maturin_flags": null
+    },
+    "packages": {
+      "numpy": "2.2.6",
+      "ferro-ta": "1.0.6"
+    }
+  },
+  "results": {
+    "backtest_core_single": [
+      {
+        "n_bars": 10000,
+        "ferro_ta_ms": 0.024,
+        "ferro_ta_mbars_s": 415.9388,
+        "vectorbt_ms": 1.2843,
+        "speedup_vs_vectorbt": 53.4187
+      },
+      {
+        "n_bars": 100000,
+        "ferro_ta_ms": 0.1964,
+        "ferro_ta_mbars_s": 509.1209,
+        "vectorbt_ms": 3.047,
+        "speedup_vs_vectorbt": 15.5129
+      }
+    ],
+    "backtest_ohlcv_core": [
+      {
+        "n_bars": 10000,
+        "ferro_ta_ms": 0.0573,
+        "ferro_ta_mbars_s": 174.4166
+      },
+      {
+        "n_bars": 100000,
+        "ferro_ta_ms": 0.7068,
+        "ferro_ta_mbars_s": 141.4927
+      }
+    ],
+    "performance_metrics": [
+      {
+        "n_bars": 10000,
+        "ferro_ta_ms": 0.2182,
+        "numpy_partial_ms": 0.0496,
+        "speedup_vs_numpy": 0.2272,
+        "note": "numpy_partial only computes sharpe+max_dd (2/23 metrics)"
+      },
+      {
+        "n_bars": 100000,
+        "ferro_ta_ms": 3.0303,
+        "numpy_partial_ms": 0.351,
+        "speedup_vs_numpy": 0.1158,
+        "note": "numpy_partial only computes sharpe+max_dd (2/23 metrics)"
+      }
+    ],
+    "multi_asset": [
+      {
+        "n_bars": 10000,
+        "n_assets": 50,
+        "parallel_ms": 2.4245,
+        "serial_ms": 4.1751,
+        "loop_ms": 2.0349,
+        "parallel_speedup_vs_loop": 0.8393,
+        "parallel_speedup_vs_serial": 1.722
+      },
+      {
+        "n_bars": 100000,
+        "n_assets": 50,
+        "parallel_ms": 24.0349,
+        "serial_ms": 47.9311,
+        "loop_ms": 24.7476,
+        "parallel_speedup_vs_loop": 1.0297,
+        "parallel_speedup_vs_serial": 1.9942
+      }
+    ],
+    "monte_carlo": [
+      {
+        "n_bars": 10000,
+        "n_sims": 500,
+        "ferro_ta_ms": 3.862,
+        "numpy_loop_ms": 51.1589,
+        "speedup_vs_numpy": 13.2469
+      },
+      {
+        "n_bars": 100000,
+        "n_sims": 500,
+        "ferro_ta_ms": 26.0019,
+        "numpy_loop_ms": 310.582,
+        "speedup_vs_numpy": 11.9446
+      }
+    ],
+    "engine_full_pipeline": [
+      {
+        "n_bars": 10000,
+        "ferro_ta_ms": 0.4402,
+        "description": "Full pipeline: signals + OHLCV fill + 23 metrics + trades + drawdown"
+      },
+      {
+        "n_bars": 100000,
+        "ferro_ta_ms": 4.445,
+        "description": "Full pipeline: signals + OHLCV fill + 23 metrics + trades + drawdown"
+      }
+    ],
+    "walk_forward_indices": [
+      {
+        "n_bars": 10000,
+        "train_bars": 2000,
+        "test_bars": 500,
+        "ferro_ta_us": 0.333
+      },
+      {
+        "n_bars": 100000,
+        "train_bars": 20000,
+        "test_bars": 5000,
+        "ferro_ta_us": 0.292
+      }
+    ],
+    "kelly_fraction": [
+      {
+        "n_calls": 1000,
+        "ferro_ta_us": 86.458
+      }
+    ]
+  }
+}

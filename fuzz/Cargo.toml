@@ -28,5 +28,54 @@ test = false
 doc = false
 bench = false
 
+[[bin]]
+name = "fuzz_ema"
+path = "fuzz_targets/fuzz_ema.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_bbands"
+path = "fuzz_targets/fuzz_bbands.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_macd"
+path = "fuzz_targets/fuzz_macd.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_atr"
+path = "fuzz_targets/fuzz_atr.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_stoch"
+path = "fuzz_targets/fuzz_stoch.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_mfi"
+path = "fuzz_targets/fuzz_mfi.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_wma"
+path = "fuzz_targets/fuzz_wma.rs"
+test = false
+doc = false
+bench = false
+
 [profile.release]
 debug = 1

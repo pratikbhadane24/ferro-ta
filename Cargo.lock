@@ -207,7 +207,7 @@ checksum = "48c757948c5ede0e46177b7add2e67155f70e33c07fea8284df6576da70b3719"
 
 [[package]]
 name = "ferro_ta"
-version = "1.0.6"
+version = "1.1.0"
 dependencies = [
  "criterion",
  "ferro_ta_core",
@@ -222,9 +222,11 @@ dependencies = [
 
 [[package]]
 name = "ferro_ta_core"
-version = "1.0.6"
+version = "1.1.0"
 dependencies = [
  "criterion",
+ "serde",
+ "serde_json",
  "wide",
 ]
 

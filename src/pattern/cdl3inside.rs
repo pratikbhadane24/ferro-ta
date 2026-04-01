@@ -1,8 +1,6 @@
 use numpy::{IntoPyArray, PyArray1, PyReadonlyArray1};
 use pyo3::prelude::*;
 
-use super::common::*;
-
 #[pyfunction]
 pub fn cdl3inside<'py>(
     py: Python<'py>,
@@ -11,39 +9,10 @@ pub fn cdl3inside<'py>(
     low: PyReadonlyArray1<'py, f64>,
     close: PyReadonlyArray1<'py, f64>,
 ) -> PyResult<Bound<'py, PyArray1<i32>>> {
-    let opens = open.as_slice()?;
-    let highs = high.as_slice()?;
-    let lows = low.as_slice()?;
-    let closes = close.as_slice()?;
-    let n = opens.len();
-    super::common::validate_ohlc_length(n, highs.len(), lows.len(), closes.len())?;
-    let mut result = vec![0i32; n];
-    for i in 2..n {
-        let (o1, h1, l1, c1) = (opens[i - 2], highs[i - 2], lows[i - 2], closes[i - 2]);
-        let (o2, _h2, _l2, c2) = (opens[i - 1], highs[i - 1], lows[i - 1], closes[i - 1]);
-        let (_o3, _h3, _l3, c3) = (opens[i], highs[i], lows[i], closes[i]);
-
-        let body1 = body_size(o1, c1);
-        let body2 = body_size(o2, c2);
-        let range1 = candle_range(h1, l1);
-
-        let large_body1 = range1 > 0.0 && body1 >= range1 * 0.5;
-
-        // Candle 2 body is inside candle 1 body (harami condition)
-        let body2_high = o2.max(c2);
-        let body2_low = o2.min(c2);
-        let body1_high = o1.max(c1);
-        let body1_low = o1.min(c1);
-        let inside = body2_high <= body1_high && body2_low >= body1_low && body2 < body1 * 0.5;
-
-        // Three Inside Up: C1 bearish, C2 bullish harami, C3 closes above C2 close
-        if is_bearish(o1, c1) && large_body1 && inside && is_bullish(o2, c2) && c3 > c2 {
-            result[i] = 100;
-        }
-        // Three Inside Down: C1 bullish, C2 bearish harami, C3 closes below C2 close
-        else if is_bullish(o1, c1) && large_body1 && inside && is_bearish(o2, c2) && c3 < c2 {
-            result[i] = -100;
-        }
-    }
+    let o = open.as_slice()?;
+    let h = high.as_slice()?;
+    let l = low.as_slice()?;
+    let c = close.as_slice()?;
+    let result = ferro_ta_core::pattern::cdl3inside(o, h, l, c);
     Ok(result.into_pyarray(py))
 }

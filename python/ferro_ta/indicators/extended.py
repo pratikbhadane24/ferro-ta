@@ -66,6 +66,7 @@ from ferro_ta._ferro_ta import (
     vwma as _rust_vwma,
 )
 from ferro_ta._utils import _to_f64
+from ferro_ta.core.exceptions import FerroTAValueError, _normalize_rust_error
 
 
 def VWAP(
@@ -103,14 +104,15 @@ def VWAP(
     Implemented in Rust for maximum performance.
     """
     if timeperiod < 0:
-        from ferro_ta.core.exceptions import FerroTAValueError
-
         raise FerroTAValueError("timeperiod must be >= 0 for VWAP")
     h = _to_f64(high)
     lo = _to_f64(low)
     c = _to_f64(close)
     v = _to_f64(volume)
-    return np.asarray(_rust_vwap(h, lo, c, v, timeperiod))
+    try:
+        return np.asarray(_rust_vwap(h, lo, c, v, timeperiod))
+    except ValueError as e:
+        _normalize_rust_error(e)
 
 
 def SUPERTREND(
@@ -164,7 +166,10 @@ def SUPERTREND(
     h = _to_f64(high)
     lo = _to_f64(low)
     c = _to_f64(close)
-    st, d = _rust_supertrend(h, lo, c, timeperiod, multiplier)
+    try:
+        st, d = _rust_supertrend(h, lo, c, timeperiod, multiplier)
+    except ValueError as e:
+        _normalize_rust_error(e)
     return np.asarray(st), np.asarray(d)
 
 
@@ -205,9 +210,12 @@ def ICHIMOKU(
     h = _to_f64(high)
     lo = _to_f64(low)
     c = _to_f64(close)
-    t, k, sa, sb, ch = _rust_ichimoku(
-        h, lo, c, tenkan_period, kijun_period, senkou_b_period, displacement
-    )
+    try:
+        t, k, sa, sb, ch = _rust_ichimoku(
+            h, lo, c, tenkan_period, kijun_period, senkou_b_period, displacement
+        )
+    except ValueError as e:
+        _normalize_rust_error(e)
     return (
         np.asarray(t),
         np.asarray(k),
@@ -241,7 +249,10 @@ def DONCHIAN(
     """
     h = _to_f64(high)
     lo = _to_f64(low)
-    upper, middle, lower = _rust_donchian(h, lo, timeperiod)
+    try:
+        upper, middle, lower = _rust_donchian(h, lo, timeperiod)
+    except ValueError as e:
+        _normalize_rust_error(e)
     return np.asarray(upper), np.asarray(middle), np.asarray(lower)
 
 
@@ -279,13 +290,16 @@ def PIVOT_POINTS(
     """
     valid_methods = {"classic", "fibonacci", "camarilla"}
     if method.lower() not in valid_methods:
-        raise ValueError(
+        raise FerroTAValueError(
             f"Unknown pivot method '{method}'. Use 'classic', 'fibonacci', or 'camarilla'."
         )
     h = _to_f64(high)
     lo = _to_f64(low)
     c = _to_f64(close)
-    pivot, r1, s1, r2, s2 = _rust_pivot_points(h, lo, c, method)
+    try:
+        pivot, r1, s1, r2, s2 = _rust_pivot_points(h, lo, c, method)
+    except ValueError as e:
+        _normalize_rust_error(e)
     return (
         np.asarray(pivot),
         np.asarray(r1),
@@ -328,9 +342,12 @@ def KELTNER_CHANNELS(
     h = _to_f64(high)
     lo = _to_f64(low)
     c = _to_f64(close)
-    upper, middle, lower = _rust_keltner_channels(
-        h, lo, c, timeperiod, atr_period, multiplier
-    )
+    try:
+        upper, middle, lower = _rust_keltner_channels(
+            h, lo, c, timeperiod, atr_period, multiplier
+        )
+    except ValueError as e:
+        _normalize_rust_error(e)
     return np.asarray(upper), np.asarray(middle), np.asarray(lower)
 
 
@@ -358,7 +375,10 @@ def HULL_MA(
     Implemented in Rust — all WMA computations are in-process.
     """
     c = _to_f64(close)
-    return np.asarray(_rust_hull_ma(c, timeperiod))
+    try:
+        return np.asarray(_rust_hull_ma(c, timeperiod))
+    except ValueError as e:
+        _normalize_rust_error(e)
 
 
 def CHANDELIER_EXIT(
@@ -391,7 +411,10 @@ def CHANDELIER_EXIT(
     h = _to_f64(high)
     lo = _to_f64(low)
     c = _to_f64(close)
-    long_exit, short_exit = _rust_chandelier_exit(h, lo, c, timeperiod, multiplier)
+    try:
+        long_exit, short_exit = _rust_chandelier_exit(h, lo, c, timeperiod, multiplier)
+    except ValueError as e:
+        _normalize_rust_error(e)
     return np.asarray(long_exit), np.asarray(short_exit)
 
 
@@ -419,7 +442,10 @@ def VWMA(
     """
     c = _to_f64(close)
     v = _to_f64(volume)
-    return np.asarray(_rust_vwma(c, v, timeperiod))
+    try:
+        return np.asarray(_rust_vwma(c, v, timeperiod))
+    except ValueError as e:
+        _normalize_rust_error(e)
 
 
 def CHOPPINESS_INDEX(
@@ -452,7 +478,10 @@ def CHOPPINESS_INDEX(
     h = _to_f64(high)
     lo = _to_f64(low)
     c = _to_f64(close)
-    return np.asarray(_rust_choppiness_index(h, lo, c, timeperiod))
+    try:
+        return np.asarray(_rust_choppiness_index(h, lo, c, timeperiod))
+    except ValueError as e:
+        _normalize_rust_error(e)
 
 
 __all__ = [

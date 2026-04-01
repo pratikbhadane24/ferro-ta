@@ -26,11 +26,30 @@ assert!((sma[2] - 2.0).abs() < 1e-10);
 ```
 */
 
+pub mod aggregation;
+pub mod alerts;
+pub mod attribution;
+pub mod backtest;
+pub mod batch;
+pub mod chunked;
+pub mod commission;
+pub mod crypto;
+pub mod currency;
+pub mod cycle;
+pub mod extended;
 pub mod futures;
 pub mod math;
+pub mod math_ops;
 pub mod momentum;
 pub mod options;
 pub mod overlap;
+pub mod pattern;
+pub mod portfolio;
+pub mod price_transform;
+pub mod regime;
+pub mod resampling;
+pub mod signals;
 pub mod statistic;
+pub mod streaming;
 pub mod volatility;
 pub mod volume;

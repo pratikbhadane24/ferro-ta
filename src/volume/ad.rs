@@ -2,7 +2,7 @@ use crate::validation;
 use numpy::{IntoPyArray, PyArray1, PyReadonlyArray1};
 use pyo3::prelude::*;
 
-/// Chaikin Accumulation/Distribution Line. Cumulates (close - low - (high - close)) / (high - low) * volume.
+/// Chaikin Accumulation/Distribution Line.
 #[pyfunction]
 pub fn ad<'py>(
     py: Python<'py>,
@@ -22,17 +22,6 @@ pub fn ad<'py>(
         (closes.len(), "close"),
         (vols.len(), "volume"),
     ])?;
-    let mut result = vec![0.0_f64; n];
-    let mut ad_val = 0.0_f64;
-    for i in 0..n {
-        let hl = highs[i] - lows[i];
-        let clv = if hl != 0.0 {
-            ((closes[i] - lows[i]) - (highs[i] - closes[i])) / hl
-        } else {
-            0.0
-        };
-        ad_val += clv * vols[i];
-        result[i] = ad_val;
-    }
+    let result = ferro_ta_core::volume::ad(highs, lows, closes, vols);
     Ok(result.into_pyarray(py))
 }

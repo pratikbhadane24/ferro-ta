@@ -1,0 +1,17 @@
+# Local development build configuration for ferro-ta.
+#
+# Enables target-cpu=native so the compiler can emit instructions for the
+# host machine (AVX2, NEON, etc.). This primarily benefits release builds
+# where LTO and codegen-units=1 are active (see Cargo.toml [profile.release]).
+#
+# Cargo config.toml does not support per-profile rustflags, so this applies
+# to both debug and release profiles. The impact on debug builds is negligible.
+#
+# WASM targets are excluded so wasm-pack / wasm32-unknown-unknown builds
+# are unaffected.
+#
+# CI may override RUSTFLAGS or use a separate .cargo/config.toml to produce
+# portable binaries for distribution.
+
+[target.'cfg(not(target_arch = "wasm32"))']
+rustflags = ["-C", "target-cpu=native"]

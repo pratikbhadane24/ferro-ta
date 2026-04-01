@@ -8,19 +8,55 @@
 //! [Rayon](https://docs.rs/rayon) after releasing the GIL.  For small inputs
 //! the sequential path (`parallel = false`) may be faster due to thread-pool
 //! overhead.
+//!
+//! All indicator logic lives in `ferro_ta_core::batch`.  This module is a thin
+//! PyO3 wrapper that converts numpy ↔ Rust types and optionally adds Rayon
+//! parallelism.
 
-use ndarray::{Array2, ArrayView2};
+use ndarray::Array2;
 use numpy::{IntoPyArray, PyArray1, PyArray2, PyReadonlyArray1, PyReadonlyArray2};
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use rayon::prelude::*;
-use ta::indicators::{Maximum, Minimum};
-use ta::Next;
 
-fn transpose_to_series_major(data: ArrayView2<'_, f64>) -> Array2<f64> {
-    let (n_samples, n_series) = data.dim();
-    Array2::from_shape_vec((n_series, n_samples), data.t().iter().copied().collect())
-        .expect("shape matches transposed data")
+// ---------------------------------------------------------------------------
+// numpy ↔ Vec<Vec<f64>> helpers
+// ---------------------------------------------------------------------------
+
+/// Convert a numpy (n_samples, n_series) array into `Vec<Vec<f64>>` where
+/// `result[j]` is column j (one time-series of length n_samples).
+fn numpy2d_to_columns(arr: &ndarray::ArrayView2<'_, f64>) -> Vec<Vec<f64>> {
+    let (_n_samples, n_series) = arr.dim();
+    (0..n_series).map(|j| arr.column(j).to_vec()).collect()
+}
+
+/// Convert `Vec<Vec<f64>>` (columns) back into a numpy (n_samples, n_series) array.
+fn columns_to_numpy2d<'py>(
+    py: Python<'py>,
+    n_samples: usize,
+    columns: Vec<Vec<f64>>,
+) -> Bound<'py, PyArray2<f64>> {
+    let n_series = columns.len();
+    let mut result = Array2::<f64>::from_elem((n_samples, n_series), f64::NAN);
+    for (j, col) in columns.into_iter().enumerate() {
+        for (i, val) in col.into_iter().enumerate() {
+            result[[i, j]] = val;
+        }
+    }
+    result.into_pyarray(py)
+}
+
+/// Convert a pair of column-vectors into a pair of numpy 2-D arrays.
+fn column_pair_to_numpy2d<'py>(
+    py: Python<'py>,
+    n_samples: usize,
+    cols_a: Vec<Vec<f64>>,
+    cols_b: Vec<Vec<f64>>,
+) -> (Bound<'py, PyArray2<f64>>, Bound<'py, PyArray2<f64>>) {
+    (
+        columns_to_numpy2d(py, n_samples, cols_a),
+        columns_to_numpy2d(py, n_samples, cols_b),
+    )
 }
 
 fn validate_same_shape(
@@ -38,244 +74,40 @@ fn validate_same_shape(
     }
 }
 
-fn finish_single_output<'py>(
-    py: Python<'py>,
-    n_samples: usize,
-    n_series: usize,
-    col_results: Vec<Vec<f64>>,
-) -> Bound<'py, PyArray2<f64>> {
-    let mut result = Array2::<f64>::from_elem((n_samples, n_series), f64::NAN);
-    for (series_idx, values) in col_results.into_iter().enumerate() {
-        debug_assert_eq!(values.len(), n_samples);
-        for (sample_idx, value) in values.into_iter().enumerate() {
-            result[[sample_idx, series_idx]] = value;
-        }
-    }
-    result.into_pyarray(py)
+fn map_core_err(err: String) -> PyErr {
+    PyValueError::new_err(err)
 }
 
-fn finish_pair_output<'py>(
-    py: Python<'py>,
-    n_samples: usize,
-    n_series: usize,
-    col_results: Vec<(Vec<f64>, Vec<f64>)>,
-) -> (Bound<'py, PyArray2<f64>>, Bound<'py, PyArray2<f64>>) {
-    let mut result_k = Array2::<f64>::from_elem((n_samples, n_series), f64::NAN);
-    let mut result_d = Array2::<f64>::from_elem((n_samples, n_series), f64::NAN);
+// ---------------------------------------------------------------------------
+// Parallel-aware unary batch helper
+// ---------------------------------------------------------------------------
 
-    for (series_idx, (k_values, d_values)) in col_results.into_iter().enumerate() {
-        debug_assert_eq!(k_values.len(), n_samples);
-        debug_assert_eq!(d_values.len(), n_samples);
-        for (sample_idx, value) in k_values.into_iter().enumerate() {
-            result_k[[sample_idx, series_idx]] = value;
-        }
-        for (sample_idx, value) in d_values.into_iter().enumerate() {
-            result_d[[sample_idx, series_idx]] = value;
-        }
-    }
-
-    (result_k.into_pyarray(py), result_d.into_pyarray(py))
-}
-
-fn run_unary_batch<'py, F>(
+/// Run a unary batch function.  When `parallel` is true, split column extraction
+/// across Rayon threads and process in parallel; otherwise delegate sequentially
+/// to `ferro_ta_core::batch`.
+fn run_unary_batch_par<'py, F>(
     py: Python<'py>,
     data: PyReadonlyArray2<'py, f64>,
     parallel: bool,
-    process_col: F,
-) -> Bound<'py, PyArray2<f64>>
+    per_col: F,
+) -> PyResult<Bound<'py, PyArray2<f64>>>
 where
     F: Fn(&[f64]) -> Vec<f64> + Sync,
 {
     let arr = data.as_array();
-    let (n_samples, n_series) = arr.dim();
-    let series_major = transpose_to_series_major(arr);
+    let (n_samples, _n_series) = arr.dim();
+    let columns = numpy2d_to_columns(&arr);
 
     let col_results: Vec<Vec<f64>> = py.allow_threads(|| {
-        let run = |series_idx: usize| {
-            let column_row = series_major.row(series_idx);
-            let column = column_row
-                .as_slice()
-                .expect("series-major rows are contiguous");
-            process_col(column)
-        };
         if parallel {
-            (0..n_series).into_par_iter().map(run).collect()
+            columns.par_iter().map(|col| per_col(col)).collect()
         } else {
-            (0..n_series).map(run).collect()
+            columns.iter().map(|col| per_col(col)).collect()
         }
     });
 
-    finish_single_output(py, n_samples, n_series, col_results)
+    Ok(columns_to_numpy2d(py, n_samples, col_results))
 }
-
-fn validate_indicator_requests(names: &[String], timeperiods: &[usize]) -> PyResult<()> {
-    if names.len() != timeperiods.len() {
-        return Err(PyValueError::new_err(format!(
-            "names length ({}) must equal timeperiods length ({})",
-            names.len(),
-            timeperiods.len()
-        )));
-    }
-    for (name, &timeperiod) in names.iter().zip(timeperiods.iter()) {
-        if timeperiod == 0 {
-            return Err(PyValueError::new_err(format!(
-                "{name}: timeperiod must be >= 1"
-            )));
-        }
-    }
-    Ok(())
-}
-
-fn compute_cci(high: &[f64], low: &[f64], close: &[f64], timeperiod: usize) -> Vec<f64> {
-    let n = high.len();
-    let typical_price: Vec<f64> = high
-        .iter()
-        .zip(low.iter())
-        .zip(close.iter())
-        .map(|((&h, &l), &c)| (h + l + c) / 3.0)
-        .collect();
-
-    let mut result = vec![f64::NAN; n];
-    for end in (timeperiod - 1)..n {
-        let window = &typical_price[(end + 1 - timeperiod)..=end];
-        let mean = window.iter().sum::<f64>() / timeperiod as f64;
-        let mad = window
-            .iter()
-            .map(|&value| (value - mean).abs())
-            .sum::<f64>()
-            / timeperiod as f64;
-        result[end] = if mad != 0.0 {
-            (typical_price[end] - mean) / (0.015 * mad)
-        } else {
-            0.0
-        };
-    }
-    result
-}
-
-fn compute_willr(
-    high: &[f64],
-    low: &[f64],
-    close: &[f64],
-    timeperiod: usize,
-) -> PyResult<Vec<f64>> {
-    let n = high.len();
-    let mut result = vec![f64::NAN; n];
-    let mut max_ind =
-        Maximum::new(timeperiod).map_err(|err| PyValueError::new_err(err.to_string()))?;
-    let mut min_ind =
-        Minimum::new(timeperiod).map_err(|err| PyValueError::new_err(err.to_string()))?;
-
-    for (idx, ((&high_value, &low_value), &close_value)) in
-        high.iter().zip(low.iter()).zip(close.iter()).enumerate()
-    {
-        let highest = max_ind.next(high_value);
-        let lowest = min_ind.next(low_value);
-        if idx + 1 >= timeperiod {
-            let range = highest - lowest;
-            result[idx] = if range != 0.0 {
-                -100.0 * (highest - close_value) / range
-            } else {
-                -50.0
-            };
-        }
-    }
-
-    Ok(result)
-}
-
-fn compute_close_indicator(name: &str, close: &[f64], timeperiod: usize) -> PyResult<Vec<f64>> {
-    match name {
-        "SMA" => Ok(ferro_ta_core::overlap::sma(close, timeperiod)),
-        "EMA" => Ok(ferro_ta_core::overlap::ema(close, timeperiod)),
-        "RSI" => Ok(ferro_ta_core::momentum::rsi(close, timeperiod)),
-        "STDDEV" => Ok(ferro_ta_core::statistic::stddev(close, timeperiod, 1.0)),
-        "VAR" => Ok(ferro_ta_core::statistic::stddev(close, timeperiod, 1.0)
-            .into_iter()
-            .map(|value| if value.is_nan() { value } else { value * value })
-            .collect()),
-        "LINEARREG" => {
-            use crate::statistic::common::rolling_linreg_apply;
-            let last_x = (timeperiod - 1) as f64;
-            Ok(rolling_linreg_apply(
-                close,
-                timeperiod,
-                |slope: f64, intercept: f64| intercept + slope * last_x,
-            ))
-        }
-        "LINEARREG_SLOPE" => {
-            use crate::statistic::common::rolling_linreg_apply;
-            Ok(rolling_linreg_apply(
-                close,
-                timeperiod,
-                |slope: f64, _: f64| slope,
-            ))
-        }
-        "LINEARREG_INTERCEPT" => {
-            use crate::statistic::common::rolling_linreg_apply;
-            Ok(rolling_linreg_apply(
-                close,
-                timeperiod,
-                |_: f64, intercept: f64| intercept,
-            ))
-        }
-        "LINEARREG_ANGLE" => {
-            use crate::statistic::common::rolling_linreg_apply;
-            Ok(rolling_linreg_apply(
-                close,
-                timeperiod,
-                |slope: f64, _: f64| slope.atan() * 180.0 / std::f64::consts::PI,
-            ))
-        }
-        "TSF" => {
-            use crate::statistic::common::rolling_linreg_apply;
-            let forecast_x = timeperiod as f64;
-            Ok(rolling_linreg_apply(
-                close,
-                timeperiod,
-                |slope: f64, intercept: f64| intercept + slope * forecast_x,
-            ))
-        }
-        _ => Err(PyValueError::new_err(format!(
-            "unsupported close indicator for grouped execution: {name}"
-        ))),
-    }
-}
-
-fn compute_hlc_indicator(
-    name: &str,
-    high: &[f64],
-    low: &[f64],
-    close: &[f64],
-    timeperiod: usize,
-) -> PyResult<Vec<f64>> {
-    match name {
-        "ATR" => Ok(ferro_ta_core::volatility::atr(high, low, close, timeperiod)),
-        "NATR" => {
-            let atr = ferro_ta_core::volatility::atr(high, low, close, timeperiod);
-            Ok(atr
-                .into_iter()
-                .zip(close.iter())
-                .map(|(atr_value, &close_value)| {
-                    if atr_value.is_nan() || close_value == 0.0 {
-                        f64::NAN
-                    } else {
-                        (atr_value / close_value) * 100.0
-                    }
-                })
-                .collect())
-        }
-        "ADX" => Ok(ferro_ta_core::momentum::adx(high, low, close, timeperiod)),
-        "ADXR" => Ok(ferro_ta_core::momentum::adxr(high, low, close, timeperiod)),
-        "CCI" => Ok(compute_cci(high, low, close, timeperiod)),
-        "WILLR" => compute_willr(high, low, close, timeperiod),
-        _ => Err(PyValueError::new_err(format!(
-            "unsupported HLC indicator for grouped execution: {name}"
-        ))),
-    }
-}
-
-type IndicatorArrayList = Vec<Py<PyArray1<f64>>>;
 
 // ---------------------------------------------------------------------------
 // batch_sma
@@ -309,9 +141,9 @@ pub fn batch_sma<'py>(
     log::debug!(
         "batch_sma: timeperiod={timeperiod}, shape=({n_samples}, {n_series}), parallel={parallel}"
     );
-    Ok(run_unary_batch(py, data, parallel, |col| {
+    run_unary_batch_par(py, data, parallel, |col| {
         ferro_ta_core::overlap::sma(col, timeperiod)
-    }))
+    })
 }
 
 // ---------------------------------------------------------------------------
@@ -319,17 +151,6 @@ pub fn batch_sma<'py>(
 // ---------------------------------------------------------------------------
 
 /// Batch Exponential Moving Average — applies EMA to every column.
-///
-/// Parameters
-/// ----------
-/// data : numpy array, shape (n_samples, n_series), dtype float64
-/// timeperiod : int
-/// parallel : bool, default True
-///   When True, columns are processed in parallel via Rayon (GIL released).
-///
-/// Returns
-/// -------
-/// numpy array, shape (n_samples, n_series), dtype float64
 #[pyfunction]
 #[pyo3(signature = (data, timeperiod = 30, parallel = true))]
 pub fn batch_ema<'py>(
@@ -345,9 +166,9 @@ pub fn batch_ema<'py>(
     log::debug!(
         "batch_ema: timeperiod={timeperiod}, shape=({n_samples}, {n_series}), parallel={parallel}"
     );
-    Ok(run_unary_batch(py, data, parallel, |col| {
+    run_unary_batch_par(py, data, parallel, |col| {
         ferro_ta_core::overlap::ema(col, timeperiod)
-    }))
+    })
 }
 
 // ---------------------------------------------------------------------------
@@ -355,18 +176,6 @@ pub fn batch_ema<'py>(
 // ---------------------------------------------------------------------------
 
 /// Batch RSI — applies RSI (Wilder seeding) to every column.
-///
-/// Parameters
-/// ----------
-/// data : numpy array, shape (n_samples, n_series), dtype float64
-/// timeperiod : int
-/// parallel : bool, default True
-///   When True, columns are processed in parallel via Rayon (GIL released).
-///
-/// Returns
-/// -------
-/// numpy array, shape (n_samples, n_series), dtype float64
-///   Values in [0, 100]; NaN during warmup.
 #[pyfunction]
 #[pyo3(signature = (data, timeperiod = 14, parallel = true))]
 pub fn batch_rsi<'py>(
@@ -382,49 +191,9 @@ pub fn batch_rsi<'py>(
     log::debug!(
         "batch_rsi: timeperiod={timeperiod}, shape=({n_samples}, {n_series}), parallel={parallel}"
     );
-
-    let period_f = timeperiod as f64;
-    Ok(run_unary_batch(py, data, parallel, |col| {
-        let mut col_result = vec![f64::NAN; n_samples];
-        if n_samples <= timeperiod {
-            return col_result;
-        }
-        let mut avg_gain = 0.0_f64;
-        let mut avg_loss = 0.0_f64;
-        for i in 1..=timeperiod {
-            let delta = col[i] - col[i - 1];
-            if delta > 0.0 {
-                avg_gain += delta;
-            } else {
-                avg_loss += -delta;
-            }
-        }
-        avg_gain /= period_f;
-        avg_loss /= period_f;
-        let rs = if avg_loss == 0.0 {
-            f64::MAX
-        } else {
-            avg_gain / avg_loss
-        };
-        col_result[timeperiod] = 100.0 - 100.0 / (1.0 + rs);
-        for i in (timeperiod + 1)..n_samples {
-            let delta = col[i] - col[i - 1];
-            let (gain, loss) = if delta > 0.0 {
-                (delta, 0.0)
-            } else {
-                (0.0, -delta)
-            };
-            avg_gain = (avg_gain * (period_f - 1.0) + gain) / period_f;
-            avg_loss = (avg_loss * (period_f - 1.0) + loss) / period_f;
-            let rs = if avg_loss == 0.0 {
-                f64::MAX
-            } else {
-                avg_gain / avg_loss
-            };
-            col_result[i] = 100.0 - 100.0 / (1.0 + rs);
-        }
-        col_result
-    }))
+    run_unary_batch_par(py, data, parallel, |col| {
+        ferro_ta_core::momentum::rsi(col, timeperiod)
+    })
 }
 
 // ---------------------------------------------------------------------------
@@ -451,40 +220,27 @@ pub fn batch_atr<'py>(
     validate_same_shape((n_samples, n_series), arr_l.dim(), "low")?;
     validate_same_shape((n_samples, n_series), arr_c.dim(), "close")?;
 
-    let high_by_series = transpose_to_series_major(arr_h);
-    let low_by_series = transpose_to_series_major(arr_l);
-    let close_by_series = transpose_to_series_major(arr_c);
+    let h_cols = numpy2d_to_columns(&arr_h);
+    let l_cols = numpy2d_to_columns(&arr_l);
+    let c_cols = numpy2d_to_columns(&arr_c);
 
     let col_results: Vec<Vec<f64>> = py.allow_threads(|| {
-        let process_col = |series_idx: usize| -> Vec<f64> {
-            let high_row = high_by_series.row(series_idx);
-            let low_row = low_by_series.row(series_idx);
-            let close_row = close_by_series.row(series_idx);
-            let high_col = high_row
-                .as_slice()
-                .expect("series-major rows are contiguous");
-            let low_col = low_row
-                .as_slice()
-                .expect("series-major rows are contiguous");
-            let close_col = close_row
-                .as_slice()
-                .expect("series-major rows are contiguous");
-            ferro_ta_core::volatility::atr(high_col, low_col, close_col, timeperiod)
+        let process = |i: usize| {
+            ferro_ta_core::volatility::atr(&h_cols[i], &l_cols[i], &c_cols[i], timeperiod)
         };
         if parallel {
-            (0..n_series).into_par_iter().map(process_col).collect()
+            (0..n_series).into_par_iter().map(process).collect()
         } else {
-            (0..n_series).map(process_col).collect()
+            (0..n_series).map(process).collect()
         }
     });
-    Ok(finish_single_output(py, n_samples, n_series, col_results))
+    Ok(columns_to_numpy2d(py, n_samples, col_results))
 }
 
 // ---------------------------------------------------------------------------
 // batch_stoch
 // ---------------------------------------------------------------------------
 
-/// Stoch batch result type (slowk, slowd arrays).
 type StochBatchResult<'py> = (Bound<'py, PyArray2<f64>>, Bound<'py, PyArray2<f64>>);
 
 #[pyfunction]
@@ -507,40 +263,30 @@ pub fn batch_stoch<'py>(
     validate_same_shape((n_samples, n_series), arr_l.dim(), "low")?;
     validate_same_shape((n_samples, n_series), arr_c.dim(), "close")?;
 
-    let high_by_series = transpose_to_series_major(arr_h);
-    let low_by_series = transpose_to_series_major(arr_l);
-    let close_by_series = transpose_to_series_major(arr_c);
+    let h_cols = numpy2d_to_columns(&arr_h);
+    let l_cols = numpy2d_to_columns(&arr_l);
+    let c_cols = numpy2d_to_columns(&arr_c);
 
     let col_results: Vec<(Vec<f64>, Vec<f64>)> = py.allow_threads(|| {
-        let process_col = |series_idx: usize| -> (Vec<f64>, Vec<f64>) {
-            let high_row = high_by_series.row(series_idx);
-            let low_row = low_by_series.row(series_idx);
-            let close_row = close_by_series.row(series_idx);
-            let high_col = high_row
-                .as_slice()
-                .expect("series-major rows are contiguous");
-            let low_col = low_row
-                .as_slice()
-                .expect("series-major rows are contiguous");
-            let close_col = close_row
-                .as_slice()
-                .expect("series-major rows are contiguous");
+        let process = |i: usize| {
             ferro_ta_core::momentum::stoch(
-                high_col,
-                low_col,
-                close_col,
+                &h_cols[i],
+                &l_cols[i],
+                &c_cols[i],
                 fastk_period,
                 slowk_period,
                 slowd_period,
             )
         };
         if parallel {
-            (0..n_series).into_par_iter().map(process_col).collect()
+            (0..n_series).into_par_iter().map(process).collect()
         } else {
-            (0..n_series).map(process_col).collect()
+            (0..n_series).map(process).collect()
         }
     });
-    Ok(finish_pair_output(py, n_samples, n_series, col_results))
+
+    let (all_k, all_d): (Vec<Vec<f64>>, Vec<Vec<f64>>) = col_results.into_iter().unzip();
+    Ok(column_pair_to_numpy2d(py, n_samples, all_k, all_d))
 }
 
 // ---------------------------------------------------------------------------
@@ -567,38 +313,27 @@ pub fn batch_adx<'py>(
     validate_same_shape((n_samples, n_series), arr_l.dim(), "low")?;
     validate_same_shape((n_samples, n_series), arr_c.dim(), "close")?;
 
-    let high_by_series = transpose_to_series_major(arr_h);
-    let low_by_series = transpose_to_series_major(arr_l);
-    let close_by_series = transpose_to_series_major(arr_c);
+    let h_cols = numpy2d_to_columns(&arr_h);
+    let l_cols = numpy2d_to_columns(&arr_l);
+    let c_cols = numpy2d_to_columns(&arr_c);
 
     let col_results: Vec<Vec<f64>> = py.allow_threads(|| {
-        let process_col = |series_idx: usize| -> Vec<f64> {
-            let high_row = high_by_series.row(series_idx);
-            let low_row = low_by_series.row(series_idx);
-            let close_row = close_by_series.row(series_idx);
-            let high_col = high_row
-                .as_slice()
-                .expect("series-major rows are contiguous");
-            let low_col = low_row
-                .as_slice()
-                .expect("series-major rows are contiguous");
-            let close_col = close_row
-                .as_slice()
-                .expect("series-major rows are contiguous");
-            ferro_ta_core::momentum::adx(high_col, low_col, close_col, timeperiod)
-        };
+        let process =
+            |i: usize| ferro_ta_core::momentum::adx(&h_cols[i], &l_cols[i], &c_cols[i], timeperiod);
         if parallel {
-            (0..n_series).into_par_iter().map(process_col).collect()
+            (0..n_series).into_par_iter().map(process).collect()
         } else {
-            (0..n_series).map(process_col).collect()
+            (0..n_series).map(process).collect()
         }
     });
-    Ok(finish_single_output(py, n_samples, n_series, col_results))
+    Ok(columns_to_numpy2d(py, n_samples, col_results))
 }
 
 // ---------------------------------------------------------------------------
 // grouped 1-D execution
 // ---------------------------------------------------------------------------
+
+type IndicatorArrayList = Vec<Py<PyArray1<f64>>>;
 
 #[pyfunction]
 #[pyo3(signature = (close, names, timeperiods, parallel = true))]
@@ -609,22 +344,36 @@ pub fn run_close_indicators<'py>(
     timeperiods: Vec<usize>,
     parallel: bool,
 ) -> PyResult<IndicatorArrayList> {
-    validate_indicator_requests(&names, &timeperiods)?;
     let close_values = close.as_slice()?;
 
-    let results: Vec<PyResult<Vec<f64>>> = py.allow_threads(|| {
-        let run = |idx: usize| compute_close_indicator(&names[idx], close_values, timeperiods[idx]);
-        if parallel {
-            (0..names.len()).into_par_iter().map(run).collect()
-        } else {
-            (0..names.len()).map(run).collect()
-        }
-    });
-
-    results
-        .into_iter()
-        .map(|result| result.map(|values| values.into_pyarray(py).unbind()))
-        .collect()
+    if parallel {
+        // Parallel path: call core per-indicator in parallel via Rayon
+        let results: Vec<Result<Vec<f64>, String>> = py.allow_threads(|| {
+            (0..names.len())
+                .into_par_iter()
+                .map(|idx| {
+                    ferro_ta_core::batch::run_close_indicators(
+                        close_values,
+                        &[names[idx].clone()],
+                        &[timeperiods[idx]],
+                    )
+                    .map(|mut v| v.remove(0))
+                })
+                .collect()
+        });
+        results
+            .into_iter()
+            .map(|r| r.map(|v| v.into_pyarray(py).unbind()).map_err(map_core_err))
+            .collect()
+    } else {
+        let results =
+            ferro_ta_core::batch::run_close_indicators(close_values, &names, &timeperiods)
+                .map_err(map_core_err)?;
+        Ok(results
+            .into_iter()
+            .map(|v| v.into_pyarray(py).unbind())
+            .collect())
+    }
 }
 
 #[pyfunction]
@@ -638,7 +387,6 @@ pub fn run_hlc_indicators<'py>(
     timeperiods: Vec<usize>,
     parallel: bool,
 ) -> PyResult<IndicatorArrayList> {
-    validate_indicator_requests(&names, &timeperiods)?;
     let high_values = high.as_slice()?;
     let low_values = low.as_slice()?;
     let close_values = close.as_slice()?;
@@ -649,27 +397,40 @@ pub fn run_hlc_indicators<'py>(
         ));
     }
 
-    let results: Vec<PyResult<Vec<f64>>> = py.allow_threads(|| {
-        let run = |idx: usize| {
-            compute_hlc_indicator(
-                &names[idx],
-                high_values,
-                low_values,
-                close_values,
-                timeperiods[idx],
-            )
-        };
-        if parallel {
-            (0..names.len()).into_par_iter().map(run).collect()
-        } else {
-            (0..names.len()).map(run).collect()
-        }
-    });
-
-    results
-        .into_iter()
-        .map(|result| result.map(|values| values.into_pyarray(py).unbind()))
-        .collect()
+    if parallel {
+        let results: Vec<Result<Vec<f64>, String>> = py.allow_threads(|| {
+            (0..names.len())
+                .into_par_iter()
+                .map(|idx| {
+                    ferro_ta_core::batch::run_hlc_indicators(
+                        high_values,
+                        low_values,
+                        close_values,
+                        &[names[idx].clone()],
+                        &[timeperiods[idx]],
+                    )
+                    .map(|mut v| v.remove(0))
+                })
+                .collect()
+        });
+        results
+            .into_iter()
+            .map(|r| r.map(|v| v.into_pyarray(py).unbind()).map_err(map_core_err))
+            .collect()
+    } else {
+        let results = ferro_ta_core::batch::run_hlc_indicators(
+            high_values,
+            low_values,
+            close_values,
+            &names,
+            &timeperiods,
+        )
+        .map_err(map_core_err)?;
+        Ok(results
+            .into_iter()
+            .map(|v| v.into_pyarray(py).unbind())
+            .collect())
+    }
 }
 
 // ---------------------------------------------------------------------------

@@ -277,6 +277,264 @@ def regime(
         raise ValueError(f"Unknown regime method '{method}'. Use 'adx' or 'combined'.")
 
 
+# ---------------------------------------------------------------------------
+# Phase 4: Volatility/Trend regime detection (pure NumPy)
+# ---------------------------------------------------------------------------
+
+
+try:
+    from ferro_ta._ferro_ta import sma as _rust_sma
+except ImportError:
+    _rust_sma = None
+
+
+def _rolling_sma_pure(arr: np.ndarray, window: int) -> np.ndarray:
+    """Rolling SMA — delegates to the Rust SMA when available."""
+    if _rust_sma is not None:
+        return np.asarray(_rust_sma(arr, window), dtype=np.float64)
+    # Fallback: O(n) rolling SMA using cumsum
+    n = len(arr)
+    out = np.full(n, np.nan)
+    if window > n:
+        return out
+    cs = np.cumsum(arr)
+    out[window - 1] = cs[window - 1] / window
+    if window < n:
+        out[window:] = (cs[window:] - cs[: n - window]) / window
+    return out
+
+
+def _rolling_std_pure(arr: np.ndarray, window: int) -> np.ndarray:
+    """O(n) rolling std using cumsum-of-squares on the valid (non-NaN) portion.
+
+    Handles leading NaN values (e.g., log returns where arr[0] is NaN).
+    NaN is returned for warm-up bars.
+    """
+    n = len(arr)
+    out = np.full(n, np.nan)
+    if window < 2 or window > n:
+        return out
+
+    # Find the first non-NaN index
+    first_valid = 0
+    while first_valid < n and np.isnan(arr[first_valid]):
+        first_valid += 1
+
+    if first_valid >= n:
+        return out  # all NaN
+
+    # Work on the valid slice
+    valid_slice = arr[first_valid:]
+    m = len(valid_slice)
+    if window > m:
+        return out
+
+    cs = np.cumsum(valid_slice)
+    cs2 = np.cumsum(valid_slice**2)
+
+    n_windows = m - window + 1
+    s = np.empty(n_windows)
+    s2 = np.empty(n_windows)
+    s[0] = cs[window - 1]
+    s2[0] = cs2[window - 1]
+    if n_windows > 1:
+        s[1:] = cs[window:] - cs[: m - window]
+        s2[1:] = cs2[window:] - cs2[: m - window]
+
+    mean = s / window
+    var = np.maximum(s2 / window - mean**2, 0.0)
+    stds = np.sqrt(var)
+
+    # Place back into output (first result is at index first_valid + window - 1)
+    start_out = first_valid + window - 1
+    out[start_out : start_out + n_windows] = stds
+    return out
+
+
+def detect_volatility_regime(
+    close: ArrayLike,
+    window: int = 20,
+    n_regimes: int = 3,
+) -> NDArray:
+    """Label bars by rolling volatility percentile bucket (0 = lowest vol regime).
+
+    Uses rolling standard deviation of log returns. NaN for warm-up bars
+    (returned as -1 in the integer output).
+
+    Parameters
+    ----------
+    close : array-like
+        Close price series.
+    window : int
+        Rolling window for std computation (default 20).
+    n_regimes : int
+        Number of volatility regimes (default 3: low/mid/high = 0/1/2).
+
+    Returns
+    -------
+    NDArray[int64]
+        Integer array where each element is in {-1, 0, ..., n_regimes-1}.
+        -1 indicates NaN (warm-up) bars.
+    """
+    c = np.asarray(close, dtype=np.float64)
+    n = len(c)
+    out = np.full(n, -1, dtype=np.int64)
+
+    log_ret = np.full(n, np.nan)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        log_ret[1:] = np.log(c[1:] / c[:-1])
+
+    rolling_vol = _rolling_std_pure(log_ret, window)
+
+    valid = ~np.isnan(rolling_vol)
+    if not np.any(valid):
+        return out
+
+    vol_vals = rolling_vol[valid]
+    pcts = [100.0 * k / n_regimes for k in range(1, n_regimes)]
+    boundaries = np.percentile(vol_vals, pcts) if pcts else np.array([])
+
+    labels = np.digitize(vol_vals, boundaries).astype(np.int64)
+
+    out[valid] = labels
+    return out
+
+
+def detect_trend_regime(
+    close: ArrayLike,
+    fast: int = 50,
+    slow: int = 200,
+) -> NDArray:
+    """Label bars: 1=bull (fast SMA > slow SMA), -1=bear, 0=sideways/NaN warmup.
+
+    Parameters
+    ----------
+    close : array-like
+        Close price series.
+    fast : int
+        Fast SMA period (default 50).
+    slow : int
+        Slow SMA period (default 200).
+
+    Returns
+    -------
+    NDArray[int64]
+        Integer array with values in {-1, 0, 1}.
+        0 for warm-up bars where either SMA is NaN.
+    """
+    c = np.asarray(close, dtype=np.float64)
+    n = len(c)
+    out = np.zeros(n, dtype=np.int64)
+
+    fast_sma = _rolling_sma_pure(c, fast)
+    slow_sma = _rolling_sma_pure(c, slow)
+
+    valid = ~np.isnan(fast_sma) & ~np.isnan(slow_sma)
+    out[valid & (fast_sma > slow_sma)] = 1
+    out[valid & (fast_sma < slow_sma)] = -1
+    return out
+
+
+def detect_combined_regime(
+    close: ArrayLike,
+    vol_window: int = 20,
+    fast: int = 50,
+    slow: int = 200,
+) -> NDArray:
+    """Combine trend + vol into 6-state integer regime label.
+
+    States: 0=bull+low-vol, 1=bull+mid-vol, 2=bull+high-vol,
+            3=bear+low-vol, 4=bear+mid-vol, 5=bear+high-vol.
+    NaN bars (warm-up or sideways) → -1.
+
+    Parameters
+    ----------
+    close : array-like
+        Close price series.
+    vol_window : int
+        Rolling window for volatility regime detection.
+    fast, slow : int
+        SMA periods for trend regime detection.
+
+    Returns
+    -------
+    NDArray[int64]
+        Integer array with values in {-1, 0, 1, 2, 3, 4, 5}.
+    """
+    c = np.asarray(close, dtype=np.float64)
+    n = len(c)
+    out = np.full(n, -1, dtype=np.int64)
+
+    trend = detect_trend_regime(c, fast=fast, slow=slow)
+    vol = detect_volatility_regime(c, window=vol_window, n_regimes=3)
+
+    bull_valid = (trend == 1) & (vol >= 0)
+    bear_valid = (trend == -1) & (vol >= 0)
+
+    out[bull_valid] = vol[bull_valid]  # 0, 1, or 2
+    out[bear_valid] = 3 + vol[bear_valid]  # 3, 4, or 5
+
+    return out
+
+
+class RegimeFilter:
+    """Filter trading signals to only fire in allowed market regimes.
+
+    Parameters
+    ----------
+    allowed_regimes : list[int]
+        Which regime labels to trade in. Signals in other regimes are zeroed out.
+    vol_window : int
+        Rolling window for volatility regime detection.
+    fast, slow : int
+        SMA periods for trend regime detection.
+    """
+
+    def __init__(
+        self,
+        allowed_regimes: list[int],
+        vol_window: int = 20,
+        fast: int = 50,
+        slow: int = 200,
+    ) -> None:
+        self.allowed_regimes = list(allowed_regimes)
+        self._allowed_regimes_arr = np.array(allowed_regimes, dtype=np.int64)
+        self.vol_window = int(vol_window)
+        self.fast = int(fast)
+        self.slow = int(slow)
+
+    def filter(self, signals: ArrayLike, close: ArrayLike) -> NDArray:
+        """Zero out signals where regime is not in allowed_regimes.
+
+        Parameters
+        ----------
+        signals : array-like
+            Signal array (+1, -1, 0, or NaN).
+        close : array-like
+            Close price series (same length as signals).
+
+        Returns
+        -------
+        NDArray[float64]
+            Filtered signal array — signals in disallowed regimes are set to 0.
+        """
+        s = np.asarray(signals, dtype=np.float64).copy()
+        regimes = detect_combined_regime(
+            close,
+            vol_window=self.vol_window,
+            fast=self.fast,
+            slow=self.slow,
+        )
+        in_allowed = np.isin(regimes, self._allowed_regimes_arr)
+        s[~in_allowed] = 0.0
+        return s
+
+
+# ---------------------------------------------------------------------------
+# (original structural_breaks below)
+# ---------------------------------------------------------------------------
+
+
 def structural_breaks(
     series: ArrayLike,
     method: str = "cusum",

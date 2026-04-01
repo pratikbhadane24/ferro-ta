@@ -1,10 +1,15 @@
 //! Volatility indicators.
 
-/// Average True Range — Wilder smoothed (TA-Lib compatible).
+/// Compute the Average True Range (ATR), Wilder smoothed (TA-Lib compatible).
 ///
-/// Seeds ATR with SMA of TR[1..=timeperiod] (bar 0 is skipped, matching TA-Lib).
-/// First valid output is at index `timeperiod`; indices 0..timeperiod are NaN.
-/// TR is computed on-the-fly (no separate tr Vec allocation).
+/// ATR measures market volatility by smoothing the True Range with Wilder's
+/// method. Seeded with the SMA of `TR[1..=timeperiod]` (bar 0 is skipped,
+/// matching TA-Lib). Returns non-negative values; the first `timeperiod`
+/// indices are `NaN`.
+///
+/// # Arguments
+/// * `high` / `low` / `close` - OHLC price series (same length).
+/// * `timeperiod` - Smoothing period (typically 14).
 pub fn atr(high: &[f64], low: &[f64], close: &[f64], timeperiod: usize) -> Vec<f64> {
     let n = high.len();
     let mut result = vec![f64::NAN; n];
@@ -33,7 +38,14 @@ pub fn atr(high: &[f64], low: &[f64], close: &[f64], timeperiod: usize) -> Vec<f
     result
 }
 
-/// True Range — max(H-L, |H-Cprev|, |L-Cprev|).
+/// Compute the True Range for each bar.
+///
+/// `TR = max(H - L, |H - C_prev|, |L - C_prev|)`. For bar 0, TR is
+/// simply `H - L` (no previous close available). Returns non-negative
+/// values for every bar (no `NaN` warmup).
+///
+/// # Arguments
+/// * `high` / `low` / `close` - OHLC price series (same length).
 pub fn trange(high: &[f64], low: &[f64], close: &[f64]) -> Vec<f64> {
     let n = high.len();
     let mut result = vec![f64::NAN; n];

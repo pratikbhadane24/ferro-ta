@@ -1,6 +1,6 @@
 [package]
 name = "ferro_ta_core"
-version = "1.0.6"
+version = "1.1.0"
 edition = "2021"
 description = "Pure Rust core indicator library — no PyO3, no numpy dependency"
 license = "MIT"
@@ -17,6 +17,8 @@ crate-type = ["lib"]
 
 [dependencies]
 wide = { version = "1.1.1", optional = true }
+serde = { version = "1.0", features = ["derive"], optional = true }
+serde_json = { version = "1.0", optional = true }
 
 [dev-dependencies]
 criterion = { version = "0.8", features = ["html_reports"] }
@@ -28,3 +30,4 @@ harness = false
 [features]
 wide = ["dep:wide"]
 simd = ["wide"]
+serde = ["dep:serde", "dep:serde_json"]
