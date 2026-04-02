@@ -18,13 +18,20 @@ jobs:
       - uses: EmbarkStudios/cargo-deny-action@v2
 
   # -------------------------------------------------------------------------
-  # cargo-audit — uses rustsec/audit-check pre-built action
+  # cargo-audit — caches the RustSec advisory database (~400 MB git clone)
+  # so subsequent runs skip the initial fetch entirely (~3 min → ~15s)
   # -------------------------------------------------------------------------
   cargo-audit:
     name: cargo audit
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+      - name: Cache RustSec advisory database
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/advisory-db
+          key: rustsec-advisory-db-${{ hashFiles('Cargo.lock') }}
+          restore-keys: rustsec-advisory-db-
       - uses: rustsec/audit-check@v2
         with:
           token: ${{ github.token }}
@@ -112,16 +119,17 @@ jobs:
       - uses: dtolnay/rust-toolchain@v1
         with:
           toolchain: nightly
+          targets: x86_64-unknown-linux-gnu
       - uses: Swatinem/rust-cache@v2
       - uses: taiki-e/install-action@v2
         with:
           tool: cargo-fuzz
       - name: Run fuzz_sma (10000 iterations)
         working-directory: fuzz
-        run: cargo fuzz run fuzz_sma -- -runs=10000 -max_len=512
+        run: cargo fuzz run fuzz_sma --target x86_64-unknown-linux-gnu -- -runs=10000 -max_len=512
       - name: Run fuzz_rsi (10000 iterations)
         working-directory: fuzz
-        run: cargo fuzz run fuzz_rsi -- -runs=10000 -max_len=512
+        run: cargo fuzz run fuzz_rsi --target x86_64-unknown-linux-gnu -- -runs=10000 -max_len=512
       - uses: actions/upload-artifact@v7
         if: always()
         with:
