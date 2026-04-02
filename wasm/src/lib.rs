@@ -2724,6 +2724,479 @@ pub fn macd_crossover_signals(close: &Float64Array, fastperiod: usize, slowperio
     }
 }
 
+// ===========================================================================
+// New Options Features (extended Greeks, digital, American, vol estimators,
+//   vol cone, expected move, put-call parity, strategy payoff/value/Greeks)
+// ===========================================================================
+
+// ---------------------------------------------------------------------------
+// Helpers shared by the new features
+// ---------------------------------------------------------------------------
+
+fn parse_digital_kind(digital_type: &str) -> ferro_ta_core::options::digital::DigitalKind {
+    match digital_type.to_ascii_lowercase().as_str() {
+        "asset_or_nothing" | "asset" => ferro_ta_core::options::digital::DigitalKind::AssetOrNothing,
+        _ => ferro_ta_core::options::digital::DigitalKind::CashOrNothing,
+    }
+}
+
+/// Convert a Float64Array to a Vec<i64> (for instrument/side/option_type codes).
+fn to_i64_vec(arr: &Float64Array) -> Vec<i64> {
+    to_vec(arr).into_iter().map(|x| x as i64).collect()
+}
+
+/// Convert a Float64Array to a Vec<usize> (for window sizes).
+fn to_usize_vec(arr: &Float64Array) -> Vec<usize> {
+    to_vec(arr).into_iter().map(|x| x as usize).collect()
+}
+
+// ---------------------------------------------------------------------------
+// Put-call parity check
+// ---------------------------------------------------------------------------
+
+/// Put-call parity deviation: `C - P - (S·e^{-qT} - K·e^{-rT})`.
+///
+/// Returns 0 at no-arbitrage.
+#[wasm_bindgen]
+pub fn put_call_parity_deviation(
+    call_price: f64,
+    put_price: f64,
+    spot: f64,
+    strike: f64,
+    rate: f64,
+    carry: f64,
+    time_to_expiry: f64,
+) -> f64 {
+    ferro_ta_core::options::pricing::put_call_parity_deviation(
+        call_price, put_price, spot, strike, rate, carry, time_to_expiry,
+    )
+}
+
+// ---------------------------------------------------------------------------
+// Extended (higher-order) Greeks
+// ---------------------------------------------------------------------------
+
+/// Extended BSM Greeks: vanna, volga, charm, speed, color.
+///
+/// # Returns
+/// `js_sys::Array` of five f64 values: `[vanna, volga, charm, speed, color]`.
+#[wasm_bindgen]
+pub fn extended_greeks(
+    spot: f64,
+    strike: f64,
+    rate: f64,
+    carry: f64,
+    time_to_expiry: f64,
+    volatility: f64,
+    kind: &str,
+) -> Array {
+    use ferro_ta_core::options::{greeks::model_extended_greeks, OptionContract, OptionEvaluation, PricingModel};
+    let k = parse_option_kind(kind);
+    // In this codebase, `carry` = dividend yield q (same convention as all other WASM/PyO3 APIs).
+    let eg = model_extended_greeks(OptionEvaluation {
+        contract: OptionContract {
+            model: PricingModel::BlackScholes,
+            underlying: spot,
+            strike,
+            rate,
+            carry,
+            time_to_expiry,
+            kind: k,
+        },
+        volatility,
+    });
+    let out = Array::new();
+    out.push(&JsValue::from_f64(eg.vanna));
+    out.push(&JsValue::from_f64(eg.volga));
+    out.push(&JsValue::from_f64(eg.charm));
+    out.push(&JsValue::from_f64(eg.speed));
+    out.push(&JsValue::from_f64(eg.color));
+    out
+}
+
+// ---------------------------------------------------------------------------
+// Digital options
+// ---------------------------------------------------------------------------
+
+/// Price a digital (binary) option.
+///
+/// # Arguments
+/// - `kind` – `"call"` or `"put"`
+/// - `digital_type` – `"cash_or_nothing"` (default) or `"asset_or_nothing"`
+#[wasm_bindgen]
+pub fn digital_price(
+    spot: f64,
+    strike: f64,
+    rate: f64,
+    carry: f64,
+    time_to_expiry: f64,
+    volatility: f64,
+    kind: &str,
+    digital_type: &str,
+) -> f64 {
+    ferro_ta_core::options::digital::digital_price(
+        spot,
+        strike,
+        rate,
+        carry,
+        time_to_expiry,
+        volatility,
+        parse_option_kind(kind),
+        parse_digital_kind(digital_type),
+    )
+}
+
+/// Greeks for a digital option (numerical central differences).
+///
+/// # Returns
+/// `js_sys::Array` of three f64 values: `[delta, gamma, vega]`.
+#[wasm_bindgen]
+pub fn digital_greeks(
+    spot: f64,
+    strike: f64,
+    rate: f64,
+    carry: f64,
+    time_to_expiry: f64,
+    volatility: f64,
+    kind: &str,
+    digital_type: &str,
+) -> Array {
+    let (delta, gamma, vega) = ferro_ta_core::options::digital::digital_greeks(
+        spot,
+        strike,
+        rate,
+        carry,
+        time_to_expiry,
+        volatility,
+        parse_option_kind(kind),
+        parse_digital_kind(digital_type),
+    );
+    let out = Array::new();
+    out.push(&JsValue::from_f64(delta));
+    out.push(&JsValue::from_f64(gamma));
+    out.push(&JsValue::from_f64(vega));
+    out
+}
+
+// ---------------------------------------------------------------------------
+// American options (Barone-Adesi-Whaley)
+// ---------------------------------------------------------------------------
+
+/// American option price using the Barone-Adesi-Whaley approximation.
+#[wasm_bindgen]
+pub fn american_price(
+    spot: f64,
+    strike: f64,
+    rate: f64,
+    carry: f64,
+    time_to_expiry: f64,
+    volatility: f64,
+    kind: &str,
+) -> f64 {
+    ferro_ta_core::options::american::american_price_baw(
+        spot,
+        strike,
+        rate,
+        carry,
+        time_to_expiry,
+        volatility,
+        parse_option_kind(kind),
+    )
+}
+
+/// Early exercise premium: `american_price - european_price`.
+#[wasm_bindgen]
+pub fn early_exercise_premium(
+    spot: f64,
+    strike: f64,
+    rate: f64,
+    carry: f64,
+    time_to_expiry: f64,
+    volatility: f64,
+    kind: &str,
+) -> f64 {
+    ferro_ta_core::options::american::early_exercise_premium(
+        spot,
+        strike,
+        rate,
+        carry,
+        time_to_expiry,
+        volatility,
+        parse_option_kind(kind),
+    )
+}
+
+// ---------------------------------------------------------------------------
+// Historical volatility estimators
+// ---------------------------------------------------------------------------
+
+/// Close-to-close realised volatility (rolling).
+///
+/// First `window - 1` values are `NaN`.
+#[wasm_bindgen]
+pub fn close_to_close_vol(
+    close: &Float64Array,
+    window: usize,
+    trading_days: f64,
+) -> Float64Array {
+    from_vec(ferro_ta_core::options::realized_vol::close_to_close_vol(&to_vec(close), window, trading_days))
+}
+
+/// Parkinson (high-low) volatility estimator (rolling).
+#[wasm_bindgen]
+pub fn parkinson_vol(
+    high: &Float64Array,
+    low: &Float64Array,
+    window: usize,
+    trading_days: f64,
+) -> Float64Array {
+    from_vec(ferro_ta_core::options::realized_vol::parkinson_vol(
+        &to_vec(high),
+        &to_vec(low),
+        window,
+        trading_days,
+    ))
+}
+
+/// Garman-Klass OHLC volatility estimator (rolling).
+#[wasm_bindgen]
+pub fn garman_klass_vol(
+    open: &Float64Array,
+    high: &Float64Array,
+    low: &Float64Array,
+    close: &Float64Array,
+    window: usize,
+    trading_days: f64,
+) -> Float64Array {
+    from_vec(ferro_ta_core::options::realized_vol::garman_klass_vol(
+        &to_vec(open),
+        &to_vec(high),
+        &to_vec(low),
+        &to_vec(close),
+        window,
+        trading_days,
+    ))
+}
+
+/// Rogers-Satchell OHLC volatility estimator (rolling).
+#[wasm_bindgen]
+pub fn rogers_satchell_vol(
+    open: &Float64Array,
+    high: &Float64Array,
+    low: &Float64Array,
+    close: &Float64Array,
+    window: usize,
+    trading_days: f64,
+) -> Float64Array {
+    from_vec(ferro_ta_core::options::realized_vol::rogers_satchell_vol(
+        &to_vec(open),
+        &to_vec(high),
+        &to_vec(low),
+        &to_vec(close),
+        window,
+        trading_days,
+    ))
+}
+
+/// Yang-Zhang OHLC volatility estimator (rolling).
+///
+/// Most efficient estimator — handles overnight gaps.
+#[wasm_bindgen]
+pub fn yang_zhang_vol(
+    open: &Float64Array,
+    high: &Float64Array,
+    low: &Float64Array,
+    close: &Float64Array,
+    window: usize,
+    trading_days: f64,
+) -> Float64Array {
+    from_vec(ferro_ta_core::options::realized_vol::yang_zhang_vol(
+        &to_vec(open),
+        &to_vec(high),
+        &to_vec(low),
+        &to_vec(close),
+        window,
+        trading_days,
+    ))
+}
+
+// ---------------------------------------------------------------------------
+// Volatility cone
+// ---------------------------------------------------------------------------
+
+/// Volatility cone: percentile distribution of close-to-close vol across windows.
+///
+/// # Arguments
+/// - `close` – `Float64Array` of close prices.
+/// - `windows` – `Float64Array` of window sizes (e.g. `[21, 42, 63, 126, 252]`).
+/// - `trading_days` – annualisation factor (default 252).
+///
+/// # Returns
+/// `js_sys::Array` of length `n_windows`, each element an `Array`:
+/// `[window, min, p25, median, p75, max]`.
+#[wasm_bindgen]
+pub fn vol_cone(
+    close: &Float64Array,
+    windows: &Float64Array,
+    trading_days: f64,
+) -> Array {
+    let c = to_vec(close);
+    let wins = to_usize_vec(windows);
+    let slices = ferro_ta_core::options::realized_vol::vol_cone(&c, &wins, trading_days);
+    let out = Array::new();
+    for s in slices {
+        let row = Array::new();
+        row.push(&JsValue::from_f64(s.window as f64));
+        row.push(&JsValue::from_f64(s.min));
+        row.push(&JsValue::from_f64(s.p25));
+        row.push(&JsValue::from_f64(s.median));
+        row.push(&JsValue::from_f64(s.p75));
+        row.push(&JsValue::from_f64(s.max));
+        out.push(&row);
+    }
+    out
+}
+
+// ---------------------------------------------------------------------------
+// Expected move
+// ---------------------------------------------------------------------------
+
+/// Expected move over `days_to_expiry` trading days.
+///
+/// Uses log-normal: `spot · e^{±σ√(days/trading_days)} − spot`.
+///
+/// # Returns
+/// `js_sys::Array` of two f64 values: `[lower_move, upper_move]` (signed).
+#[wasm_bindgen]
+pub fn expected_move(
+    spot: f64,
+    iv: f64,
+    days_to_expiry: f64,
+    trading_days_per_year: f64,
+) -> Array {
+    let (lower, upper) = ferro_ta_core::options::surface::expected_move(spot, iv, days_to_expiry, trading_days_per_year);
+    let out = Array::new();
+    out.push(&JsValue::from_f64(lower));
+    out.push(&JsValue::from_f64(upper));
+    out
+}
+
+// ---------------------------------------------------------------------------
+// Strategy payoff / value (Feature 8 — WASM exposure)
+// ---------------------------------------------------------------------------
+
+/// Aggregate strategy payoff over a spot grid at expiry.
+///
+/// Instrument codes: `0`=option, `1`=future, `2`=stock.
+/// Side codes: `1`=long, `-1`=short.
+/// Option type codes: `1`=call, `-1`=put.
+///
+/// # Returns
+/// `Float64Array` of aggregate P&L per spot grid point.
+#[wasm_bindgen]
+pub fn strategy_payoff_dense(
+    spot_grid: &Float64Array,
+    instruments: &Float64Array,
+    sides: &Float64Array,
+    option_types: &Float64Array,
+    strikes: &Float64Array,
+    premiums: &Float64Array,
+    entry_prices: &Float64Array,
+    quantities: &Float64Array,
+    multipliers: &Float64Array,
+) -> Float64Array {
+    from_vec(ferro_ta_core::options::payoff::strategy_payoff_dense(
+        &to_vec(spot_grid),
+        &to_i64_vec(instruments),
+        &to_i64_vec(sides),
+        &to_i64_vec(option_types),
+        &to_vec(strikes),
+        &to_vec(premiums),
+        &to_vec(entry_prices),
+        &to_vec(quantities),
+        &to_vec(multipliers),
+    ))
+}
+
+/// Aggregate BSM Greeks across option and futures/stock legs at a single spot.
+///
+/// # Returns
+/// `js_sys::Array` of five f64 values: `[delta, gamma, vega, theta, rho]`.
+#[wasm_bindgen]
+pub fn aggregate_greeks_dense(
+    spot: f64,
+    instruments: &Float64Array,
+    sides: &Float64Array,
+    option_types: &Float64Array,
+    strikes: &Float64Array,
+    volatilities: &Float64Array,
+    time_to_expiries: &Float64Array,
+    rates: &Float64Array,
+    carries: &Float64Array,
+    quantities: &Float64Array,
+    multipliers: &Float64Array,
+) -> Array {
+    let (delta, gamma, vega, theta, rho) = ferro_ta_core::options::payoff::aggregate_greeks_dense(
+        spot,
+        &to_i64_vec(instruments),
+        &to_i64_vec(sides),
+        &to_i64_vec(option_types),
+        &to_vec(strikes),
+        &to_vec(volatilities),
+        &to_vec(time_to_expiries),
+        &to_vec(rates),
+        &to_vec(carries),
+        &to_vec(quantities),
+        &to_vec(multipliers),
+    );
+    let out = Array::new();
+    out.push(&JsValue::from_f64(delta));
+    out.push(&JsValue::from_f64(gamma));
+    out.push(&JsValue::from_f64(vega));
+    out.push(&JsValue::from_f64(theta));
+    out.push(&JsValue::from_f64(rho));
+    out
+}
+
+/// Current BSM mid-price value of a multi-leg strategy over a spot grid (pre-expiry).
+///
+/// Unlike `strategy_payoff_dense`, this uses live BSM pricing for option legs.
+///
+/// # Returns
+/// `Float64Array` of strategy value (P&L vs premium paid) per spot grid point.
+#[wasm_bindgen]
+pub fn strategy_value_grid(
+    spot_grid: &Float64Array,
+    instruments: &Float64Array,
+    sides: &Float64Array,
+    option_types: &Float64Array,
+    strikes: &Float64Array,
+    premiums: &Float64Array,
+    entry_prices: &Float64Array,
+    quantities: &Float64Array,
+    multipliers: &Float64Array,
+    time_to_expiries: &Float64Array,
+    volatilities: &Float64Array,
+    rates: &Float64Array,
+    carries: &Float64Array,
+) -> Float64Array {
+    from_vec(ferro_ta_core::options::payoff::strategy_value_grid(
+        &to_vec(spot_grid),
+        &to_i64_vec(instruments),
+        &to_i64_vec(sides),
+        &to_i64_vec(option_types),
+        &to_vec(strikes),
+        &to_vec(premiums),
+        &to_vec(entry_prices),
+        &to_vec(quantities),
+        &to_vec(multipliers),
+        &to_vec(time_to_expiries),
+        &to_vec(volatilities),
+        &to_vec(rates),
+        &to_vec(carries),
+    ))
+}
+
 // ---------------------------------------------------------------------------
 // WASM tests (run with `wasm-pack test --node`)
 // ---------------------------------------------------------------------------

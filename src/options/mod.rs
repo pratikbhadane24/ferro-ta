@@ -1,10 +1,13 @@
 //! PyO3 wrappers for options analytics.
 
+mod american;
 mod chain;
+mod digital;
 mod greeks;
 mod iv;
 mod payoff;
 mod pricing;
+mod realized_vol;
 mod surface;
 
 use pyo3::exceptions::PyValueError;
@@ -40,9 +43,18 @@ pub fn register(m: &Bound<'_, PyModule>) -> PyResult<()> {
         self::pricing::black76_price_batch,
         m
     )?)?;
+    m.add_function(pyo3::wrap_pyfunction!(
+        self::pricing::put_call_parity_deviation,
+        m
+    )?)?;
     m.add_function(pyo3::wrap_pyfunction!(self::greeks::option_greeks, m)?)?;
     m.add_function(pyo3::wrap_pyfunction!(
         self::greeks::option_greeks_batch,
+        m
+    )?)?;
+    m.add_function(pyo3::wrap_pyfunction!(self::greeks::extended_greeks, m)?)?;
+    m.add_function(pyo3::wrap_pyfunction!(
+        self::greeks::extended_greeks_batch,
         m
     )?)?;
     m.add_function(pyo3::wrap_pyfunction!(self::iv::implied_volatility, m)?)?;
@@ -58,6 +70,7 @@ pub fn register(m: &Bound<'_, PyModule>) -> PyResult<()> {
         self::surface::term_structure_slope,
         m
     )?)?;
+    m.add_function(pyo3::wrap_pyfunction!(self::surface::expected_move, m)?)?;
     m.add_function(pyo3::wrap_pyfunction!(self::chain::moneyness_labels, m)?)?;
     m.add_function(pyo3::wrap_pyfunction!(
         self::chain::select_strike_offset,
@@ -80,5 +93,56 @@ pub fn register(m: &Bound<'_, PyModule>) -> PyResult<()> {
         self::payoff::aggregate_greeks_legs,
         m
     )?)?;
+    m.add_function(pyo3::wrap_pyfunction!(
+        self::payoff::strategy_value_dense,
+        m
+    )?)?;
+    // Digital options
+    m.add_function(pyo3::wrap_pyfunction!(self::digital::digital_price, m)?)?;
+    m.add_function(pyo3::wrap_pyfunction!(
+        self::digital::digital_price_batch,
+        m
+    )?)?;
+    m.add_function(pyo3::wrap_pyfunction!(self::digital::digital_greeks, m)?)?;
+    m.add_function(pyo3::wrap_pyfunction!(
+        self::digital::digital_greeks_batch,
+        m
+    )?)?;
+    // American options
+    m.add_function(pyo3::wrap_pyfunction!(self::american::american_price, m)?)?;
+    m.add_function(pyo3::wrap_pyfunction!(
+        self::american::american_price_batch,
+        m
+    )?)?;
+    m.add_function(pyo3::wrap_pyfunction!(
+        self::american::early_exercise_premium,
+        m
+    )?)?;
+    m.add_function(pyo3::wrap_pyfunction!(
+        self::american::early_exercise_premium_batch,
+        m
+    )?)?;
+    // Historical volatility estimators + vol cone
+    m.add_function(pyo3::wrap_pyfunction!(
+        self::realized_vol::close_to_close_vol,
+        m
+    )?)?;
+    m.add_function(pyo3::wrap_pyfunction!(
+        self::realized_vol::parkinson_vol,
+        m
+    )?)?;
+    m.add_function(pyo3::wrap_pyfunction!(
+        self::realized_vol::garman_klass_vol,
+        m
+    )?)?;
+    m.add_function(pyo3::wrap_pyfunction!(
+        self::realized_vol::rogers_satchell_vol,
+        m
+    )?)?;
+    m.add_function(pyo3::wrap_pyfunction!(
+        self::realized_vol::yang_zhang_vol,
+        m
+    )?)?;
+    m.add_function(pyo3::wrap_pyfunction!(self::realized_vol::vol_cone, m)?)?;
     Ok(())
 }

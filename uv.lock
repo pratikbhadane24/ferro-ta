@@ -950,7 +950,7 @@ wheels = [
 
 [[package]]
 name = "ferro-ta"
-version = "1.1.2"
+version = "1.1.3"
 source = { editable = "." }
 dependencies = [
     { name = "numpy" },
@@ -993,6 +993,8 @@ dev = [
     { name = "pytest-cov" },
     { name = "pyyaml" },
     { name = "ruff" },
+    { name = "scipy", version = "1.15.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "scipy", version = "1.17.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
 ]
 docs = [
     { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -1030,6 +1032,8 @@ dev = [
     { name = "pytest" },
     { name = "pyyaml" },
     { name = "ruff" },
+    { name = "scipy", version = "1.15.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "scipy", version = "1.17.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "ta" },
 ]
 
@@ -1067,6 +1071,7 @@ requires-dist = [
     { name = "pyyaml", marker = "extra == 'dev'", specifier = ">=6.0" },
     { name = "quantstats", marker = "extra == 'comparison'", specifier = ">=0.0.81" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.3" },
+    { name = "scipy", marker = "extra == 'dev'", specifier = ">=1.10" },
     { name = "sphinx", marker = "extra == 'docs'", specifier = ">=7.0" },
     { name = "sphinx-rtd-theme", marker = "extra == 'docs'", specifier = ">=1.3" },
     { name = "ta", marker = "extra == 'comparison'", specifier = ">=0.10" },
@@ -1089,6 +1094,7 @@ dev = [
     { name = "pytest", specifier = ">=7.0" },
     { name = "pyyaml", specifier = ">=6.0" },
     { name = "ruff", specifier = ">=0.3" },
+    { name = "scipy", specifier = ">=1.15.3" },
     { name = "ta", specifier = ">=0.10" },
 ]
 

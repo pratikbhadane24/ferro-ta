@@ -9,6 +9,58 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.1.3] — 2026-04-02
+
+### Added
+
+- **Stock instrument** (`instrument="stock"`) in `PayoffLeg` and `StrategyLeg`
+  for modelling equity-holding strategies (Covered Call, Protective Put, Collar,
+  Covered Strangle, Stock + Spread).  Linear payoff identical to futures.
+  Exposed in all three layers: Rust core, Python, and WASM.
+- **Extended Greeks** (`extended_greeks`): closed-form vanna (∂Δ/∂σ), volga
+  (∂²V/∂σ²), charm (∂Δ/∂t), speed (∂Γ/∂S), and color (∂Γ/∂t) for BSM.
+  Batch vectorisation supported.
+- **Digital options** (`digital_option_price`, `digital_option_greeks`):
+  cash-or-nothing and asset-or-nothing pricing (BSM closed-form) plus
+  numerical delta / gamma / vega.  Scalar and batch variants.
+- **American options** (`american_option_price`, `early_exercise_premium`):
+  Barone-Adesi-Whaley (1987) quadratic approximation — O(1) per evaluation.
+  Scalar and batch variants.
+- **Historical volatility estimators** (all rolling, annualised): close-to-close,
+  Parkinson, Garman-Klass, Rogers-Satchell, Yang-Zhang.  Yang-Zhang is
+  ~14× more efficient than close-to-close and handles overnight gaps.
+- **Volatility cone** (`vol_cone`): min / p25 / median / p75 / max distribution
+  of realised vol across user-specified window lengths — contextualises current
+  IV against historical norms.
+- **`strategy_value`**: pre-expiry BSM mid-price value of a multi-leg strategy
+  over a spot grid (time value included), complementing `strategy_payoff`
+  (expiry intrinsic).
+- **`expected_move`**: log-normal ±1σ expected price range over N days.
+- **`put_call_parity_deviation`**: detects stale quotes or data errors by
+  computing C − P − (S·e^{−qT} − K·e^{−rT}).
+- All new analytics exposed to **WASM** (`wasm/src/lib.rs`):
+  `extended_greeks`, `digital_price`, `digital_greeks`, `american_price`,
+  `early_exercise_premium`, `close_to_close_vol`, `parkinson_vol`,
+  `garman_klass_vol`, `rogers_satchell_vol`, `yang_zhang_vol`, `vol_cone`,
+  `expected_move`, `put_call_parity_deviation`, `strategy_payoff_dense`,
+  `aggregate_greeks_dense`, `strategy_value_grid`.
+- `aggregate_greeks_dense` added to `ferro_ta_core::options::payoff` (pure
+  Rust, no PyO3/numpy dependency) enabling WASM reuse.
+- Comprehensive docstrings (NumPy style with Parameters / Returns / Notes /
+  Examples) on all new Python functions.
+- Accuracy test suite `tests/unit/test_derivatives_accuracy.py` validates
+  digital options, extended Greeks, American options, and vol estimators
+  against scipy and analytical reference formulas.
+- scipy added to `dev` optional dependencies for reference testing.
+
+### Changed
+
+- `StrategyLeg.expiry_selector`, `StrategyLeg.strike_selector`, and
+  `StrategyLeg.option_type` are now `Optional` (None allowed for stock legs).
+  Existing option legs are unaffected.
+- `docs/derivatives-analytics.md` rewritten to cover all new features with
+  runnable examples and an efficiency comparison table for vol estimators.
+
 ## [1.1.2] — 2026-04-01
 
 ### Changed

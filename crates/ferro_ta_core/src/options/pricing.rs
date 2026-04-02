@@ -118,6 +118,37 @@ pub fn model_price(input: OptionEvaluation) -> f64 {
     }
 }
 
+/// Put-call parity deviation: `C - P - (S·e^{-q·T} - K·e^{-r·T})`.
+///
+/// Returns 0.0 when no arbitrage exists. A non-zero value indicates the
+/// magnitude of mispricing or data error.
+pub fn put_call_parity_deviation(
+    call_price: f64,
+    put_price: f64,
+    spot: f64,
+    strike: f64,
+    rate: f64,
+    carry: f64,
+    time_to_expiry: f64,
+) -> f64 {
+    if !call_price.is_finite()
+        || !put_price.is_finite()
+        || !spot.is_finite()
+        || !strike.is_finite()
+        || !rate.is_finite()
+        || !carry.is_finite()
+        || !time_to_expiry.is_finite()
+        || spot <= 0.0
+        || strike <= 0.0
+        || time_to_expiry < 0.0
+    {
+        return f64::NAN;
+    }
+    let pv_forward = spot * (-carry * time_to_expiry).exp();
+    let pv_strike = strike * (-rate * time_to_expiry).exp();
+    call_price - put_price - (pv_forward - pv_strike)
+}
+
 /// Lower no-arbitrage bound for the option price.
 pub fn price_lower_bound(contract: OptionContract) -> f64 {
     match contract.model {
