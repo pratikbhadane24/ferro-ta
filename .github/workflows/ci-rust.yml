@@ -7,38 +7,48 @@ permissions:
   contents: read
 
 jobs:
-  audit:
-    name: Dependency audit (cargo + pip)
+  # -------------------------------------------------------------------------
+  # cargo-deny — uses the official pre-built action (no cargo install needed)
+  # -------------------------------------------------------------------------
+  cargo-deny:
+    name: cargo deny check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+      - uses: EmbarkStudios/cargo-deny-action@v2
 
-      - name: Install cargo-audit and run cargo audit
-        run: |
-          cargo install cargo-audit
-          cargo audit
+  # -------------------------------------------------------------------------
+  # cargo-audit — uses rustsec/audit-check pre-built action
+  # -------------------------------------------------------------------------
+  cargo-audit:
+    name: cargo audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: rustsec/audit-check@v2
+        with:
+          token: ${{ github.token }}
 
-      - name: Install cargo-deny and run cargo deny check
-        run: |
-          cargo install cargo-deny --locked
-          cargo deny check
-
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v6
+  # -------------------------------------------------------------------------
+  # pip-audit + uv.lock freshness check (lightweight, no Rust needed)
+  # -------------------------------------------------------------------------
+  pip-audit:
+    name: pip-audit + uv.lock check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
+      - run: pip install uv
+      - run: uv run --with pip-audit pip-audit --skip-editable
+      - run: uv lock --check
 
-      - name: Install uv
-        run: pip install uv
-
-      - name: Install pip-audit via uv and run pip-audit
-        run: uv run --with pip-audit pip-audit --skip-editable
-
-      - name: Verify uv.lock is up-to-date
-        run: uv lock --check
-
-  rust:
-    name: Rust (fmt + clippy)
+  # -------------------------------------------------------------------------
+  # fmt + clippy (with Rust cache so subsequent runs skip recompilation)
+  # -------------------------------------------------------------------------
+  rust-lint:
+    name: Rust fmt + clippy
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -46,26 +56,32 @@ jobs:
         with:
           toolchain: stable
           components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
       - run: cargo fmt --all -- --check
       - run: cargo clippy --release -- -D warnings
-      - name: Verify benchmarks compile (ferro_ta_core)
+      - name: Verify benchmarks compile
         run: cargo bench -p ferro_ta_core --no-run
 
+  # -------------------------------------------------------------------------
+  # Build + test ferro_ta_core (with Rust cache)
+  # -------------------------------------------------------------------------
   rust-core:
-    name: Rust core library (ferro_ta_core)
+    name: Rust core (build + test)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@v1
         with:
           toolchain: stable
-      - name: Build core crate
-        run: cargo build -p ferro_ta_core
-      - name: Test core crate
-        run: cargo test -p ferro_ta_core
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo build -p ferro_ta_core
+      - run: cargo test -p ferro_ta_core
 
+  # -------------------------------------------------------------------------
+  # Coverage (optional, cached)
+  # -------------------------------------------------------------------------
   rust-coverage:
-    name: Rust coverage (tarpaulin, optional)
+    name: Rust coverage (tarpaulin)
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
@@ -73,19 +89,22 @@ jobs:
       - uses: dtolnay/rust-toolchain@v1
         with:
           toolchain: stable
-      - name: Install cargo-tarpaulin
-        run: cargo install cargo-tarpaulin --locked
-      - name: Collect Rust coverage (ferro_ta_core)
-        run: cargo tarpaulin -p ferro_ta_core --out Xml --output-dir coverage/
-      - name: Upload Rust coverage artifact
-        uses: actions/upload-artifact@v7
+      - uses: Swatinem/rust-cache@v2
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-tarpaulin
+      - run: cargo tarpaulin -p ferro_ta_core --out Xml --output-dir coverage/
+      - uses: actions/upload-artifact@v7
         with:
           name: rust-coverage
           path: coverage/
           if-no-files-found: ignore
 
+  # -------------------------------------------------------------------------
+  # Fuzz (optional, nightly, cached)
+  # -------------------------------------------------------------------------
   fuzz:
-    name: Fuzz targets (short CI run, optional)
+    name: Fuzz targets (short CI run)
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
@@ -93,16 +112,17 @@ jobs:
       - uses: dtolnay/rust-toolchain@v1
         with:
           toolchain: nightly
-      - name: Install cargo-fuzz
-        run: cargo install cargo-fuzz --locked
+      - uses: Swatinem/rust-cache@v2
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-fuzz
       - name: Run fuzz_sma (10000 iterations)
         working-directory: fuzz
         run: cargo fuzz run fuzz_sma -- -runs=10000 -max_len=512
       - name: Run fuzz_rsi (10000 iterations)
         working-directory: fuzz
         run: cargo fuzz run fuzz_rsi -- -runs=10000 -max_len=512
-      - name: Upload fuzz artifacts on crash
-        uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: fuzz-artifacts

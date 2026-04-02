@@ -8,54 +8,41 @@ permissions:
 
 jobs:
   wasm:
-    name: WASM binding (wasm-pack test --node)
+    name: WASM (test + build + bench)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: "20"
-
-      - name: Install Rust (stable)
-        uses: dtolnay/rust-toolchain@v1
+      - uses: dtolnay/rust-toolchain@v1
         with:
           toolchain: stable
           targets: wasm32-unknown-unknown
-
-      - name: Install wasm-pack
-        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
-
-      - name: Build and test WASM binding
+      - uses: Swatinem/rust-cache@v2
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: wasm-pack
+      - name: Test WASM binding
         working-directory: wasm
         run: wasm-pack test --node
-
-      - name: Build WASM package (both targets)
+      - name: Build WASM packages (node + web)
         working-directory: wasm
         run: npm run build
-
       - name: Check API manifest is current
         run: python3 scripts/check_api_manifest.py
-
-      - name: Benchmark WASM package
+      - name: Benchmark WASM
         working-directory: wasm
         run: node bench.js --json ../wasm_benchmark.json
-
-      - name: Upload WASM node package artifact
-        uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@v7
         with:
           name: wasm-pkg-node
           path: wasm/node/
-
-      - name: Upload WASM web package artifact
-        uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@v7
         with:
           name: wasm-pkg-web
           path: wasm/web/
-
-      - name: Upload WASM benchmark artifact
-        uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@v7
         with:
           name: wasm-benchmark
           path: wasm_benchmark.json
