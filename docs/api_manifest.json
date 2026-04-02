@@ -2,7 +2,7 @@
   "surfaces": {
     "python": {
       "indicator_count": 208,
-      "method_count": 447,
+      "method_count": 464,
       "categories": [
         "aggregation",
         "alerts",
@@ -1737,7 +1737,21 @@
           "params": []
         },
         {
+          "name": "stock_leg_payoff",
+          "category": "derivatives_payoff",
+          "module": "ferro_ta.analysis.derivatives_payoff",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "strategy_payoff",
+          "category": "derivatives_payoff",
+          "module": "ferro_ta.analysis.derivatives_payoff",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "strategy_value",
           "category": "derivatives_payoff",
           "module": "ferro_ta.analysis.derivatives_payoff",
           "doc": "",
@@ -2290,6 +2304,13 @@
           "params": []
         },
         {
+          "name": "ExtendedGreeks",
+          "category": "options",
+          "module": "ferro_ta.analysis.options",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "OptionGreeks",
           "category": "options",
           "module": "ferro_ta.analysis.options",
@@ -2304,6 +2325,20 @@
           "params": []
         },
         {
+          "name": "VolCone",
+          "category": "options",
+          "module": "ferro_ta.analysis.options",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "american_option_price",
+          "category": "options",
+          "module": "ferro_ta.analysis.options",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "black_76_price",
           "category": "options",
           "module": "ferro_ta.analysis.options",
@@ -2312,6 +2347,55 @@
         },
         {
           "name": "black_scholes_price",
+          "category": "options",
+          "module": "ferro_ta.analysis.options",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "close_to_close_vol",
+          "category": "options",
+          "module": "ferro_ta.analysis.options",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "digital_option_greeks",
+          "category": "options",
+          "module": "ferro_ta.analysis.options",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "digital_option_price",
+          "category": "options",
+          "module": "ferro_ta.analysis.options",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "early_exercise_premium",
+          "category": "options",
+          "module": "ferro_ta.analysis.options",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "expected_move",
+          "category": "options",
+          "module": "ferro_ta.analysis.options",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "extended_greeks",
+          "category": "options",
+          "module": "ferro_ta.analysis.options",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "garman_klass_vol",
           "category": "options",
           "module": "ferro_ta.analysis.options",
           "doc": "",
@@ -2367,6 +2451,27 @@
           "params": []
         },
         {
+          "name": "parkinson_vol",
+          "category": "options",
+          "module": "ferro_ta.analysis.options",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "put_call_parity_deviation",
+          "category": "options",
+          "module": "ferro_ta.analysis.options",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "rogers_satchell_vol",
+          "category": "options",
+          "module": "ferro_ta.analysis.options",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "select_strike",
           "category": "options",
           "module": "ferro_ta.analysis.options",
@@ -2382,6 +2487,20 @@
         },
         {
           "name": "term_structure_slope",
+          "category": "options",
+          "module": "ferro_ta.analysis.options",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "vol_cone",
+          "category": "options",
+          "module": "ferro_ta.analysis.options",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "yang_zhang_vol",
           "category": "options",
           "module": "ferro_ta.analysis.options",
           "doc": "",
@@ -4616,7 +4735,7 @@
       ]
     },
     "rust_core": {
-      "public_function_count": 331,
+      "public_function_count": 349,
       "functions": [
         {
           "module": "aggregation",
@@ -5289,6 +5408,16 @@
           "file": "momentum.rs"
         },
         {
+          "module": "options.american",
+          "function": "american_price_baw",
+          "file": "options/american.rs"
+        },
+        {
+          "module": "options.american",
+          "function": "early_exercise_premium",
+          "file": "options/american.rs"
+        },
+        {
           "module": "options.chain",
           "function": "atm_index",
           "file": "options/chain.rs"
@@ -5309,13 +5438,33 @@
           "file": "options/chain.rs"
         },
         {
+          "module": "options.digital",
+          "function": "digital_greeks",
+          "file": "options/digital.rs"
+        },
+        {
+          "module": "options.digital",
+          "function": "digital_price",
+          "file": "options/digital.rs"
+        },
+        {
           "module": "options.greeks",
           "function": "black_76_greeks",
           "file": "options/greeks.rs"
         },
         {
           "module": "options.greeks",
+          "function": "black_scholes_extended_greeks",
+          "file": "options/greeks.rs"
+        },
+        {
+          "module": "options.greeks",
           "function": "black_scholes_greeks",
+          "file": "options/greeks.rs"
+        },
+        {
+          "module": "options.greeks",
+          "function": "model_extended_greeks",
           "file": "options/greeks.rs"
         },
         {
@@ -5364,6 +5513,26 @@
           "file": "options/normal.rs"
         },
         {
+          "module": "options.payoff",
+          "function": "aggregate_greeks_dense",
+          "file": "options/payoff.rs"
+        },
+        {
+          "module": "options.payoff",
+          "function": "strategy_payoff_dense",
+          "file": "options/payoff.rs"
+        },
+        {
+          "module": "options.payoff",
+          "function": "strategy_value_dense",
+          "file": "options/payoff.rs"
+        },
+        {
+          "module": "options.payoff",
+          "function": "strategy_value_grid",
+          "file": "options/payoff.rs"
+        },
+        {
           "module": "options.pricing",
           "function": "black_76_price",
           "file": "options/pricing.rs"
@@ -5389,8 +5558,48 @@
           "file": "options/pricing.rs"
         },
         {
+          "module": "options.pricing",
+          "function": "put_call_parity_deviation",
+          "file": "options/pricing.rs"
+        },
+        {
+          "module": "options.realized_vol",
+          "function": "close_to_close_vol",
+          "file": "options/realized_vol.rs"
+        },
+        {
+          "module": "options.realized_vol",
+          "function": "garman_klass_vol",
+          "file": "options/realized_vol.rs"
+        },
+        {
+          "module": "options.realized_vol",
+          "function": "parkinson_vol",
+          "file": "options/realized_vol.rs"
+        },
+        {
+          "module": "options.realized_vol",
+          "function": "rogers_satchell_vol",
+          "file": "options/realized_vol.rs"
+        },
+        {
+          "module": "options.realized_vol",
+          "function": "vol_cone",
+          "file": "options/realized_vol.rs"
+        },
+        {
+          "module": "options.realized_vol",
+          "function": "yang_zhang_vol",
+          "file": "options/realized_vol.rs"
+        },
+        {
           "module": "options.surface",
           "function": "atm_iv",
+          "file": "options/surface.rs"
+        },
+        {
+          "module": "options.surface",
+          "function": "expected_move",
           "file": "options/surface.rs"
         },
         {
@@ -6276,16 +6485,18 @@
       ]
     },
     "wasm_node": {
-      "export_count": 205,
+      "export_count": 221,
       "exports": [
         "ad",
         "adosc",
         "adx",
         "adx_all",
         "adxr",
+        "aggregate_greeks_dense",
         "aggregate_tick_bars",
         "aggregate_time_bars",
         "aggregate_volume_bars_ticks",
+        "american_price",
         "annualized_basis",
         "apo",
         "aroon",
@@ -6318,6 +6529,7 @@
         "check_cross",
         "check_threshold",
         "choppiness_index",
+        "close_to_close_vol",
         "cmo",
         "collect_alert_bars",
         "compose_rank",
@@ -6330,17 +6542,23 @@
         "curve_summary",
         "dema",
         "detect_breaks_cusum",
+        "digital_greeks",
+        "digital_price",
         "donchian",
         "drawdown_series",
         "dx",
+        "early_exercise_premium",
         "ema",
         "exchange_charges_rate",
+        "expected_move",
+        "extended_greeks",
         "extract_trades",
         "fast_period",
         "flat_per_order",
         "forward_fill_nan",
         "funding_cumulative_pnl",
         "futures_basis",
+        "garman_klass_vol",
         "gst_rate",
         "half_kelly_fraction",
         "ht_dcperiod",
@@ -6396,6 +6614,7 @@
         "obv",
         "ohlcv_agg",
         "parity_gap",
+        "parkinson_vol",
         "per_lot",
         "period",
         "pivot_points",
@@ -6405,6 +6624,7 @@
         "ppo",
         "price_lower_bound",
         "price_upper_bound",
+        "put_call_parity_deviation",
         "rank_series",
         "rank_values",
         "rate_of_value",
@@ -6418,6 +6638,7 @@
         "rocp",
         "rocr",
         "rocr100",
+        "rogers_satchell_vol",
         "roll_yield",
         "rolling_beta",
         "rolling_max",
@@ -6455,6 +6676,8 @@
         "stoch",
         "stochf",
         "stochrsi",
+        "strategy_payoff_dense",
+        "strategy_value_grid",
         "stt_on_buy",
         "stt_on_sell",
         "stt_rate",
@@ -6474,6 +6697,7 @@
         "typprice",
         "ultosc",
         "var",
+        "vol_cone",
         "volume_bars",
         "vwap",
         "vwma",
@@ -6482,13 +6706,14 @@
         "weighted_continuous",
         "willr",
         "wma",
+        "yang_zhang_vol",
         "zscore_series"
       ]
     }
   },
   "parity_summary": {
     "python_indicator_count": 207,
-    "wasm_export_count": 205,
+    "wasm_export_count": 221,
     "common_python_wasm_count": 91,
     "common_python_wasm": [
       "ad",
@@ -6703,9 +6928,11 @@
     ],
     "wasm_only_vs_python": [
       "adx_all",
+      "aggregate_greeks_dense",
       "aggregate_tick_bars",
       "aggregate_time_bars",
       "aggregate_volume_bars_ticks",
+      "american_price",
       "annualized_basis",
       "atm_index",
       "atm_iv",
@@ -6723,19 +6950,26 @@
       "bottom_n_indices",
       "calendar_spreads",
       "carry_spread",
+      "close_to_close_vol",
       "compose_rank",
       "compose_weighted",
       "compute_performance_metrics",
       "curve_slope",
       "curve_summary",
+      "digital_greeks",
+      "digital_price",
       "drawdown_series",
+      "early_exercise_premium",
       "exchange_charges_rate",
+      "expected_move",
+      "extended_greeks",
       "extract_trades",
       "fast_period",
       "flat_per_order",
       "forward_fill_nan",
       "funding_cumulative_pnl",
       "futures_basis",
+      "garman_klass_vol",
       "gst_rate",
       "half_kelly_fraction",
       "implied_carry_rate",
@@ -6763,10 +6997,12 @@
       "new",
       "ohlcv_agg",
       "parity_gap",
+      "parkinson_vol",
       "per_lot",
       "period",
       "price_lower_bound",
       "price_upper_bound",
+      "put_call_parity_deviation",
       "rank_series",
       "rank_values",
       "rate_of_value",
@@ -6774,6 +7010,7 @@
       "ratio_adjusted_continuous",
       "regulatory_charges_rate",
       "relative_strength",
+      "rogers_satchell_vol",
       "roll_yield",
       "rolling_beta",
       "rolling_max",
@@ -6803,6 +7040,8 @@
       "spread",
       "stamp_duty_rate",
       "stitch_chunks",
+      "strategy_payoff_dense",
+      "strategy_value_grid",
       "stt_on_buy",
       "stt_on_sell",
       "stt_rate",
@@ -6813,8 +7052,10 @@
       "trade_stats",
       "trim_overlap",
       "trix_indicator",
+      "vol_cone",
       "walk_forward_indices",
       "weighted_continuous",
+      "yang_zhang_vol",
       "zscore_series"
     ]
   }

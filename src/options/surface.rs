@@ -47,3 +47,19 @@ pub fn term_structure_slope<'py>(
         tenors, atm_ivs,
     ))
 }
+
+#[pyfunction]
+#[pyo3(signature = (spot, iv, days_to_expiry, trading_days_per_year = 252.0))]
+pub fn expected_move(
+    spot: f64,
+    iv: f64,
+    days_to_expiry: f64,
+    trading_days_per_year: f64,
+) -> PyResult<(f64, f64)> {
+    Ok(ferro_ta_core::options::surface::expected_move(
+        spot,
+        iv,
+        days_to_expiry,
+        trading_days_per_year,
+    ))
+}

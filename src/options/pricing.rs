@@ -90,6 +90,29 @@ pub fn bsm_price_batch<'py>(
 }
 
 #[pyfunction]
+#[pyo3(signature = (call_price, put_price, spot, strike, rate, time_to_expiry, carry = 0.0))]
+#[allow(clippy::too_many_arguments)]
+pub fn put_call_parity_deviation(
+    call_price: f64,
+    put_price: f64,
+    spot: f64,
+    strike: f64,
+    rate: f64,
+    time_to_expiry: f64,
+    carry: f64,
+) -> PyResult<f64> {
+    Ok(ferro_ta_core::options::pricing::put_call_parity_deviation(
+        call_price,
+        put_price,
+        spot,
+        strike,
+        rate,
+        carry,
+        time_to_expiry,
+    ))
+}
+
+#[pyfunction]
 #[pyo3(signature = (forward, strike, rate, time_to_expiry, volatility, option_type = "call"))]
 pub fn black76_price_batch<'py>(
     py: Python<'py>,

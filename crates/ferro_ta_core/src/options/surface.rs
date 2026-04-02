@@ -202,6 +202,35 @@ pub fn term_structure_slope(tenors: &[f64], atm_ivs: &[f64]) -> f64 {
     regression_slope(tenors, atm_ivs)
 }
 
+/// Expected ±1σ move over `days_to_expiry` calendar days.
+///
+/// Returns `(lower_move, upper_move)` as absolute changes from `spot`.
+/// Example: if spot=100 and upper_move=5.0 then the 1σ upper bound is 105.
+///
+/// Uses the log-normal approximation: `spot × e^{±σ√(days/trading_days)} − spot`.
+pub fn expected_move(
+    spot: f64,
+    iv: f64,
+    days_to_expiry: f64,
+    trading_days_per_year: f64,
+) -> (f64, f64) {
+    if !spot.is_finite()
+        || !iv.is_finite()
+        || !days_to_expiry.is_finite()
+        || !trading_days_per_year.is_finite()
+        || spot <= 0.0
+        || iv < 0.0
+        || days_to_expiry < 0.0
+        || trading_days_per_year <= 0.0
+    {
+        return (f64::NAN, f64::NAN);
+    }
+    let sigma_sqrt_t = iv * (days_to_expiry / trading_days_per_year).sqrt();
+    let upper = spot * sigma_sqrt_t.exp() - spot;
+    let lower = spot * (-sigma_sqrt_t).exp() - spot;
+    (lower, upper)
+}
+
 #[cfg(test)]
 mod tests {
     use super::{atm_iv, smile_metrics, term_structure_slope};

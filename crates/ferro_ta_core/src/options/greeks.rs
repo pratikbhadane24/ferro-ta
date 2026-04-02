@@ -2,7 +2,7 @@
 
 use super::normal::{cdf, pdf};
 use super::pricing::{black_76_price, black_scholes_price};
-use super::{Greeks, OptionEvaluation, OptionKind, PricingModel};
+use super::{ExtendedGreeks, Greeks, OptionEvaluation, OptionKind, PricingModel};
 
 fn bs_inputs_valid(
     underlying: f64,
@@ -203,9 +203,94 @@ pub fn model_theta(input: OptionEvaluation) -> f64 {
     })
 }
 
+/// Extended Greeks under Black-Scholes-Merton (closed-form).
+///
+/// All inputs must be positive finite; returns NaN fields for invalid inputs.
+pub fn black_scholes_extended_greeks(
+    spot: f64,
+    strike: f64,
+    rate: f64,
+    dividend_yield: f64,
+    time_to_expiry: f64,
+    volatility: f64,
+    _kind: OptionKind,
+) -> ExtendedGreeks {
+    if !bs_inputs_valid(
+        spot,
+        strike,
+        rate,
+        dividend_yield,
+        time_to_expiry,
+        volatility,
+    ) {
+        return ExtendedGreeks {
+            vanna: f64::NAN,
+            volga: f64::NAN,
+            charm: f64::NAN,
+            speed: f64::NAN,
+            color: f64::NAN,
+        };
+    }
+
+    let sqrt_t = time_to_expiry.sqrt();
+    let sigma_sqrt_t = volatility * sqrt_t;
+    let carry_discount = (-dividend_yield * time_to_expiry).exp();
+    let d1 = ((spot / strike).ln()
+        + (rate - dividend_yield + 0.5 * volatility * volatility) * time_to_expiry)
+        / sigma_sqrt_t;
+    let d2 = d1 - sigma_sqrt_t;
+    let pdf_d1 = pdf(d1);
+
+    let gamma = carry_discount * pdf_d1 / (spot * sigma_sqrt_t);
+
+    let vanna = -carry_discount * pdf_d1 * d2 / volatility;
+    let volga = spot * carry_discount * pdf_d1 * sqrt_t * d1 * d2 / volatility;
+    let charm = -carry_discount
+        * pdf_d1
+        * (2.0 * (rate - dividend_yield) * time_to_expiry - d2 * sigma_sqrt_t)
+        / (2.0 * time_to_expiry * sigma_sqrt_t);
+    let speed = -gamma / spot * (d1 / sigma_sqrt_t + 1.0);
+    let color = -carry_discount * pdf_d1 / (2.0 * spot * time_to_expiry * sigma_sqrt_t)
+        * (2.0 * (rate - dividend_yield) * time_to_expiry + 1.0
+            - d1 * (2.0 * (rate - dividend_yield) * time_to_expiry - d2 * sigma_sqrt_t)
+                / sigma_sqrt_t);
+
+    ExtendedGreeks {
+        vanna,
+        volga,
+        charm,
+        speed,
+        color,
+    }
+}
+
+/// Model-dispatched extended Greeks.
+/// Only BSM is supported with closed-form; Black-76 is not yet supported (returns NaN).
+pub fn model_extended_greeks(input: OptionEvaluation) -> ExtendedGreeks {
+    let contract = input.contract;
+    match contract.model {
+        PricingModel::BlackScholes => black_scholes_extended_greeks(
+            contract.underlying,
+            contract.strike,
+            contract.rate,
+            contract.carry,
+            contract.time_to_expiry,
+            input.volatility,
+            contract.kind,
+        ),
+        PricingModel::Black76 => ExtendedGreeks {
+            vanna: f64::NAN,
+            volga: f64::NAN,
+            charm: f64::NAN,
+            speed: f64::NAN,
+            color: f64::NAN,
+        },
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{black_76_greeks, black_scholes_greeks};
+    use super::{black_76_greeks, black_scholes_extended_greeks, black_scholes_greeks};
     use crate::options::OptionKind;
 
     #[test]
@@ -226,5 +311,17 @@ mod tests {
         assert!(g.vega.is_finite());
         assert!(g.theta.is_finite());
         assert!(g.rho.is_finite());
+    }
+
+    #[test]
+    fn extended_greeks_finite_for_valid_inputs() {
+        let eg = black_scholes_extended_greeks(100.0, 100.0, 0.05, 0.0, 1.0, 0.2, OptionKind::Call);
+        assert!(eg.vanna.is_finite());
+        assert!(eg.volga.is_finite());
+        assert!(eg.charm.is_finite());
+        assert!(eg.speed.is_finite());
+        assert!(eg.color.is_finite());
+        // Volga must be positive (convex in vol)
+        assert!(eg.volga >= 0.0);
     }
 }

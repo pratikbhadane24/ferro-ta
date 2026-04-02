@@ -147,9 +147,9 @@ class SimulationLimits:
 @dataclass(frozen=True)
 class StrategyLeg:
     underlying: str
-    expiry_selector: ExpirySelector
-    strike_selector: StrikeSelector
-    option_type: str
+    expiry_selector: ExpirySelector | None
+    strike_selector: StrikeSelector | None
+    option_type: str | None
     side: str = "long"
     quantity: int = 1
     instrument: str = "option"
@@ -158,12 +158,21 @@ class StrategyLeg:
     def __post_init__(self) -> None:
         if self.underlying.strip() == "":
             raise FerroTAInputError("underlying must not be empty.")
-        if self.option_type not in {"call", "put"}:
-            raise FerroTAValueError("option_type must be 'call' or 'put'.")
+        if self.instrument not in {"option", "future", "stock"}:
+            raise FerroTAValueError(
+                "instrument must be 'option', 'future', or 'stock'."
+            )
+        if self.instrument == "option":
+            if self.option_type not in {"call", "put"}:
+                raise FerroTAValueError(
+                    "option legs require option_type='call' or 'put'."
+                )
+            if self.expiry_selector is None:
+                raise FerroTAInputError("option legs require expiry_selector.")
+            if self.strike_selector is None:
+                raise FerroTAInputError("option legs require strike_selector.")
         if self.side not in {"long", "short"}:
             raise FerroTAValueError("side must be 'long' or 'short'.")
-        if self.instrument not in {"option", "future"}:
-            raise FerroTAValueError("instrument must be 'option' or 'future'.")
         if self.quantity == 0:
             raise FerroTAValueError("quantity must be non-zero.")
         if self.premium_limit is not None and self.premium_limit < 0.0:

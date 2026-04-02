@@ -2,6 +2,14 @@ use crate::validation;
 use numpy::{IntoPyArray, PyArray1, PyReadonlyArray1};
 use pyo3::prelude::*;
 
+type ExtendedGreekArrays<'py> = (
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+);
+
 type GreekArrays<'py> = (
     Bound<'py, PyArray1<f64>>,
     Bound<'py, PyArray1<f64>>,
@@ -121,5 +129,114 @@ pub fn option_greeks_batch<'py>(
         vega.into_pyarray(py),
         theta.into_pyarray(py),
         rho.into_pyarray(py),
+    ))
+}
+
+#[pyfunction]
+#[pyo3(signature = (underlying, strike, rate, time_to_expiry, volatility, option_type = "call", model = "bsm", carry = 0.0))]
+#[allow(clippy::too_many_arguments)]
+pub fn extended_greeks(
+    underlying: f64,
+    strike: f64,
+    rate: f64,
+    time_to_expiry: f64,
+    volatility: f64,
+    option_type: &str,
+    model: &str,
+    carry: f64,
+) -> PyResult<(f64, f64, f64, f64, f64)> {
+    let kind = super::parse_option_kind(option_type)?;
+    let model = super::parse_pricing_model(model)?;
+    let eg = ferro_ta_core::options::greeks::model_extended_greeks(
+        ferro_ta_core::options::OptionEvaluation {
+            contract: ferro_ta_core::options::OptionContract {
+                model,
+                underlying,
+                strike,
+                rate,
+                carry,
+                time_to_expiry,
+                kind,
+            },
+            volatility,
+        },
+    );
+    Ok((eg.vanna, eg.volga, eg.charm, eg.speed, eg.color))
+}
+
+#[pyfunction]
+#[pyo3(signature = (underlying, strike, rate, time_to_expiry, volatility, option_type = "call", model = "bsm", carry = None))]
+#[allow(clippy::too_many_arguments)]
+pub fn extended_greeks_batch<'py>(
+    py: Python<'py>,
+    underlying: PyReadonlyArray1<'py, f64>,
+    strike: PyReadonlyArray1<'py, f64>,
+    rate: PyReadonlyArray1<'py, f64>,
+    time_to_expiry: PyReadonlyArray1<'py, f64>,
+    volatility: PyReadonlyArray1<'py, f64>,
+    option_type: &str,
+    model: &str,
+    carry: Option<PyReadonlyArray1<'py, f64>>,
+) -> PyResult<ExtendedGreekArrays<'py>> {
+    let kind = super::parse_option_kind(option_type)?;
+    let model = super::parse_pricing_model(model)?;
+    let underlying = underlying.as_slice()?;
+    let strike = strike.as_slice()?;
+    let rate = rate.as_slice()?;
+    let time_to_expiry = time_to_expiry.as_slice()?;
+    let volatility = volatility.as_slice()?;
+    let carry_vec = match carry {
+        Some(array) => array.as_slice()?.to_vec(),
+        None => vec![0.0; underlying.len()],
+    };
+    validation::validate_equal_length(&[
+        (underlying.len(), "underlying"),
+        (strike.len(), "strike"),
+        (rate.len(), "rate"),
+        (time_to_expiry.len(), "time_to_expiry"),
+        (volatility.len(), "volatility"),
+        (carry_vec.len(), "carry"),
+    ])?;
+
+    let mut vanna = Vec::with_capacity(underlying.len());
+    let mut volga = Vec::with_capacity(underlying.len());
+    let mut charm = Vec::with_capacity(underlying.len());
+    let mut speed = Vec::with_capacity(underlying.len());
+    let mut color = Vec::with_capacity(underlying.len());
+    for (((((&u, &k), &r), &t), &vol), &c) in underlying
+        .iter()
+        .zip(strike.iter())
+        .zip(rate.iter())
+        .zip(time_to_expiry.iter())
+        .zip(volatility.iter())
+        .zip(carry_vec.iter())
+    {
+        let eg = ferro_ta_core::options::greeks::model_extended_greeks(
+            ferro_ta_core::options::OptionEvaluation {
+                contract: ferro_ta_core::options::OptionContract {
+                    model,
+                    underlying: u,
+                    strike: k,
+                    rate: r,
+                    carry: c,
+                    time_to_expiry: t,
+                    kind,
+                },
+                volatility: vol,
+            },
+        );
+        vanna.push(eg.vanna);
+        volga.push(eg.volga);
+        charm.push(eg.charm);
+        speed.push(eg.speed);
+        color.push(eg.color);
+    }
+
+    Ok((
+        vanna.into_pyarray(py),
+        volga.into_pyarray(py),
+        charm.into_pyarray(py),
+        speed.into_pyarray(py),
+        color.into_pyarray(py),
     ))
 }

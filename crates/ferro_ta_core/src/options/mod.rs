@@ -4,11 +4,15 @@
 //! IV-series helpers, and smile/chain utilities. The public API is scalar-first
 //! and is used by the PyO3 bridge to build vectorized batch functions.
 
+pub mod american;
 pub mod chain;
+pub mod digital;
 pub mod greeks;
 pub mod iv;
 pub mod normal;
+pub mod payoff;
 pub mod pricing;
+pub mod realized_vol;
 pub mod surface;
 
 /// Option side.
@@ -47,6 +51,16 @@ pub struct Greeks {
     pub vega: f64,
     pub theta: f64,
     pub rho: f64,
+}
+
+/// Second-order and cross Greeks.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct ExtendedGreeks {
+    pub vanna: f64, // ∂Δ/∂σ
+    pub volga: f64, // ∂²V/∂σ² (vomma)
+    pub charm: f64, // ∂Δ/∂t
+    pub speed: f64, // ∂Γ/∂S
+    pub color: f64, // ∂Γ/∂t
 }
 
 /// Shared contract fields for model-based option analytics.

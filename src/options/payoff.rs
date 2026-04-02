@@ -7,6 +7,7 @@ use pyo3::types::{PyAny, PyTuple};
 enum Instrument {
     Option,
     Future,
+    Stock,
 }
 
 #[derive(Clone, Copy)]
@@ -34,8 +35,9 @@ fn parse_instrument(v: i64) -> PyResult<Instrument> {
     match v {
         0 => Ok(Instrument::Option),
         1 => Ok(Instrument::Future),
+        2 => Ok(Instrument::Stock),
         _ => Err(PyValueError::new_err(
-            "instrument must be 0 (option) or 1 (future)",
+            "instrument must be 0 (option), 1 (future), or 2 (stock)",
         )),
     }
 }
@@ -62,8 +64,9 @@ fn parse_instrument_label(v: &str) -> PyResult<Instrument> {
     match v.to_ascii_lowercase().as_str() {
         "option" => Ok(Instrument::Option),
         "future" => Ok(Instrument::Future),
+        "stock" => Ok(Instrument::Stock),
         _ => Err(PyValueError::new_err(
-            "instrument must be 'option' or 'future'",
+            "instrument must be 'option', 'future', or 'stock'",
         )),
     }
 }
@@ -202,7 +205,7 @@ pub fn strategy_payoff_dense<'py>(
                     total[i] += leg_scale * (intrinsic - p);
                 }
             }
-            Instrument::Future => {
+            Instrument::Future | Instrument::Stock => {
                 let e = entry[leg_idx];
                 for (i, &s) in grid.iter().enumerate() {
                     total[i] += leg_scale * (s - e);
@@ -253,9 +256,9 @@ pub fn strategy_payoff_legs<'py>(
                     total[i] += leg_scale * (intrinsic - premium);
                 }
             }
-            Instrument::Future => {
+            Instrument::Future | Instrument::Stock => {
                 let entry_price = leg_attr_optional_f64(&leg, "entry_price")?.ok_or_else(|| {
-                    PyValueError::new_err("Futures payoff legs require entry_price.")
+                    PyValueError::new_err("Futures/stock payoff legs require entry_price.")
                 })?;
                 for (i, &s) in grid.iter().enumerate() {
                     total[i] += leg_scale * (s - entry_price);
@@ -323,7 +326,7 @@ pub fn aggregate_greeks_dense(
         let side_sign = parse_side(side[i])?.sign();
         let leg_scale = side_sign * qty[i] * mult[i];
         match instrument {
-            Instrument::Future => {
+            Instrument::Future | Instrument::Stock => {
                 delta += leg_scale;
             }
             Instrument::Option => {
@@ -382,7 +385,7 @@ pub fn aggregate_greeks_legs(
         let leg_scale = side_sign * quantity * multiplier;
 
         match instrument {
-            Instrument::Future => {
+            Instrument::Future | Instrument::Stock => {
                 delta += leg_scale;
             }
             Instrument::Option => {
@@ -440,4 +443,53 @@ pub fn aggregate_greeks_legs(
     }
 
     Ok((delta, gamma, vega, theta, rho))
+}
+
+/// Compute BSM-based strategy value over a spot grid (pre-expiry mark-to-market).
+///
+/// Unlike `strategy_payoff_dense` (which uses intrinsic at expiry), this function
+/// values each option leg using the Black-Scholes model price. Futures and stock
+/// legs are valued the same as in `strategy_payoff_dense`.
+///
+/// Delegates to `ferro_ta_core::options::payoff::strategy_value_grid`.
+///
+/// NOTE: `crates/ferro_ta_core/src/options/mod.rs` must declare `pub mod payoff;`
+/// for this function to compile.
+#[pyfunction]
+#[allow(clippy::too_many_arguments)]
+pub fn strategy_value_dense<'py>(
+    py: Python<'py>,
+    spot_grid: PyReadonlyArray1<'py, f64>,
+    instruments: PyReadonlyArray1<'py, i64>,
+    sides: PyReadonlyArray1<'py, i64>,
+    option_types: PyReadonlyArray1<'py, i64>,
+    strikes: PyReadonlyArray1<'py, f64>,
+    premiums: PyReadonlyArray1<'py, f64>,
+    entry_prices: PyReadonlyArray1<'py, f64>,
+    quantities: PyReadonlyArray1<'py, f64>,
+    multipliers: PyReadonlyArray1<'py, f64>,
+    time_to_expiries: PyReadonlyArray1<'py, f64>,
+    volatilities: PyReadonlyArray1<'py, f64>,
+    rates_per_leg: PyReadonlyArray1<'py, f64>,
+    carries_per_leg: PyReadonlyArray1<'py, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let grid = spot_grid.as_slice()?;
+    let inst = instruments.as_slice()?;
+    let side = sides.as_slice()?;
+    let opt_t = option_types.as_slice()?;
+    let strike = strikes.as_slice()?;
+    let premium = premiums.as_slice()?;
+    let entry = entry_prices.as_slice()?;
+    let qty = quantities.as_slice()?;
+    let mult = multipliers.as_slice()?;
+    let tte = time_to_expiries.as_slice()?;
+    let vol = volatilities.as_slice()?;
+    let rate = rates_per_leg.as_slice()?;
+    let carry = carries_per_leg.as_slice()?;
+
+    let result = ferro_ta_core::options::payoff::strategy_value_grid(
+        grid, inst, side, opt_t, strike, premium, entry, qty, mult, tte, vol, rate, carry,
+    );
+
+    Ok(result.into_pyarray(py))
 }
