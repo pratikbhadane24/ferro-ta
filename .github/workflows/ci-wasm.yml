@@ -10,6 +10,8 @@ jobs:
   wasm:
     name: WASM (test + build + bench)
     runs-on: ubuntu-latest
+    env:
+      RUSTFLAGS: ""  # override target-cpu=native from .cargo/config.toml
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
