@@ -18,25 +18,6 @@ jobs:
       - uses: EmbarkStudios/cargo-deny-action@v2
 
   # -------------------------------------------------------------------------
-  # cargo-audit — caches the RustSec advisory database (~400 MB git clone)
-  # so subsequent runs skip the initial fetch entirely (~3 min → ~15s)
-  # -------------------------------------------------------------------------
-  cargo-audit:
-    name: cargo audit
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - name: Cache RustSec advisory database
-        uses: actions/cache@v4
-        with:
-          path: ~/.cargo/advisory-db
-          key: rustsec-advisory-db-${{ hashFiles('Cargo.lock') }}
-          restore-keys: rustsec-advisory-db-
-      - uses: rustsec/audit-check@v2
-        with:
-          token: ${{ github.token }}
-
-  # -------------------------------------------------------------------------
   # pip-audit + uv.lock freshness check (lightweight, no Rust needed)
   # -------------------------------------------------------------------------
   pip-audit:
