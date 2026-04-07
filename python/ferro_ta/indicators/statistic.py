@@ -12,18 +12,32 @@ LINEARREG_ANGLE  — Linear Regression Angle (degrees)
 TSF              — Time Series Forecast
 BETA             — Beta
 CORREL           — Pearson's Correlation Coefficient (r)
+DTW              — Dynamic Time Warping (distance + warping path)
+DTW_DISTANCE     — Dynamic Time Warping distance only (faster)
+BATCH_DTW        — Batch DTW: N series vs 1 reference, in parallel
 """
 
 from __future__ import annotations
+
+from typing import Optional
 
 import numpy as np
 from numpy.typing import ArrayLike
 
 from ferro_ta._ferro_ta import (
+    batch_dtw as _batch_dtw,
+)
+from ferro_ta._ferro_ta import (
     beta as _beta,
 )
 from ferro_ta._ferro_ta import (
     correl as _correl,
+)
+from ferro_ta._ferro_ta import (
+    dtw as _dtw,
+)
+from ferro_ta._ferro_ta import (
+    dtw_distance as _dtw_distance,
 )
 from ferro_ta._ferro_ta import (
     linearreg as _linearreg,
@@ -247,6 +261,98 @@ def CORREL(real0: ArrayLike, real1: ArrayLike, timeperiod: int = 30) -> np.ndarr
         _normalize_rust_error(e)
 
 
+def DTW(
+    series1: ArrayLike,
+    series2: ArrayLike,
+    window: Optional[int] = None,
+) -> tuple[float, np.ndarray]:
+    """Dynamic Time Warping — distance and optimal warping path.
+
+    Parameters
+    ----------
+    series1 : array-like
+        First time series.
+    series2 : array-like
+        Second time series (may differ in length from series1).
+    window : int, optional
+        Sakoe-Chiba band width. ``None`` (default) = unconstrained.
+
+    Returns
+    -------
+    distance : float
+        DTW distance (accumulated Euclidean cost along the optimal path).
+    path : numpy.ndarray, shape (N, 2)
+        Warping path as ``(i, j)`` index pairs from ``(0, 0)`` to
+        ``(len(series1)-1, len(series2)-1)``.
+    """
+    try:
+        return _dtw(_to_f64(series1), _to_f64(series2), window)
+    except ValueError as e:
+        _normalize_rust_error(e)
+
+
+def DTW_DISTANCE(
+    series1: ArrayLike,
+    series2: ArrayLike,
+    window: Optional[int] = None,
+) -> float:
+    """Dynamic Time Warping distance only (faster — no path reconstruction).
+
+    Parameters
+    ----------
+    series1 : array-like
+        First time series.
+    series2 : array-like
+        Second time series (may differ in length from series1).
+    window : int, optional
+        Sakoe-Chiba band width. ``None`` (default) = unconstrained.
+
+    Returns
+    -------
+    float
+        DTW distance (accumulated Euclidean cost along the optimal path).
+    """
+    try:
+        return _dtw_distance(_to_f64(series1), _to_f64(series2), window)
+    except ValueError as e:
+        _normalize_rust_error(e)
+
+
+def BATCH_DTW(
+    matrix: ArrayLike,
+    reference: ArrayLike,
+    window: Optional[int] = None,
+) -> np.ndarray:
+    """Batch Dynamic Time Warping — N series vs 1 reference, computed in parallel.
+
+    Parameters
+    ----------
+    matrix : array-like, shape (N, L)
+        N time series of length L. Each row is compared against ``reference``.
+    reference : array-like, shape (L,)
+        The reference series.
+    window : int, optional
+        Sakoe-Chiba band width. ``None`` (default) = unconstrained.
+
+    Returns
+    -------
+    numpy.ndarray, shape (N,)
+        DTW distance from each row of ``matrix`` to ``reference``.
+    """
+    try:
+        mat = np.ascontiguousarray(matrix, dtype=np.float64)
+        if mat.ndim != 2:
+            from ferro_ta.core.exceptions import FerroTAInputError
+
+            raise FerroTAInputError(
+                f"matrix must be a 2-D array, got {mat.ndim}-D.",
+                suggestion="Pass a 2-D NumPy array of shape (N, L).",
+            )
+        return _batch_dtw(mat, _to_f64(reference), window)
+    except ValueError as e:
+        _normalize_rust_error(e)
+
+
 __all__ = [
     "STDDEV",
     "VAR",
@@ -257,4 +363,7 @@ __all__ = [
     "TSF",
     "BETA",
     "CORREL",
+    "DTW",
+    "DTW_DISTANCE",
+    "BATCH_DTW",
 ]

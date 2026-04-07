@@ -1,8 +1,8 @@
 {
   "surfaces": {
     "python": {
-      "indicator_count": 208,
-      "method_count": 464,
+      "indicator_count": 211,
+      "method_count": 467,
       "categories": [
         "aggregation",
         "alerts",
@@ -128,6 +128,13 @@
           "name": "AlertManager",
           "category": "alerts",
           "module": "ferro_ta.tools.alerts",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "BATCH_DTW",
+          "category": "statistic",
+          "module": "ferro_ta.indicators.statistic",
           "doc": "",
           "params": []
         },
@@ -653,6 +660,20 @@
           "name": "DONCHIAN",
           "category": "extended",
           "module": "ferro_ta.indicators.extended",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "DTW",
+          "category": "statistic",
+          "module": "ferro_ta.indicators.statistic",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "DTW_DISTANCE",
+          "category": "statistic",
+          "module": "ferro_ta.indicators.statistic",
           "doc": "",
           "params": []
         },
@@ -3284,6 +3305,13 @@
           "params": []
         },
         {
+          "name": "BATCH_DTW",
+          "category": "statistic",
+          "module": "ferro_ta.indicators.statistic",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "BETA",
           "category": "statistic",
           "module": "ferro_ta.indicators.statistic",
@@ -3292,6 +3320,20 @@
         },
         {
           "name": "CORREL",
+          "category": "statistic",
+          "module": "ferro_ta.indicators.statistic",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "DTW",
+          "category": "statistic",
+          "module": "ferro_ta.indicators.statistic",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "DTW_DISTANCE",
           "category": "statistic",
           "module": "ferro_ta.indicators.statistic",
           "doc": "",
@@ -4735,7 +4777,7 @@
       ]
     },
     "rust_core": {
-      "public_function_count": 349,
+      "public_function_count": 351,
       "functions": [
         {
           "module": "aggregation",
@@ -6189,6 +6231,16 @@
         },
         {
           "module": "statistic",
+          "function": "dtw_distance",
+          "file": "statistic.rs"
+        },
+        {
+          "module": "statistic",
+          "function": "dtw_path",
+          "file": "statistic.rs"
+        },
+        {
+          "module": "statistic",
           "function": "linearreg",
           "file": "statistic.rs"
         },
@@ -6485,7 +6537,7 @@
       ]
     },
     "wasm_node": {
-      "export_count": 221,
+      "export_count": 222,
       "exports": [
         "ad",
         "adosc",
@@ -6546,6 +6598,7 @@
         "digital_price",
         "donchian",
         "drawdown_series",
+        "dtw_distance",
         "dx",
         "early_exercise_premium",
         "ema",
@@ -6712,9 +6765,9 @@
     }
   },
   "parity_summary": {
-    "python_indicator_count": 207,
-    "wasm_export_count": 221,
-    "common_python_wasm_count": 91,
+    "python_indicator_count": 210,
+    "wasm_export_count": 222,
+    "common_python_wasm_count": 92,
     "common_python_wasm": [
       "ad",
       "adosc",
@@ -6743,6 +6796,7 @@
       "dema",
       "detect_breaks_cusum",
       "donchian",
+      "dtw_distance",
       "dx",
       "ema",
       "ht_dcperiod",
@@ -6817,6 +6871,7 @@
       "asin",
       "atan",
       "batch_apply",
+      "batch_dtw",
       "beta",
       "cdl2crows",
       "cdl3blackcrows",
@@ -6886,6 +6941,7 @@
       "cosh",
       "div",
       "drawdown",
+      "dtw",
       "exp",
       "feature_matrix",
       "floor",
