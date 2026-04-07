@@ -247,6 +247,118 @@ pub fn correl(real0: &[f64], real1: &[f64], timeperiod: usize) -> Vec<f64> {
     result
 }
 
+// ---------------------------------------------------------------------------
+// Dynamic Time Warping (DTW)
+// ---------------------------------------------------------------------------
+
+/// Internal helper: build the full DTW accumulated-cost matrix.
+///
+/// Local cost: `|s1[i] - s2[j]|` (Euclidean / L1 for 1-D series).
+/// This matches the convention used by `dtaidistance.dtw.distance()`.
+///
+/// Out-of-band cells (Sakoe-Chiba constraint) are set to `f64::INFINITY`.
+fn dtw_matrix(s1: &[f64], s2: &[f64], window: Option<usize>) -> Vec<Vec<f64>> {
+    let n = s1.len();
+    let m = s2.len();
+    let mut dp = vec![vec![f64::INFINITY; m]; n];
+    for i in 0..n {
+        // Window convention matches dtaidistance: window=w means |i-j| < w.
+        // None = unconstrained (full matrix).
+        let (j_lo, j_hi) = match window {
+            None => (0, m),
+            Some(w) => {
+                let lo = i.saturating_sub(w.saturating_sub(1));
+                let hi = i.saturating_add(w).min(m);
+                (lo, hi)
+            }
+        };
+        for j in j_lo..j_hi {
+            // Squared Euclidean local cost — matches dtaidistance convention.
+            // The final sqrt is applied only once at the top level (not per-step).
+            let cost = (s1[i] - s2[j]).powi(2);
+            let prev = if i == 0 && j == 0 {
+                0.0
+            } else if i == 0 {
+                dp[0][j - 1]
+            } else if j == 0 {
+                dp[i - 1][0]
+            } else {
+                dp[i - 1][j - 1].min(dp[i - 1][j]).min(dp[i][j - 1])
+            };
+            dp[i][j] = cost + prev;
+        }
+    }
+    dp
+}
+
+/// Compute the Dynamic Time Warping distance between two 1-D series.
+///
+/// Returns the accumulated Euclidean cost along the optimal warping path.
+/// Uses `|s1[i] - s2[j]|` as the local cost, matching `dtaidistance` convention.
+///
+/// # Arguments
+/// * `s1` - First time series.
+/// * `s2` - Second time series.
+/// * `window` - Optional Sakoe-Chiba band width. `None` = unconstrained.
+///
+/// Returns `f64::NAN` if either input is empty.
+pub fn dtw_distance(s1: &[f64], s2: &[f64], window: Option<usize>) -> f64 {
+    if s1.is_empty() || s2.is_empty() {
+        return f64::NAN;
+    }
+    let dp = dtw_matrix(s1, s2, window);
+    // sqrt applied once at the end — matches dtaidistance.dtw.distance() convention.
+    dp[s1.len() - 1][s2.len() - 1].sqrt()
+}
+
+/// Compute the DTW distance and the optimal warping path between two 1-D series.
+///
+/// The warping path is a `Vec<(usize, usize)>` of `(i, j)` index pairs,
+/// starting at `(0, 0)` and ending at `(n-1, m-1)`, monotonically non-decreasing.
+///
+/// # Arguments
+/// * `s1` - First time series.
+/// * `s2` - Second time series.
+/// * `window` - Optional Sakoe-Chiba band width. `None` = unconstrained.
+///
+/// Returns `(f64::NAN, vec![])` if either input is empty.
+pub fn dtw_path(s1: &[f64], s2: &[f64], window: Option<usize>) -> (f64, Vec<(usize, usize)>) {
+    if s1.is_empty() || s2.is_empty() {
+        return (f64::NAN, vec![]);
+    }
+    let dp = dtw_matrix(s1, s2, window);
+    let dist = dp[s1.len() - 1][s2.len() - 1].sqrt();
+
+    // Backtrace from (n-1, m-1) to (0, 0)
+    let mut path = Vec::new();
+    let (mut i, mut j) = (s1.len() - 1, s2.len() - 1);
+    path.push((i, j));
+    while i > 0 || j > 0 {
+        let (ni, nj) = match (i, j) {
+            (0, _) => (0, j - 1),
+            (_, 0) => (i - 1, 0),
+            _ => {
+                let diag = dp[i - 1][j - 1];
+                let up = dp[i - 1][j];
+                let left = dp[i][j - 1];
+                let best = diag.min(up).min(left);
+                if best == diag {
+                    (i - 1, j - 1)
+                } else if best == up {
+                    (i - 1, j)
+                } else {
+                    (i, j - 1)
+                }
+            }
+        };
+        i = ni;
+        j = nj;
+        path.push((i, j));
+    }
+    path.reverse();
+    (dist, path)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -258,5 +370,93 @@ mod tests {
         for v in result.iter().filter(|v| !v.is_nan()) {
             assert!(v.abs() < 1e-10);
         }
+    }
+
+    #[test]
+    fn dtw_identical_series_is_zero() {
+        let a = vec![1.0, 2.0, 3.0, 4.0, 5.0];
+        assert_eq!(dtw_distance(&a, &a, None), 0.0);
+    }
+
+    #[test]
+    fn dtw_known_shifted_series() {
+        // [0,1,2] vs [1,2,3]: DTW uses squared Euclidean local cost + final sqrt.
+        // Optimal path (0,0)→(1,0)→(2,1)→(2,2), accumulated cost = 1+0+0+1 = 2, sqrt(2).
+        // Matches dtaidistance.dtw.distance([0,1,2],[1,2,3]) = 1.4142...
+        let a = vec![0.0, 1.0, 2.0];
+        let b = vec![1.0, 2.0, 3.0];
+        let expected = 2.0_f64.sqrt();
+        let result = dtw_distance(&a, &b, None);
+        assert!(
+            (result - expected).abs() < 1e-12,
+            "got {result}, expected {expected}"
+        );
+    }
+
+    #[test]
+    fn dtw_known_even_shift() {
+        // [0,2,4] vs [1,3,5]: diagonal path, squared costs 1+1+1=3, sqrt(3).
+        // Matches dtaidistance.dtw.distance([0,2,4],[1,3,5]) = 1.7320...
+        let a = vec![0.0, 2.0, 4.0];
+        let b = vec![1.0, 3.0, 5.0];
+        let expected = 3.0_f64.sqrt();
+        let result = dtw_distance(&a, &b, None);
+        assert!(
+            (result - expected).abs() < 1e-12,
+            "got {result}, expected {expected}"
+        );
+    }
+
+    #[test]
+    fn dtw_single_element() {
+        let a = vec![3.0];
+        let b = vec![7.0];
+        assert_eq!(dtw_distance(&a, &b, None), 4.0);
+    }
+
+    #[test]
+    fn dtw_empty_returns_nan() {
+        assert!(dtw_distance(&[], &[1.0, 2.0], None).is_nan());
+        assert!(dtw_distance(&[1.0, 2.0], &[], None).is_nan());
+    }
+
+    #[test]
+    fn dtw_path_endpoints() {
+        let a = vec![1.0, 2.0, 3.0, 4.0];
+        let b = vec![1.5, 2.5, 3.5, 4.5];
+        let (_, path) = dtw_path(&a, &b, None);
+        assert_eq!(path.first(), Some(&(0, 0)));
+        assert_eq!(path.last(), Some(&(3, 3)));
+    }
+
+    #[test]
+    fn dtw_path_is_monotone() {
+        let a = vec![1.0, 3.0, 2.0, 5.0, 4.0];
+        let b = vec![2.0, 1.0, 4.0, 3.0, 6.0];
+        let (_, path) = dtw_path(&a, &b, None);
+        for k in 1..path.len() {
+            assert!(path[k].0 >= path[k - 1].0);
+            assert!(path[k].1 >= path[k - 1].1);
+        }
+    }
+
+    #[test]
+    fn dtw_path_distance_matches_distance_only() {
+        let a = vec![1.0, 4.0, 2.0, 8.0, 3.0];
+        let b = vec![2.0, 3.0, 7.0, 4.0, 5.0];
+        let d1 = dtw_distance(&a, &b, None);
+        let (d2, _) = dtw_path(&a, &b, None);
+        assert!((d1 - d2).abs() < 1e-12);
+    }
+
+    #[test]
+    fn dtw_window_constrained_ge_unconstrained() {
+        // window convention matches dtaidistance: Some(w) means |i-j| < w.
+        // A narrow window restricts warping, so constrained distance >= unconstrained.
+        let a: Vec<f64> = (0..20).map(|x| x as f64).collect();
+        let b: Vec<f64> = (0..20).map(|x| x as f64 + 3.0).collect();
+        let d_full = dtw_distance(&a, &b, None);
+        let d_narrow = dtw_distance(&a, &b, Some(3));
+        assert!(d_narrow >= d_full - 1e-12);
     }
 }

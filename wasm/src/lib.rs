@@ -1653,6 +1653,18 @@ pub fn correl(real0: &Float64Array, real1: &Float64Array, timeperiod: usize) -> 
     from_vec(ferro_ta_core::statistic::correl(&to_vec(real0), &to_vec(real1), timeperiod))
 }
 
+/// Dynamic Time Warping distance between two series.
+///
+/// Returns the accumulated Euclidean cost along the optimal warping path.
+/// Pass `window` as `0` for unconstrained (no Sakoe-Chiba band).
+#[wasm_bindgen]
+pub fn dtw_distance(series1: &Float64Array, series2: &Float64Array, window: usize) -> f64 {
+    let s1 = to_vec(series1);
+    let s2 = to_vec(series2);
+    let w = if window == 0 { None } else { Some(window) };
+    ferro_ta_core::statistic::dtw_distance(&s1, &s2, w)
+}
+
 // ===========================================================================
 // Streaming / Stateful API
 // ===========================================================================

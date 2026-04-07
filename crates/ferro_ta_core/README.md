@@ -13,7 +13,7 @@ PyO3, NumPy, or Python runtime dependency, which makes it a good fit for:
 
 ```toml
 [dependencies]
-ferro_ta_core = "1.1.3"
+ferro_ta_core = "1.1.4"
 ```
 
 ## Design

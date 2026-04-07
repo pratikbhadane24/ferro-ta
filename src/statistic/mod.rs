@@ -4,6 +4,7 @@
 mod beta;
 pub(crate) mod common;
 mod correl;
+mod dtw;
 mod linearreg;
 mod stddev;
 mod var;
@@ -23,5 +24,8 @@ pub fn register(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(pyo3::wrap_pyfunction!(self::linearreg::tsf, m)?)?;
     m.add_function(pyo3::wrap_pyfunction!(self::beta::beta, m)?)?;
     m.add_function(pyo3::wrap_pyfunction!(self::correl::correl, m)?)?;
+    m.add_function(pyo3::wrap_pyfunction!(self::dtw::dtw, m)?)?;
+    m.add_function(pyo3::wrap_pyfunction!(self::dtw::dtw_distance, m)?)?;
+    m.add_function(pyo3::wrap_pyfunction!(self::dtw::batch_dtw, m)?)?;
     Ok(())
 }
