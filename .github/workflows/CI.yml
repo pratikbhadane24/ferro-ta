@@ -381,11 +381,11 @@ jobs:
         run: cargo cyclonedx --format json --override-filename ferro-ta-rust-sbom.cdx
 
       - name: Upload Python SBOM to release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: ferro-ta-python-sbom.spdx.json
 
       - name: Upload Rust SBOM to release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: ferro-ta-rust-sbom.cdx.json
