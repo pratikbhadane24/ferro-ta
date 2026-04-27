@@ -27,7 +27,7 @@ ta = "0.5.0"
 numpy = "0.25"
 # Must be < 0.17 while numpy 0.25 is used (numpy's IntoPyArray is for its own ndarray only).
 ndarray = "0.16"
-rayon = "1.10"
+rayon = "1.12"
 log = "0.4"
 pyo3-log = "0.12"
 ferro_ta_core = { path = "crates/ferro_ta_core", version = "1.1.4", features = ["serde"] }
