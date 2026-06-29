@@ -43,6 +43,10 @@ and the project uses [Semantic Versioning](https://semver.org/).
   compile-time `wide` crate (which was never actually enabled in published
   wheels) with `multiversion`. The `wide` Cargo feature is removed; use the
   default `simd` feature instead.
+- **Dependency bumps.** Rust: `log` 0.4.32, `serde_json` 1.0.150,
+  `rayon` 1.12.0. API service (`api/requirements.txt`): `uvicorn>=0.49.0`,
+  `pydantic>=2.13.4`, `ferro-ta>=1.1.4`. CI actions: `actions/deploy-pages` v5,
+  `actions/upload-pages-artifact` v5, `softprops/action-gh-release` v3.
 
 ### Fixed
 
@@ -64,6 +68,14 @@ and the project uses [Semantic Versioning](https://semver.org/).
   regression — the pure-logic layer has no unsafe code and never will.
 - Dependabot now covers the WASM npm package in addition to pip, cargo,
   and GitHub Actions.
+- **pip-audit fixes**: bumped dev lockfile deps `idna` 3.18, `pytest` 9.1.1,
+  and `urllib3` 2.7.0 to clear PYSEC-2026-215, CVE-2025-71176, and
+  PYSEC-2026-141/142.
+- **pyo3 advisories triaged**: RUSTSEC-2026-0176 and RUSTSEC-2026-0177 are
+  ignored in `deny.toml` with rationale — ferro-ta uses neither affected code
+  path (PyList/PyTuple `nth` iterators; `PyCFunction::new_closure`). The
+  upstream fix requires pyo3 >=0.29 (a large API migration), tracked for a
+  follow-up.
 
 ### Changed
 

@@ -87,7 +87,7 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
 
   # -------------------------------------------------------------------------
   # CI gate — all required jobs must pass before this job succeeds.
@@ -442,7 +442,7 @@ jobs:
             ferro-ta-rust-sbom.cdx.json
 
       - name: Upload Python SBOM to release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: |
             ferro-ta-python-sbom.spdx.json
@@ -450,7 +450,7 @@ jobs:
             ferro-ta-python-sbom.spdx.json.pem
 
       - name: Upload Rust SBOM to release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: |
             ferro-ta-rust-sbom.cdx.json
