@@ -1,3 +1,5 @@
+#![forbid(unsafe_code)]
+
 /*!
 ferro_ta_core — Pure Rust indicator library.
 
@@ -49,6 +51,8 @@ pub mod price_transform;
 pub mod regime;
 pub mod resampling;
 pub mod signals;
+/// Runtime-dispatched SIMD reduction primitives (internal).
+pub(crate) mod simd;
 pub mod statistic;
 pub mod streaming;
 pub mod volatility;

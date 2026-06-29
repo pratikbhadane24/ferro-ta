@@ -22,7 +22,9 @@ name = "ferro_ta"
 crate-type = ["cdylib"]
 
 [dependencies]
-pyo3 = { version = "0.25", features = ["extension-module"] }
+# abi3-py310: build a single stable-ABI wheel that runs on CPython 3.10+
+# (including future 3.14+), instead of one wheel per minor version.
+pyo3 = { version = "0.25", features = ["extension-module", "abi3-py310"] }
 ta = "0.5.0"
 numpy = "0.25"
 # Must be < 0.17 while numpy 0.25 is used (numpy's IntoPyArray is for its own ndarray only).
@@ -30,7 +32,11 @@ ndarray = "0.16"
 rayon = "1.10"
 log = "0.4"
 pyo3-log = "0.12"
-ferro_ta_core = { path = "crates/ferro_ta_core", version = "1.1.4", features = ["serde"] }
+# default-features = false so the `simd` toggle is forwarded explicitly via
+# this crate's own `simd` feature (below). Without this, core's default `simd`
+# would always be on and `--no-default-features` could never produce a true
+# pure-scalar build (used by the SIMD benchmark baseline).
+ferro_ta_core = { path = "crates/ferro_ta_core", version = "1.1.4", default-features = false, features = ["serde"] }
 
 [dev-dependencies]
 criterion = { version = "0.8", features = ["html_reports"] }
@@ -40,5 +46,7 @@ lto = true
 codegen-units = 1
 
 [features]
-default = []
+# SIMD runtime dispatch ON by default → published wheels ship the adaptive
+# fast path with no extra flags. `--no-default-features` yields pure scalar.
+default = ["simd"]
 simd = ["ferro_ta_core/simd"]

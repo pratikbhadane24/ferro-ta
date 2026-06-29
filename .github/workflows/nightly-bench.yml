@@ -1,0 +1,100 @@
+name: Nightly benchmarks
+
+on:
+  schedule:
+    # 03:15 UTC every day — off peak, avoids colliding with the regular CI surge.
+    - cron: "15 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  bench:
+    name: Run perf contract and regression checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      RUSTFLAGS: ""  # override target-cpu=native from .cargo/config.toml
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: dtolnay/rust-toolchain@v1
+        with:
+          toolchain: stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Build ferro-ta wheel
+        run: |
+          uv sync --extra dev
+          uv run maturin build --release --out dist
+          uv run pip install --force-reinstall dist/*.whl
+
+      - name: Run vs-TA-Lib benchmark
+        run: uv run python benchmarks/bench_vs_talib.py --output benchmarks/artifacts/nightly_vs_talib.json
+
+      - name: Run SIMD benchmark matrix
+        run: uv run python benchmarks/bench_simd.py --output benchmarks/artifacts/nightly_simd.json
+
+      - name: Check hotspot regression
+        id: hotspot
+        continue-on-error: true
+        run: uv run python benchmarks/check_hotspot_regression.py --tolerance 0.05
+
+      - name: Check vs-TA-Lib regression
+        id: vs_talib
+        continue-on-error: true
+        run: uv run python benchmarks/check_vs_talib_regression.py --tolerance 0.05
+
+      - name: Run criterion bench (build only)
+        run: cargo bench -p ferro_ta_core --no-run
+
+      - name: Upload nightly artifacts
+        uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: nightly-bench-${{ github.run_id }}
+          path: benchmarks/artifacts/
+          retention-days: 30
+
+      - name: Open issue on regression
+        if: steps.hotspot.outcome == 'failure' || steps.vs_talib.outcome == 'failure'
+        uses: actions/github-script@v8
+        env:
+          HOTSPOT_OUTCOME: ${{ steps.hotspot.outcome }}
+          VS_TALIB_OUTCOME: ${{ steps.vs_talib.outcome }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        with:
+          script: |
+            const hotspot = process.env.HOTSPOT_OUTCOME;
+            const vsTalib = process.env.VS_TALIB_OUTCOME;
+            const runUrl = process.env.RUN_URL;
+            const failed = [];
+            if (hotspot === 'failure') failed.push('hotspot');
+            if (vsTalib === 'failure') failed.push('vs-TA-Lib');
+            const title = `Nightly benchmark regression: ${failed.join(' + ')}`;
+            const body = [
+              `The nightly benchmark workflow reported a >5% regression in: **${failed.join(', ')}**.`,
+              '',
+              `Run: ${runUrl}`,
+              '',
+              'Artifacts with the raw JSON are attached to the run above.',
+              'If this is a known regression, update the baseline JSON and close.',
+              'If it is unexpected, investigate the last commit on `main` before the nightly ran.',
+            ].join('\n');
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['performance', 'regression', 'nightly'],
+            });

@@ -136,88 +136,123 @@ jobs:
   # Keep release jobs here because trusted-publisher configuration points to
   # CI.yml specifically.
   # -------------------------------------------------------------------------
+  # One abi3 wheel per (platform, arch). abi3-py310 means a single wheel
+  # covers CPython 3.10+ on each target, so there is no python-version axis.
+  # extension-module + abi3 link no libpython, which is what lets the linux
+  # jobs cross-compile aarch64/musl from an x86_64 runner via maturin-action.
+
   build-wheels-linux:
-    name: Build wheels (linux / py${{ matrix.python-version }})
+    name: Build wheels (linux-gnu / ${{ matrix.target }})
     runs-on: ubuntu-latest
     if: (github.event_name == 'release' && github.event.action == 'published') || (github.event_name == 'workflow_dispatch' && inputs.release)
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        target: [x86_64, aarch64]
 
     steps:
       - uses: actions/checkout@v6
 
-      - name: Build wheel
+      - name: Build abi3 manylinux wheel
         uses: PyO3/maturin-action@v1
         with:
           command: build
-          args: --release --out dist --compatibility pypi -i python${{ matrix.python-version }}
+          target: ${{ matrix.target }}
+          args: --release --out dist
           manylinux: "2_17"
 
       - name: Upload wheels as artifact
         uses: actions/upload-artifact@v7
         with:
-          name: wheels-linux-py${{ matrix.python-version }}
+          name: wheels-linux-gnu-${{ matrix.target }}
+          path: dist/*.whl
+
+  build-wheels-musllinux:
+    name: Build wheels (linux-musl / ${{ matrix.target }})
+    runs-on: ubuntu-latest
+    if: (github.event_name == 'release' && github.event.action == 'published') || (github.event_name == 'workflow_dispatch' && inputs.release)
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [x86_64, aarch64]
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Build abi3 musllinux wheel
+        uses: PyO3/maturin-action@v1
+        with:
+          command: build
+          target: ${{ matrix.target }}
+          args: --release --out dist
+          manylinux: musllinux_1_2
+
+      - name: Upload wheels as artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: wheels-linux-musl-${{ matrix.target }}
           path: dist/*.whl
 
   build-wheels-macos:
-    name: Build wheels (macos / py${{ matrix.python-version }})
+    name: Build wheels (macos / universal2)
     runs-on: macos-latest
     if: (github.event_name == 'release' && github.event.action == 'published') || (github.event_name == 'workflow_dispatch' && inputs.release)
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
-
     steps:
       - uses: actions/checkout@v6
 
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.10"
 
-      - name: Build universal2 wheel
+      - name: Build universal2 abi3 wheel
         uses: PyO3/maturin-action@v1
         with:
           command: build
-          args: --release --out dist --compatibility pypi -i python
           target: universal2-apple-darwin
+          args: --release --out dist
 
       - name: Upload wheels as artifact
         uses: actions/upload-artifact@v7
         with:
-          name: wheels-macos-py${{ matrix.python-version }}
+          name: wheels-macos-universal2
           path: dist/*.whl
 
   build-wheels-windows:
-    name: Build wheels (windows / py${{ matrix.python-version }})
-    runs-on: windows-latest
+    name: Build wheels (windows / ${{ matrix.platform.arch }})
+    runs-on: ${{ matrix.platform.runner }}
     if: (github.event_name == 'release' && github.event.action == 'published') || (github.event_name == 'workflow_dispatch' && inputs.release)
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        platform:
+          - runner: windows-latest
+            arch: x64
+            target: x64
+          - runner: windows-11-arm
+            arch: arm64
+            target: aarch64
 
     steps:
       - uses: actions/checkout@v6
 
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.11"
+          architecture: ${{ matrix.platform.arch }}
 
-      - name: Build wheel
+      - name: Build abi3 wheel
         uses: PyO3/maturin-action@v1
         with:
           command: build
-          args: --release --out dist --compatibility pypi -i python
+          target: ${{ matrix.platform.target }}
+          args: --release --out dist
 
       - name: Upload wheels as artifact
         uses: actions/upload-artifact@v7
         with:
-          name: wheels-windows-py${{ matrix.python-version }}
+          name: wheels-windows-${{ matrix.platform.arch }}
           path: dist/*.whl
 
   build-sdist:
@@ -247,6 +282,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - build-wheels-linux
+      - build-wheels-musllinux
       - build-wheels-macos
       - build-wheels-windows
       - build-sdist
@@ -256,6 +292,8 @@ jobs:
       url: https://pypi.org/p/ferro-ta
     permissions:
       id-token: write
+      attestations: write
+      contents: read
     steps:
       - name: Download all wheels
         uses: actions/download-artifact@v8
@@ -270,6 +308,11 @@ jobs:
           name: sdist
           path: dist
 
+      - name: Generate SLSA build provenance attestations
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: "dist/*"
+
       - name: Verify distribution coverage
         run: |
           python3 - <<'PY'
@@ -283,19 +326,15 @@ jobs:
           for name in files:
               print(f" - {name}")
 
+          # One abi3 wheel (cp310-abi3) per platform/arch — covers CPython 3.10+.
           expected = [
-              "ferro_ta-*-cp310-cp310-manylinux*_x86_64.whl",
-              "ferro_ta-*-cp311-cp311-manylinux*_x86_64.whl",
-              "ferro_ta-*-cp312-cp312-manylinux*_x86_64.whl",
-              "ferro_ta-*-cp313-cp313-manylinux*_x86_64.whl",
-              "ferro_ta-*-cp310-cp310-win_amd64.whl",
-              "ferro_ta-*-cp311-cp311-win_amd64.whl",
-              "ferro_ta-*-cp312-cp312-win_amd64.whl",
-              "ferro_ta-*-cp313-cp313-win_amd64.whl",
-              "ferro_ta-*-cp310-cp310-macosx*_universal2.whl",
-              "ferro_ta-*-cp311-cp311-macosx*_universal2.whl",
-              "ferro_ta-*-cp312-cp312-macosx*_universal2.whl",
-              "ferro_ta-*-cp313-cp313-macosx*_universal2.whl",
+              "ferro_ta-*-cp310-abi3-manylinux*_x86_64.whl",
+              "ferro_ta-*-cp310-abi3-manylinux*_aarch64.whl",
+              "ferro_ta-*-cp310-abi3-musllinux*_x86_64.whl",
+              "ferro_ta-*-cp310-abi3-musllinux*_aarch64.whl",
+              "ferro_ta-*-cp310-abi3-macosx*_universal2.whl",
+              "ferro_ta-*-cp310-abi3-win_amd64.whl",
+              "ferro_ta-*-cp310-abi3-win_arm64.whl",
               "ferro_ta-*.tar.gz",
           ]
 
@@ -380,12 +419,40 @@ jobs:
       - name: Generate Rust SBOM (CycloneDX)
         run: cargo cyclonedx --format json --override-filename ferro-ta-rust-sbom.cdx
 
+      - name: Validate SBOMs (schema check)
+        run: |
+          python3 -c "import json, sys; json.load(open('ferro-ta-python-sbom.spdx.json')); print('Python SBOM valid JSON')"
+          python3 -c "import json, sys; data=json.load(open('ferro-ta-rust-sbom.cdx.json')); assert data.get('bomFormat')=='CycloneDX', 'not CycloneDX'; print('Rust SBOM valid CycloneDX')"
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3
+
+      - name: Sign SBOMs with cosign (keyless)
+        env:
+          COSIGN_EXPERIMENTAL: "1"
+        run: |
+          cosign sign-blob --yes ferro-ta-python-sbom.spdx.json --output-signature ferro-ta-python-sbom.spdx.json.sig --output-certificate ferro-ta-python-sbom.spdx.json.pem
+          cosign sign-blob --yes ferro-ta-rust-sbom.cdx.json     --output-signature ferro-ta-rust-sbom.cdx.json.sig     --output-certificate ferro-ta-rust-sbom.cdx.json.pem
+
+      - name: Attest SBOM provenance
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: |
+            ferro-ta-python-sbom.spdx.json
+            ferro-ta-rust-sbom.cdx.json
+
       - name: Upload Python SBOM to release
         uses: softprops/action-gh-release@v2
         with:
-          files: ferro-ta-python-sbom.spdx.json
+          files: |
+            ferro-ta-python-sbom.spdx.json
+            ferro-ta-python-sbom.spdx.json.sig
+            ferro-ta-python-sbom.spdx.json.pem
 
       - name: Upload Rust SBOM to release
         uses: softprops/action-gh-release@v2
         with:
-          files: ferro-ta-rust-sbom.cdx.json
+          files: |
+            ferro-ta-rust-sbom.cdx.json
+            ferro-ta-rust-sbom.cdx.json.sig
+            ferro-ta-rust-sbom.cdx.json.pem

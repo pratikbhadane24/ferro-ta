@@ -112,6 +112,11 @@ from ferro_ta.core.exceptions import (  # noqa: F401
     FerroTAError,
     FerroTAInputError,
     FerroTAValueError,
+    InsufficientDataError,
+    InvalidInputError,
+    InvalidPeriodError,
+    LengthMismatchError,
+    NumericConvergenceError,
 )
 
 # ---------------------------------------------------------------------------
