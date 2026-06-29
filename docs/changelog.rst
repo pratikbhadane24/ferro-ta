@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-These docs track package version ``1.1.4``.
+These docs track package version ``1.2.0``.
 
 1.1.0-audit (2026-03-28)
 ------------------------

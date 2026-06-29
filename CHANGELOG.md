@@ -9,6 +9,8 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.2.0] — 2026-06-29
+
 ### Added
 
 - **Runtime CPU-feature dispatch** for SIMD hot paths via the `multiversion`
