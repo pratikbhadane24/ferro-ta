@@ -110,8 +110,14 @@ __version__ = _detect_version()
 # ---------------------------------------------------------------------------
 from ferro_ta.core.exceptions import (  # noqa: F401
     FerroTAError,
+    FerroTaError,
     FerroTAInputError,
     FerroTAValueError,
+    InsufficientDataError,
+    InvalidInputError,
+    InvalidPeriodError,
+    LengthMismatchError,
+    NumericConvergenceError,
 )
 
 # ---------------------------------------------------------------------------

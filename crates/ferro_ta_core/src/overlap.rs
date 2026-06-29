@@ -38,27 +38,10 @@ pub fn sma_into(src: &[f64], timeperiod: usize, dest: &mut [f64], dest_offset: u
         return;
     }
 
-    #[cfg(feature = "simd")]
-    let window_sum_init = {
-        use wide::f64x4;
-        let p_data = &src[..timeperiod];
-        let mut sum = f64x4::splat(0.0);
-        let mut chunks = p_data.chunks_exact(4);
-        for chunk in &mut chunks {
-            sum += f64x4::new([chunk[0], chunk[1], chunk[2], chunk[3]]);
-        }
-        let arr = sum.to_array();
-        let mut total = arr[0] + arr[1] + arr[2] + arr[3];
-        for &v in chunks.remainder() {
-            total += v;
-        }
-        total
-    };
-
-    #[cfg(not(feature = "simd"))]
-    let window_sum_init: f64 = src[..timeperiod].iter().sum();
-
-    let mut window_sum = window_sum_init;
+    // Seed the rolling window with a runtime-dispatched reduction. The O(n)
+    // streaming recurrence below is inherently sequential, so SIMD only ever
+    // applies to this initial window sum.
+    let mut window_sum = crate::simd::sum(&src[..timeperiod]);
     let tp_f64 = timeperiod as f64;
     dest[dest_offset + timeperiod - 1] = window_sum / tp_f64;
 
@@ -124,46 +107,9 @@ pub fn wma(close: &[f64], timeperiod: usize) -> Vec<f64> {
     let denom: f64 = (timeperiod * (timeperiod + 1) / 2) as f64;
     let p = timeperiod as f64;
 
-    // Seed: compute T and S for the first window.
-    #[cfg(feature = "simd")]
-    let (mut t, mut s) = {
-        use wide::f64x4;
-        let p_data = &close[..timeperiod];
-        let mut t_simd = f64x4::splat(0.0);
-        let mut s_simd = f64x4::splat(0.0);
-        let mut chunks = p_data.chunks_exact(4);
-        let mut idx = 1.0;
-        let step = f64x4::new([0.0, 1.0, 2.0, 3.0]);
-
-        for chunk in &mut chunks {
-            let vals = f64x4::new([chunk[0], chunk[1], chunk[2], chunk[3]]);
-            let mults = f64x4::splat(idx) + step;
-            t_simd += vals * mults;
-            s_simd += vals;
-            idx += 4.0;
-        }
-        let t_arr = t_simd.to_array();
-        let s_arr = s_simd.to_array();
-        let mut t = t_arr[0] + t_arr[1] + t_arr[2] + t_arr[3];
-        let mut s = s_arr[0] + s_arr[1] + s_arr[2] + s_arr[3];
-        for &v in chunks.remainder() {
-            t += v * idx;
-            s += v;
-            idx += 1.0;
-        }
-        (t, s)
-    };
-
-    #[cfg(not(feature = "simd"))]
-    let (mut t, mut s) = {
-        let t_val: f64 = close[..timeperiod]
-            .iter()
-            .enumerate()
-            .map(|(k, &v)| v * (k + 1) as f64)
-            .sum();
-        let s_val: f64 = close[..timeperiod].iter().sum();
-        (t_val, s_val)
-    };
+    // Seed: compute T and S for the first window via a runtime-dispatched
+    // reduction (the streaming recurrence below is sequential).
+    let (mut t, mut s) = crate::simd::wma_seed(&close[..timeperiod]);
 
     result[timeperiod - 1] = t / denom;
 

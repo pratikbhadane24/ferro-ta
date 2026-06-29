@@ -9,6 +9,74 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- **Runtime CPU-feature dispatch** for SIMD hot paths via the `multiversion`
+  crate (`ferro_ta_core/src/simd.rs`). One binary now selects baseline /
+  AVX2-FMA / AVX-512 / NEON kernels at load time via CPUID instead of being
+  pinned at build time, so it runs on any CPU of the target architecture with
+  no illegal-instruction crashes on older chips. The `simd` feature is on by
+  default; `--no-default-features` gives a pure-scalar build.
+- **Broader wheel coverage**: release builds now also produce Linux `aarch64`
+  (manylinux) and `musllinux` (x86_64 + aarch64) wheels and a Windows `arm64`
+  wheel, alongside the existing Linux x86_64, macOS universal2, and Windows
+  x64 wheels.
+- **abi3 wheels** (`cp310-abi3`): a single stable-ABI wheel per platform now
+  covers CPython 3.10+ (including future 3.14+), replacing the per-version
+  wheel matrix.
+- **Dynamic Time Warping** (`DTW`, `DTW_DISTANCE`, `BATCH_DTW`): Euclidean-cost
+  DTW with optional Sakoe-Chiba band (`window=` parameter). `DTW()` returns
+  `(distance, path)` with the optimal warping path as an `(N, 2)` index array;
+  `DTW_DISTANCE()` is the faster distance-only variant; `BATCH_DTW()` computes
+  distances from each row of a 2-D matrix to a reference series in parallel
+  via rayon. Distance convention matches `dtaidistance.dtw.distance()`.
+- **Indicator-specific exception types** (`FerroTaError`, `InvalidPeriodError`,
+  `InsufficientDataError`, `LengthMismatchError`, `NumericConvergenceError`,
+  `InvalidInputError`): finer-grained errors for catching specific failure
+  modes. All subclass `ValueError` so existing `except ValueError` code keeps
+  working (backward compatible).
+
+### Changed
+
+- **SIMD is now enabled by default and runtime-dispatched.** Replaced the
+  compile-time `wide` crate (which was never actually enabled in published
+  wheels) with `multiversion`. The `wide` Cargo feature is removed; use the
+  default `simd` feature instead.
+- **Dependency bumps.** Rust: `log` 0.4.32, `serde_json` 1.0.150,
+  `rayon` 1.12.0. API service (`api/requirements.txt`): `uvicorn>=0.49.0`,
+  `pydantic>=2.13.4`, `ferro-ta>=1.1.4`. CI actions: `actions/deploy-pages` v5,
+  `actions/upload-pages-artifact` v5, `softprops/action-gh-release` v3.
+- Python coverage threshold raised from 65% to 80% and enforced in CI.
+
+### Fixed
+
+- **aarch64 Linux containers can now install ferro-ta.** Previously no Linux
+  `aarch64` wheel was published, so arm64 images (e.g. AWS Graviton) fell back
+  to an sdist build that failed without a Rust toolchain. A manylinux/musllinux
+  aarch64 wheel is now published.
+- Published wheels now actually ship SIMD-accelerated kernels; the prior build
+  enabled no SIMD feature at all.
+
+### Security
+
+- **SLSA build provenance** attestations are now generated for every PyPI
+  wheel and sdist via `actions/attest-build-provenance`. Verify with
+  `gh attestation verify <wheel>`.
+- **Sigstore keyless signatures** are now published alongside both
+  CycloneDX/SPDX SBOMs on every GitHub Release (`.sig` + `.pem` files).
+- `ferro_ta_core` crate now declares `#![forbid(unsafe_code)]` to prevent
+  regression — the pure-logic layer has no unsafe code and never will.
+- Dependabot now covers the WASM npm package in addition to pip, cargo,
+  and GitHub Actions.
+- **pip-audit fixes**: bumped dev lockfile deps `idna` 3.18, `pytest` 9.1.1,
+  and `urllib3` 2.7.0 to clear PYSEC-2026-215, CVE-2025-71176, and
+  PYSEC-2026-141/142.
+- **pyo3 advisories triaged**: RUSTSEC-2026-0176 and RUSTSEC-2026-0177 are
+  ignored in `deny.toml` with rationale — ferro-ta uses neither affected code
+  path (PyList/PyTuple `nth` iterators; `PyCFunction::new_closure`). The
+  upstream fix requires pyo3 >=0.29 (a large API migration), tracked for a
+  follow-up.
+
 ## [1.1.3] — 2026-04-02
 
 ### Added

@@ -55,8 +55,11 @@ def run_simd_benchmark(
     iv_bars: int = 50_000,
     window: int = 252,
 ) -> dict[str, Any]:
+    # `simd` is a default feature, so a pure-scalar baseline must explicitly
+    # opt out via --no-default-features; otherwise both builds would be
+    # identical and every reported speedup would collapse to 1.0.
     variants = [
-        ("portable_release", []),
+        ("portable_release", ["--no-default-features"]),
         ("simd_release", ["--features", "simd"]),
     ]
     reports = {

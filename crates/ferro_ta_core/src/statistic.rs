@@ -450,6 +450,36 @@ mod tests {
     }
 
     #[test]
+    fn dtw_nan_in_input_propagates() {
+        // NaN in either input must propagate to the distance (IEEE 754 semantics).
+        let a = vec![1.0, 2.0, f64::NAN, 4.0];
+        let b = vec![1.0, 2.0, 3.0, 4.0];
+        assert!(dtw_distance(&a, &b, None).is_nan());
+        assert!(dtw_distance(&b, &a, None).is_nan());
+    }
+
+    #[test]
+    fn dtw_is_symmetric() {
+        let a = vec![1.0, 4.0, 2.0, 8.0, 3.0, 6.0, 5.0];
+        let b = vec![2.0, 3.0, 7.0, 4.0, 5.0, 1.0, 9.0];
+        let d_ab = dtw_distance(&a, &b, None);
+        let d_ba = dtw_distance(&b, &a, None);
+        assert!((d_ab - d_ba).abs() < 1e-12);
+    }
+
+    #[test]
+    fn dtw_path_length_bounded() {
+        // A valid warp path has length between max(n, m) and n + m - 1.
+        let a: Vec<f64> = (0..7).map(|x| x as f64).collect();
+        let b: Vec<f64> = (0..10).map(|x| (x as f64).sin()).collect();
+        let (_, path) = dtw_path(&a, &b, None);
+        let n = a.len();
+        let m = b.len();
+        assert!(path.len() >= n.max(m));
+        assert!(path.len() <= n + m - 1);
+    }
+
+    #[test]
     fn dtw_window_constrained_ge_unconstrained() {
         // window convention matches dtaidistance: Some(w) means |i-j| < w.
         // A narrow window restricts warping, so constrained distance >= unconstrained.

@@ -132,6 +132,63 @@ class FerroTAInputError(FerroTAError, ValueError):
 
 
 # ---------------------------------------------------------------------------
+# Finer-grained exception subclasses (added in 1.2.0).
+#
+# These are drop-in compatible with the base classes: every subclass still
+# inherits from ``FerroTAError`` and ``ValueError``, so existing user code
+# like ``except FerroTAValueError:`` or ``except ValueError:`` keeps working.
+# The subclasses exist so users can catch *specific* failure modes without
+# string-matching on the error message.
+# ---------------------------------------------------------------------------
+
+
+class InvalidPeriodError(FerroTAValueError):
+    """Parameter like ``timeperiod``, ``fastperiod``, ``slowperiod`` is out of range.
+
+    Default error code: ``FTERR001``.
+    """
+
+
+class InsufficientDataError(FerroTAInputError):
+    """Input array is shorter than the minimum required for the indicator.
+
+    Default error code: ``FTERR003``.
+    """
+
+    code = "FTERR003"
+
+
+class LengthMismatchError(FerroTAInputError):
+    """Two or more input arrays (e.g. OHLC) have different lengths.
+
+    Default error code: ``FTERR004``.
+    """
+
+    code = "FTERR004"
+
+
+class NumericConvergenceError(FerroTAValueError):
+    """An iterative calculation failed to converge within tolerance.
+
+    Raised by iterative pricing models (implied volatility root-finding,
+    Newton-Raphson, etc.) when the maximum iteration count is exhausted.
+    """
+
+
+class InvalidInputError(FerroTAInputError):
+    """Input contains NaN/Inf in strict mode, wrong dtype, or wrong shape.
+
+    Default error code: ``FTERR005``.
+    """
+
+    code = "FTERR005"
+
+
+# Public aliases that match the names documented in the README and
+# CHANGELOG [Unreleased] section.
+FerroTaError = FerroTAError  # type: ignore[misc]
+
+# ---------------------------------------------------------------------------
 # Validation helpers (called by Python wrappers)
 # ---------------------------------------------------------------------------
 
@@ -154,7 +211,7 @@ def check_timeperiod(value: int, name: str = "timeperiod", minimum: int = 1) -> 
         If ``value < minimum``.
     """
     if value < minimum:
-        raise FerroTAValueError(
+        raise InvalidPeriodError(
             f"{name} must be >= {minimum}, got {value}",
             suggestion=f"Set {name}={minimum} or higher.",
         )
@@ -193,7 +250,7 @@ def check_equal_length(**arrays: object) -> None:
 
     if len(set(lengths.values())) > 1:
         detail = ", ".join(f"{k}={v}" for k, v in lengths.items())
-        raise FerroTAInputError(
+        raise LengthMismatchError(
             f"All input arrays must have the same length. Got: {detail}",
             code=_CODE_LENGTH_MISMATCH,
             suggestion="Trim or align your arrays so that open, high, low, close, and volume all have the same number of rows.",
@@ -223,7 +280,7 @@ def check_finite(arr: object, name: str = "input") -> None:
 
     a = np.asarray(arr, dtype=np.float64)
     if not np.all(np.isfinite(a)):
-        raise FerroTAInputError(
+        raise InvalidInputError(
             f"{name} contains NaN or Inf values. "
             "ferro_ta propagates NaN by default; call check_finite() only "
             "when you require all-finite inputs.",
@@ -255,7 +312,7 @@ def check_min_length(arr: object, min_len: int, name: str = "input") -> None:
     elif hasattr(arr, "shape"):
         length = arr.shape[0]  # type: ignore[union-attr]
     if length < min_len:
-        raise FerroTAInputError(
+        raise InsufficientDataError(
             f"{name} must have at least {min_len} elements, got {length}",
             code=_CODE_TOO_SHORT,
             suggestion=f"Provide at least {min_len} data points. Current length: {length}.",

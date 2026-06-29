@@ -53,7 +53,19 @@ skip = []
 db-urls = ["https://github.com/rustsec/advisory-db"]
 # Deny known security vulnerabilities
 version = 2
-ignore = []
+ignore = [
+    # pyo3 0.25 advisories — fix is pyo3 >=0.29, which is a large API
+    # migration (IntoPy/ToPyObject were removed in 0.26). Ignored here
+    # because ferro-ta does NOT use either affected code path:
+    #   * RUSTSEC-2026-0176 — OOB read in PyList/PyTuple nth/nth_back
+    #     iterators: the crate has zero PyList/PyTuple iterator usage.
+    #   * RUSTSEC-2026-0177 — missing Sync bound on
+    #     PyCFunction::new_closure: the crate uses #[pyfunction], never
+    #     new_closure.
+    # Tracked for removal once the pyo3 0.29 upgrade lands.
+    "RUSTSEC-2026-0176",
+    "RUSTSEC-2026-0177",
+]
 
 # ---------------------------------------------------------------------------
 # Sources — only allow crates from crates.io and our own path deps
