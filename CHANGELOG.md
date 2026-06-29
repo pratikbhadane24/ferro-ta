@@ -16,8 +16,7 @@ and the project uses [Semantic Versioning](https://semver.org/).
   AVX2-FMA / AVX-512 / NEON kernels at load time via CPUID instead of being
   pinned at build time, so it runs on any CPU of the target architecture with
   no illegal-instruction crashes on older chips. The `simd` feature is on by
-  default; `--no-default-features` gives a pure-scalar build. See
-  [ADR 0006](docs/adr/0006-cpu-coverage-strategy.md).
+  default; `--no-default-features` gives a pure-scalar build.
 - **Broader wheel coverage**: release builds now also produce Linux `aarch64`
   (manylinux) and `musllinux` (x86_64 + aarch64) wheels and a Windows `arm64`
   wheel, alongside the existing Linux x86_64, macOS universal2, and Windows
@@ -47,6 +46,7 @@ and the project uses [Semantic Versioning](https://semver.org/).
   `rayon` 1.12.0. API service (`api/requirements.txt`): `uvicorn>=0.49.0`,
   `pydantic>=2.13.4`, `ferro-ta>=1.1.4`. CI actions: `actions/deploy-pages` v5,
   `actions/upload-pages-artifact` v5, `softprops/action-gh-release` v3.
+- Python coverage threshold raised from 65% to 80% and enforced in CI.
 
 ### Fixed
 
@@ -76,10 +76,6 @@ and the project uses [Semantic Versioning](https://semver.org/).
   path (PyList/PyTuple `nth` iterators; `PyCFunction::new_closure`). The
   upstream fix requires pyo3 >=0.29 (a large API migration), tracked for a
   follow-up.
-
-### Changed
-
-- Python coverage threshold raised from 65% to 80% and enforced in CI.
 
 ## [1.1.3] — 2026-04-02
 

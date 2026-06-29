@@ -18,8 +18,7 @@ picks at runtime, so a single artifact:
 - still uses wide vector units where the hardware has them.
 
 That property is what lets the **same** wheel / Docker image / crate run
-across a heterogeneous fleet. See
-[ADR 0006](../adr/0006-cpu-coverage-strategy.md) for the full rationale.
+across a heterogeneous fleet.
 
 ## When it helps
 
@@ -91,5 +90,3 @@ on full-array reductions.
 - `benches/indicators.rs` — criterion suite.
 - `crates/ferro_ta_core/Cargo.toml` `[features] simd = ["dep:multiversion"]`
   — the gate (default-on).
-- [ADR 0006](../adr/0006-cpu-coverage-strategy.md) — CPU/platform coverage
-  strategy.

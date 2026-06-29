@@ -16,7 +16,8 @@ reconstructs the warping path, and `BATCH_DTW` parallelises over rows.
 
 ferro-ta's DTW uses squared-Euclidean local cost accumulated along the
 optimal path, with a single `sqrt()` applied at the end. This matches
-`dtaidistance.dtw.distance()` byte-for-byte. Example:
+`dtaidistance.dtw.distance()` to within floating-point tolerance (parity
+tests assert numerical agreement, not bitwise identity). Example:
 
 ```python
 >>> import ferro_ta as fta
@@ -27,7 +28,7 @@ optimal path, with a single `sqrt()` applied at the end. This matches
 If you are migrating from a library that uses absolute-difference local
 cost without the final sqrt (e.g. `fastdtw`'s default), your numbers will
 not line up. That is a choice ferro-ta made for parity with the
-scientific-Python ecosystem — see [ADR 0004](../adr/0004-dtw-algorithm-choice.md).
+scientific-Python ecosystem.
 
 ## Window constraint (Sakoe-Chiba band)
 
@@ -76,5 +77,4 @@ DTW beats FastDTW-style approximations.
 
 ## See also
 
-- [ADR 0004 — DTW algorithm choice](../adr/0004-dtw-algorithm-choice.md)
 - `tests/unit/indicators/test_statistic.py` — parity tests against `dtaidistance`.

@@ -50,20 +50,36 @@ pub(crate) fn sum(data: &[f64]) -> f64 {
 #[cfg(feature = "simd")]
 #[multiversion::multiversion(targets = "simd")]
 pub(crate) fn wma_seed(data: &[f64]) -> (f64, f64) {
-    wma_seed_impl(data)
+    // Lane-local accumulation (same idea as `sum`) so each CPU-feature clone
+    // can vectorize: `t` weights each value by its 1-based global index.
+    let mut t_acc = [0.0f64; LANES];
+    let mut s_acc = [0.0f64; LANES];
+    let mut chunks = data.chunks_exact(LANES);
+    let mut base = 0.0f64; // global index of this chunk's first element
+    for chunk in &mut chunks {
+        for (lane, ((t, s), &v)) in t_acc
+            .iter_mut()
+            .zip(s_acc.iter_mut())
+            .zip(chunk)
+            .enumerate()
+        {
+            *t += v * (base + lane as f64 + 1.0);
+            *s += v;
+        }
+        base += LANES as f64;
+    }
+    let mut t = 0.0;
+    let mut s = 0.0;
+    for (i, &v) in chunks.remainder().iter().enumerate() {
+        t += v * (base + i as f64 + 1.0);
+        s += v;
+    }
+    (t + t_acc.iter().sum::<f64>(), s + s_acc.iter().sum::<f64>())
 }
 
 /// Pure-scalar fallback when the `simd` feature is disabled.
 #[cfg(not(feature = "simd"))]
 pub(crate) fn wma_seed(data: &[f64]) -> (f64, f64) {
-    wma_seed_impl(data)
-}
-
-/// Shared body for [`wma_seed`]. `#[inline(always)]` so that, inside a
-/// multiversioned clone, it is inlined and recompiled with that clone's
-/// target features.
-#[inline(always)]
-fn wma_seed_impl(data: &[f64]) -> (f64, f64) {
     let mut t = 0.0;
     let mut s = 0.0;
     for (k, &v) in data.iter().enumerate() {
