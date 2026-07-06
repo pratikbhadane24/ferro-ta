@@ -1,5 +1,5 @@
 # Runtime dependencies for ferro-ta API
-ferro_ta>=1.1.4
+ferro_ta>=1.2.0
 fastapi>=0.110.0
 uvicorn[standard]>=0.49.0
 pydantic>=2.13.4
