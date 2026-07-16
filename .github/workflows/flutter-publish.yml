@@ -36,6 +36,13 @@ jobs:
   # Build prebuilt native libraries, one runner per OS family. Each job runs FRB
   # codegen (so the cdylib exports the bridge symbols) then cross-compiles and
   # uploads its platform's libs as an artifact for the single publish job below.
+  #
+  # Each job stages its output into `stage/`, laid out relative to `flutter/`,
+  # and uploads that directory. This is deliberate: upload-artifact roots an
+  # artifact at the least common ancestor of its path globs, so uploading the
+  # build tree directly makes the artifact layout depend on how many globs a job
+  # happens to pass (a single glob silently flattens the tree). Staging pins the
+  # layout, so `cp -R <artifact>/. flutter/` is correct for every platform.
   # ---------------------------------------------------------------------------
   build-android-linux:
     name: Build Android + Linux
@@ -56,19 +63,22 @@ jobs:
         run: |
           cargo install cargo-ndk --locked
           cargo ndk -t arm64-v8a -t armeabi-v7a -t x86_64 \
-            -o ../android/src/main/jniLibs build --release --features frb
+            -o "$GITHUB_WORKSPACE/stage/android/src/main/jniLibs" \
+            build --release --features frb
       - name: Build Linux .so
         working-directory: flutter/rust
         run: |
           cargo build --release --features frb --target x86_64-unknown-linux-gnu
-          mkdir -p ../linux/lib
-          cp target/x86_64-unknown-linux-gnu/release/lib${LIB}.so ../linux/lib/
+          mkdir -p "$GITHUB_WORKSPACE/stage/linux/lib"
+          cp "target/x86_64-unknown-linux-gnu/release/lib${LIB}.so" \
+             "$GITHUB_WORKSPACE/stage/linux/lib/"
+      - name: Show staged tree
+        run: find stage -type f | sort
       - uses: actions/upload-artifact@v4
         with:
           name: native-android-linux
-          path: |
-            flutter/android/src/main/jniLibs/**
-            flutter/linux/lib/**
+          path: stage
+          if-no-files-found: error
 
   build-apple:
     name: Build iOS + macOS
@@ -89,11 +99,11 @@ jobs:
         run: |
           cargo build --release --features frb --target aarch64-apple-darwin
           cargo build --release --features frb --target x86_64-apple-darwin
-          mkdir -p ../macos/lib
+          mkdir -p "$GITHUB_WORKSPACE/stage/macos/lib"
           lipo -create \
-            target/aarch64-apple-darwin/release/lib${LIB}.dylib \
-            target/x86_64-apple-darwin/release/lib${LIB}.dylib \
-            -output ../macos/lib/lib${LIB}.dylib
+            "target/aarch64-apple-darwin/release/lib${LIB}.dylib" \
+            "target/x86_64-apple-darwin/release/lib${LIB}.dylib" \
+            -output "$GITHUB_WORKSPACE/stage/macos/lib/lib${LIB}.dylib"
       - name: Build iOS xcframework (static)
         working-directory: flutter/rust
         run: |
@@ -103,20 +113,22 @@ jobs:
           # Fat simulator lib (arm64 + x86_64), device lib stays separate.
           mkdir -p sim
           lipo -create \
-            target/aarch64-apple-ios-sim/release/lib${LIB}.a \
-            target/x86_64-apple-ios/release/lib${LIB}.a \
-            -output sim/lib${LIB}.a
-          rm -rf ../ios/${LIB}.xcframework
+            "target/aarch64-apple-ios-sim/release/lib${LIB}.a" \
+            "target/x86_64-apple-ios/release/lib${LIB}.a" \
+            -output "sim/lib${LIB}.a"
+          mkdir -p "$GITHUB_WORKSPACE/stage/ios"
+          rm -rf "$GITHUB_WORKSPACE/stage/ios/${LIB}.xcframework"
           xcodebuild -create-xcframework \
-            -library target/aarch64-apple-ios/release/lib${LIB}.a \
-            -library sim/lib${LIB}.a \
-            -output ../ios/${LIB}.xcframework
+            -library "target/aarch64-apple-ios/release/lib${LIB}.a" \
+            -library "sim/lib${LIB}.a" \
+            -output "$GITHUB_WORKSPACE/stage/ios/${LIB}.xcframework"
+      - name: Show staged tree
+        run: find stage -type f | sort
       - uses: actions/upload-artifact@v4
         with:
           name: native-apple
-          path: |
-            flutter/macos/lib/**
-            flutter/ios/${{ env.LIB }}.xcframework/**
+          path: stage
+          if-no-files-found: error
 
   build-windows:
     name: Build Windows
@@ -136,12 +148,16 @@ jobs:
         working-directory: flutter/rust
         run: |
           cargo build --release --features frb --target x86_64-pc-windows-msvc
-          New-Item -ItemType Directory -Force -Path ../windows/lib
-          Copy-Item "target/x86_64-pc-windows-msvc/release/$env:LIB.dll" ../windows/lib/
+          $dest = "$env:GITHUB_WORKSPACE/stage/windows/lib"
+          New-Item -ItemType Directory -Force -Path $dest
+          Copy-Item "target/x86_64-pc-windows-msvc/release/$env:LIB.dll" $dest
+      - name: Show staged tree
+        run: Get-ChildItem -Recurse -File stage | Select-Object -ExpandProperty FullName
       - uses: actions/upload-artifact@v4
         with:
           name: native-windows
-          path: flutter/windows/lib/**
+          path: stage
+          if-no-files-found: error
 
   # ---------------------------------------------------------------------------
   # Assemble every platform's libs into the plugin tree and publish once.
@@ -175,10 +191,19 @@ jobs:
       - name: Place native libraries
         run: |
           set -euo pipefail
-          cp -R flutter-artifacts/native-android-linux/. flutter/
-          cp -R flutter-artifacts/native-apple/. flutter/
-          cp -R flutter-artifacts/native-windows/. flutter/
-          echo "Assembled native libs:"; find flutter/{android,ios,macos,windows,linux} -name "*${LIB}*" -maxdepth 4 | sort
+          echo "Downloaded artifact trees:"; find flutter-artifacts -type f | sort
+          # Each artifact is staged relative to flutter/, so this is a direct overlay.
+          for a in native-android-linux native-apple native-windows; do
+            cp -R "flutter-artifacts/$a/." flutter/
+          done
+          # Guard against an artifact flattening (see the staging note above):
+          # anything landing directly in flutter/ means the layout regressed.
+          if find flutter -maxdepth 1 -type f \( -name "*.dll" -o -name "*.so" -o -name "*.dylib" -o -name "*.a" \) | grep -q .; then
+            echo "ERROR: native libraries landed at the flutter/ root — artifact layout regressed." >&2
+            find flutter -maxdepth 1 -type f \( -name "*.dll" -o -name "*.so" -o -name "*.dylib" -o -name "*.a" \) >&2
+            exit 1
+          fi
+          echo "Assembled native libs:"; find flutter/android flutter/ios flutter/macos flutter/windows flutter/linux -name "*${LIB}*" | sort
           echo "Package size:"; du -sh flutter
 
       # Fail loudly if any platform's library is missing, rather than shipping a
