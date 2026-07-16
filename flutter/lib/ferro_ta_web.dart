@@ -17,7 +17,7 @@
 /// The functions below mirror the `ferro-ta-wasm` export names 1:1. They cover
 /// the common indicators; extend as needed — every wasm export follows the same
 /// `Float64Array -> Float64Array` (or array-of-arrays) shape.
-library ferro_ta_web;
+library;
 
 import 'dart:js_interop';
 import 'dart:typed_data';

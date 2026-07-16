@@ -15,7 +15,7 @@
 ///
 /// For Flutter **web**, import `package:ferro_ta/ferro_ta_web.dart`, which
 /// reuses the published `ferro-ta-wasm` package instead of native FFI.
-library ferro_ta;
+library;
 
 // Re-export the flutter_rust_bridge-generated indicator API. These files are
 // produced by `flutter_rust_bridge_codegen generate` (`make flutter-gen`) and
