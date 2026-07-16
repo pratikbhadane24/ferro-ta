@@ -68,7 +68,7 @@ jobs:
 
       - name: Open issue on regression
         if: steps.hotspot.outcome == 'failure' || steps.vs_talib.outcome == 'failure'
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         env:
           HOTSPOT_OUTCOME: ${{ steps.hotspot.outcome }}
           VS_TALIB_OUTCOME: ${{ steps.vs_talib.outcome }}
