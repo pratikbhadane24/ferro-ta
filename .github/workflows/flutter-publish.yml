@@ -232,9 +232,21 @@ jobs:
         run: |
           set -euo pipefail
           dart pub publish --dry-run 2>&1 | tee /tmp/pub-dry-run.txt || true
-          for pat in "jniLibs" "xcframework" "libferro_ta_flutter.dylib" "ferro_ta_flutter.dll" "frb_generated.dart"; do
+          # Every platform's library AND the generated Dart API must appear in
+          # the file list. Two separate ignore layers can silently strip these:
+          # the repo-root .gitignore (which a package .pubignore does NOT
+          # override) and .pubignore's own patterns.
+          for pat in \
+            "jniLibs" \
+            "xcframework" \
+            "libferro_ta_flutter.dylib" \
+            "ferro_ta_flutter.dll" \
+            "linux" \
+            "frb_generated.dart" \
+            "indicators.dart" \
+          ; do
             if ! grep -q "$pat" /tmp/pub-dry-run.txt; then
-              echo "ERROR: '$pat' is not in the package file list — check flutter/.pubignore." >&2
+              echo "ERROR: '$pat' is not in the package file list — check flutter/.pubignore and the repo-root .gitignore." >&2
               exit 1
             fi
             echo "ok: $pat present in package"
