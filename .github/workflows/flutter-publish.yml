@@ -265,9 +265,30 @@ jobs:
 
       # pub.dev rejects automated publishing that is not tag-triggered, so a
       # manual dispatch can only ever validate the package, never publish it.
+      #
+      # `--dry-run` exits non-zero on *any* warning, and this package always
+      # emits exactly one: pub advises a loose `^` constraint on
+      # flutter_rust_bridge. That advice is wrong here — flutter_rust_bridge
+      # throws at RustLib.init() when the Dart runtime version differs from the
+      # codegen version that produced the bindings (entrypoint.dart,
+      # _sanityCheckCodegenVersion, forceSameCodegenVersion defaults to true).
+      # The shipped native libraries are built against an exact FRB version, so
+      # the exact pin is required for correctness. Accept that one warning and
+      # fail on anything else, rather than ignoring warnings wholesale.
       - name: Dry-run only (manual dispatch)
         if: github.event_name != 'push'
         working-directory: flutter
         run: |
           flutter pub get
-          dart pub publish --dry-run
+          set +e
+          dart pub publish --dry-run 2>&1 | tee /tmp/dry-run.txt
+          set -e
+          unexpected="$(grep -E '^\* ' /tmp/dry-run.txt | grep -v 'flutter_rust_bridge' || true)"
+          if [ -n "$unexpected" ]; then
+            echo "ERROR: unexpected package warnings:" >&2
+            echo "$unexpected" >&2
+            exit 1
+          fi
+          grep -q 'flutter_rust_bridge' /tmp/dry-run.txt \
+            && echo "OK: only the expected flutter_rust_bridge pin warning (intentional)." \
+            || echo "OK: no warnings."
