@@ -309,7 +309,7 @@ jobs:
           path: dist
 
       - name: Generate SLSA build provenance attestations
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@v4
         with:
           subject-path: "dist/*"
 
@@ -436,7 +436,7 @@ jobs:
           cosign sign-blob --yes ferro-ta-rust-sbom.cdx.json     --output-signature ferro-ta-rust-sbom.cdx.json.sig     --output-certificate ferro-ta-rust-sbom.cdx.json.pem
 
       - name: Attest SBOM provenance
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@v4
         with:
           subject-path: |
             ferro-ta-python-sbom.spdx.json
