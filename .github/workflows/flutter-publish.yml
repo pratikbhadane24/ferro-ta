@@ -1,14 +1,23 @@
 name: Publish Flutter package to pub.dev
 
+# IMPORTANT: this workflow must be triggered by a git TAG PUSH.
+#
+# Unlike the PyPI/npm publish jobs (which hang off `release: published`),
+# pub.dev hard-requires a tag-triggered workflow:
+#
+#   "Pub.dev only allows automated publishing from GitHub Actions when the
+#    workflow is triggered by pushing a git tag to GitHub. Pub.dev rejects
+#    publishing from GitHub Actions triggered without a tag."
+#   — https://dart.dev/tools/pub/automated-publishing
+#
+# The tag must match the pattern configured on pub.dev (`v{{version}}`) and the
+# `version:` in flutter/pubspec.yaml. `workflow_dispatch` is therefore only ever
+# a dry-run rehearsal — pub.dev would reject a real publish from it.
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
   workflow_dispatch:
-    inputs:
-      release:
-        description: "Publish the Flutter package to pub.dev (unchecked = dry-run)"
-        type: boolean
-        default: true
 
 # Default for every job: read-only. The OIDC token is granted ONLY to the
 # `publish` job below, so the build jobs (which run third-party actions and
@@ -142,13 +151,11 @@ jobs:
     needs: [build-android-linux, build-apple, build-windows]
     runs-on: ubuntu-latest
     # OIDC token for pub.dev automated publishing (analog of PyPI trusted
-    # publishing). Scoped to this job only.
+    # publishing). `dart pub publish` requests the JWT itself when this is set —
+    # no manual token exchange needed. Scoped to this job only.
     permissions:
       contents: read
       id-token: write
-    if: >-
-      (github.event_name == 'release' && github.event.action == 'published')
-      || (github.event_name == 'workflow_dispatch')
     steps:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
@@ -199,7 +206,7 @@ jobs:
         working-directory: flutter
         run: |
           set -euo pipefail
-          flutter pub publish --dry-run 2>&1 | tee /tmp/pub-dry-run.txt || true
+          dart pub publish --dry-run 2>&1 | tee /tmp/pub-dry-run.txt || true
           for pat in "jniLibs" "xcframework" "libferro_ta_flutter.dylib" "ferro_ta_flutter.dll" "frb_generated.dart"; do
             if ! grep -q "$pat" /tmp/pub-dry-run.txt; then
               echo "ERROR: '$pat' is not in the package file list — check flutter/.pubignore." >&2
@@ -208,16 +215,22 @@ jobs:
             echo "ok: $pat present in package"
           done
 
-      - name: Publish (or dry-run)
+      # `dart pub publish` (not `flutter pub publish`) is the command pub.dev's
+      # automated-publishing flow documents, and the one that performs the OIDC
+      # exchange. The Flutter SDK is still required to resolve the `sdk: flutter`
+      # dependency, which is why flutter-action runs above.
+      - name: Publish to pub.dev (tag push only)
+        if: github.event_name == 'push'
         working-directory: flutter
-        env:
-          EVENT_NAME: ${{ github.event_name }}
-          RELEASE_INPUT: ${{ inputs.release }}
         run: |
           flutter pub get
-          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ "$RELEASE_INPUT" != "true" ]; then
-            echo "Dry-run (workflow_dispatch with release=false)"
-            flutter pub publish --dry-run
-          else
-            flutter pub publish --force
-          fi
+          dart pub publish --force
+
+      # pub.dev rejects automated publishing that is not tag-triggered, so a
+      # manual dispatch can only ever validate the package, never publish it.
+      - name: Dry-run only (manual dispatch)
+        if: github.event_name != 'push'
+        working-directory: flutter
+        run: |
+          flutter pub get
+          dart pub publish --dry-run
