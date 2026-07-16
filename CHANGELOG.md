@@ -19,8 +19,10 @@ and the project uses [Semantic Versioning](https://semver.org/).
   Linux (x64); Flutter web reuses the published `ferro-ta-wasm` package via JS
   interop (`package:ferro_ta/ferro_ta_web.dart`).
 - **Flutter release automation** — `.github/workflows/flutter-publish.yml`
-  builds every platform's native library on release and publishes the package
-  to pub.dev using GitHub Actions OIDC (the analog of PyPI trusted publishing).
+  builds every platform's native library and publishes the package to pub.dev
+  using GitHub Actions OIDC (the analog of PyPI trusted publishing). It is
+  triggered by the `vX.Y.Z` **tag push** rather than the GitHub Release, because
+  pub.dev rejects automated publishing that is not tag-triggered.
   `.github/workflows/ci-flutter.yml` gates PRs on bridge freshness, core
   parity, codegen, and a full `--features frb` build.
 - **`scripts/build_flutter_bridge.py`** — generates the Flutter api wrappers

@@ -14,7 +14,7 @@ For the packaging and release overview, see [PACKAGING.md](PACKAGING.md).
 | **PyPI**    | CI job `publish` using PyPI Trusted Publishing (OIDC) |
 | **npm (WASM)** | Workflow `wasm-publish`|
 | **crates.io** | CI job `publish-cratesio` |
-| **pub.dev (Flutter)** | Workflow `flutter-publish` using pub.dev automated publishing (OIDC) |
+| **pub.dev (Flutter)** | Workflow `flutter-publish` using pub.dev automated publishing (OIDC). **Triggered by the `vX.Y.Z` tag push, not by the GitHub Release** — pub.dev rejects publishes that are not tag-triggered. |
 
 PyPI releases are expected to include:
 
@@ -150,6 +150,16 @@ git push origin v0.2.0
 
 > Tags must be in the form `vMAJOR.MINOR.PATCH` (e.g. `v0.2.0`).
 
+Pushing the tag immediately starts **two** workflows:
+
+- `release.yml` — creates the GitHub Release (which then triggers the PyPI, npm,
+  and crates.io publishes).
+- `flutter-publish.yml` — builds the native libraries and publishes to pub.dev.
+  This one hangs off the **tag push itself**, because pub.dev rejects automated
+  publishing from a run that was not tag-triggered. The tag must match the
+  `v{{version}}` pattern configured on pub.dev and the `version:` in
+  `flutter/pubspec.yaml`.
+
 ---
 
 ## Step 6 — Create a GitHub Release
@@ -208,12 +218,20 @@ For urgent bug fixes on a released version:
 
 > **Note (Flutter / pub.dev):** the `flutter-publish` workflow builds the native
 > libraries for every platform, bundles them into the `ferro_ta` package, and
-> runs `flutter pub publish` using GitHub OIDC — no stored credential.
-> This requires a **one-time setup**: the package must already exist on pub.dev
-> (do the first publish manually with `flutter pub publish` from `flutter/`),
-> then enable **Automated publishing** in the pub.dev package admin, bound to
-> this repository with the `v{{version}}` tag pattern. Use
-> `workflow_dispatch` with `release` unchecked for a `--dry-run` rehearsal.
+> runs `dart pub publish --force` using GitHub OIDC — no stored credential.
+>
+> It is triggered by the **`vX.Y.Z` tag push**, not by the GitHub Release:
+> pub.dev "rejects publishing from GitHub Actions triggered without a tag"
+> ([docs](https://dart.dev/tools/pub/automated-publishing)). A manual
+> `workflow_dispatch` can only `--dry-run`; it can never publish.
+>
+> **One-time setup, required first:** pub.dev can only automate publishing of
+> *existing* packages — "To create a new package, you must publish the first
+> version using `dart pub publish`." So publish `ferro_ta` once by hand from
+> `flutter/`, then enable **Automated publishing** in the pub.dev package admin,
+> bound to this repository with the `v{{version}}` tag pattern. (A new package
+> also cannot be published directly to a verified publisher — publish to a
+> Google Account first, then transfer.)
 
 ---
 
