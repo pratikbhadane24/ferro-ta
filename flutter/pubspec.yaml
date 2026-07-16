@@ -1,0 +1,47 @@
+name: ferro_ta
+description: >-
+  Fast technical-analysis indicators for Flutter — 130+ Rust-powered functions
+  (moving averages, RSI, MACD, Bollinger Bands, ATR, candlestick patterns and
+  more) via flutter_rust_bridge, with prebuilt native binaries for all platforms.
+version: 1.2.0
+repository: https://github.com/pratikbhadane/ferro-ta
+homepage: https://github.com/pratikbhadane/ferro-ta
+issue_tracker: https://github.com/pratikbhadane/ferro-ta/issues
+topics:
+  - technical-analysis
+  - finance
+  - indicators
+  - trading
+  - ffi
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+  flutter: ">=3.22.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # Pinned exactly to the Rust `flutter_rust_bridge` dep and the codegen CLI.
+  flutter_rust_bridge: 2.11.1
+  # Web reuses the already-published WASM binding via JS interop.
+  web: ^1.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  ffi: ^2.1.0
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        ffiPlugin: true
+      ios:
+        ffiPlugin: true
+      macos:
+        ffiPlugin: true
+      windows:
+        ffiPlugin: true
+      linux:
+        ffiPlugin: true

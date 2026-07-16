@@ -88,6 +88,33 @@ Module status
      - Experimental or adjacent
      - Evaluate these independently from the core indicator library.
 
+Language bindings
+-----------------
+
+All bindings are thin wrappers over the same pure-Rust ``ferro_ta_core`` crate.
+
+.. list-table::
+   :header-rows: 1
+
+   * - Binding
+     - Channel
+     - Notes
+   * - Python (PyO3)
+     - PyPI ``ferro-ta``
+     - The primary product; abi3 wheels for CPython 3.10+.
+   * - Rust
+     - crates.io ``ferro_ta_core``
+     - The pure core library, usable from any Rust project.
+   * - WASM / Node
+     - npm ``ferro-ta-wasm``
+     - 200+ exports for Node.js and browsers.
+   * - Flutter / Dart
+     - pub.dev ``ferro_ta``
+     - 130+ indicators via flutter_rust_bridge, with prebuilt native libraries
+       bundled for Android, iOS, macOS, Windows, and Linux. Flutter web reuses
+       the ``ferro-ta-wasm`` package. Options greeks/pricing, backtest engines,
+       and batch array-of-array ops are not yet exposed.
+
 Backtesting engine features
 ---------------------------
 

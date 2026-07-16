@@ -1,0 +1,73 @@
+name: Flutter binding
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+env:
+  # Portable binaries: override `target-cpu=native` from .cargo/config.toml and
+  # rely on runtime SIMD dispatch (the `multiversion` crate), matching every
+  # other build job in this repo.
+  RUSTFLAGS: ""
+  FRB_VERSION: "2.11.1"
+
+jobs:
+  flutter:
+    name: Codegen, build, and analyze
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: flutter/rust
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      # -------------------------------------------------------------------
+      # Generated api wrappers must stay in sync with the WASM signatures
+      # (mirrors scripts/check_api_manifest.py for the Python/WASM surfaces).
+      # -------------------------------------------------------------------
+      - name: Check generated bridge wrappers are up to date
+        run: python3 scripts/build_flutter_bridge.py --check
+
+      - name: Verify api wrappers compile and match core
+        working-directory: flutter/rust
+        run: |
+          cargo build
+          cargo test
+
+      # -------------------------------------------------------------------
+      # Full bridge: run codegen, then compile the cdylib WITH the generated
+      # flutter_rust_bridge glue. This is the real gate — it proves the Dart
+      # bindings and the Rust glue build from the current api surface.
+      # -------------------------------------------------------------------
+      - name: Install flutter_rust_bridge_codegen
+        run: cargo install "flutter_rust_bridge_codegen@${FRB_VERSION}" --locked
+
+      - name: Resolve Dart dependencies
+        working-directory: flutter
+        run: flutter pub get
+
+      - name: Run flutter_rust_bridge codegen
+        working-directory: flutter
+        run: flutter_rust_bridge_codegen generate
+
+      - name: Build native library with generated bridge
+        working-directory: flutter/rust
+        run: cargo build --release --features frb
+
+      # Dart-level integration tests (driving the built library through
+      # dart:ffi) are follow-up work; `dart analyze` covers the Dart surface
+      # including the codegen output wired into the public facade.
+      - name: Analyze Dart package
+        working-directory: flutter
+        run: dart analyze

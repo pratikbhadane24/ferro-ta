@@ -1,0 +1,223 @@
+name: Publish Flutter package to pub.dev
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      release:
+        description: "Publish the Flutter package to pub.dev (unchecked = dry-run)"
+        type: boolean
+        default: true
+
+# Default for every job: read-only. The OIDC token is granted ONLY to the
+# `publish` job below, so the build jobs (which run third-party actions and
+# `cargo install`) never hold pub.dev publishing credentials.
+permissions:
+  contents: read
+
+env:
+  # Portable binaries — override target-cpu=native, rely on runtime SIMD dispatch.
+  RUSTFLAGS: ""
+  FRB_VERSION: "2.11.1"
+  LIB: ferro_ta_flutter
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Build prebuilt native libraries, one runner per OS family. Each job runs FRB
+  # codegen (so the cdylib exports the bridge symbols) then cross-compiles and
+  # uploads its platform's libs as an artifact for the single publish job below.
+  # ---------------------------------------------------------------------------
+  build-android-linux:
+    name: Build Android + Linux
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android,x86_64-unknown-linux-gnu
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable }
+      - name: FRB codegen
+        run: |
+          cargo install "flutter_rust_bridge_codegen@${FRB_VERSION}" --locked
+          cd flutter && flutter pub get && flutter_rust_bridge_codegen generate
+      - name: Build Android .so (all ABIs)
+        working-directory: flutter/rust
+        run: |
+          cargo install cargo-ndk --locked
+          cargo ndk -t arm64-v8a -t armeabi-v7a -t x86_64 \
+            -o ../android/src/main/jniLibs build --release --features frb
+      - name: Build Linux .so
+        working-directory: flutter/rust
+        run: |
+          cargo build --release --features frb --target x86_64-unknown-linux-gnu
+          mkdir -p ../linux/lib
+          cp target/x86_64-unknown-linux-gnu/release/lib${LIB}.so ../linux/lib/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: native-android-linux
+          path: |
+            flutter/android/src/main/jniLibs/**
+            flutter/linux/lib/**
+
+  build-apple:
+    name: Build iOS + macOS
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-ios,aarch64-apple-ios-sim,x86_64-apple-ios,aarch64-apple-darwin,x86_64-apple-darwin
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable }
+      - name: FRB codegen
+        run: |
+          cargo install "flutter_rust_bridge_codegen@${FRB_VERSION}" --locked
+          cd flutter && flutter pub get && flutter_rust_bridge_codegen generate
+      - name: Build macOS universal .dylib
+        working-directory: flutter/rust
+        run: |
+          cargo build --release --features frb --target aarch64-apple-darwin
+          cargo build --release --features frb --target x86_64-apple-darwin
+          mkdir -p ../macos/lib
+          lipo -create \
+            target/aarch64-apple-darwin/release/lib${LIB}.dylib \
+            target/x86_64-apple-darwin/release/lib${LIB}.dylib \
+            -output ../macos/lib/lib${LIB}.dylib
+      - name: Build iOS xcframework (static)
+        working-directory: flutter/rust
+        run: |
+          cargo build --release --features frb --target aarch64-apple-ios
+          cargo build --release --features frb --target aarch64-apple-ios-sim
+          cargo build --release --features frb --target x86_64-apple-ios
+          # Fat simulator lib (arm64 + x86_64), device lib stays separate.
+          mkdir -p sim
+          lipo -create \
+            target/aarch64-apple-ios-sim/release/lib${LIB}.a \
+            target/x86_64-apple-ios/release/lib${LIB}.a \
+            -output sim/lib${LIB}.a
+          rm -rf ../ios/${LIB}.xcframework
+          xcodebuild -create-xcframework \
+            -library target/aarch64-apple-ios/release/lib${LIB}.a \
+            -library sim/lib${LIB}.a \
+            -output ../ios/${LIB}.xcframework
+      - uses: actions/upload-artifact@v4
+        with:
+          name: native-apple
+          path: |
+            flutter/macos/lib/**
+            flutter/ios/${{ env.LIB }}.xcframework/**
+
+  build-windows:
+    name: Build Windows
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable }
+      - name: FRB codegen
+        run: |
+          cargo install "flutter_rust_bridge_codegen@$env:FRB_VERSION" --locked
+          cd flutter; flutter pub get; flutter_rust_bridge_codegen generate
+      - name: Build Windows .dll
+        working-directory: flutter/rust
+        run: |
+          cargo build --release --features frb --target x86_64-pc-windows-msvc
+          New-Item -ItemType Directory -Force -Path ../windows/lib
+          Copy-Item "target/x86_64-pc-windows-msvc/release/$env:LIB.dll" ../windows/lib/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: native-windows
+          path: flutter/windows/lib/**
+
+  # ---------------------------------------------------------------------------
+  # Assemble every platform's libs into the plugin tree and publish once.
+  # ---------------------------------------------------------------------------
+  publish:
+    name: Publish to pub.dev
+    needs: [build-android-linux, build-apple, build-windows]
+    runs-on: ubuntu-latest
+    # OIDC token for pub.dev automated publishing (analog of PyPI trusted
+    # publishing). Scoped to this job only.
+    permissions:
+      contents: read
+      id-token: write
+    if: >-
+      (github.event_name == 'release' && github.event.action == 'published')
+      || (github.event_name == 'workflow_dispatch')
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable }
+
+      - name: Regenerate Dart bindings for the package
+        run: |
+          cargo install "flutter_rust_bridge_codegen@${FRB_VERSION}" --locked
+          cd flutter && flutter pub get && flutter_rust_bridge_codegen generate
+
+      - name: Download all native artifacts into the plugin tree
+        uses: actions/download-artifact@v4
+        with:
+          path: flutter-artifacts
+
+      - name: Place native libraries
+        run: |
+          set -euo pipefail
+          cp -R flutter-artifacts/native-android-linux/. flutter/
+          cp -R flutter-artifacts/native-apple/. flutter/
+          cp -R flutter-artifacts/native-windows/. flutter/
+          echo "Assembled native libs:"; find flutter/{android,ios,macos,windows,linux} -name "*${LIB}*" -maxdepth 4 | sort
+          echo "Package size:"; du -sh flutter
+
+      # Fail loudly if any platform's library is missing, rather than shipping a
+      # silently broken package (mirrors the PyPI wheel coverage gate in CI.yml).
+      - name: Verify native library coverage
+        run: |
+          set -euo pipefail
+          missing=0
+          for f in \
+            "flutter/android/src/main/jniLibs/arm64-v8a/lib${LIB}.so" \
+            "flutter/android/src/main/jniLibs/armeabi-v7a/lib${LIB}.so" \
+            "flutter/android/src/main/jniLibs/x86_64/lib${LIB}.so" \
+            "flutter/ios/${LIB}.xcframework/Info.plist" \
+            "flutter/macos/lib/lib${LIB}.dylib" \
+            "flutter/windows/lib/${LIB}.dll" \
+            "flutter/linux/lib/lib${LIB}.so" \
+          ; do
+            if [ ! -e "$f" ]; then echo "MISSING: $f"; missing=1; else echo "ok: $f"; fi
+          done
+          [ "$missing" -eq 0 ] || { echo "ERROR: native library coverage incomplete." >&2; exit 1; }
+
+      # .pubignore (not .gitignore) governs what pub ships. Prove the native
+      # libraries and generated bindings actually make it into the package.
+      - name: Verify libraries are included in the published package
+        working-directory: flutter
+        run: |
+          set -euo pipefail
+          flutter pub publish --dry-run 2>&1 | tee /tmp/pub-dry-run.txt || true
+          for pat in "jniLibs" "xcframework" "libferro_ta_flutter.dylib" "ferro_ta_flutter.dll" "frb_generated.dart"; do
+            if ! grep -q "$pat" /tmp/pub-dry-run.txt; then
+              echo "ERROR: '$pat' is not in the package file list — check flutter/.pubignore." >&2
+              exit 1
+            fi
+            echo "ok: $pat present in package"
+          done
+
+      - name: Publish (or dry-run)
+        working-directory: flutter
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          RELEASE_INPUT: ${{ inputs.release }}
+        run: |
+          flutter pub get
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ "$RELEASE_INPUT" != "true" ]; then
+            echo "Dry-run (workflow_dispatch with release=false)"
+            flutter pub publish --dry-run
+          else
+            flutter pub publish --force
+          fi

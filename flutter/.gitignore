@@ -1,0 +1,26 @@
+# Dart / Flutter
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
+pubspec.lock
+doc/api/
+
+# flutter_rust_bridge generated bindings (produced by `make flutter-gen` / CI).
+/lib/src/rust/
+/rust/src/frb_generated.rs
+
+# Rust build output
+/rust/target/
+
+# Prebuilt native libraries — built in CI (flutter-publish.yml) and bundled at
+# publish time; never committed to git.
+#
+# NOTE: these paths (and the generated bindings above) are deliberately NOT in
+# .pubignore — pub publishes them. See .pubignore for why that split matters.
+/android/src/main/jniLibs/
+/ios/*.xcframework/
+/macos/lib/
+/windows/lib/
+/linux/lib/

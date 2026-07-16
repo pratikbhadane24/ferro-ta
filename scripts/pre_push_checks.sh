@@ -15,7 +15,7 @@ AVAILABLE_CHECKS=(
   version changelog manifest
   rust_fmt rust_clippy rust_core rust_bench
   python_lint python_typecheck python_test
-  docs wasm
+  docs wasm flutter
 )
 DEFAULT_CHECKS=("${AVAILABLE_CHECKS[@]}")
 
@@ -118,6 +118,20 @@ run_wasm() {
   )
 }
 
+run_flutter() {
+  need_cmd python3; need_cmd cargo
+  # Generated bridge module must be in sync with the WASM signatures.
+  run_cmd python3 scripts/build_flutter_bridge.py --check
+  # The api wrappers must compile against, and match, the core crate.
+  ( cd flutter/rust && RUSTFLAGS="" run_cmd cargo build && RUSTFLAGS="" run_cmd cargo test )
+  # Dart checks only when the SDK is available (CI always has it).
+  if command -v flutter >/dev/null 2>&1; then
+    ( cd flutter && run_cmd flutter pub get && run_cmd dart analyze )
+  else
+    echo "    (flutter SDK not found — skipping dart analyze)"
+  fi
+}
+
 run_check() {
   case "$1" in
     version)          run_version ;;
@@ -132,6 +146,7 @@ run_check() {
     python_test)      run_python_test ;;
     docs)             run_docs ;;
     wasm)             run_wasm ;;
+    flutter)          run_flutter ;;
     *) echo "Unknown check: $1 — use --list" >&2; exit 1 ;;
   esac
 }
