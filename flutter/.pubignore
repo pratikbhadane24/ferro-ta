@@ -1,0 +1,19 @@
+# pub uses THIS file instead of .gitignore when deciding what to publish.
+#
+# This distinction is load-bearing: .gitignore excludes the prebuilt native
+# libraries and the flutter_rust_bridge-generated Dart bindings (they are CI
+# build artifacts, not source). Those files MUST ship in the published package —
+# without this file pub would silently strip them and the release would be
+# broken. Everything not listed below is published.
+
+# Dev/build cruft
+.dart_tool/
+build/
+pubspec.lock
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Rust sources and build output: consumers get prebuilt libraries, so the crate
+# itself is not needed at consume time and would only bloat the package.
+rust/
+flutter_rust_bridge.yaml

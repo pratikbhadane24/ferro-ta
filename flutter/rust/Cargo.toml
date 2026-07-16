@@ -1,0 +1,35 @@
+[package]
+name = "ferro_ta_flutter"
+version = "1.2.0"
+edition = "2021"
+description = "Flutter (flutter_rust_bridge) bindings for ferro-ta technical analysis indicators"
+license = "MIT"
+publish = false
+
+# Detached from the root workspace (mirrors `wasm/` and `fuzz/`) so the Flutter
+# crate can pin its own toolchain/target set without perturbing the PyO3 build.
+[workspace]
+
+[lib]
+# cdylib   -> Android/desktop shared objects
+# staticlib -> iOS xcframework
+# rlib      -> lets the integration tests link against the api wrappers
+crate-type = ["cdylib", "staticlib", "rlib"]
+
+[features]
+# Default build compiles the plain-Rust api wrappers over `ferro_ta_core` only,
+# so `cargo build -p ferro_ta_flutter` verifies indicator parity without pulling
+# the flutter_rust_bridge dependency tree. CI enables `frb` after running
+# `flutter_rust_bridge_codegen generate`, which emits `src/frb_generated.rs`.
+default = []
+frb = ["dep:flutter_rust_bridge"]
+
+[dependencies]
+ferro_ta_core = { path = "../../crates/ferro_ta_core", default-features = false, features = ["simd"] }
+# Pinned exactly: the Rust dep, the Dart `flutter_rust_bridge` package, and the
+# `flutter_rust_bridge_codegen` CLI must all be this same version.
+flutter_rust_bridge = { version = "=2.11.1", optional = true }
+
+[profile.release]
+lto = true
+codegen-units = 1

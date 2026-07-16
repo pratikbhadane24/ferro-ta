@@ -1,7 +1,7 @@
 # ferro-ta development Makefile
 # Usage: make <target>
 
-.PHONY: help dev build test lint typecheck fmt docs clean bench version audit prepush hooks
+.PHONY: help dev build test lint typecheck fmt docs clean bench version audit prepush hooks flutter flutter-gen
 
 # Default target
 help:
@@ -15,6 +15,8 @@ help:
 	@echo "  make typecheck  Run mypy + pyright type checkers"
 	@echo "  make docs       Build the Sphinx documentation"
 	@echo "  make bench      Run Rust criterion benchmarks (ferro_ta_core)"
+	@echo "  make flutter    Verify the Flutter binding (fresh wrappers + core parity)"
+	@echo "  make flutter-gen Regenerate Flutter api wrappers + flutter_rust_bridge glue"
 	@echo "  make version    Bump tracked version strings (set VERSION=X.Y.Z)"
 	@echo "  make audit      Run cargo-audit + pip-audit"
 	@echo "  make prepush    Run the local pre-push CI gate (set CHECKS='version rust_fmt' to scope it)"
@@ -50,6 +52,18 @@ docs:
 
 bench:
 	cargo bench -p ferro_ta_core
+
+# Regenerate the Flutter api wrappers (from WASM signatures) and the
+# flutter_rust_bridge Dart/Rust glue. Requires the Flutter SDK + FRB codegen.
+flutter-gen:
+	python3 scripts/build_flutter_bridge.py
+	cd flutter && flutter_rust_bridge_codegen generate
+
+# Verify the Flutter binding: generated wrappers are fresh and compile against
+# the core crate (Dart/Flutter checks run when the SDK is installed).
+flutter:
+	python3 scripts/build_flutter_bridge.py --check
+	cd flutter/rust && RUSTFLAGS="" cargo build && RUSTFLAGS="" cargo test
 
 version:
 	@test -n "$(VERSION)" || (echo "Usage: make version VERSION=X.Y.Z" && exit 1)

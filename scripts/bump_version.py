@@ -94,6 +94,18 @@ CARRIERS = [
         r"\g<1>{version}\g<3>",
     ),
     VersionCarrier(
+        "flutter_cargo",
+        ROOT / "flutter" / "rust" / "Cargo.toml",
+        r'(?m)^(version = ")([^"]+)(")$',
+        r"\g<1>{version}\g<3>",
+    ),
+    VersionCarrier(
+        "flutter_pubspec",
+        ROOT / "flutter" / "pubspec.yaml",
+        r"(?m)^(version: )([^\s#]+)(\s*)$",
+        r"\g<1>{version}\g<3>",
+    ),
+    VersionCarrier(
         "conda",
         ROOT / "conda" / "meta.yaml",
         r'({% set version = ")([^"]+)(" %})',

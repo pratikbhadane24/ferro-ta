@@ -32,6 +32,22 @@ source.
 > `PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1` to attempt a build on a newer
 > interpreter and report any issues.
 
+## Flutter (pub.dev package `ferro_ta`)
+
+The Flutter binding ships **prebuilt native libraries inside the package**, so
+app developers need no Rust toolchain:
+
+| Platform | Architectures | Path |
+|---|---|---|
+| Android | arm64-v8a, armeabi-v7a, x86_64 | native FFI |
+| iOS     | arm64 (device), arm64 + x86_64 (simulator) | native FFI |
+| macOS   | universal (arm64 + x86_64) | native FFI |
+| Windows | x64 | native FFI |
+| Linux   | x64 | native FFI |
+| Web     | — | reuses the npm `ferro-ta-wasm` package via JS interop |
+
+See [`flutter/README.md`](flutter/README.md) for usage.
+
 ## Installation
 
 ### pip (recommended)
@@ -72,5 +88,9 @@ pip install ferro-ta --no-binary ferro-ta
 ## Known limitations
 
 - WASM binding: full feature parity with 200+ exports including all TA-Lib indicators, candlestick patterns, streaming API, options, futures, and backtesting (see `wasm/README.md`).
+- Flutter binding: 130+ indicators generated from the WASM signatures. A subset
+  (options greeks/pricing, backtest engines, crossover-signal indices, and batch
+  array-of-array ops) needs hand-written bridge wrappers and is not yet exposed —
+  see `MANUAL_EXCLUDE` in `scripts/build_flutter_bridge.py`.
 - Python 3.14+: untested; may work with `PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1`.
 - 32-bit platforms: not officially supported; source builds may succeed.

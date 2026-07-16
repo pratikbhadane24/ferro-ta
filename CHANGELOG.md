@@ -9,6 +9,25 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- **Flutter binding** (`flutter/`) — a new `ferro_ta` package for pub.dev that
+  exposes the pure-Rust core to Flutter apps via
+  [flutter_rust_bridge](https://github.com/fzyzcjy/flutter_rust_bridge).
+  Prebuilt native libraries are bundled for Android (arm64-v8a, armeabi-v7a,
+  x86_64), iOS (device + simulator), macOS (universal), Windows (x64), and
+  Linux (x64); Flutter web reuses the published `ferro-ta-wasm` package via JS
+  interop (`package:ferro_ta/ferro_ta_web.dart`).
+- **Flutter release automation** — `.github/workflows/flutter-publish.yml`
+  builds every platform's native library on release and publishes the package
+  to pub.dev using GitHub Actions OIDC (the analog of PyPI trusted publishing).
+  `.github/workflows/ci-flutter.yml` gates PRs on bridge freshness, core
+  parity, codegen, and a full `--features frb` build.
+- **`scripts/build_flutter_bridge.py`** — generates the Flutter api wrappers
+  from the WASM signatures so the Python, WASM, and Flutter surfaces stay in
+  lockstep; `--check` enforces freshness in CI and pre-push.
+- `make flutter` / `make flutter-gen` targets and a `flutter` pre-push check.
+
 ## [1.2.0] — 2026-06-29
 
 ### Added

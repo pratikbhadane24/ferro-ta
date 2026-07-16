@@ -14,6 +14,7 @@ For the packaging and release overview, see [PACKAGING.md](PACKAGING.md).
 | **PyPI**    | CI job `publish` using PyPI Trusted Publishing (OIDC) |
 | **npm (WASM)** | Workflow `wasm-publish`|
 | **crates.io** | CI job `publish-cratesio` |
+| **pub.dev (Flutter)** | Workflow `flutter-publish` using pub.dev automated publishing (OIDC) |
 
 PyPI releases are expected to include:
 
@@ -83,6 +84,8 @@ Files covered by the bump script:
 | `crates/ferro_ta_core/README.md` | Installation snippet should show the current crate version |
 | `pyproject.toml` | Root |
 | `wasm/package.json` | Package version |
+| `flutter/pubspec.yaml` | pub.dev package version |
+| `flutter/rust/Cargo.toml` | Flutter bridge crate version |
 | `conda/meta.yaml` | Conda recipe version |
 | `docs/conf.py` | Default Sphinx release must resolve to the same version |
 
@@ -165,7 +168,7 @@ uses Trusted Publishing via GitHub OIDC, so no `PYPI_API_TOKEN` secret is used.
 
 ## Step 7 — Monitor CI and verify PyPI
 
-1. Watch the **Actions** tab: the release wheel jobs, `build-sdist`, `publish` (PyPI), `publish-cratesio` (crates.io), and the **wasm-publish** workflow (npm).
+1. Watch the **Actions** tab: the release wheel jobs, `build-sdist`, `publish` (PyPI), `publish-cratesio` (crates.io), the **wasm-publish** workflow (npm), and the **flutter-publish** workflow (pub.dev).
 2. After the `publish` job succeeds, verify the package is live:
 
 ```bash
@@ -202,6 +205,15 @@ For urgent bug fixes on a released version:
 ---
 
 > **Note:** `ferro_ta_core` is published to crates.io automatically by the CI job `publish-cratesio` when you publish a release (requires `CARGO_REGISTRY_TOKEN` secret).
+
+> **Note (Flutter / pub.dev):** the `flutter-publish` workflow builds the native
+> libraries for every platform, bundles them into the `ferro_ta` package, and
+> runs `flutter pub publish` using GitHub OIDC — no stored credential.
+> This requires a **one-time setup**: the package must already exist on pub.dev
+> (do the first publish manually with `flutter pub publish` from `flutter/`),
+> then enable **Automated publishing** in the pub.dev package admin, bound to
+> this repository with the `v{{version}}` tag pattern. Use
+> `workflow_dispatch` with `release` unchecked for a `--dry-run` rehearsal.
 
 ---
 

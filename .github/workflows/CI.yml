@@ -39,10 +39,12 @@ jobs:
         run: |
           CARGO_VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/version = "\(.*\)"/\1/')
           PYPROJECT_VERSION=$(grep '^version' pyproject.toml | head -1 | sed 's/version = "\(.*\)"/\1/')
-          echo "Cargo.toml version:     $CARGO_VERSION"
-          echo "pyproject.toml version: $PYPROJECT_VERSION"
-          if [ "$CARGO_VERSION" != "$PYPROJECT_VERSION" ]; then
-            echo "ERROR: Version mismatch! Update both files before releasing."
+          FLUTTER_VERSION=$(grep '^version:' flutter/pubspec.yaml | head -1 | sed 's/version: *//')
+          echo "Cargo.toml version:      $CARGO_VERSION"
+          echo "pyproject.toml version:  $PYPROJECT_VERSION"
+          echo "flutter/pubspec version: $FLUTTER_VERSION"
+          if [ "$CARGO_VERSION" != "$PYPROJECT_VERSION" ] || [ "$CARGO_VERSION" != "$FLUTTER_VERSION" ]; then
+            echo "ERROR: Version mismatch! Update all manifests before releasing."
             exit 1
           fi
           echo "OK: versions match ($CARGO_VERSION)"
@@ -63,6 +65,10 @@ jobs:
   wasm:
     name: WASM binding
     uses: ./.github/workflows/ci-wasm.yml
+
+  flutter:
+    name: Flutter binding
+    uses: ./.github/workflows/ci-flutter.yml
 
   docs:
     name: Documentation
@@ -103,6 +109,7 @@ jobs:
       - rust-suite
       - python-suite
       - wasm
+      - flutter
       - docs
     if: always()
     steps:

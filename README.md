@@ -70,6 +70,16 @@ pip install "ferro-ta[mcp]"      # MCP server for agent/tool clients
 pip install "ferro-ta[all]"      # most optional extras (excluding gpu)
 ```
 
+### Other languages
+
+The same Rust core is published to several ecosystems:
+
+| Language | Install |
+|---|---|
+| Rust | `cargo add ferro_ta_core` |
+| Node / browser (WASM) | `npm install ferro-ta-wasm` |
+| Flutter / Dart | `flutter pub add ferro_ta` — see [flutter/README.md](flutter/README.md) |
+
 ## ⚡ Quick start
 
 ```python
@@ -120,6 +130,7 @@ Optional and experimental surfaces:
 - [docs/adjacent_tooling.rst](docs/adjacent_tooling.rst)
 - [docs/plugins.rst](docs/plugins.rst)
 - [wasm/README.md](wasm/README.md)
+- [flutter/README.md](flutter/README.md)
 
 Project and release docs:
 

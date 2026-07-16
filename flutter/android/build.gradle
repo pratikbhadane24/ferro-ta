@@ -1,0 +1,40 @@
+// Android build for the ferro_ta FFI plugin.
+// Prebuilt .so files live in src/main/jniLibs/<abi>/ and are bundled into the
+// consuming app's APK automatically. No source compilation happens here.
+group 'com.ferrota.ferro_ta'
+version '1.2.0'
+
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.1.0'
+    }
+}
+
+rootProject.allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+apply plugin: 'com.android.library'
+
+android {
+    namespace 'com.ferrota.ferro_ta'
+    compileSdk 34
+
+    defaultConfig {
+        minSdk 21
+    }
+
+    // jniLibs are prebuilt and shipped in the package; do not strip/rebuild.
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['src/main/jniLibs']
+        }
+    }
+}
