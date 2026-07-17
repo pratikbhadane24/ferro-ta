@@ -202,7 +202,8 @@ live trading at typical bar rates with minimal Python overhead.
 
 `VWAP`, `SUPERTREND`, `ICHIMOKU`, `DONCHIAN`, `PIVOT_POINTS`, `KELTNER_CHANNELS`,
 `HULL_MA`, `CHANDELIER_EXIT`, `VWMA`, and `CHOPPINESS_INDEX` are implemented in
-Rust (`src/extended/mod.rs`).  The Python module `ferro_ta/indicators/extended.py`
+Rust (`crates/ferro_ta_core/src/extended.rs`, wrapped by `src/extended/mod.rs`).
+The Python module `ferro_ta/indicators/extended.py`
 is a thin wrapper with validation and `_to_f64`; all computation runs in the extension.
 
 ---
@@ -313,9 +314,9 @@ for history and commits.
 | **Utils**   | `_to_f64` fast path: no copy for 1-D C-contiguous float64      | `python/ferro_ta/_utils.py` |
 | **Utils**   | Polars result: `pl.Series(name, result)` from NumPy buffer (no `.tolist()`) | `python/ferro_ta/_utils.py` |
 | **Raw API** | `ferro_ta.core.raw` — bypass pandas/polars and validation       | `python/ferro_ta/core/raw.py` |
-| **Batch**   | Rust batch for SMA/EMA/RSI — single GIL release for 2-D        | `src/batch/mod.rs`, `python/ferro_ta/data/batch.py` |
-| **Streaming** | All streaming classes in Rust (PyO3)                          | `src/streaming/mod.rs` |
-| **Extended** | All extended indicators (incl. SUPERTREND) in Rust            | `src/extended/mod.rs`, `python/ferro_ta/indicators/extended.py` wraps Rust |
+| **Batch**   | Rust batch for SMA/EMA/RSI — single GIL release for 2-D        | `crates/ferro_ta_core/src/batch.rs`, `python/ferro_ta/data/batch.py` |
+| **Streaming** | All streaming classes in Rust (PyO3)                          | `crates/ferro_ta_core/src/streaming.rs` |
+| **Extended** | All extended indicators (incl. SUPERTREND) in Rust            | `crates/ferro_ta_core/src/extended.rs`, `python/ferro_ta/indicators/extended.py` wraps Rust |
 
 ---
 

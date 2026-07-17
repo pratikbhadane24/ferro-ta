@@ -20,17 +20,25 @@ indicators and extends it to all new and existing indicators.
 
 ## The Boundary
 
+There are three layers, not two. `src/` is a *binding* layer: it validates and
+converts, then delegates to `ferro_ta_core`, which owns every algorithm and is
+shared with the WASM and Flutter bindings. Implementing maths in `src/` forks it
+away from those bindings.
+
 ```
-Python layer (thin)                  Rust layer (thick)
-─────────────────────────────        ────────────────────────────────────
-ferro_ta/indicators/overlap.py   ────▶   src/overlap/mod.rs
-ferro_ta/indicators/momentum.py  ────▶   src/momentum/mod.rs
-ferro_ta/data/streaming.py       ────▶   src/streaming/mod.rs  (PyO3 classes)
-ferro_ta/indicators/extended.py  ────▶   src/extended/mod.rs
-ferro_ta/indicators/math_ops.py  ────▶   src/math_ops/mod.rs
-ferro_ta/data/batch.py           ────▶   src/batch/mod.rs
-ferro_ta/indicators/pattern.py   ────▶   src/pattern/mod.rs
-...                         ────▶   ...
+Python layer (thin)               PyO3 bindings (thin)        Algorithms (thick)
+────────────────────────────      ─────────────────────       ───────────────────────────────
+ferro_ta/indicators/overlap.py ─▶ src/overlap/*.rs      ────▶ crates/ferro_ta_core/src/overlap.rs
+ferro_ta/indicators/momentum.py ─▶ src/momentum/*.rs    ────▶ crates/ferro_ta_core/src/momentum.rs
+ferro_ta/data/streaming.py     ─▶ src/streaming/mod.rs  ────▶ crates/ferro_ta_core/src/streaming.rs
+ferro_ta/indicators/extended.py ─▶ src/extended/mod.rs  ────▶ crates/ferro_ta_core/src/extended.rs
+ferro_ta/indicators/math_ops.py ─▶ src/math_ops/mod.rs  ────▶ crates/ferro_ta_core/src/math_ops.rs
+ferro_ta/data/batch.py         ─▶ src/batch/mod.rs      ────▶ crates/ferro_ta_core/src/batch.rs
+ferro_ta/indicators/pattern.py ─▶ src/pattern/*.rs      ────▶ crates/ferro_ta_core/src/pattern.rs
+...                            ─▶ ...                   ────▶ ...
+
+                                  wasm/src/lib.rs       ────▶ (same core)
+                                  flutter/rust/src/...  ────▶ (same core)
 ```
 
 **Python layer responsibilities (ONLY):**
@@ -54,9 +62,13 @@ ferro_ta/indicators/pattern.py   ────▶   src/pattern/mod.rs
 
 When adding a new indicator:
 
-1. Implement the algorithm in `src/<category>/mod.rs` (or a new category
-   module if the category does not exist).
-2. Register the function in `src/lib.rs` via `<category>::register(m)?`.
+1. Implement the algorithm in `crates/ferro_ta_core/src/<category>.rs` as a
+   pure function over slices — never in `src/`. Core is shared with the WASM
+   and Flutter bindings, so an algorithm written in the PyO3 layer is invisible
+   to them and will drift.
+2. Add a thin PyO3 wrapper in `src/<category>/<name>.rs` that validates inputs
+   and delegates to core, then register it in `src/lib.rs` via
+   `<category>::register(m)?`.
 3. Write a thin Python wrapper in `python/ferro_ta/indicators/<category>.py` that:
    - Validates inputs
    - Calls `_to_f64()` on array arguments

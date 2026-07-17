@@ -1,8 +1,12 @@
 # TA-Lib Compatibility
 
-`ferro-ta` covers **100% of TA-Lib's function set** (`162+` indicators). This
-file keeps the full GitHub-facing parity matrix in one place so the root
-`README.md` can stay product-focused.
+`ferro-ta` implements **156 of TA-Lib 0.6.4's 161 functions**, plus 10 extended
+indicators and 9 streaming classes that TA-Lib does not provide. This file keeps
+the full GitHub-facing parity matrix in one place so the root `README.md` can
+stay product-focused.
+
+The five not yet implemented are `ACCBANDS`, `IMI`, `AVGDEV`, `MINMAX` and
+`MINMAXINDEX`.
 
 See also:
 
@@ -241,21 +245,25 @@ for the first `timeperiod - 1` bars.
 ## Implementation Coverage Summary
 
 
-| Category                    | Implemented | Not Implemented |
-| --------------------------- | ----------- | --------------- |
-| Overlap Studies             | 16          | 0               |
-| Momentum Indicators         | 30          | 0               |
-| Volume Indicators           | 3           | 0               |
-| Volatility Indicators       | 3           | 0               |
-| Cycle Indicators            | 6           | 0               |
-| Price Transforms            | 4           | 0               |
-| Statistic Functions         | 9           | 0               |
-| Pattern Recognition         | 61          | 0               |
-| Math Operators / Transforms | 24          | 0               |
-| Extended Indicators         | 10          | -               |
-| Streaming Classes           | 9           | -               |
-| **Total**                   | **162+**    | **0**           |
+Counts are of distinct TA-Lib function names, measured against
+`talib.get_functions()` for TA-Lib 0.6.4.
+
+| Category                    | Implemented | Not Implemented         |
+| --------------------------- | ----------- | ----------------------- |
+| Overlap Studies             | 16          | 1 (`ACCBANDS`)          |
+| Momentum Indicators         | 30          | 1 (`IMI`)               |
+| Volume Indicators           | 3           | 0                       |
+| Volatility Indicators       | 3           | 0                       |
+| Cycle Indicators            | 6           | 0                       |
+| Price Transforms            | 4           | 1 (`AVGDEV`)            |
+| Statistic Functions         | 9           | 0                       |
+| Pattern Recognition         | 61          | 0                       |
+| Math Operators / Transforms | 24          | 2 (`MINMAX`, `MINMAXINDEX`) |
+| **TA-Lib subtotal**         | **156**     | **5**                   |
+| Extended Indicators         | 10          | – (not in TA-Lib)       |
+| Streaming Classes           | 9           | – (not in TA-Lib)       |
+| **Total implemented**       | **175**     |                         |
 
 
-> `ferro-ta` implements 100% of TA-Lib's function set. NaN values are placed
+> `ferro-ta` implements 156 of TA-Lib's 161 functions. NaN values are placed
 > at the beginning of each output array for the warmup period.
