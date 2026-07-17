@@ -1,11 +1,9 @@
 use crate::validation;
 use numpy::{IntoPyArray, PyArray1, PyReadonlyArray1};
-use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
-use ta::indicators::{ExponentialMovingAverage, FastStochastic};
-use ta::{DataItem, Next};
 
-/// Fast Stochastic. Returns (fastk, fastd). %K from high-low range; %D is EMA of %K.
+/// Fast Stochastic. Returns (fastk, fastd). %K from high-low range; %D is the
+/// SMA of %K (TA-Lib's `fastd_matype=0` default).
 #[pyfunction]
 #[pyo3(signature = (high, low, close, fastk_period = 5, fastd_period = 3))]
 #[allow(clippy::type_complexity)]
@@ -29,34 +27,10 @@ pub fn stochf<'py>(
         (closes.len(), "close"),
     ])?;
 
-    let mut fast_stoch =
-        FastStochastic::new(fastk_period).map_err(|e| PyValueError::new_err(e.to_string()))?;
-    let mut d_ema = ExponentialMovingAverage::new(fastd_period)
-        .map_err(|e| PyValueError::new_err(e.to_string()))?;
-
-    let warmup_k = fastk_period - 1;
-    let warmup_d = warmup_k + fastd_period - 1;
-
-    let mut fastk = vec![f64::NAN; n];
-    let mut fastd = vec![f64::NAN; n];
-
-    for (i, ((&h, &l), &c)) in highs.iter().zip(lows.iter()).zip(closes.iter()).enumerate() {
-        let bar = DataItem::builder()
-            .high(h)
-            .low(l)
-            .close(c)
-            .open(c)
-            .volume(0.0)
-            .build()
-            .map_err(|e| PyValueError::new_err(e.to_string()))?;
-        let k = fast_stoch.next(&bar);
-        if i >= warmup_k {
-            fastk[i] = k;
-            let d = d_ema.next(k);
-            if i >= warmup_d {
-                fastd[i] = d;
-            }
-        }
-    }
+    // STOCHF(fastk, fastd) == STOCH(fastk, slowk_period = 1, slowd_period = fastd),
+    // which reuses core's TA-Lib-compatible SMA smoothing and NaN padding.
+    let (fastk, fastd) = py.allow_threads(|| {
+        ferro_ta_core::momentum::stoch(highs, lows, closes, fastk_period, 1, fastd_period)
+    });
     Ok((fastk.into_pyarray(py), fastd.into_pyarray(py)))
 }
