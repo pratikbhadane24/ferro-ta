@@ -15,7 +15,7 @@
 - [ ] New tests have been added for any new behaviour
 - [ ] `cargo fmt --check` passes
 - [ ] `cargo clippy --release -- -D warnings` passes
-- [ ] README accuracy table updated (if indicators were added or changed)
+- [ ] `TA_LIB_COMPATIBILITY.md` accuracy table updated (if indicators were added or changed)
 - [ ] CHANGELOG.md updated (for user-visible changes)
 - [ ] Docstrings added or updated for new/changed public functions
 

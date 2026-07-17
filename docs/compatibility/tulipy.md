@@ -11,7 +11,7 @@ external dependencies.
 
 | Aspect | ferro-ta | Tulipy |
 |--------|---------|--------|
-| **Backend** | Rust/C + SIMD | ANSI C99 |
+| **Backend** | Rust + SIMD | ANSI C99 |
 | **Input type** | NumPy array or list | `np.float64` contiguous array |
 | **Output length** | Same as input (NaN-padded) | Truncated (lookback bars shorter) |
 | **NaN handling** | Pads warmup with NaN | Strips warmup entirely |
@@ -61,7 +61,7 @@ positional-or-keyword integer.
 | CCI | `CCI(high, low, close, timeperiod=14)` | `cci(high, low, close, period=14)` |
 | WILLR | `WILLR(high, low, close, timeperiod=14)` | `willr(high, low, close, period=14)` |
 | STOCH | `STOCH(high, low, close, 5, 3, 3)` | `stoch(high, low, close, ...)` |
-| HMA | Not supported | `hma(close, period=14)` |
+| HMA | `HULL_MA(close, timeperiod=14)` | `hma(close, period=14)` |
 | DEMA | `DEMA(close, timeperiod=30)` | `dema(close, period=30)` |
 | TEMA | `TEMA(close, timeperiod=30)` | `tema(close, period=30)` |
 | AROON | `AROONOSC(high, low, timeperiod=14)` | `aroonosc(high, low, period=14)` |

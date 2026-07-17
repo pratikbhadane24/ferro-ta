@@ -72,22 +72,24 @@ pub fn mfi(
     // First valid window: indices 1..=timeperiod.
     let mut pos_sum: f64 = pos_flow[1..=timeperiod].iter().sum();
     let mut neg_sum: f64 = neg_flow[1..=timeperiod].iter().sum();
-    let mfr = if neg_sum == 0.0 {
-        f64::MAX
-    } else {
-        pos_sum / neg_sum
+    // TA-Lib convention: zero total money flow (flat window / zero volume)
+    // yields 0, not 100. 100*p/(p+n) is algebraically 100 - 100/(1+p/n).
+    // Clamp the documented [0, 100] range: pos/(pos+neg) is mathematically in
+    // [0, 1], but rounding can exceed 1.0 when neg is denormal.
+    let mfi_val = |pos: f64, neg: f64| {
+        let denom = pos + neg;
+        if denom == 0.0 {
+            0.0
+        } else {
+            (100.0 * pos / denom).clamp(0.0, 100.0)
+        }
     };
-    result[timeperiod] = 100.0 - 100.0 / (1.0 + mfr);
+    result[timeperiod] = mfi_val(pos_sum, neg_sum);
 
     for i in (timeperiod + 1)..n {
         pos_sum += pos_flow[i] - pos_flow[i - timeperiod];
         neg_sum += neg_flow[i] - neg_flow[i - timeperiod];
-        let mfr = if neg_sum == 0.0 {
-            f64::MAX
-        } else {
-            pos_sum / neg_sum
-        };
-        result[i] = 100.0 - 100.0 / (1.0 + mfr);
+        result[i] = mfi_val(pos_sum, neg_sum);
     }
     result
 }
@@ -114,7 +116,9 @@ pub fn ad(high: &[f64], low: &[f64], close: &[f64], volume: &[f64]) -> Vec<f64> 
 
 /// Chaikin A/D Oscillator: fast EMA of AD minus slow EMA of AD.
 ///
-/// Uses the core EMA implementation from `overlap::ema`.
+/// Both EMAs are seeded with the *first* A/D value and run from bar 0, with
+/// the first output at `slowperiod - 1` (TA-Lib's `ta_ADOSC.c` convention).
+/// Note this differs from `overlap::ema`, which uses an SMA seed.
 pub fn adosc(
     high: &[f64],
     low: &[f64],
@@ -124,14 +128,25 @@ pub fn adosc(
     slowperiod: usize,
 ) -> Vec<f64> {
     let n = high.len();
-    let ad_vals = ad(high, low, close, volume);
-    let fast_ema = crate::overlap::ema(&ad_vals, fastperiod);
-    let slow_ema = crate::overlap::ema(&ad_vals, slowperiod);
-    let warmup = slowperiod - 1;
     let mut result = vec![f64::NAN; n];
-    for i in warmup..n {
-        if !fast_ema[i].is_nan() && !slow_ema[i].is_nan() {
-            result[i] = fast_ema[i] - slow_ema[i];
+    if fastperiod < 1 || slowperiod < 1 || n == 0 {
+        return result;
+    }
+    let ad_vals = ad(high, low, close, volume);
+    let fast_k = 2.0 / (fastperiod as f64 + 1.0);
+    let slow_k = 2.0 / (slowperiod as f64 + 1.0);
+
+    let mut fast_ema = ad_vals[0];
+    let mut slow_ema = ad_vals[0];
+    let warmup = slowperiod - 1;
+    if warmup == 0 {
+        result[0] = fast_ema - slow_ema;
+    }
+    for i in 1..n {
+        fast_ema = fast_k * ad_vals[i] + (1.0 - fast_k) * fast_ema;
+        slow_ema = slow_k * ad_vals[i] + (1.0 - slow_k) * slow_ema;
+        if i >= warmup {
+            result[i] = fast_ema - slow_ema;
         }
     }
     result

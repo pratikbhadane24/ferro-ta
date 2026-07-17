@@ -565,7 +565,11 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ---
 
-[Unreleased]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.0.6...HEAD
+[Unreleased]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.1.3...v1.2.0
+[1.1.3]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.1.2...v1.1.3
+[1.1.2]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.1.1...v1.1.2
+[1.1.1]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.0.6...v1.1.1
 [1.0.6]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.0.4...v1.0.6
 [1.0.4]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.0.2...v1.0.3

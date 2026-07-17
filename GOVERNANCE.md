@@ -59,5 +59,7 @@ All contributors and community members are expected to follow the
 
 ## Roadmap
 
-The project roadmap is documented in [ROADMAP.md](ROADMAP.md). Stages 1–20
-define the scope of planned work; the current focus is indicated there.
+Roadmap priorities are discussed in GitHub Issues and
+[Discussions](https://github.com/pratikbhadane24/ferro-ta/discussions);
+performance-specific plans live in
+[PERFORMANCE_ROADMAP.md](PERFORMANCE_ROADMAP.md).

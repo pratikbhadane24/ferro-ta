@@ -20,13 +20,14 @@ Pre-compiled wheels are published to PyPI for the following targets:
 
 | OS      | Architecture    | Notes |
 |---------|-----------------|-------|
-| Linux   | x86_64 (manylinux2014 / `manylinux_2_17`) | Pre-compiled wheel |
+| Linux   | x86_64, aarch64 (manylinux2014 / `manylinux_2_17`) | Pre-compiled wheel |
+| Linux (musl) | x86_64, aarch64 (`musllinux_1_2`) | Pre-compiled wheel |
 | macOS   | universal2      | One wheel covers Intel + Apple Silicon |
-| Windows | x86_64          | |
+| Windows | x64, arm64      | |
 
-Wheel releases target CPython 3.10, 3.11, 3.12, and 3.13. A source
-distribution is also published so other compatible environments can build from
-source.
+Wheel releases are `cp310-abi3` stable-ABI wheels: one wheel per target covers
+CPython 3.10+. A source distribution is also published so other compatible
+environments can build from source.
 
 > **Note:** Python 3.14+ is not yet tested.  Set
 > `PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1` to attempt a build on a newer
@@ -66,13 +67,13 @@ A Conda recipe is available in `conda/meta.yaml`.  To build locally, see
 ```bash
 conda install conda-build
 conda build conda/
-conda install --use-local ferro_ta
+conda install --use-local ferro-ta
 ```
 
 Once submitted to conda-forge the package will be installable via:
 
 ```bash
-conda install -c conda-forge ferro_ta
+conda install -c conda-forge ferro-ta
 ```
 
 ## Source build

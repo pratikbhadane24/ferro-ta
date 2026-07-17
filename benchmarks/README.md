@@ -234,7 +234,7 @@ variance stats, and Python-tracked peak allocation snapshots.
 From the `wasm/` directory:
 
 ```bash
-wasm-pack build --target nodejs --out-dir pkg
+wasm-pack build --target nodejs --out-dir node
 node bench.js --json ../wasm_benchmark.json
 ```
 

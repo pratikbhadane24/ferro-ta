@@ -33,11 +33,22 @@ pub fn rank_values(x: &[f64]) -> Vec<f64> {
 ///
 /// Each column is ranked independently, and the per-row ranks are summed.
 /// `signals` is a slice of columns, each column being a `&[f64]` of the same length.
-pub fn compose_rank(signals: &[&[f64]]) -> Vec<f64> {
+///
+/// # Errors
+/// Returns an error if the columns do not all have the same length.
+pub fn compose_rank(signals: &[&[f64]]) -> Result<Vec<f64>, String> {
     if signals.is_empty() {
-        return vec![];
+        return Ok(vec![]);
     }
     let n_bars = signals[0].len();
+    if let Some(bad) = signals.iter().position(|col| col.len() != n_bars) {
+        return Err(format!(
+            "all signal columns must have equal length: column 0 has {} bars, column {} has {}",
+            n_bars,
+            bad,
+            signals[bad].len()
+        ));
+    }
     let mut scores = vec![0.0_f64; n_bars];
     for &column in signals {
         let ranks = rank_values(column);
@@ -45,7 +56,7 @@ pub fn compose_rank(signals: &[&[f64]]) -> Vec<f64> {
             scores[bar_idx] += rank;
         }
     }
-    scores
+    Ok(scores)
 }
 
 /// Return the indices of the N largest values in `x` (descending by value).
@@ -94,13 +105,27 @@ mod tests {
         let col1 = vec![3.0, 1.0, 2.0];
         let col2 = vec![1.0, 3.0, 2.0];
         let signals: Vec<&[f64]> = vec![&col1, &col2];
-        let scores = compose_rank(&signals);
+        let scores = compose_rank(&signals).unwrap();
         // Row 0: rank(3.0)=3 + rank(1.0)=1 = 4
         // Row 1: rank(1.0)=1 + rank(3.0)=3 = 4
         // Row 2: rank(2.0)=2 + rank(2.0)=2 = 4
         assert!((scores[0] - 4.0).abs() < 1e-10);
         assert!((scores[1] - 4.0).abs() < 1e-10);
         assert!((scores[2] - 4.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_compose_rank_rejects_ragged_columns() {
+        // A longer trailing column used to index past `scores` and panic.
+        let short = vec![1.0];
+        let long = vec![1.0, 2.0];
+        let signals: Vec<&[f64]> = vec![&short, &long];
+        assert!(compose_rank(&signals).is_err());
+    }
+
+    #[test]
+    fn test_compose_rank_empty_is_ok() {
+        assert_eq!(compose_rank(&[]).unwrap(), Vec::<f64>::new());
     }
 
     #[test]

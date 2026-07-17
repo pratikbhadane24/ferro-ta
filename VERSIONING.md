@@ -40,13 +40,15 @@ Currently supported: **3.10, 3.11, 3.12, 3.13** (see `pyproject.toml`).
 4. **Commit** the version bump and changelog update with message
    `chore: release v1.0.1`.
 5. **Create a tag**: `git tag v1.0.1 && git push origin v1.0.1`.
-6. **Create a GitHub Release** for tag `v1.0.1` — the CI `build-wheels` and
-   `publish` jobs trigger automatically on `release: published`.
+6. **Verify the GitHub Release** — pushing the tag runs `release.yml`, which
+   creates the GitHub Release for `v1.0.1` automatically; the CI `build-wheels`
+   and `publish` jobs then trigger on `release: published`.
 
 The bump script updates the tracked release-version carriers that are easy to
 miss manually: root Cargo, Python packaging, the core crate, the core crate
-README install snippet, the WASM package, the Conda recipe, and the docs pages
-that show the current released version.
+README install snippet, the WASM crate and npm package, the Flutter package
+and bridge crate, the Conda recipe, and the docs pages that show the current
+released version.
 
 ## Breaking-change policy
 
@@ -77,11 +79,11 @@ have breaking changes in minor releases:
 | `ferro_ta.streaming` | Stable |
 | `ferro_ta.extended` | Stable |
 | `ferro_ta.exceptions` | Stable |
-| `ferro_ta.registry` | Stable |
-| `ferro_ta.backtest` | Stable |
-| `ferro_ta.pipeline` | Stable |
-| `ferro_ta.config` | Stable |
-| `ferro_ta.gpu` (optional) | Beta — API may evolve |
+| `ferro_ta.core.registry` | Stable |
+| `ferro_ta.analysis.backtest` | Stable |
+| `ferro_ta.tools.pipeline` | Stable |
+| `ferro_ta.core.config` | Stable |
+| `ferro_ta.tools.gpu` (optional) | Beta — API may evolve |
 | `ferro_ta._utils` (private) | Not stable — do not import directly |
 
 ### v1.0 readiness checklist
@@ -102,7 +104,7 @@ have breaking changes in minor releases:
 - [x] Changelog (CHANGELOG.md)
 - [x] Version consistency CI check
 - [x] Fuzzing (cargo-fuzz, SMA + RSI)
-- [x] Optional GPU backend (CuPy)
+- [x] Optional GPU backend (PyTorch)
 - [x] Indicator pipeline API
 - [x] Configuration defaults API
 - [x] Jupyter notebook examples
@@ -118,7 +120,9 @@ With `1.0.0` released:
 
 | Python | Platform | Status |
 |---|---|---|
-| 3.10–3.13 | Linux x86_64 (manylinux) | ✅ Supported |
+| 3.10–3.13 | Linux x86_64 (manylinux / musllinux) | ✅ Supported |
+| 3.10–3.13 | Linux aarch64 (manylinux / musllinux) | ✅ Supported |
 | 3.10–3.13 | macOS x86_64 | ✅ Supported |
 | 3.10–3.13 | macOS aarch64 (Apple Silicon) | ✅ Supported |
-| 3.10–3.13 | Windows x86_64 | ✅ Supported |
+| 3.10–3.13 | Windows x64 | ✅ Supported |
+| 3.10–3.13 | Windows arm64 | ✅ Supported |

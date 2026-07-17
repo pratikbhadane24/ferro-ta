@@ -2,6 +2,12 @@
 /target/
 wasm/target/
 
+# cargo-fuzz outputs (CI uploads fuzz/artifacts/ rather than tracking it)
+fuzz/target/
+fuzz/artifacts/
+fuzz/corpus/
+fuzz/Cargo.lock
+
 # Compiled Python extension.
 #
 # Scoped to /python/ deliberately. These were previously unanchored (`*.so`,

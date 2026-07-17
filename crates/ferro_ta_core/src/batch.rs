@@ -514,7 +514,7 @@ mod tests {
         // Value at index 14 should be a valid RSI
         let rsi_val = result[0][14];
         assert!(!rsi_val.is_nan());
-        assert!(rsi_val >= 0.0 && rsi_val <= 100.0);
+        assert!((0.0..=100.0).contains(&rsi_val));
     }
 
     #[test]

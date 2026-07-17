@@ -99,7 +99,7 @@ for (const price of close) {
 
 ```html
 <script type="module">
-  import init, { sma, rsi, macd } from './pkg-web/ferro_ta_wasm.js';
+  import init, { sma, rsi, macd } from './web/ferro_ta_wasm.js';
   await init();
 
   const close = new Float64Array([44.34, 44.09, 44.15, 43.61, 44.33]);

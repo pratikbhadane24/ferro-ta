@@ -62,7 +62,11 @@ pub fn commission_fraction(
     if fill_price <= 0.0 || position_size <= 0.0 || initial_capital <= 0.0 {
         return 0.0;
     }
-    let trade_value = position_size * fill_price * initial_capital;
+    // `position_size` is an equity weight (strategy returns are
+    // `pos * price_return`), so the traded notional is weight * capital —
+    // multiplying by `fill_price` again would scale every rate-based cost by
+    // the raw price level.
+    let trade_value = position_size * initial_capital;
     let num_lots = if cm.lot_size > 0.0 {
         (position_size * initial_capital / (cm.lot_size * fill_price)).ceil()
     } else {
@@ -1586,7 +1590,6 @@ pub fn backtest_multi_asset_core(
 
     // Apply portfolio constraints per bar
     let mut constrained: Vec<Vec<f64>> = weights_2d.to_vec();
-    #[allow(clippy::needless_range_loop)]
     if max_asset_weight != 1.0 || max_gross_exposure > 0.0 || max_net_exposure > 0.0 {
         for i in 0..n_bars {
             // 1. Clamp per-asset weight
@@ -1637,7 +1640,6 @@ pub fn backtest_multi_asset_core(
 
     // Portfolio return = sum of per-asset strategy returns
     let mut portfolio_returns = vec![0.0_f64; n_bars];
-    #[allow(clippy::needless_range_loop)]
     for i in 0..n_bars {
         let mut s = 0.0_f64;
         for j in 0..n_assets {
@@ -1935,6 +1937,20 @@ mod tests {
     }
 
     #[test]
+    fn test_commission_fraction_is_rate_times_weight() {
+        // A full-capital entry at 0.1% costs 0.1% of equity, independent of
+        // the price level (position_size is a weight, not a share count).
+        let cm = CommissionModel::proportional(0.001);
+        let at_100 = commission_fraction(&cm, 100.0, 1.0, true, 100_000.0);
+        let at_2000 = commission_fraction(&cm, 2000.0, 1.0, true, 100_000.0);
+        assert!((at_100 - 0.001).abs() < 1e-12, "got {at_100}");
+        assert!((at_2000 - 0.001).abs() < 1e-12, "got {at_2000}");
+        // Half-size entry costs half as much.
+        let half = commission_fraction(&cm, 100.0, 0.5, true, 100_000.0);
+        assert!((half - 0.0005).abs() < 1e-12, "got {half}");
+    }
+
+    #[test]
     fn test_kelly_fraction_validation() {
         assert!(kelly_fraction(1.5, 1.0, 0.5).is_err());
         assert!(kelly_fraction(0.5, -1.0, 0.5).is_err());
@@ -2045,8 +2061,8 @@ mod tests {
     #[test]
     fn test_streaming_backtest() {
         let mut engine = StreamingBacktest::new(0.0, 0.0);
-        let closes = vec![100.0, 105.0, 103.0, 110.0];
-        let signals = vec![1.0, 1.0, -1.0, 0.0];
+        let closes = [100.0, 105.0, 103.0, 110.0];
+        let signals = [1.0, 1.0, -1.0, 0.0];
 
         for (&c, &s) in closes.iter().zip(signals.iter()) {
             let _r = engine.on_bar(c, s);

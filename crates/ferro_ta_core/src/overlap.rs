@@ -77,13 +77,23 @@ pub fn sma_into(src: &[f64], timeperiod: usize, dest: &mut [f64], dest_offset: u
 pub fn ema(close: &[f64], timeperiod: usize) -> Vec<f64> {
     let n = close.len();
     let mut result = vec![f64::NAN; n];
-    if timeperiod < 1 || n < timeperiod {
+    if timeperiod < 1 {
+        return result;
+    }
+    // Skip any leading NaN prefix so EMA-of-EMA compositions (DEMA, TEMA,
+    // TRIX, PPO signal, MA types 3/4) seed from the first valid window
+    // instead of poisoning the entire output with a NaN seed.
+    let start = match close.iter().position(|v| !v.is_nan()) {
+        Some(s) => s,
+        None => return result,
+    };
+    if n - start < timeperiod {
         return result;
     }
     let k = 2.0 / (timeperiod as f64 + 1.0);
-    let seed: f64 = close[..timeperiod].iter().sum::<f64>() / timeperiod as f64;
-    result[timeperiod - 1] = seed;
-    for i in timeperiod..n {
+    let seed: f64 = close[start..start + timeperiod].iter().sum::<f64>() / timeperiod as f64;
+    result[start + timeperiod - 1] = seed;
+    for i in start + timeperiod..n {
         result[i] = (result[i - 1] * (1.0 - k)).mul_add(1.0, close[i] * k);
     }
     result
@@ -487,10 +497,12 @@ pub fn kama(close: &[f64], timeperiod: usize) -> Vec<f64> {
         for j in 1..=timeperiod {
             volatility += (close[i - j + 1] - close[i - j]).abs();
         }
+        // TA-Lib treats zero window volatility as maximum efficiency (ER=1,
+        // fastest smoothing), so KAMA snaps to a newly-flat price quickly.
         let er = if volatility > 0.0 {
             direction / volatility
         } else {
-            0.0
+            1.0
         };
         let sc = (er * (fast_sc - slow_sc) + slow_sc).powi(2);
         kama_val += sc * (close[i] - kama_val);
@@ -868,7 +880,6 @@ pub fn macdext(
     let signal_slice = compute_ma_by_type(&macd_valid, signalperiod, signalmatype);
     let mut signal_line = vec![f64::NAN; n];
     let warmup = macd_start + signalperiod - 1;
-    #[allow(clippy::needless_range_loop)]
     for i in warmup..n {
         let j = i - macd_start;
         if j < signal_slice.len() && !signal_slice[j].is_nan() {
@@ -880,6 +891,18 @@ pub fn macdext(
         if !macd_line[i].is_nan() && !signal_line[i].is_nan() {
             histogram[i] = macd_line[i] - signal_line[i];
         }
+    }
+    // TA-Lib pads all three outputs to the same start (same convention as
+    // `macd`). Pad to where the signal line actually becomes valid rather than
+    // to `warmup`: signal matypes with a longer lookback than
+    // `signalperiod - 1` (DEMA, TEMA, T3, KAMA) start later, which would
+    // otherwise leave macd_line numeric while the other two are still NaN.
+    let first_signal = signal_line
+        .iter()
+        .position(|v| !v.is_nan())
+        .unwrap_or(macd_line.len());
+    for v in macd_line[..first_signal].iter_mut() {
+        *v = f64::NAN;
     }
     (macd_line, signal_line, histogram)
 }
@@ -900,7 +923,9 @@ pub fn mavp(close: &[f64], periods: &[f64], minperiod: usize, maxperiod: usize) 
     if minperiod == 0 || maxperiod < minperiod {
         return result;
     }
-    for i in 0..n {
+    // TA-Lib MAVP outputs NaN until `maxperiod - 1` regardless of the local
+    // per-bar period.
+    for i in (maxperiod - 1)..n {
         if i >= periods.len() {
             break;
         }

@@ -2715,10 +2715,27 @@ class TestICHIMOKU:
             assert math.isclose(t[i], expected, rel_tol=1e-9)
 
     def test_chikou_is_shifted_close(self):
+        """Chikou is the *lagging* span: close plotted `displacement` bars back.
+
+        chikou[i] == close[i + displacement], i.e. close.shift(-displacement),
+        leaving the final `displacement` bars NaN. Shifting the other way would
+        make chikou[i] depend only on past data, which is the leading spans'
+        job, not the lagging span's.
+        """
         *_, ch = ICHIMOKU(self.H, self.L, self.C, displacement=26)
-        # chikou[26:] == close[0 : N-26]
+        for i in range(self.N - 26):
+            assert math.isclose(ch[i], self.C[i + 26], rel_tol=1e-9)
+        assert np.all(np.isnan(ch[self.N - 26 :]))
+
+    def test_senkou_spans_do_not_use_future_data(self):
+        """Leading spans are projected forward, so no value may depend on a
+        future bar: senkou_a[i] is derived from tenkan/kijun at i-displacement."""
+        t, k, sa, sb, _ = ICHIMOKU(self.H, self.L, self.C, displacement=26)
+        assert np.all(np.isnan(sa[:26]))
+        assert np.all(np.isnan(sb[:26]))
         for i in range(26, self.N):
-            assert math.isclose(ch[i], self.C[i - 26], rel_tol=1e-9)
+            if not math.isnan(sa[i]):
+                assert math.isclose(sa[i], (t[i - 26] + k[i - 26]) / 2.0, rel_tol=1e-9)
 
     def test_pandas_output(self):
         import pandas as pd

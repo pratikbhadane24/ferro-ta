@@ -20,9 +20,9 @@ by [PyTorch](https://pytorch.org/).
 
 | Indicator | Module | Notes |
 |---|---|---|
-| `sma` | `ferro_ta.gpu` | cumsum-based O(n) rolling mean; native PyTorch |
-| `ema` | `ferro_ta.gpu` | SMA-seeded; recurrence on CPU for numerical fidelity |
-| `rsi` | `ferro_ta.gpu` | diffs on GPU; Wilder smoothing on CPU |
+| `sma` | `ferro_ta.tools.gpu` | cumsum-based O(n) rolling mean; native PyTorch |
+| `ema` | `ferro_ta.tools.gpu` | SMA-seeded; recurrence on CPU for numerical fidelity |
+| `rsi` | `ferro_ta.tools.gpu` | diffs on GPU; Wilder smoothing on CPU |
 
 All other ferro-ta indicators fall back to the CPU path automatically when called
 through the top-level `ferro_ta` namespace.
@@ -60,7 +60,7 @@ pip install torch
 
 ```python
 import torch
-from ferro_ta.gpu import sma, ema, rsi
+from ferro_ta.tools.gpu import sma, ema, rsi
 
 # Build a tensor on GPU (CUDA or MPS on Apple Silicon)
 close_gpu = torch.tensor(

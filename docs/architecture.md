@@ -20,40 +20,34 @@ ferro-ta/
 │   ├── price_transform/         # AVGPRICE, MEDPRICE, TYPPRICE, WCLPRICE
 │   ├── pattern/                 # 61 CDL candlestick patterns
 │   ├── cycle/                   # HT_TRENDLINE, HT_DCPERIOD, HT_DCPHASE, …
-│   └── common.rs                # Shared helpers (Wilder smoothing, etc.)
+│   └── validation.rs            # Shared parameter validation helpers
 │
 ├── crates/
 │   └── ferro_ta_core/            # Pure-Rust library (no PyO3 / numpy)
-│       └── src/                 # Used by fuzz targets and WASM binding
+│       ├── src/                 # Shared by the root crate, fuzz targets, and WASM binding
+│       └── benches/             # Rust criterion benchmarks
 │
 ├── python/
 │   └── ferro_ta/                 # Python package
 │       ├── __init__.py          # Public API — re-exports + pandas/polars wraps
 │       ├── _utils.py            # _to_f64, pandas_wrap, polars_wrap, get_ohlcv
-│       ├── overlap.py           # Thin wrappers around _ferro_ta overlap functions
-│       ├── momentum.py          # … momentum
-│       ├── volatility.py        # … volatility
-│       ├── volume.py            # … volume
-│       ├── statistic.py         # … statistic
-│       ├── price_transform.py   # … price_transform
-│       ├── pattern.py           # … pattern (61 CDL functions)
-│       ├── cycle.py             # … cycle
-│       ├── math_ops.py          # ADD, SUB, MULT, DIV, SUM, MAX, MIN, math transforms
-│       ├── extended.py          # Extended indicators (VWAP, SUPERTREND, ICHIMOKU, …)
-│       ├── streaming.py         # Stateful streaming classes (StreamingSMA, …)
-│       ├── batch.py             # Batch execution API (batch_sma, batch_ema, …)
-│       ├── pipeline.py          # Pipeline / make_pipeline
-│       ├── config.py            # set_default / Config
-│       ├── registry.py          # Indicator registry (list_indicators, run)
-│       ├── backtest.py          # Simple backtest helpers
-│       ├── gpu.py               # CuPy-backed GPU PoC (SMA, EMA, RSI)
-│       ├── exceptions.py        # FerroTAError, FerroTAValueError, FerroTAInputError
+│       ├── indicators/          # Thin wrappers around _ferro_ta functions:
+│       │                        #   overlap.py, momentum.py, volatility.py, volume.py,
+│       │                        #   statistic.py, price_transform.py, pattern.py (61 CDL),
+│       │                        #   cycle.py, math_ops.py, extended.py
+│       ├── data/                # streaming.py, batch.py, chunked.py, resampling.py,
+│       │                        #   aggregation.py, adapters.py
+│       ├── core/                # config.py, registry.py, exceptions.py, raw.py,
+│       │                        #   logging_utils.py
+│       ├── analysis/            # backtest.py, signals.py, options.py, futures.py, …
+│       ├── tools/               # pipeline.py, gpu.py, alerts.py, dsl.py, viz.py,
+│       │                        #   workflow.py, tools.py, api_info.py, dashboard.py
+│       ├── mcp/                 # Optional MCP server (python -m ferro_ta.mcp)
 │       ├── utils.py             # Public re-export of get_ohlcv
 │       └── py.typed             # PEP 561 marker
 │
 ├── fuzz/                        # cargo-fuzz targets (fuzz_sma, fuzz_rsi, …)
 ├── wasm/                        # wasm-pack / wasm-bindgen binding (uses ferro_ta_core)
-├── benches/                     # Rust criterion benchmarks
 ├── benchmarks/                  # Python pytest-benchmark benchmarks
 ├── docs/                        # Sphinx documentation source
 └── tests/                       # Python pytest test suite
@@ -71,12 +65,12 @@ ferro-ta has **two** Rust crates that serve different purposes:
 |----------------|---------------------------------------------------|
 | Crate type     | `cdylib` (compiled to a `.so` / `.pyd` file)     |
 | PyO3 / numpy   | Yes — depends on `pyo3` and `numpy`               |
-| Depends on     | `ta` crate (provides TA-Lib-compatible algorithms)|
+| Depends on     | `ferro_ta_core` (shared algorithms) and the `ta` crate |
 | Used by        | Python extension (`ferro_ta._ferro_ta`)             |
 
 Each category module (`src/overlap/`, `src/momentum/`, …) registers
 `#[pyfunction]`s that accept `numpy` arrays (via `PyReadonlyArray1<f64>`)
-and return `Vec<f64>` which PyO3 converts to a Python list/ndarray.
+and return `PyArray1<f64>` NumPy arrays.
 
 ### 2. `crates/ferro_ta_core/` — Pure Rust library
 
@@ -84,17 +78,15 @@ and return `Vec<f64>` which PyO3 converts to a Python list/ndarray.
 |----------------|-------------------------------------------------------------------|
 | Crate type     | `lib` (not a Python extension)                                    |
 | PyO3 / numpy   | No — pure Rust, no Python dependency                              |
-| Depends on     | Nothing outside `std`                                             |
-| Used by        | `fuzz/` targets and `wasm/` binding                               |
+| Depends on     | Only optional crates: `multiversion` (`simd` feature, default-on) and `serde`/`serde_json` (`serde` feature) |
+| Used by        | Root crate (PyO3 wrappers), `fuzz/` targets, and `wasm/` binding  |
 
-`ferro_ta_core` provides the same indicator categories with a `&[f64]` API,
+`ferro_ta_core` provides the indicator categories with a `&[f64]` API,
 making it usable from WASM and fuzz targets without pulling in PyO3 or numpy.
 
-> **Note:** The root crate and `ferro_ta_core` are *independent* implementations.
-> They are not merged by design — merging them would require careful testing of
-> both the Python and WASM/fuzz surfaces.  If you want to share code, the
-> recommended path is to make the root crate depend on `ferro_ta_core` and wrap
-> its `&[f64]` API with PyO3 `#[pyfunction]`s; that is a future refactor.
+> **Note:** The root crate depends on `ferro_ta_core` and wraps its `&[f64]`
+> API with PyO3 `#[pyfunction]`s, so the Python, WASM, and fuzz surfaces all
+> share the same core implementations.
 
 ---
 
@@ -105,13 +97,12 @@ User code
   │
   ├── from ferro_ta import SMA            # __init__.py re-export
   │         │
-  │         └── python/ferro_ta/overlap.py::SMA
+  │         └── python/ferro_ta/indicators/overlap.py::SMA
   │                   │
   │                   ├── _utils._to_f64(close)      # convert to float64 ndarray
-  │                   ├── check_timeperiod(n)         # validate parameters
   │                   └── _ferro_ta.sma(arr, n)        # call Rust extension
   │                             │
-  │                             └── src/overlap/sma.rs  # pure Rust computation
+  │                             └── src/overlap/sma.rs  # validates timeperiod, calls ferro_ta_core
   │
   ├── SMA(pd.Series(...))                # pandas_wrap intercepts first
   │         │
@@ -160,10 +151,11 @@ Rust batch implementation (see `docs/performance.md`).
 
 ## Where Validation Lives
 
-Currently most validation (array length checks, `timeperiod` range checks) is
-done in Python wrappers before the Rust call.  A future improvement is to move
-these checks into the `#[pyfunction]`s so that callers using the raw
-`_ferro_ta` extension directly also get clear errors.
+Parameter validation (`timeperiod` range checks, equal-length checks) is done
+in Rust inside the `#[pyfunction]`s via `src/validation.rs`, so callers using
+the raw `_ferro_ta` extension directly also get clear errors.  The Python
+wrappers handle array conversion (`_to_f64`) and normalise Rust errors into
+`FerroTAError` subclasses.
 
 ---
 
