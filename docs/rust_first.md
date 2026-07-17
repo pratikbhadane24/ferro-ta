@@ -23,13 +23,13 @@ indicators and extends it to all new and existing indicators.
 ```
 Python layer (thin)                  Rust layer (thick)
 ─────────────────────────────        ────────────────────────────────────
-ferro_ta/overlap.py          ────▶   src/overlap/mod.rs
-ferro_ta/momentum.py         ────▶   src/momentum/mod.rs
-ferro_ta/streaming.py        ────▶   src/streaming/mod.rs  (PyO3 classes)
-ferro_ta/extended.py         ────▶   src/extended/mod.rs
-ferro_ta/math_ops.py         ────▶   src/math_ops/mod.rs
-ferro_ta/batch.py            ────▶   src/batch/mod.rs
-ferro_ta/pattern.py          ────▶   src/pattern/mod.rs
+ferro_ta/indicators/overlap.py   ────▶   src/overlap/mod.rs
+ferro_ta/indicators/momentum.py  ────▶   src/momentum/mod.rs
+ferro_ta/data/streaming.py       ────▶   src/streaming/mod.rs  (PyO3 classes)
+ferro_ta/indicators/extended.py  ────▶   src/extended/mod.rs
+ferro_ta/indicators/math_ops.py  ────▶   src/math_ops/mod.rs
+ferro_ta/data/batch.py           ────▶   src/batch/mod.rs
+ferro_ta/indicators/pattern.py   ────▶   src/pattern/mod.rs
 ...                         ────▶   ...
 ```
 
@@ -57,7 +57,7 @@ When adding a new indicator:
 1. Implement the algorithm in `src/<category>/mod.rs` (or a new category
    module if the category does not exist).
 2. Register the function in `src/lib.rs` via `<category>::register(m)?`.
-3. Write a thin Python wrapper in `python/ferro_ta/<category>.py` that:
+3. Write a thin Python wrapper in `python/ferro_ta/indicators/<category>.py` that:
    - Validates inputs
    - Calls `_to_f64()` on array arguments
    - Calls the Rust function
@@ -135,7 +135,7 @@ Then in `src/streaming/mod.rs::register()`:
 m.add_class::<StreamingMyIndicator>()?;
 ```
 
-And in `python/ferro_ta/streaming.py`:
+And in `python/ferro_ta/data/streaming.py`:
 ```python
 from ferro_ta._ferro_ta import StreamingMyIndicator  # noqa: F401
 ```
@@ -172,7 +172,7 @@ Some things are **intentionally** in Python and should stay there:
 | `_to_f64` fast path check | One Python branch beats a PyO3 round-trip for the already-valid case |
 | `check_equal_length`, `check_timeperiod` | Negligible overhead vs indicator computation; keeps Rust functions focused |
 | `Pipeline`, `Config` | Orchestration logic — Python is appropriate |
-| `gpu.py` (CuPy PoC) | CuPy is Python-native; Rust cannot talk to GPU without CUDA bindings |
+| `gpu.py` (PyTorch backend) | PyTorch is Python-native; Rust cannot talk to GPU without CUDA bindings |
 | `backtest.py` helpers | High-level orchestration |
 
 ---
@@ -194,7 +194,7 @@ Some things are **intentionally** in Python and should stay there:
 | `extended.py` | ✅ Rust (`src/extended/`) — all 10 indicators |
 | `math_ops.py` (rolling) | ✅ Rust (`src/math_ops/`) — SUM/MAX/MIN/MAXINDEX/MININDEX |
 | `math_ops.py` (element-wise) | ✅ NumPy wrappers (no loops — vectorised by NumPy's C core) |
-| `gpu.py` | ⚠️ CuPy (Python/CUDA — intentional, see above) |
+| `gpu.py` | ⚠️ PyTorch (Python/CUDA/MPS — intentional, see above) |
 | `pipeline.py` | ✅ Orchestration only (no indicator loops) |
 | `config.py` | ✅ Configuration only |
 | `backtest.py` | ✅ Orchestration only |

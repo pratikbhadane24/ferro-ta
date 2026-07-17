@@ -13,7 +13,7 @@ The agentic API consists of two modules:
 | Module | Purpose |
 |--------|---------|
 | `ferro_ta.tools` | Stable, documented functions for agent wrapping |
-| `ferro_ta.workflow` | End-to-end pipeline: indicators → strategy → alerts |
+| `ferro_ta.tools.workflow` | End-to-end pipeline: indicators → strategy → alerts |
 
 ---
 
@@ -60,10 +60,10 @@ def describe_indicator(name: str) -> str:
 
 ---
 
-## `ferro_ta.workflow` — End-to-end pipeline
+## `ferro_ta.tools.workflow` — End-to-end pipeline
 
 ```python
-from ferro_ta.workflow import Workflow
+from ferro_ta.tools.workflow import Workflow
 import numpy as np
 
 rng = np.random.default_rng(42)
@@ -85,7 +85,7 @@ print(result.keys())
 ### Functional interface
 
 ```python
-from ferro_ta.workflow import run_pipeline
+from ferro_ta.tools.workflow import run_pipeline
 
 result = run_pipeline(
     close,
@@ -161,7 +161,7 @@ tools = [
 ### Run once
 
 ```python
-python examples/run_workflow.py
+python my_workflow.py   # a script that calls run_pipeline / Workflow
 ```
 
 ### Run every N minutes (cron)
@@ -169,7 +169,7 @@ python examples/run_workflow.py
 Add to your crontab:
 
 ```
-*/15 * * * * /usr/bin/python /path/to/examples/run_workflow.py >> /var/log/ferro_ta.log 2>&1
+*/15 * * * * /usr/bin/python /path/to/my_workflow.py >> /var/log/ferro_ta.log 2>&1
 ```
 
 ### Run on a schedule with `schedule` library
@@ -180,7 +180,7 @@ import time
 
 def job():
     import numpy as np
-    from ferro_ta.workflow import run_pipeline
+    from ferro_ta.tools.workflow import run_pipeline
     # fetch latest prices here ...
     close = np.ones(100)  # replace with real data
     result = run_pipeline(close, indicators={"rsi": {"name": "RSI", "timeperiod": 14}})
@@ -197,7 +197,7 @@ while True:
 ## See also
 
 - `ferro_ta.tools` — module source.
-- `ferro_ta.workflow` — module source.
+- `ferro_ta.tools.workflow` — module source.
 - `docs/mcp.md` — MCP server for MCP-compatible clients.
-- `ferro_ta.backtest` — backtest harness.
-- `ferro_ta.registry` — indicator registry.
+- `ferro_ta.analysis.backtest` — backtest harness.
+- `ferro_ta.core.registry` — indicator registry.

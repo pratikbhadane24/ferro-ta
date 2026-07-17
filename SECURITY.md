@@ -39,5 +39,5 @@ that require direct file-system or network access.
 ## Hardening and audits
 
 - **Fuzzing:** The project runs `cargo fuzz` targets (e.g. `fuzz_sma`, `fuzz_rsi`) in CI. Crashes are treated as failures; artifacts are uploaded for investigation.
-- **Dependency audits:** CI runs `cargo audit` (Rust) and `pip-audit` (Python). Critical and high-severity vulnerabilities should be addressed before release.
+- **Dependency audits:** CI runs `cargo deny` advisory checks (Rust) and `pip-audit` (Python); `make audit` runs `cargo audit` + `pip-audit` locally. Critical and high-severity vulnerabilities should be addressed before release.
 - **Reporting:** If you have performed a security assessment or audit, we welcome a private summary to the contact above.

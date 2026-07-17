@@ -10,7 +10,7 @@ entirely on Pandas DataFrames.
 
 | Aspect | ferro-ta | finta |
 |--------|---------|-------|
-| **Backend** | Rust/C + SIMD | Pure Pandas |
+| **Backend** | Rust + SIMD | Pure Pandas |
 | **Input type** | NumPy array or list | OHLCV Pandas DataFrame (required) |
 | **DatetimeIndex** | Not required | **Required** |
 | **Column names** | Separate arrays | `open/high/low/close/volume` |
@@ -54,7 +54,7 @@ finta uses a class-method API: `TA.INDICATOR(ohlcv_df, period, ...)`.
 | WMA | `WMA(close, timeperiod=14)` | `TA.WMA(df, 14)` |
 | DEMA | `DEMA(close, timeperiod=30)` | `TA.DEMA(df, 30)` |
 | TEMA | `TEMA(close, timeperiod=30)` | `TA.TEMA(df, 30)` |
-| HMA | Not supported | `TA.HMA(df, 16)` |
+| HMA | `HULL_MA(close, timeperiod=16)` | `TA.HMA(df, 16)` |
 | RSI | `RSI(close, timeperiod=14)` | `TA.RSI(df, 14)` |
 | MACD | `MACD(close, 12, 26, 9)` → (macd, signal, hist) | `TA.MACD(df, 12, 26, 9)` → DataFrame with `MACD`/`SIGNAL` columns |
 | BBANDS | `BBANDS(close, 20, 2.0, 2.0)` → (upper, mid, lower) | `TA.BBANDS(df, 20)` → DataFrame with `BB_UPPER`/`BB_MIDDLE`/`BB_LOWER` |

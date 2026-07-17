@@ -22,15 +22,15 @@ without a major version bump (i.e., following [Semantic Versioning 2.0.0]):
 - Utility helpers: `ferro_ta.utils.get_ohlcv`, `ferro_ta._utils.get_ohlcv`.
 - `pandas_wrap` / `polars_wrap` behaviour: `pd.Series` in → `pd.Series` out;
   `pl.Series` in → `pl.Series` out.
-- Registry API: `ferro_ta.registry.register`, `run`, `get`, `list_indicators`.
-- Pipeline API: `ferro_ta.pipeline.Pipeline`, `make_pipeline`.
-- Config API: `ferro_ta.config.set_default`, `ferro_ta.config.Config`.
+- Registry API: `ferro_ta.core.registry.register`, `run`, `get`, `list_indicators`.
+- Pipeline API: `ferro_ta.tools.pipeline.Pipeline`, `make_pipeline`.
+- Config API: `ferro_ta.core.config.set_default`, `ferro_ta.core.config.Config`.
 
 ### Experimental
 
 The following are **experimental** and may change in minor releases:
 
-- **`ferro_ta.raw`** — direct access to the compiled Rust extension; function
+- **`ferro_ta.core.raw`** — direct access to the compiled Rust extension; function
   signatures follow the Rust layer and may change when the Rust layer changes.
 - **`ferro_ta.batch`** internals — the Python↔Rust dispatch logic may change as
   the Rust batch API evolves.
@@ -40,9 +40,10 @@ The following are **experimental** and may change in minor releases:
 - **`ferro_ta.extended`** — extended indicators (VWAP, SUPERTREND, etc.) are
   considered stable in return shape and semantics, but implementation details
   (e.g. whether computation is in Python or Rust) may change.
-- **`ferro_ta.backtest`** — the backtest helpers are convenience utilities and
-  may be refactored.
-- **`ferro_ta.gpu`** — the CuPy GPU backend is an experimental proof-of-concept.
+- **`ferro_ta.analysis.backtest`** — the backtest helpers are convenience utilities
+  and may be refactored.
+- **`ferro_ta.tools.gpu`** — the PyTorch GPU backend is an experimental
+  proof-of-concept.
 
 ### Internal / Private
 

@@ -65,4 +65,4 @@ make flutter-gen   # regenerate api wrappers + flutter_rust_bridge glue
 make flutter       # verify wrappers are fresh and compile against core
 ```
 
-This package is developed in the [ferro-ta monorepo](https://github.com/pratikbhadane/ferro-ta).
+This package is developed in the [ferro-ta monorepo](https://github.com/pratikbhadane24/ferro-ta).

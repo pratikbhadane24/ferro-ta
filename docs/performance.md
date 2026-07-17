@@ -93,8 +93,8 @@ result = sma(close, 20)   # returns a NumPy array (PyArray1<f64> from PyO3)
 > type will raise an obscure error from PyO3.  Use it only if you have
 > profiled a bottleneck and need the absolute minimum overhead.
 
-For a stable raw API with the same functions, use the `ferro_ta.raw` submodule
-(no pandas/polars wrapping or validation).
+For a stable raw API with the same functions, use the `ferro_ta.core.raw`
+submodule (no pandas/polars wrapping or validation).
 
 ---
 
@@ -202,8 +202,8 @@ live trading at typical bar rates with minimal Python overhead.
 
 `VWAP`, `SUPERTREND`, `ICHIMOKU`, `DONCHIAN`, `PIVOT_POINTS`, `KELTNER_CHANNELS`,
 `HULL_MA`, `CHANDELIER_EXIT`, `VWMA`, and `CHOPPINESS_INDEX` are implemented in
-Rust (`src/extended/mod.rs`).  The Python module `ferro_ta/extended.py` is a thin
-wrapper with validation and `_to_f64`; all computation runs in the extension.
+Rust (`src/extended/mod.rs`).  The Python module `ferro_ta/indicators/extended.py`
+is a thin wrapper with validation and `_to_f64`; all computation runs in the extension.
 
 ---
 
@@ -272,7 +272,7 @@ performance work beyond the full pytest benchmark table:
 
 The WASM bindings also ship with a Node benchmark:
 
-- `cd wasm && wasm-pack build --target nodejs --out-dir pkg`
+- `cd wasm && npm run build:node`
 - `node bench.js --json ../wasm_benchmark.json`
 
 ## SIMD And Build Flags
@@ -305,18 +305,17 @@ Policy:
 
 ## Performance Improvements (implemented)
 
-The following improvements are already in place. See
-[docs/plans/2026-03-08-production-grade.md](plans/2026-03-08-production-grade.md)
+The following improvements are already in place. See [CHANGELOG.md](../CHANGELOG.md)
 for history and commits.
 
 | Area        | Improvement                                                    | Where |
 |-------------|----------------------------------------------------------------|-------|
-| **Utils**   | `_to_f64` fast path: no copy for 1-D C-contiguous float64      | `python/ferro_ta/_utils.py` (lines 34–39) |
-| **Utils**   | Polars result: `pl.Series(name, result)` from NumPy buffer (no `.tolist()`) | `python/ferro_ta/_utils.py` (e.g. 254–258) |
-| **Raw API** | `ferro_ta.raw` — bypass pandas/polars and validation             | `python/ferro_ta/raw.py` |
-| **Batch**   | Rust batch for SMA/EMA/RSI — single GIL release for 2-D        | `src/batch/mod.rs`, `python/ferro_ta/batch.py` |
+| **Utils**   | `_to_f64` fast path: no copy for 1-D C-contiguous float64      | `python/ferro_ta/_utils.py` |
+| **Utils**   | Polars result: `pl.Series(name, result)` from NumPy buffer (no `.tolist()`) | `python/ferro_ta/_utils.py` |
+| **Raw API** | `ferro_ta.core.raw` — bypass pandas/polars and validation       | `python/ferro_ta/core/raw.py` |
+| **Batch**   | Rust batch for SMA/EMA/RSI — single GIL release for 2-D        | `src/batch/mod.rs`, `python/ferro_ta/data/batch.py` |
 | **Streaming** | All streaming classes in Rust (PyO3)                          | `src/streaming/mod.rs` |
-| **Extended** | All extended indicators (incl. SUPERTREND) in Rust            | `src/extended/mod.rs`, `python/ferro_ta/extended.py` wraps Rust |
+| **Extended** | All extended indicators (incl. SUPERTREND) in Rust            | `src/extended/mod.rs`, `python/ferro_ta/indicators/extended.py` wraps Rust |
 
 ---
 
@@ -331,7 +330,7 @@ bottlenecks are fixed or deferred.
 - `compute_performance_metrics` computes all 23 metrics in a single Rust pass.
 - Monte Carlo runs in parallel Rayon threads with LCG seeding (GIL released).
 
-**Batch** (`python/ferro_ta/batch.py`):
+**Batch** (`python/ferro_ta/data/batch.py`):
 - `batch_apply` runs a Python loop over columns (one Python call per column).
   Use `batch_sma`/`batch_ema`/`batch_rsi` when possible.
 - No fast path for already 2-D C-contiguous float64 in batch_sma/ema/rsi
@@ -344,12 +343,12 @@ bottlenecks are fixed or deferred.
 - Model-based implied-volatility inversion is much faster now, but still more
   expensive than direct pricing or Greeks due to root-finding.
 
-**Features** (`python/ferro_ta/features.py`):
+**Features** (`python/ferro_ta/analysis/features.py`):
 - `nan_policy="fill"` is vectorized now.
 - `feature_matrix(...)` uses `compute_many(...)`, but grouped HLC bundles are
   still only near parity on medium workloads and are best on larger arrays.
 
-**Signals** (`python/ferro_ta/signals.py`):
+**Signals** (`python/ferro_ta/analysis/signals.py`):
 - `compose(..., method="rank")` now uses a one-call Rust rank-composition
   path, but its gains are moderate rather than dramatic. Keep measuring before
   treating it as a major optimization lever.
@@ -359,9 +358,9 @@ bottlenecks are fixed or deferred.
 - **gpu.py**: Fallback SMA/EMA/RSI use Python loops when GPU is not used.
 - **tools.py / viz.py**: `.tolist()` for JSON/Plotly; acceptable for I/O.
 - **Validation**: `check_equal_length`, `check_timeperiod` run in Python;
-  cost is small; moving to Rust is deferred (see production-grade plan).
-- **pandas_wrap / polars_wrap**: Per-call overhead; use `ferro_ta.raw` when
-  minimising overhead.
+  cost is small.
+- **pandas_wrap / polars_wrap**: Per-call overhead; use `ferro_ta.core.raw`
+  when minimising overhead.
 
 ---
 

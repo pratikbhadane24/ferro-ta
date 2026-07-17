@@ -87,6 +87,6 @@ on full-array reductions.
 ## See also
 
 - `crates/ferro_ta_core/src/simd.rs` — dispatched primitives and tests.
-- `benches/indicators.rs` — criterion suite.
+- `crates/ferro_ta_core/benches/indicators.rs` — criterion suite.
 - `crates/ferro_ta_core/Cargo.toml` `[features] simd = ["dep:multiversion"]`
   — the gate (default-on).
