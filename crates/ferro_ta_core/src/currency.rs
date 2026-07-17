@@ -76,8 +76,15 @@ impl Currency {
     pub fn format(&self, amount: f64) -> String {
         let neg = amount < 0.0;
         let abs = amount.abs();
-        let integer_part = abs.floor() as u64;
-        let frac_part = abs - abs.floor();
+        let dp = self.decimal_places as usize;
+
+        // Round the whole amount before splitting, so a fractional part that
+        // rounds up to 1.0 carries into the integer part (0.999 → "1.00",
+        // not "0.100").
+        let scale = 10f64.powi(dp as i32);
+        let scaled = (abs * scale).round() as u64;
+        let integer_part = scaled / scale as u64;
+        let frac = scaled % scale as u64;
 
         let grouped = if self.lakh_grouping {
             format_lakh(integer_part)
@@ -85,9 +92,7 @@ impl Currency {
             format_standard(integer_part)
         };
 
-        let dp = self.decimal_places as usize;
         let decimal_str = if dp > 0 {
-            let frac = (frac_part * 10f64.powi(dp as i32)).round() as u64;
             format!(".{:0>width$}", frac, width = dp)
         } else {
             String::new()
