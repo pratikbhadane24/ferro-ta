@@ -304,11 +304,12 @@ impl StreamingRSI {
         }
 
         // TA-Lib convention (and batch `momentum::rsi`): flat window → 0.
+        // Clamp for the same rounding reason as the batch version.
         let denom = self.avg_gain + self.avg_loss;
         if denom == 0.0 {
             return 0.0;
         }
-        100.0 * self.avg_gain / denom
+        (100.0 * self.avg_gain / denom).clamp(0.0, 100.0)
     }
 
     pub fn reset(&mut self) {

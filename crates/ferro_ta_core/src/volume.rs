@@ -74,12 +74,14 @@ pub fn mfi(
     let mut neg_sum: f64 = neg_flow[1..=timeperiod].iter().sum();
     // TA-Lib convention: zero total money flow (flat window / zero volume)
     // yields 0, not 100. 100*p/(p+n) is algebraically 100 - 100/(1+p/n).
+    // Clamp the documented [0, 100] range: pos/(pos+neg) is mathematically in
+    // [0, 1], but rounding can exceed 1.0 when neg is denormal.
     let mfi_val = |pos: f64, neg: f64| {
         let denom = pos + neg;
         if denom == 0.0 {
             0.0
         } else {
-            100.0 * pos / denom
+            (100.0 * pos / denom).clamp(0.0, 100.0)
         }
     };
     result[timeperiod] = mfi_val(pos_sum, neg_sum);

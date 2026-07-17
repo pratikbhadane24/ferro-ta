@@ -28,12 +28,14 @@ pub fn rsi(close: &[f64], timeperiod: usize) -> Vec<f64> {
     let p = timeperiod as f64;
     // TA-Lib convention: a fully flat window (no gains AND no losses) yields
     // 0, not 100. 100*g/(g+l) is algebraically 100 - 100/(1+g/l).
+    // gain/(gain+loss) is mathematically in [0, 1], but rounding can push it a
+    // hair past 1.0 when loss is denormal, so clamp the documented range.
     let rsi_val = |gain: f64, loss: f64| {
         let denom = gain + loss;
         if denom == 0.0 {
             0.0
         } else {
-            100.0 * gain / denom
+            (100.0 * gain / denom).clamp(0.0, 100.0)
         }
     };
     result[timeperiod] = rsi_val(avg_gain, avg_loss);
@@ -818,12 +820,14 @@ pub fn cmo(close: &[f64], timeperiod: usize) -> Vec<f64> {
     avg_gain /= timeperiod as f64;
     avg_loss /= timeperiod as f64;
 
+    // Clamp for the same rounding reason as `rsi`: (g-l)/(g+l) is
+    // mathematically in [-1, 1].
     let cmo_val = |gain: f64, loss: f64| {
         let denom = gain + loss;
         if denom == 0.0 {
             0.0
         } else {
-            100.0 * (gain - loss) / denom
+            (100.0 * (gain - loss) / denom).clamp(-100.0, 100.0)
         }
     };
     result[timeperiod] = cmo_val(avg_gain, avg_loss);
@@ -925,6 +929,39 @@ mod tests {
         for v in result.iter().filter(|v| !v.is_nan()) {
             assert!(*v >= 0.0 && *v <= 100.0);
         }
+    }
+
+    /// `100 * gain / (gain + loss)` is mathematically bounded by 100, but the
+    /// two roundings (the multiply, then the divide) can land one ulp above it:
+    /// `(100.0 * g) / g == 100.00000000000001` for this g. The previous
+    /// `100 - 100/(1 + rs)` form was bounded by construction, so the rewrite to
+    /// TA-Lib's expression needed an explicit clamp. Found by fuzz_rsi.
+    #[test]
+    fn rsi_cannot_exceed_100_on_rounding_boundary() {
+        let g = f64::from_bits(0x65aa_9c82_79f2_48b0);
+        assert!(
+            (100.0 * g) / g > 100.0,
+            "test value no longer triggers rounding"
+        );
+
+        // timeperiod = 1: a single positive diff gives gain = g, loss = 0.
+        let result = rsi(&[0.0, g], 1);
+        assert!(
+            result[1] <= 100.0,
+            "RSI must stay within [0, 100], got {}",
+            result[1]
+        );
+    }
+
+    #[test]
+    fn cmo_stays_within_bounds_on_rounding_boundary() {
+        let g = f64::from_bits(0x65aa_9c82_79f2_48b0);
+        let result = cmo(&[0.0, g], 1);
+        assert!(
+            result[1] >= -100.0 && result[1] <= 100.0,
+            "CMO must stay within [-100, 100], got {}",
+            result[1]
+        );
     }
 
     #[test]
