@@ -26,12 +26,17 @@ pub fn rsi(close: &[f64], timeperiod: usize) -> Vec<f64> {
     avg_gain /= timeperiod as f64;
     avg_loss /= timeperiod as f64;
     let p = timeperiod as f64;
-    let rs = if avg_loss == 0.0 {
-        f64::MAX
-    } else {
-        avg_gain / avg_loss
+    // TA-Lib convention: a fully flat window (no gains AND no losses) yields
+    // 0, not 100. 100*g/(g+l) is algebraically 100 - 100/(1+g/l).
+    let rsi_val = |gain: f64, loss: f64| {
+        let denom = gain + loss;
+        if denom == 0.0 {
+            0.0
+        } else {
+            100.0 * gain / denom
+        }
     };
-    result[timeperiod] = 100.0 - 100.0 / (1.0 + rs);
+    result[timeperiod] = rsi_val(avg_gain, avg_loss);
     for i in (timeperiod + 1)..n {
         let diff = close[i] - close[i - 1];
         let abs_diff = diff.abs();
@@ -39,12 +44,7 @@ pub fn rsi(close: &[f64], timeperiod: usize) -> Vec<f64> {
         let loss = (abs_diff - diff) * 0.5;
         avg_gain = (avg_gain * (p - 1.0) + gain) / p;
         avg_loss = (avg_loss * (p - 1.0) + loss) / p;
-        let rs = if avg_loss == 0.0 {
-            f64::MAX
-        } else {
-            avg_gain / avg_loss
-        };
-        result[i] = 100.0 - 100.0 / (1.0 + rs);
+        result[i] = rsi_val(avg_gain, avg_loss);
     }
     result
 }
@@ -324,18 +324,29 @@ fn dm_only_inner(high: &[f64], low: &[f64], period: usize) -> (Vec<f64>, Vec<f64
         };
     }
 
-    if m < period {
+    // TA-Lib special-cases period == 1: the raw (unsmoothed) DM is returned,
+    // with the first output at index 1.
+    if period == 1 {
+        b_pdm[1..].copy_from_slice(&pdm);
+        b_mdm[1..].copy_from_slice(&mdm);
         return (b_pdm, b_mdm);
     }
 
-    let mut pdm_s = pdm[..period].iter().sum::<f64>();
-    let mut mdm_s = mdm[..period].iter().sum::<f64>();
+    // TA-Lib's PLUS_DM/MINUS_DM lookback is `period - 1`: the seed is the sum
+    // of the first `period - 1` DMs, emitted at index `period - 1`.
+    let seed_len = period - 1;
+    if m < seed_len {
+        return (b_pdm, b_mdm);
+    }
 
-    b_pdm[period] = pdm_s;
-    b_mdm[period] = mdm_s;
+    let mut pdm_s = pdm[..seed_len].iter().sum::<f64>();
+    let mut mdm_s = mdm[..seed_len].iter().sum::<f64>();
+
+    b_pdm[seed_len] = pdm_s;
+    b_mdm[seed_len] = mdm_s;
 
     let decay = (period - 1) as f64 / period as f64;
-    for i in period..m {
+    for i in seed_len..m {
         pdm_s = pdm_s * decay + pdm[i];
         mdm_s = mdm_s * decay + mdm[i];
         b_pdm[i + 1] = pdm_s;
@@ -438,9 +449,14 @@ pub fn adxr(high: &[f64], low: &[f64], close: &[f64], timeperiod: usize) -> Vec<
     // Reuse adx_all to compute ADX once, then derive ADXR from it
     let (_, _, _, _, _, adx_vals) = adx_inner(high, low, close, timeperiod);
     let mut result = vec![f64::NAN; n];
-    for i in timeperiod..n {
-        if !adx_vals[i].is_nan() && !adx_vals[i - timeperiod].is_nan() {
-            result[i] = (adx_vals[i] + adx_vals[i - timeperiod]) / 2.0;
+    if timeperiod < 1 {
+        return result;
+    }
+    // TA-Lib ADXR lag is `timeperiod - 1`, not `timeperiod`.
+    let lag = timeperiod - 1;
+    for i in lag..n {
+        if !adx_vals[i].is_nan() && !adx_vals[i - lag].is_nan() {
+            result[i] = (adx_vals[i] + adx_vals[i - lag]) / 2.0;
         }
     }
     result
@@ -694,7 +710,8 @@ pub fn stochrsi(
         fastk[i] = if mx != mn {
             100.0 * (rsi_vals[i] - mn) / (mx - mn)
         } else {
-            50.0
+            // TA-Lib STOCHF convention for a flat window.
+            0.0
         };
     }
 
@@ -704,6 +721,12 @@ pub fn stochrsi(
         if window.iter().all(|v| !v.is_nan()) {
             fastd[i] = window.iter().sum::<f64>() / fastd_period as f64;
         }
+    }
+
+    // TA-Lib pads both outputs to the combined lookback, so fastk starts where
+    // fastd does rather than `fastd_period - 1` bars earlier.
+    for v in fastk[..d_warmup.min(n)].iter_mut() {
+        *v = f64::NAN;
     }
     (fastk, fastd)
 }
@@ -772,30 +795,46 @@ pub fn ppo(
 // CMO
 // ---------------------------------------------------------------------------
 
-/// Chande Momentum Oscillator: `100 * (sum_gains - sum_losses) / (sum_gains + sum_losses)`.
+/// Chande Momentum Oscillator: `100 * (gains - losses) / (gains + losses)`.
+///
+/// Uses Wilder's smoothing with an SMA seed, matching TA-Lib's `ta_CMO.c`
+/// (which is "mostly identical to RSI"). A plain rolling-window sum would
+/// diverge from TA-Lib permanently rather than converging.
 pub fn cmo(close: &[f64], timeperiod: usize) -> Vec<f64> {
     let n = close.len();
     let mut result = vec![f64::NAN; n];
-    if timeperiod == 0 || n < timeperiod + 1 {
+    if timeperiod < 1 || n <= timeperiod {
         return result;
     }
-    let changes: Vec<f64> = close.windows(2).map(|w| w[1] - w[0]).collect();
-    for i in timeperiod..n {
-        let mut ups = 0.0_f64;
-        let mut downs = 0.0_f64;
-        for ch in &changes[(i - timeperiod)..i] {
-            if *ch > 0.0 {
-                ups += ch;
-            } else {
-                downs -= ch;
-            }
-        }
-        let denom = ups + downs;
-        result[i] = if denom != 0.0 {
-            100.0 * (ups - downs) / denom
-        } else {
+
+    let mut avg_gain = 0.0_f64;
+    let mut avg_loss = 0.0_f64;
+    for i in 1..=timeperiod {
+        let diff = close[i] - close[i - 1];
+        let abs_diff = diff.abs();
+        avg_gain += (diff + abs_diff) * 0.5;
+        avg_loss += (abs_diff - diff) * 0.5;
+    }
+    avg_gain /= timeperiod as f64;
+    avg_loss /= timeperiod as f64;
+
+    let cmo_val = |gain: f64, loss: f64| {
+        let denom = gain + loss;
+        if denom == 0.0 {
             0.0
-        };
+        } else {
+            100.0 * (gain - loss) / denom
+        }
+    };
+    result[timeperiod] = cmo_val(avg_gain, avg_loss);
+
+    let p = timeperiod as f64;
+    for i in (timeperiod + 1)..n {
+        let diff = close[i] - close[i - 1];
+        let abs_diff = diff.abs();
+        avg_gain = (avg_gain * (p - 1.0) + (diff + abs_diff) * 0.5) / p;
+        avg_loss = (avg_loss * (p - 1.0) + (abs_diff - diff) * 0.5) / p;
+        result[i] = cmo_val(avg_gain, avg_loss);
     }
     result
 }
