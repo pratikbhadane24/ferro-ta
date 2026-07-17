@@ -49,6 +49,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          # These workflows never push; don't leave the token in
+          # .git/config where later third-party steps could read it.
+          persist-credentials: false
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android,x86_64-unknown-linux-gnu
@@ -85,6 +89,10 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          # These workflows never push; don't leave the token in
+          # .git/config where later third-party steps could read it.
+          persist-credentials: false
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-apple-ios,aarch64-apple-ios-sim,x86_64-apple-ios,aarch64-apple-darwin,x86_64-apple-darwin
@@ -135,6 +143,10 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          # These workflows never push; don't leave the token in
+          # .git/config where later third-party steps could read it.
+          persist-credentials: false
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-pc-windows-msvc
@@ -143,7 +155,9 @@ jobs:
       - name: FRB codegen
         run: |
           cargo install "flutter_rust_bridge_codegen@$env:FRB_VERSION" --locked
-          cd flutter; flutter pub get; flutter_rust_bridge_codegen generate
+          # `&&`, not `;` — PowerShell's `;` does not short-circuit, so a failed
+          # `pub get` would still run codegen and fail confusingly later.
+          cd flutter && flutter pub get && flutter_rust_bridge_codegen generate
       - name: Build Windows .dll
         working-directory: flutter/rust
         run: |
@@ -174,6 +188,10 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v6
+        with:
+          # These workflows never push; don't leave the token in
+          # .git/config where later third-party steps could read it.
+          persist-credentials: false
       - uses: dtolnay/rust-toolchain@stable
       - uses: subosito/flutter-action@v2
         with: { channel: stable }
@@ -241,7 +259,6 @@ jobs:
             "xcframework" \
             "libferro_ta_flutter.dylib" \
             "ferro_ta_flutter.dll" \
-            "linux" \
             "frb_generated.dart" \
             "indicators.dart" \
           ; do
@@ -251,6 +268,20 @@ jobs:
             fi
             echo "ok: $pat present in package"
           done
+          # The .so libraries need a count, not a substring match. Grepping for
+          # "linux" is useless (linux/CMakeLists.txt is source and always ships,
+          # so it matches even when the .so is stripped), and grepping for the
+          # bare filename passes if only Android's copies survive. Exactly four
+          # are expected: 3 Android ABIs + 1 Linux. The `*.so` ignore-rule class
+          # of bug strips all four at once, and a Linux-only regression drops it
+          # to three.
+          so_count="$(grep -c 'libferro_ta_flutter\.so' /tmp/pub-dry-run.txt || true)"
+          if [ "$so_count" -ne 4 ]; then
+            echo "ERROR: expected 4 libferro_ta_flutter.so entries (3 Android ABIs + Linux), found ${so_count}." >&2
+            echo "Check flutter/.pubignore and the repo-root .gitignore for patterns matching *.so." >&2
+            exit 1
+          fi
+          echo "ok: all 4 .so libraries present (3 Android ABIs + Linux)"
 
       # `dart pub publish` (not `flutter pub publish`) is the command pub.dev's
       # automated-publishing flow documents, and the one that performs the OIDC
