@@ -2146,7 +2146,7 @@ pub fn rank_values(x: &Float64Array) -> Float64Array {
 pub fn compose_rank(signals: &Array) -> Result<Float64Array, JsError> {
     let vecs = array_of_f64arr_to_vecs(signals);
     let slices: Vec<&[f64]> = vecs.iter().map(|v| v.as_slice()).collect();
-    let scores = ferro_ta_core::signals::compose_rank(&slices).map_err(JsError::new)?;
+    let scores = ferro_ta_core::signals::compose_rank(&slices).map_err(|e| JsError::new(&e))?;
     Ok(from_vec(scores))
 }
 
