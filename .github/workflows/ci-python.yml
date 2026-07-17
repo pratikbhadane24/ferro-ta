@@ -122,6 +122,9 @@ jobs:
     needs: build-wheel
     steps:
       - uses: actions/checkout@v6
+        with:
+          # This job only reads the tree; don't leave a usable token in .git.
+          persist-credentials: false
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
