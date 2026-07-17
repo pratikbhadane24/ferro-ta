@@ -36,12 +36,23 @@ jobs:
   # Build prebuilt native libraries, one runner per OS family. Each job runs FRB
   # codegen (so the cdylib exports the bridge symbols) then cross-compiles and
   # uploads its platform's libs as an artifact for the single publish job below.
+  #
+  # Each job stages its output into `stage/`, laid out relative to `flutter/`,
+  # and uploads that directory. This is deliberate: upload-artifact roots an
+  # artifact at the least common ancestor of its path globs, so uploading the
+  # build tree directly makes the artifact layout depend on how many globs a job
+  # happens to pass (a single glob silently flattens the tree). Staging pins the
+  # layout, so `cp -R <artifact>/. flutter/` is correct for every platform.
   # ---------------------------------------------------------------------------
   build-android-linux:
     name: Build Android + Linux
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          # These workflows never push; don't leave the token in
+          # .git/config where later third-party steps could read it.
+          persist-credentials: false
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android,x86_64-unknown-linux-gnu
@@ -56,25 +67,32 @@ jobs:
         run: |
           cargo install cargo-ndk --locked
           cargo ndk -t arm64-v8a -t armeabi-v7a -t x86_64 \
-            -o ../android/src/main/jniLibs build --release --features frb
+            -o "$GITHUB_WORKSPACE/stage/android/src/main/jniLibs" \
+            build --release --features frb
       - name: Build Linux .so
         working-directory: flutter/rust
         run: |
           cargo build --release --features frb --target x86_64-unknown-linux-gnu
-          mkdir -p ../linux/lib
-          cp target/x86_64-unknown-linux-gnu/release/lib${LIB}.so ../linux/lib/
+          mkdir -p "$GITHUB_WORKSPACE/stage/linux/lib"
+          cp "target/x86_64-unknown-linux-gnu/release/lib${LIB}.so" \
+             "$GITHUB_WORKSPACE/stage/linux/lib/"
+      - name: Show staged tree
+        run: find stage -type f | sort
       - uses: actions/upload-artifact@v4
         with:
           name: native-android-linux
-          path: |
-            flutter/android/src/main/jniLibs/**
-            flutter/linux/lib/**
+          path: stage
+          if-no-files-found: error
 
   build-apple:
     name: Build iOS + macOS
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          # These workflows never push; don't leave the token in
+          # .git/config where later third-party steps could read it.
+          persist-credentials: false
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-apple-ios,aarch64-apple-ios-sim,x86_64-apple-ios,aarch64-apple-darwin,x86_64-apple-darwin
@@ -89,11 +107,11 @@ jobs:
         run: |
           cargo build --release --features frb --target aarch64-apple-darwin
           cargo build --release --features frb --target x86_64-apple-darwin
-          mkdir -p ../macos/lib
+          mkdir -p "$GITHUB_WORKSPACE/stage/macos/lib"
           lipo -create \
-            target/aarch64-apple-darwin/release/lib${LIB}.dylib \
-            target/x86_64-apple-darwin/release/lib${LIB}.dylib \
-            -output ../macos/lib/lib${LIB}.dylib
+            "target/aarch64-apple-darwin/release/lib${LIB}.dylib" \
+            "target/x86_64-apple-darwin/release/lib${LIB}.dylib" \
+            -output "$GITHUB_WORKSPACE/stage/macos/lib/lib${LIB}.dylib"
       - name: Build iOS xcframework (static)
         working-directory: flutter/rust
         run: |
@@ -103,26 +121,32 @@ jobs:
           # Fat simulator lib (arm64 + x86_64), device lib stays separate.
           mkdir -p sim
           lipo -create \
-            target/aarch64-apple-ios-sim/release/lib${LIB}.a \
-            target/x86_64-apple-ios/release/lib${LIB}.a \
-            -output sim/lib${LIB}.a
-          rm -rf ../ios/${LIB}.xcframework
+            "target/aarch64-apple-ios-sim/release/lib${LIB}.a" \
+            "target/x86_64-apple-ios/release/lib${LIB}.a" \
+            -output "sim/lib${LIB}.a"
+          mkdir -p "$GITHUB_WORKSPACE/stage/ios"
+          rm -rf "$GITHUB_WORKSPACE/stage/ios/${LIB}.xcframework"
           xcodebuild -create-xcframework \
-            -library target/aarch64-apple-ios/release/lib${LIB}.a \
-            -library sim/lib${LIB}.a \
-            -output ../ios/${LIB}.xcframework
+            -library "target/aarch64-apple-ios/release/lib${LIB}.a" \
+            -library "sim/lib${LIB}.a" \
+            -output "$GITHUB_WORKSPACE/stage/ios/${LIB}.xcframework"
+      - name: Show staged tree
+        run: find stage -type f | sort
       - uses: actions/upload-artifact@v4
         with:
           name: native-apple
-          path: |
-            flutter/macos/lib/**
-            flutter/ios/${{ env.LIB }}.xcframework/**
+          path: stage
+          if-no-files-found: error
 
   build-windows:
     name: Build Windows
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          # These workflows never push; don't leave the token in
+          # .git/config where later third-party steps could read it.
+          persist-credentials: false
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-pc-windows-msvc
@@ -131,17 +155,23 @@ jobs:
       - name: FRB codegen
         run: |
           cargo install "flutter_rust_bridge_codegen@$env:FRB_VERSION" --locked
-          cd flutter; flutter pub get; flutter_rust_bridge_codegen generate
+          # `&&`, not `;` — PowerShell's `;` does not short-circuit, so a failed
+          # `pub get` would still run codegen and fail confusingly later.
+          cd flutter && flutter pub get && flutter_rust_bridge_codegen generate
       - name: Build Windows .dll
         working-directory: flutter/rust
         run: |
           cargo build --release --features frb --target x86_64-pc-windows-msvc
-          New-Item -ItemType Directory -Force -Path ../windows/lib
-          Copy-Item "target/x86_64-pc-windows-msvc/release/$env:LIB.dll" ../windows/lib/
+          $dest = "$env:GITHUB_WORKSPACE/stage/windows/lib"
+          New-Item -ItemType Directory -Force -Path $dest
+          Copy-Item "target/x86_64-pc-windows-msvc/release/$env:LIB.dll" $dest
+      - name: Show staged tree
+        run: Get-ChildItem -Recurse -File stage | Select-Object -ExpandProperty FullName
       - uses: actions/upload-artifact@v4
         with:
           name: native-windows
-          path: flutter/windows/lib/**
+          path: stage
+          if-no-files-found: error
 
   # ---------------------------------------------------------------------------
   # Assemble every platform's libs into the plugin tree and publish once.
@@ -158,6 +188,10 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v6
+        with:
+          # These workflows never push; don't leave the token in
+          # .git/config where later third-party steps could read it.
+          persist-credentials: false
       - uses: dtolnay/rust-toolchain@stable
       - uses: subosito/flutter-action@v2
         with: { channel: stable }
@@ -175,10 +209,19 @@ jobs:
       - name: Place native libraries
         run: |
           set -euo pipefail
-          cp -R flutter-artifacts/native-android-linux/. flutter/
-          cp -R flutter-artifacts/native-apple/. flutter/
-          cp -R flutter-artifacts/native-windows/. flutter/
-          echo "Assembled native libs:"; find flutter/{android,ios,macos,windows,linux} -name "*${LIB}*" -maxdepth 4 | sort
+          echo "Downloaded artifact trees:"; find flutter-artifacts -type f | sort
+          # Each artifact is staged relative to flutter/, so this is a direct overlay.
+          for a in native-android-linux native-apple native-windows; do
+            cp -R "flutter-artifacts/$a/." flutter/
+          done
+          # Guard against an artifact flattening (see the staging note above):
+          # anything landing directly in flutter/ means the layout regressed.
+          if find flutter -maxdepth 1 -type f \( -name "*.dll" -o -name "*.so" -o -name "*.dylib" -o -name "*.a" \) | grep -q .; then
+            echo "ERROR: native libraries landed at the flutter/ root — artifact layout regressed." >&2
+            find flutter -maxdepth 1 -type f \( -name "*.dll" -o -name "*.so" -o -name "*.dylib" -o -name "*.a" \) >&2
+            exit 1
+          fi
+          echo "Assembled native libs:"; find flutter/android flutter/ios flutter/macos flutter/windows flutter/linux -name "*${LIB}*" | sort
           echo "Package size:"; du -sh flutter
 
       # Fail loudly if any platform's library is missing, rather than shipping a
@@ -207,13 +250,38 @@ jobs:
         run: |
           set -euo pipefail
           dart pub publish --dry-run 2>&1 | tee /tmp/pub-dry-run.txt || true
-          for pat in "jniLibs" "xcframework" "libferro_ta_flutter.dylib" "ferro_ta_flutter.dll" "frb_generated.dart"; do
+          # Every platform's library AND the generated Dart API must appear in
+          # the file list. Two separate ignore layers can silently strip these:
+          # the repo-root .gitignore (which a package .pubignore does NOT
+          # override) and .pubignore's own patterns.
+          for pat in \
+            "jniLibs" \
+            "xcframework" \
+            "libferro_ta_flutter.dylib" \
+            "ferro_ta_flutter.dll" \
+            "frb_generated.dart" \
+            "indicators.dart" \
+          ; do
             if ! grep -q "$pat" /tmp/pub-dry-run.txt; then
-              echo "ERROR: '$pat' is not in the package file list — check flutter/.pubignore." >&2
+              echo "ERROR: '$pat' is not in the package file list — check flutter/.pubignore and the repo-root .gitignore." >&2
               exit 1
             fi
             echo "ok: $pat present in package"
           done
+          # The .so libraries need a count, not a substring match. Grepping for
+          # "linux" is useless (linux/CMakeLists.txt is source and always ships,
+          # so it matches even when the .so is stripped), and grepping for the
+          # bare filename passes if only Android's copies survive. Exactly four
+          # are expected: 3 Android ABIs + 1 Linux. The `*.so` ignore-rule class
+          # of bug strips all four at once, and a Linux-only regression drops it
+          # to three.
+          so_count="$(grep -c 'libferro_ta_flutter\.so' /tmp/pub-dry-run.txt || true)"
+          if [ "$so_count" -ne 4 ]; then
+            echo "ERROR: expected 4 libferro_ta_flutter.so entries (3 Android ABIs + Linux), found ${so_count}." >&2
+            echo "Check flutter/.pubignore and the repo-root .gitignore for patterns matching *.so." >&2
+            exit 1
+          fi
+          echo "ok: all 4 .so libraries present (3 Android ABIs + Linux)"
 
       # `dart pub publish` (not `flutter pub publish`) is the command pub.dev's
       # automated-publishing flow documents, and the one that performs the OIDC
@@ -228,9 +296,30 @@ jobs:
 
       # pub.dev rejects automated publishing that is not tag-triggered, so a
       # manual dispatch can only ever validate the package, never publish it.
+      #
+      # `--dry-run` exits non-zero on *any* warning, and this package always
+      # emits exactly one: pub advises a loose `^` constraint on
+      # flutter_rust_bridge. That advice is wrong here — flutter_rust_bridge
+      # throws at RustLib.init() when the Dart runtime version differs from the
+      # codegen version that produced the bindings (entrypoint.dart,
+      # _sanityCheckCodegenVersion, forceSameCodegenVersion defaults to true).
+      # The shipped native libraries are built against an exact FRB version, so
+      # the exact pin is required for correctness. Accept that one warning and
+      # fail on anything else, rather than ignoring warnings wholesale.
       - name: Dry-run only (manual dispatch)
         if: github.event_name != 'push'
         working-directory: flutter
         run: |
           flutter pub get
-          dart pub publish --dry-run
+          set +e
+          dart pub publish --dry-run 2>&1 | tee /tmp/dry-run.txt
+          set -e
+          unexpected="$(grep -E '^\* ' /tmp/dry-run.txt | grep -v 'flutter_rust_bridge' || true)"
+          if [ -n "$unexpected" ]; then
+            echo "ERROR: unexpected package warnings:" >&2
+            echo "$unexpected" >&2
+            exit 1
+          fi
+          grep -q 'flutter_rust_bridge' /tmp/dry-run.txt \
+            && echo "OK: only the expected flutter_rust_bridge pin warning (intentional)." \
+            || echo "OK: no warnings."

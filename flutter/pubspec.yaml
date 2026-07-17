@@ -21,7 +21,18 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  # Pinned exactly to the Rust `flutter_rust_bridge` dep and the codegen CLI.
+  # Pinned EXACTLY, on purpose — do not relax to `^2.11.1`.
+  #
+  # flutter_rust_bridge throws at RustLib.init() when the Dart runtime version
+  # differs from the codegen version that generated the bindings (see
+  # _sanityCheckCodegenVersion in the package's entrypoint.dart;
+  # forceSameCodegenVersion defaults to true). The native libraries bundled here
+  # are compiled against this exact version, so a caret range would let pub
+  # resolve a newer 2.x and break every consumer at startup.
+  #
+  # `dart pub publish` warns about this constraint. The warning is expected and
+  # is deliberately tolerated by flutter-publish.yml. Bump this in lockstep with
+  # flutter/rust/Cargo.toml and FRB_VERSION in the workflows.
   flutter_rust_bridge: 2.11.1
   # Web reuses the already-published WASM binding via JS interop.
   web: ^1.1.0

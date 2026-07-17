@@ -33,8 +33,11 @@ Future<void> main() async {
 ## Usage (web)
 
 ```dart
+import 'dart:typed_data';
 import 'package:ferro_ta/ferro_ta_web.dart';
+
 // Reuses the ferro-ta-wasm module exposed on globalThis.ferroTaWasm.
+final close = Float64List.fromList([1, 2, 3, 4, 5, 6, 7]);
 final sma3 = smaWeb(close, 3);
 ```
 

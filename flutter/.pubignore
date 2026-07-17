@@ -8,12 +8,18 @@
 
 # Dev/build cruft
 .dart_tool/
-build/
+/build/
 pubspec.lock
 .flutter-plugins
 .flutter-plugins-dependencies
 
 # Rust sources and build output: consumers get prebuilt libraries, so the crate
 # itself is not needed at consume time and would only bloat the package.
-rust/
-flutter_rust_bridge.yaml
+#
+# NOTE the leading slash. A pattern whose only separator is a trailing one
+# matches at ANY depth, so a bare `rust/` also excluded `lib/src/rust/` — the
+# entire flutter_rust_bridge-generated Dart API — and shipped a package whose
+# public facade pointed at files that weren't there. Anchor these to the
+# package root.
+/rust/
+/flutter_rust_bridge.yaml
