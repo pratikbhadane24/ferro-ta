@@ -57,7 +57,7 @@ See also:
 | `AROONOSC`      | ✅        | ✅ Exact  | Aroon Oscillator                                                             |
 | `BOP`           | ✅        | ✅ Exact  | Balance Of Power                                                             |
 | `CCI`           | ✅        | ✅ Exact  | Commodity Channel Index (TA-Lib-compatible MAD formula)                      |
-| `CMO`           | ✅        | ✅ Close  | Chande Momentum Oscillator (rolling window, TA-Lib-compatible)               |
+| `CMO`           | ✅        | ✅ Exact  | Chande Momentum Oscillator (Wilder smoothing, as TA-Lib)                     |
 | `DX`            | ✅        | ✅ Close  | Directional Movement Index (TA-Lib Wilder sum-seeding)                       |
 | `MACD`          | ✅        | ✅ Close  | MACD (EMA-based; converges after ~30 bars)                                   |
 | `MACDEXT`       | ✅        | ✅ Close  | MACD with controllable MA type (EMA-based; converges)                        |
@@ -75,8 +75,8 @@ See also:
 | `ROCR100`       | ✅        | ✅ Exact  | Rate of Change Ratio × 100                                                   |
 | `RSI`           | ✅        | ✅ Close  | Relative Strength Index (TA-Lib Wilder seeding; converges after ~1 seed bar) |
 | `STOCH`         | ✅        | ✅ Close  | Stochastic (TA-Lib-compatible SMA smoothing for slowk and slowd)             |
-| `STOCHF`        | ✅        | ✅ Exact  | Stochastic Fast (%K exact; %D NaN offset ±2)                                 |
-| `STOCHRSI`      | ✅        | ✅ Close  | Stochastic RSI (TA-Lib-compatible; SMA fastd, Wilder-seeded RSI)             |
+| `STOCHF`        | ✅        | ✅ Exact  | Stochastic Fast (%D is the SMA of %K, as TA-Lib)                             |
+| `STOCHRSI`      | ✅        | ✅ Exact  | Stochastic RSI (SMA fastd, Wilder-seeded RSI)                                |
 | `TRIX`          | ✅        | ✅ Close  | 1-day ROC of Triple EMA (EMA-based; converges)                               |
 | `ULTOSC`        | ✅        | ✅ Exact  | Ultimate Oscillator                                                          |
 | `WILLR`         | ✅        | ✅ Exact  | Williams' %R                                                                 |
@@ -243,8 +243,8 @@ for the first `timeperiod - 1` bars.
 
 | Category                    | Implemented | Not Implemented |
 | --------------------------- | ----------- | --------------- |
-| Overlap Studies             | 19          | 0               |
-| Momentum Indicators         | 28          | 0               |
+| Overlap Studies             | 16          | 0               |
+| Momentum Indicators         | 30          | 0               |
 | Volume Indicators           | 3           | 0               |
 | Volatility Indicators       | 3           | 0               |
 | Cycle Indicators            | 6           | 0               |
