@@ -639,14 +639,14 @@ pub fn cdleveningdojistar(open: &[f64], high: &[f64], low: &[f64], close: &[f64]
     let mut result = vec![0i32; n];
     for i in 2..n {
         let (o1, h1, l1, c1) = (open[i - 2], high[i - 2], low[i - 2], close[i - 2]);
-        let (o2, _h2, _l2, c2) = (open[i - 1], high[i - 1], low[i - 1], close[i - 1]);
+        let (o2, h2, l2, c2) = (open[i - 1], high[i - 1], low[i - 1], close[i - 1]);
         let (o3, h3, l3, c3) = (open[i], high[i], low[i], close[i]);
 
         let body1 = body_size(o1, c1);
         let body2 = body_size(o2, c2);
         let body3 = body_size(o3, c3);
         let range1 = candle_range(h1, l1);
-        let range2 = candle_range(o2.min(c2) - DOJI_BODY_EPSILON, o2.max(c2));
+        let range2 = candle_range(h2, l2);
         let range3 = candle_range(h3, l3);
 
         let large_body1 = range1 > 0.0 && body1 >= range1 * 0.6;
@@ -866,7 +866,7 @@ pub fn cdlhikkake(open: &[f64], high: &[f64], low: &[f64], close: &[f64]) -> Vec
     let n = validate_ohlc(open, high, low, close).expect("OHLC length mismatch");
     let mut result = vec![0i32; n];
     for i in 2..n {
-        let (o0, h0, l0, c0) = (open[i - 2], high[i - 2], low[i - 2], close[i - 2]);
+        let (h0, l0) = (high[i - 2], low[i - 2]);
         let h1 = high[i - 1];
         let l1 = low[i - 1];
         let h2 = high[i];
@@ -875,9 +875,11 @@ pub fn cdlhikkake(open: &[f64], high: &[f64], low: &[f64], close: &[f64]) -> Vec
         if !inside {
             continue;
         }
-        if is_bearish(o0, c0) && h2 > h1 && l2 > l1 {
+        // TA-Lib convention: the hikkake is a fake-out — a downside breakout
+        // of the inside bar is the bullish setup (+100), upside is bearish.
+        if h2 < h1 && l2 < l1 {
             result[i] = 100;
-        } else if is_bullish(o0, c0) && l2 < l1 && h2 < h1 {
+        } else if h2 > h1 && l2 > l1 {
             result[i] = -100;
         }
     }
@@ -1195,14 +1197,14 @@ pub fn cdlmorningdojistar(open: &[f64], high: &[f64], low: &[f64], close: &[f64]
     let mut result = vec![0i32; n];
     for i in 2..n {
         let (o1, h1, l1, c1) = (open[i - 2], high[i - 2], low[i - 2], close[i - 2]);
-        let (o2, _h2, _l2, c2) = (open[i - 1], high[i - 1], low[i - 1], close[i - 1]);
+        let (o2, h2, l2, c2) = (open[i - 1], high[i - 1], low[i - 1], close[i - 1]);
         let (o3, h3, l3, c3) = (open[i], high[i], low[i], close[i]);
 
         let body1 = body_size(o1, c1);
         let body2 = body_size(o2, c2);
         let body3 = body_size(o3, c3);
         let range1 = candle_range(h1, l1);
-        let range2 = candle_range(o2.min(c2) - DOJI_BODY_EPSILON, o2.max(c2));
+        let range2 = candle_range(h2, l2);
         let range3 = candle_range(h3, l3);
 
         let large_body1 = range1 > 0.0 && body1 >= range1 * 0.6;
