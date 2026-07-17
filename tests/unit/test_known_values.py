@@ -181,22 +181,20 @@ class TestRSIKnownValues:
         assert np.all(result[20:] < 50.0), "RSI of falling series should be < 50"
 
     def test_rsi_constant_series(self):
-        """Constant series should produce RSI = 100 or NaN (no momentum).
+        """A constant series has no gains and no losses, so RSI is 0.
 
-        Note: For constant series with no change, ferro_ta returns 100
-        (no downward movement), which is mathematically correct.
+        This is TA-Lib's convention (`ta_RSI.c` emits 0 when
+        `prevGain + prevLoss == 0`), verified against talib.RSI directly.
+        Returning 100 here would imply "maximally bullish" for a flat series.
         """
         data = np.ones(30) * 42.0
         result = ferro_ta.RSI(data, timeperiod=14)
 
-        # Constant series has no momentum; RSI should be NaN or 100
-        # ferro_ta returns 100 (no down movement = 100% bullish)
         valid_values = result[~np.isnan(result)]
-        if len(valid_values) > 0:
-            # Should be either NaN everywhere or 100 everywhere
-            assert np.all(np.abs(valid_values - 100.0) < 1e-10) or np.all(
-                np.abs(valid_values - 50.0) < 5.0
-            ), "RSI of constant series should be 100 (no down movement) or close to 50"
+        assert len(valid_values) > 0
+        assert np.all(np.abs(valid_values - 0.0) < 1e-10), (
+            "RSI of a constant series should be 0 (no gains and no losses)"
+        )
 
 
 # ---------------------------------------------------------------------------
