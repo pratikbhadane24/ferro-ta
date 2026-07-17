@@ -110,6 +110,38 @@ jobs:
           path: coverage.xml
 
   # -------------------------------------------------------------------------
+  # Accuracy vs TA-Lib. The `test` job above cannot cover this: without the
+  # talib module, tests/integration/test_vs_talib.py `importorskip`s itself
+  # and every compatibility assertion silently passes as "skipped". Run once
+  # on 3.12 rather than in the version matrix — building the C library from
+  # source is slow and the comparison is Python-version independent.
+  # -------------------------------------------------------------------------
+  test-vs-talib:
+    name: Accuracy vs TA-Lib
+    runs-on: ubuntu-latest
+    needs: build-wheel
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@v8
+        with:
+          name: wheel-3.12
+          path: dist
+      - name: Install TA-Lib C library
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential curl
+          curl -sL https://sourceforge.net/projects/ta-lib/files/ta-lib/0.4.0/ta-lib-0.4.0-src.tar.gz/download -o ta-lib-0.4.0-src.tar.gz
+          tar -xzf ta-lib-0.4.0-src.tar.gz
+          cd ta-lib && ./configure --prefix=/usr && make && sudo make install && sudo ldconfig
+      - run: pip install dist/*.whl numpy pytest pandas ta-lib
+      - name: Fail if talib is unavailable (the suite would silently skip)
+        run: python -c "import talib; print('talib', talib.__version__)"
+      - run: pytest tests/integration/test_vs_talib.py -v
+
+  # -------------------------------------------------------------------------
   # Benchmark vs TA-Lib (downloads wheel from build-wheel job)
   # -------------------------------------------------------------------------
   benchmark-vs-talib:
