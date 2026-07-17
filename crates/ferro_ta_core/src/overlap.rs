@@ -892,9 +892,16 @@ pub fn macdext(
             histogram[i] = macd_line[i] - signal_line[i];
         }
     }
-    // TA-Lib pads all three outputs to the combined slow + signal lookback
-    // (same convention as `macd`).
-    for v in macd_line[..warmup.min(n)].iter_mut() {
+    // TA-Lib pads all three outputs to the same start (same convention as
+    // `macd`). Pad to where the signal line actually becomes valid rather than
+    // to `warmup`: signal matypes with a longer lookback than
+    // `signalperiod - 1` (DEMA, TEMA, T3, KAMA) start later, which would
+    // otherwise leave macd_line numeric while the other two are still NaN.
+    let first_signal = signal_line
+        .iter()
+        .position(|v| !v.is_nan())
+        .unwrap_or(macd_line.len());
+    for v in macd_line[..first_signal].iter_mut() {
         *v = f64::NAN;
     }
     (macd_line, signal_line, histogram)

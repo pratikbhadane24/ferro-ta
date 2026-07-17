@@ -114,8 +114,10 @@ pub fn aggregate_volume_bars_ticks(price: &[f64], size: &[f64], volume_threshold
             in_bar = false;
         }
     }
-    // Push remaining partial bar
-    if in_bar && bar_vol > 0.0 {
+    // Push remaining partial bar. `in_bar` alone decides this: a trailing bar
+    // whose ticks all have zero size is still a real bar with OHLC data, and
+    // gating on bar_vol > 0.0 would silently discard it.
+    if in_bar {
         out_open.push(bar_open);
         out_high.push(bar_high);
         out_low.push(bar_low);
@@ -292,6 +294,19 @@ mod tests {
         let (o, _h, _l, _c, v) = aggregate_volume_bars_ticks(&[5.0], &[10.0], 100.0);
         assert_eq!(o.len(), 1);
         assert!((v[0] - 10.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_volume_bars_ticks_keeps_zero_size_trailing_bar() {
+        // Zero-size ticks still carry price information; the trailing bar must
+        // not be dropped just because its volume is 0.
+        let (o, h, l, c, v) = aggregate_volume_bars_ticks(&[10.0, 12.0], &[0.0, 0.0], 50.0);
+        assert_eq!(v.len(), 1);
+        assert!((v[0] - 0.0).abs() < 1e-10);
+        assert!((o[0] - 10.0).abs() < 1e-10);
+        assert!((h[0] - 12.0).abs() < 1e-10);
+        assert!((l[0] - 10.0).abs() < 1e-10);
+        assert!((c[0] - 12.0).abs() < 1e-10);
     }
 
     #[test]

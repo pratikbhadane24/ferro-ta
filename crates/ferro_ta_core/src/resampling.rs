@@ -77,8 +77,10 @@ pub fn volume_bars(
             in_bar = false;
         }
     }
-    // Push any remaining partial bar
-    if in_bar && bar_vol > 0.0 {
+    // Push any remaining partial bar. `in_bar` alone decides this: a trailing
+    // bar whose bars all have zero volume is still a real bar with OHLC data,
+    // and gating on bar_vol > 0.0 would silently discard it.
+    if in_bar {
         out_open.push(bar_open);
         out_high.push(bar_high);
         out_low.push(bar_low);
@@ -215,6 +217,24 @@ mod tests {
         assert!((rh[0] - 12.0).abs() < 1e-10);
         assert!((rl[0] - 8.0).abs() < 1e-10);
         assert!((rc[0] - 11.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_volume_bars_keeps_zero_volume_trailing_bar() {
+        // Zero-volume bars are legitimate (halts, illiquid sessions); their
+        // OHLC must survive even though the threshold is never reached.
+        let o = [100.0, 101.0];
+        let h = [105.0, 106.0];
+        let l = [95.0, 96.0];
+        let c = [101.0, 102.0];
+        let v = [0.0, 0.0];
+        let (ro, rh, rl, rc, rv) = volume_bars(&o, &h, &l, &c, &v, 100.0);
+        assert_eq!(rv.len(), 1);
+        assert!((rv[0] - 0.0).abs() < 1e-10);
+        assert!((ro[0] - 100.0).abs() < 1e-10);
+        assert!((rh[0] - 106.0).abs() < 1e-10);
+        assert!((rl[0] - 95.0).abs() < 1e-10);
+        assert!((rc[0] - 102.0).abs() < 1e-10);
     }
 
     #[test]
