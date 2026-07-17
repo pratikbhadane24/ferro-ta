@@ -278,6 +278,25 @@ pytest tests/unit/ tests/integration/ -v
 
 CI runs the Python suite on Python 3.10–3.13 (Linux); release wheels are built for Linux, macOS, and Windows.  Please make sure your change passes locally before opening a pull request.
 
+### Accuracy tests against TA-Lib
+
+`tests/integration/test_vs_talib.py` starts with `pytest.importorskip("talib")`, so
+without the `talib` module it reports **skipped, not failed** — the run stays green
+while none of the parity assertions execute. If you are touching indicator maths,
+install the comparison extra and confirm those tests actually ran:
+
+```bash
+# TA-Lib's C library first, e.g. `brew install ta-lib` or `apt install libta-lib-dev`
+uv pip install -e ".[comparison]"
+pytest tests/integration/test_vs_talib.py -v
+```
+
+Note that `maturin develop` re-syncs the virtualenv against `pyproject.toml` and
+will drop `ta-lib` again, silently returning those tests to "skipped"; re-install
+it after rebuilding the extension. CI covers this in the dedicated
+`Accuracy vs TA-Lib` job, which fails if the import is unavailable rather than
+skipping.
+
 ## Pull Request Checklist
 
 - [ ] Rust code compiles without warnings (`cargo build --release`)
