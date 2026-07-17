@@ -47,15 +47,23 @@ pub fn volume_bars(
     let mut out_close: Vec<f64> = Vec::new();
     let mut out_vol: Vec<f64> = Vec::new();
 
-    let mut bar_open = open[0];
-    let mut bar_high = high[0];
-    let mut bar_low = low[0];
-    let mut bar_close = close[0];
-    let mut bar_vol = volume[0];
+    let mut bar_open: f64 = 0.0;
+    let mut bar_high: f64 = 0.0;
+    let mut bar_low: f64 = 0.0;
+    let mut bar_close: f64 = 0.0;
+    let mut bar_vol: f64 = 0.0;
+    let mut in_bar = false;
 
-    for i in 1..n {
-        bar_high = bar_high.max(high[i]);
-        bar_low = bar_low.min(low[i]);
+    for i in 0..n {
+        if in_bar {
+            bar_high = bar_high.max(high[i]);
+            bar_low = bar_low.min(low[i]);
+        } else {
+            bar_open = open[i];
+            bar_high = high[i];
+            bar_low = low[i];
+            in_bar = true;
+        }
         bar_close = close[i];
         bar_vol += volume[i];
 
@@ -65,18 +73,12 @@ pub fn volume_bars(
             out_low.push(bar_low);
             out_close.push(bar_close);
             out_vol.push(bar_vol);
-            // Start new bar
-            if i + 1 < n {
-                bar_open = open[i + 1];
-                bar_high = high[i + 1];
-                bar_low = low[i + 1];
-                bar_close = close[i + 1];
-                bar_vol = volume[i + 1];
-            }
+            bar_vol = 0.0;
+            in_bar = false;
         }
     }
     // Push any remaining partial bar
-    if bar_vol > 0.0 && out_vol.last().is_none_or(|&last| last != bar_vol) {
+    if in_bar && bar_vol > 0.0 {
         out_open.push(bar_open);
         out_high.push(bar_high);
         out_low.push(bar_low);
@@ -186,13 +188,22 @@ mod tests {
         let v = [50.0, 60.0, 40.0, 70.0, 30.0];
         // threshold 100: first bar covers indices 0..2 (vol=110>=100)
         let (ro, rh, rl, rc, rv) = volume_bars(&o, &h, &l, &c, &v, 100.0);
-        assert!(rv.len() >= 2);
+        assert_eq!(rv.len(), 3);
         // First bar: vol = 50+60 = 110
         assert!((rv[0] - 110.0).abs() < 1e-10);
         assert!((ro[0] - 100.0).abs() < 1e-10);
         assert!((rh[0] - 106.0).abs() < 1e-10);
         assert!((rl[0] - 95.0).abs() < 1e-10);
         assert!((rc[0] - 102.0).abs() < 1e-10);
+        // Second bar: indices 2..=3, vol = 40+70 = 110
+        assert!((ro[1] - 102.0).abs() < 1e-10);
+        assert!((rh[1] - 108.0).abs() < 1e-10);
+        assert!((rl[1] - 97.0).abs() < 1e-10);
+        assert!((rc[1] - 104.0).abs() < 1e-10);
+        assert!((rv[1] - 110.0).abs() < 1e-10);
+        // Trailing partial: index 4, vol = 30
+        assert!((ro[2] - 104.0).abs() < 1e-10);
+        assert!((rv[2] - 30.0).abs() < 1e-10);
     }
 
     #[test]
@@ -201,6 +212,9 @@ mod tests {
         assert_eq!(rv.len(), 1);
         assert!((rv[0] - 50.0).abs() < 1e-10);
         assert!((ro[0] - 10.0).abs() < 1e-10);
+        assert!((rh[0] - 12.0).abs() < 1e-10);
+        assert!((rl[0] - 8.0).abs() < 1e-10);
+        assert!((rc[0] - 11.0).abs() < 1e-10);
     }
 
     #[test]
@@ -252,6 +266,10 @@ mod tests {
         let (ro, rh, rl, rc, rv) = ohlcv_agg(&o, &h, &l, &c, &v, &labels);
         assert_eq!(ro.len(), 1);
         assert!((rv[0] - 30.0).abs() < 1e-10);
+        assert!((ro[0] - 100.0).abs() < 1e-10);
+        assert!((rh[0] - 106.0).abs() < 1e-10);
+        assert!((rl[0] - 95.0).abs() < 1e-10);
+        assert!((rc[0] - 102.0).abs() < 1e-10);
     }
 
     #[test]
