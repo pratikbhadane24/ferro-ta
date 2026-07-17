@@ -38,7 +38,6 @@ pub fn close_to_close_vol(close: &[f64], window: usize, trading_days: f64) -> Ve
 ///
 /// Returns a `Vec<f64>` of the same length as `high`. The first `window-1` values
 /// are NaN.
-#[allow(clippy::needless_range_loop)]
 pub fn parkinson_vol(high: &[f64], low: &[f64], window: usize, trading_days: f64) -> Vec<f64> {
     let n = high.len();
     let mut out = vec![f64::NAN; n];

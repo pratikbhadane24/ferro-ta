@@ -1,4 +1,10 @@
 #![forbid(unsafe_code)]
+// Indicator loops routinely walk several equal-length series by a shared bar
+// index (`high[i]` / `low[i]` / `close[i]`, or `result[i]` against `result[i-1]`).
+// Rewriting those as iterator chains obscures the bar alignment that makes the
+// math reviewable, so allow index loops crate-wide rather than scattering
+// per-function `#[allow]`s.
+#![allow(clippy::needless_range_loop)]
 
 /*!
 ferro_ta_core — Pure Rust indicator library.
