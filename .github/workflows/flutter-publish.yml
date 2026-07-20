@@ -78,7 +78,7 @@ jobs:
              "$GITHUB_WORKSPACE/stage/linux/lib/"
       - name: Show staged tree
         run: find stage -type f | sort
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: native-android-linux
           path: stage
@@ -132,7 +132,7 @@ jobs:
             -output "$GITHUB_WORKSPACE/stage/ios/${LIB}.xcframework"
       - name: Show staged tree
         run: find stage -type f | sort
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: native-apple
           path: stage
@@ -167,7 +167,7 @@ jobs:
           Copy-Item "target/x86_64-pc-windows-msvc/release/$env:LIB.dll" $dest
       - name: Show staged tree
         run: Get-ChildItem -Recurse -File stage | Select-Object -ExpandProperty FullName
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: native-windows
           path: stage
