@@ -1,6 +1,6 @@
 # Runtime dependencies for ferro-ta API
 ferro_ta>=1.2.0
 fastapi>=0.110.0
-uvicorn[standard]>=0.51.0
+uvicorn[standard]>=0.52.1
 pydantic>=2.13.4
 numpy>=1.20
