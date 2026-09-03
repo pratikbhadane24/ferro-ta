@@ -39,12 +39,13 @@ about:
   home: https://github.com/pratikbhadane24/ferro-ta
   license: MIT
   license_family: MIT
-  summary: Rust-powered Python technical analysis library with a TA-Lib-compatible API
+  summary: Python bindings for ferro-ta, a Rust-core technical analysis library
   description: |
-    ferro-ta is a Rust-powered Python technical analysis library with a
+    Python bindings for ferro-ta, a Rust-core technical analysis library with a
     TA-Lib-compatible API and pre-compiled wheels for the supported platforms.
-    It provides 155+ indicators via a Rust core and PyO3 bindings, with
-    optional pandas and streaming APIs.
+    The same ferro_ta_core crate also ships first-class Rust, JavaScript (WASM),
+    and Flutter bindings. The Python package adds NumPy conversion, optional
+    pandas/polars wrappers, and streaming helpers.
   doc_url: https://github.com/pratikbhadane24/ferro-ta
   dev_url: https://github.com/pratikbhadane24/ferro-ta
 

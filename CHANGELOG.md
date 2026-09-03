@@ -14,6 +14,8 @@ and the project uses [Semantic Versioning](https://semver.org/).
 - Pinned the optional `mcp` extra to `>=1.0,<2`. Unpinned `pip install mcp`
   now resolves MCP Python SDK 2.x, which removed `mcp.server.fastmcp` and
   broke the MCP server import on CI.
+- Coverage extraction no longer counts Rust `impl` methods (`new`, `period`,
+  `reset`, `update`, …) as standalone cross-language APIs.
 
 ### Changed
 
@@ -31,6 +33,10 @@ and the project uses [Semantic Versioning](https://semver.org/).
   - `OBV[0]` is `volume[0]`.
   - KAMA first output is at index `timeperiod` (internal seed is not emitted).
   - Streaming BBands uses population standard deviation (`m2/n`), matching batch.
+- Repositioned project docs and package descriptions as a **Rust-core**
+  technical analysis library with first-class Python, Rust, JavaScript (WASM),
+  and Flutter bindings. New languages may only wrap `ferro_ta_core`. See
+  `docs/languages/` and `docs/languages/adding.rst`.
 
 ### Added
 

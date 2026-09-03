@@ -1,8 +1,11 @@
 # Architecture
 
-This document describes the internal layout of **ferro-ta** — how the Rust and
-Python layers are organised, how they communicate, and what each component is
-responsible for.
+This document describes the internal layout of **ferro-ta** — how the Rust
+core and language bindings are organised, how they communicate, and what each
+component is responsible for.
+
+**Rule:** `ferro_ta_core` owns algorithms. Python, WASM, and Flutter only
+marshal inputs and call that crate. They do not reimplement indicators.
 
 ---
 
@@ -40,6 +43,7 @@ ferro-ta/
 │
 ├── fuzz/                        # cargo-fuzz targets (fuzz_sma, fuzz_rsi, …)
 ├── wasm/                        # wasm-pack / wasm-bindgen binding (uses ferro_ta_core)
+├── flutter/                     # flutter_rust_bridge package (uses ferro_ta_core)
 ├── benchmarks/                  # Python pytest-benchmark benchmarks
 ├── docs/                        # Sphinx documentation source
 └── tests/                       # Python pytest test suite
@@ -49,23 +53,29 @@ ferro-ta/
 
 ## Single compute engine
 
-ferro-ta has **two** Rust crates, but only **one** formula implementation:
+ferro-ta has **two** Rust crates, but only **one** formula implementation.
+The root PyO3 crate depends on `ferro_ta_core` (see the root `Cargo.toml`).
 
 ```
-Python ferro_ta / _ferro_ta          WASM / Flutter / fuzz
-        │                                      │
-        └── src/  (thin PyO3 wrappers)         │
-                │                              │
-                └── ferro_ta_core  ◄───────────┘
+ferro_ta_core          algorithms, &[f64] in / Vec<f64> out
+    ├── ferro_ta       PyO3 marshalling (src/) → Python
+    ├── ferro-ta-wasm  wasm-bindgen marshalling (wasm/) → JS
+    └── ferro_ta       flutter_rust_bridge (flutter/rust) → Dart
+                       Flutter web reuses ferro-ta-wasm
 ```
 
-The third-party `ta` crate has been **removed**. Indicator math lives in
-`ferro_ta_core`. The root crate converts numpy arrays to `&[f64]`, calls core,
-and converts the result back. Pattern and Hilbert-cycle helpers stay in
-`src/pattern/` and `src/cycle/` as local heuristics; they are not a second
-formula engine for the overlap / momentum / volatility / statistic set.
+### 1. `crates/ferro_ta_core/` — Pure Rust library
 
-### 1. Root crate (`src/`) — Python extension (`_ferro_ta`)
+| Property       | Value                                                             |
+|----------------|-------------------------------------------------------------------|
+| Crate type     | `lib` (not a language extension)                                  |
+| PyO3 / numpy   | No — pure Rust, no Python dependency                              |
+| Depends on     | `std` plus optional `multiversion` / `serde`                      |
+| Used by        | Python, WASM, Flutter, fuzz targets, and crates.io consumers      |
+
+`ferro_ta_core` is the only place indicator math belongs.
+
+### 2. Root crate (`src/`) — Python extension (`_ferro_ta`)
 
 | Property       | Value                                             |
 |----------------|---------------------------------------------------|
@@ -77,21 +87,14 @@ formula engine for the overlap / momentum / volatility / statistic set.
 Each category module (`src/overlap/`, `src/momentum/`, …) registers
 `#[pyfunction]`s that accept `numpy` arrays (via `PyReadonlyArray1<f64>`),
 delegate to `ferro_ta_core`, and return `Vec<f64>` which PyO3 converts to
-an ndarray.
-
-### 2. `crates/ferro_ta_core/` — Pure Rust library
-
-| Property       | Value                                                             |
-|----------------|-------------------------------------------------------------------|
-| Crate type     | `lib` (not a Python extension)                                    |
-| PyO3 / numpy   | No — pure Rust, no Python dependency                              |
-| Depends on     | Optional `multiversion` (`simd`, default-on) and `serde`/`serde_json` |
-| Used by        | Root PyO3 crate, `fuzz/` targets, `wasm/`, Flutter bridge         |
-
-`ferro_ta_core` is the `&[f64]` API used by every binding. Numerical
-parity is locked by core unit tests and
+an ndarray. Numerical parity is locked by core unit tests and
 `tests/integration/test_core_py_parity.py` (Python public API vs those
 goldens).
+
+The third-party `ta` crate has been **removed**. Indicator math lives in
+`ferro_ta_core`. Pattern and Hilbert-cycle helpers stay in `src/pattern/`
+and `src/cycle/` as local heuristics; they are not a second formula engine
+for the overlap / momentum / volatility / statistic set.
 
 ---
 
@@ -107,7 +110,7 @@ User code
   │                   ├── _utils._to_f64(close)      # convert to float64 ndarray
   │                   └── _ferro_ta.sma(arr, n)        # call Rust extension
   │                             │
-  │                             └── src/overlap/sma.rs  # thin PyO3 wrapper
+  │                             └── src/overlap/sma.rs  # thin PyO3 wrapper (validates timeperiod)
   │                                       │
   │                                       └── ferro_ta_core::overlap::sma
   │
