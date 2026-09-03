@@ -369,7 +369,7 @@ def BBANDS(
     alignment is preserved:
 
     ==============================  ==================
-    ``matype``                      leading ``NaN``s
+    ``matype``                      leading ``NaN`` count
     ==============================  ==================
     0, 1, 2, 5 (SMA/EMA/WMA/TRIMA)  ``p - 1``
     3 (DEMA)                        ``2 * (p - 1)``

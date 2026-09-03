@@ -117,14 +117,14 @@ generated :doc:`languages/coverage` table and must be refreshed with
      - Direct ``&[f64]`` API; docs.rs ``ferro_ta_core``.
    * - WASM / Node
      - npm ``ferro-ta-wasm``
-     - 293 exports
-     - Node.js and browsers; 199 names shared with Python after normalization.
+     - 344 exports
+     - Node.js and browsers; 231 names shared with Python after normalization.
    * - Flutter / Dart
      - pub.dev ``ferro_ta``
-     - 143 generated wrappers; 50 ``MANUAL_EXCLUDE`` gaps
+     - 194 generated wrappers; 50 ``MANUAL_EXCLUDE`` gaps
      - flutter_rust_bridge over core; prebuilt natives for Android, iOS,
        macOS, Windows, and Linux. Flutter web reuses ``ferro-ta-wasm``.
-       99 names are present on all four surfaces.
+       131 names are present on all four surfaces.
 
 Do not claim full parity from this page — use :doc:`languages/coverage`.
 

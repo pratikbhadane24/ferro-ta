@@ -25,6 +25,13 @@ and the project uses [Semantic Versioning](https://semver.org/).
   `RISING`, `FALLING`, `EXREM`, `FLIP`, `VALUEWHEN`).
 - Internal speed-bench harness for overlapping catalog names (JSON artifacts
   under `benchmarks/artifacts/latest/`).
+- Bound the full extended catalog on the JavaScript (WASM) and Flutter surfaces.
+  51 additional exports — every trend, momentum, volatility, volume, oscillator,
+  statistic, hybrid, and signal-utility kernel listed above — bringing the WASM
+  package to 344 exports and the generated Flutter wrappers to 194. Multi-output
+  indicators follow the existing convention (a JS `Array` of `Float64Array`, a
+  Dart tuple), and the documented output order is pinned by tests in
+  `wasm/src/lib.rs` and `flutter/rust/tests/api_parity.rs`.
 
 ### Fixed
 

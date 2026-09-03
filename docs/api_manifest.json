@@ -5978,54 +5978,34 @@
           "file": "cycle.rs"
         },
         {
-          "module": "extended.existing",
+          "module": "extended.channels",
           "function": "chandelier_exit",
-          "file": "extended/existing.rs"
+          "file": "extended/channels.rs"
         },
         {
-          "module": "extended.existing",
-          "function": "choppiness_index",
-          "file": "extended/existing.rs"
-        },
-        {
-          "module": "extended.existing",
+          "module": "extended.channels",
           "function": "donchian",
-          "file": "extended/existing.rs"
+          "file": "extended/channels.rs"
         },
         {
-          "module": "extended.existing",
-          "function": "hull_ma",
-          "file": "extended/existing.rs"
-        },
-        {
-          "module": "extended.existing",
-          "function": "ichimoku",
-          "file": "extended/existing.rs"
-        },
-        {
-          "module": "extended.existing",
+          "module": "extended.channels",
           "function": "keltner_channels",
-          "file": "extended/existing.rs"
+          "file": "extended/channels.rs"
         },
         {
-          "module": "extended.existing",
-          "function": "pivot_points",
-          "file": "extended/existing.rs"
-        },
-        {
-          "module": "extended.existing",
+          "module": "extended.channels",
           "function": "supertrend",
-          "file": "extended/existing.rs"
+          "file": "extended/channels.rs"
         },
         {
-          "module": "extended.existing",
-          "function": "vwap",
-          "file": "extended/existing.rs"
+          "module": "extended.choppiness",
+          "function": "choppiness_index",
+          "file": "extended/choppiness.rs"
         },
         {
-          "module": "extended.existing",
-          "function": "vwma",
-          "file": "extended/existing.rs"
+          "module": "extended.hull",
+          "function": "hull_ma",
+          "file": "extended/hull.rs"
         },
         {
           "module": "extended.hybrid",
@@ -6041,6 +6021,11 @@
           "module": "extended.hybrid",
           "function": "williams_fractals",
           "file": "extended/hybrid.rs"
+        },
+        {
+          "module": "extended.ichimoku",
+          "function": "ichimoku",
+          "file": "extended/ichimoku.rs"
         },
         {
           "module": "extended.momentum",
@@ -6116,6 +6101,11 @@
           "module": "extended.oscillators",
           "function": "vortex",
           "file": "extended/oscillators.rs"
+        },
+        {
+          "module": "extended.pivots",
+          "function": "pivot_points",
+          "file": "extended/pivots.rs"
         },
         {
           "module": "extended.stat",
@@ -6271,6 +6261,16 @@
           "module": "extended.volume",
           "function": "vroc",
           "file": "extended/volume.rs"
+        },
+        {
+          "module": "extended.vwap",
+          "function": "vwap",
+          "file": "extended/vwap.rs"
+        },
+        {
+          "module": "extended.vwap",
+          "function": "vwma",
+          "file": "extended/vwap.rs"
         },
         {
           "module": "futures.basis",
@@ -6488,139 +6488,139 @@
           "file": "math_ops.rs"
         },
         {
-          "module": "momentum",
+          "module": "momentum.adx",
           "function": "adx",
-          "file": "momentum.rs"
+          "file": "momentum/adx.rs"
         },
         {
-          "module": "momentum",
+          "module": "momentum.adx",
           "function": "adx_all",
-          "file": "momentum.rs"
+          "file": "momentum/adx.rs"
         },
         {
-          "module": "momentum",
+          "module": "momentum.adx",
           "function": "adxr",
-          "file": "momentum.rs"
+          "file": "momentum/adx.rs"
         },
         {
-          "module": "momentum",
-          "function": "apo",
-          "file": "momentum.rs"
-        },
-        {
-          "module": "momentum",
-          "function": "aroon",
-          "file": "momentum.rs"
-        },
-        {
-          "module": "momentum",
-          "function": "aroonosc",
-          "file": "momentum.rs"
-        },
-        {
-          "module": "momentum",
-          "function": "bop",
-          "file": "momentum.rs"
-        },
-        {
-          "module": "momentum",
-          "function": "cci",
-          "file": "momentum.rs"
-        },
-        {
-          "module": "momentum",
-          "function": "cmo",
-          "file": "momentum.rs"
-        },
-        {
-          "module": "momentum",
+          "module": "momentum.adx",
           "function": "dx",
-          "file": "momentum.rs"
+          "file": "momentum/adx.rs"
         },
         {
-          "module": "momentum",
+          "module": "momentum.adx",
           "function": "minus_di",
-          "file": "momentum.rs"
+          "file": "momentum/adx.rs"
         },
         {
-          "module": "momentum",
+          "module": "momentum.adx",
           "function": "minus_dm",
-          "file": "momentum.rs"
+          "file": "momentum/adx.rs"
         },
         {
-          "module": "momentum",
-          "function": "mom",
-          "file": "momentum.rs"
-        },
-        {
-          "module": "momentum",
+          "module": "momentum.adx",
           "function": "plus_di",
-          "file": "momentum.rs"
+          "file": "momentum/adx.rs"
         },
         {
-          "module": "momentum",
+          "module": "momentum.adx",
           "function": "plus_dm",
-          "file": "momentum.rs"
+          "file": "momentum/adx.rs"
         },
         {
-          "module": "momentum",
+          "module": "momentum.aroon",
+          "function": "aroon",
+          "file": "momentum/aroon.rs"
+        },
+        {
+          "module": "momentum.aroon",
+          "function": "aroonosc",
+          "file": "momentum/aroon.rs"
+        },
+        {
+          "module": "momentum.price_osc",
+          "function": "apo",
+          "file": "momentum/price_osc.rs"
+        },
+        {
+          "module": "momentum.price_osc",
           "function": "ppo",
-          "file": "momentum.rs"
+          "file": "momentum/price_osc.rs"
         },
         {
-          "module": "momentum",
-          "function": "roc",
-          "file": "momentum.rs"
-        },
-        {
-          "module": "momentum",
-          "function": "rocp",
-          "file": "momentum.rs"
-        },
-        {
-          "module": "momentum",
-          "function": "rocr",
-          "file": "momentum.rs"
-        },
-        {
-          "module": "momentum",
-          "function": "rocr100",
-          "file": "momentum.rs"
-        },
-        {
-          "module": "momentum",
-          "function": "rsi",
-          "file": "momentum.rs"
-        },
-        {
-          "module": "momentum",
-          "function": "stoch",
-          "file": "momentum.rs"
-        },
-        {
-          "module": "momentum",
-          "function": "stochf",
-          "file": "momentum.rs"
-        },
-        {
-          "module": "momentum",
-          "function": "stochrsi",
-          "file": "momentum.rs"
-        },
-        {
-          "module": "momentum",
+          "module": "momentum.price_osc",
           "function": "trix",
-          "file": "momentum.rs"
+          "file": "momentum/price_osc.rs"
         },
         {
-          "module": "momentum",
-          "function": "ultosc",
-          "file": "momentum.rs"
+          "module": "momentum.range",
+          "function": "bop",
+          "file": "momentum/range.rs"
         },
         {
-          "module": "momentum",
+          "module": "momentum.range",
+          "function": "cci",
+          "file": "momentum/range.rs"
+        },
+        {
+          "module": "momentum.range",
           "function": "willr",
-          "file": "momentum.rs"
+          "file": "momentum/range.rs"
+        },
+        {
+          "module": "momentum.roc",
+          "function": "mom",
+          "file": "momentum/roc.rs"
+        },
+        {
+          "module": "momentum.roc",
+          "function": "roc",
+          "file": "momentum/roc.rs"
+        },
+        {
+          "module": "momentum.roc",
+          "function": "rocp",
+          "file": "momentum/roc.rs"
+        },
+        {
+          "module": "momentum.roc",
+          "function": "rocr",
+          "file": "momentum/roc.rs"
+        },
+        {
+          "module": "momentum.roc",
+          "function": "rocr100",
+          "file": "momentum/roc.rs"
+        },
+        {
+          "module": "momentum.rsi",
+          "function": "cmo",
+          "file": "momentum/rsi.rs"
+        },
+        {
+          "module": "momentum.rsi",
+          "function": "rsi",
+          "file": "momentum/rsi.rs"
+        },
+        {
+          "module": "momentum.stoch",
+          "function": "stoch",
+          "file": "momentum/stoch.rs"
+        },
+        {
+          "module": "momentum.stoch",
+          "function": "stochf",
+          "file": "momentum/stoch.rs"
+        },
+        {
+          "module": "momentum.stoch",
+          "function": "stochrsi",
+          "file": "momentum/stoch.rs"
+        },
+        {
+          "module": "momentum.ultosc",
+          "function": "ultosc",
+          "file": "momentum/ultosc.rs"
         },
         {
           "module": "options.american",
@@ -6828,104 +6828,104 @@
           "file": "options/surface.rs"
         },
         {
-          "module": "overlap",
+          "module": "overlap.bands",
           "function": "bbands",
-          "file": "overlap.rs"
+          "file": "overlap/bands.rs"
         },
         {
-          "module": "overlap",
-          "function": "dema",
-          "file": "overlap.rs"
-        },
-        {
-          "module": "overlap",
-          "function": "ema",
-          "file": "overlap.rs"
-        },
-        {
-          "module": "overlap",
-          "function": "kama",
-          "file": "overlap.rs"
-        },
-        {
-          "module": "overlap",
+          "module": "overlap.dispatch",
           "function": "ma",
-          "file": "overlap.rs"
+          "file": "overlap/dispatch.rs"
         },
         {
-          "module": "overlap",
-          "function": "macd",
-          "file": "overlap.rs"
-        },
-        {
-          "module": "overlap",
+          "module": "overlap.dispatch",
           "function": "macdext",
-          "file": "overlap.rs"
+          "file": "overlap/dispatch.rs"
         },
         {
-          "module": "overlap",
+          "module": "overlap.dispatch",
           "function": "macdfix",
-          "file": "overlap.rs"
+          "file": "overlap/dispatch.rs"
         },
         {
-          "module": "overlap",
-          "function": "mama",
-          "file": "overlap.rs"
-        },
-        {
-          "module": "overlap",
+          "module": "overlap.dispatch",
           "function": "mavp",
-          "file": "overlap.rs"
+          "file": "overlap/dispatch.rs"
         },
         {
-          "module": "overlap",
-          "function": "midpoint",
-          "file": "overlap.rs"
+          "module": "overlap.ema",
+          "function": "dema",
+          "file": "overlap/ema.rs"
         },
         {
-          "module": "overlap",
-          "function": "midprice",
-          "file": "overlap.rs"
+          "module": "overlap.ema",
+          "function": "ema",
+          "file": "overlap/ema.rs"
         },
         {
-          "module": "overlap",
-          "function": "sar",
-          "file": "overlap.rs"
-        },
-        {
-          "module": "overlap",
-          "function": "sarext",
-          "file": "overlap.rs"
-        },
-        {
-          "module": "overlap",
-          "function": "sma",
-          "file": "overlap.rs"
-        },
-        {
-          "module": "overlap",
-          "function": "sma_into",
-          "file": "overlap.rs"
-        },
-        {
-          "module": "overlap",
+          "module": "overlap.ema",
           "function": "t3",
-          "file": "overlap.rs"
+          "file": "overlap/ema.rs"
         },
         {
-          "module": "overlap",
+          "module": "overlap.ema",
           "function": "tema",
-          "file": "overlap.rs"
+          "file": "overlap/ema.rs"
         },
         {
-          "module": "overlap",
+          "module": "overlap.kama",
+          "function": "kama",
+          "file": "overlap/kama.rs"
+        },
+        {
+          "module": "overlap.macd",
+          "function": "macd",
+          "file": "overlap/macd.rs"
+        },
+        {
+          "module": "overlap.mama",
+          "function": "mama",
+          "file": "overlap/mama.rs"
+        },
+        {
+          "module": "overlap.midpoint",
+          "function": "midpoint",
+          "file": "overlap/midpoint.rs"
+        },
+        {
+          "module": "overlap.midpoint",
+          "function": "midprice",
+          "file": "overlap/midpoint.rs"
+        },
+        {
+          "module": "overlap.sar",
+          "function": "sar",
+          "file": "overlap/sar.rs"
+        },
+        {
+          "module": "overlap.sar",
+          "function": "sarext",
+          "file": "overlap/sar.rs"
+        },
+        {
+          "module": "overlap.sma",
+          "function": "sma",
+          "file": "overlap/sma.rs"
+        },
+        {
+          "module": "overlap.sma",
+          "function": "sma_into",
+          "file": "overlap/sma.rs"
+        },
+        {
+          "module": "overlap.trima",
           "function": "trima",
-          "file": "overlap.rs"
+          "file": "overlap/trima.rs"
         },
         {
-          "module": "overlap",
+          "module": "overlap.wma",
           "function": "wma",
-          "file": "overlap.rs"
+          "file": "overlap/wma.rs"
         },
         {
           "module": "pattern",
@@ -7546,7 +7546,7 @@
       ]
     },
     "wasm_node": {
-      "export_count": 293,
+      "export_count": 344,
       "exports": [
         "CommissionModel",
         "WasmStreamingATR",
@@ -7558,6 +7558,7 @@
         "WasmStreamingStoch",
         "WasmStreamingSupertrend",
         "WasmStreamingVWAP",
+        "ac",
         "ad",
         "adosc",
         "adx",
@@ -7567,6 +7568,7 @@
         "aggregate_tick_bars",
         "aggregate_time_bars",
         "aggregate_volume_bars_ticks",
+        "alligator",
         "alma",
         "american_price",
         "annualized_basis",
@@ -7589,6 +7591,7 @@
         "batch_stoch",
         "bbands",
         "bbpercent",
+        "bbwidth",
         "beta_full",
         "beta_rolling",
         "black_76_greeks",
@@ -7661,7 +7664,10 @@
         "cdlunique3river",
         "cdlupsidegap2crows",
         "cdlxsidegap3methods",
+        "chaikin_vol",
+        "chande_kroll_stop",
         "chandelier_exit",
+        "change",
         "check_cross",
         "check_threshold",
         "cho",
@@ -7674,30 +7680,46 @@
         "compose_weighted",
         "compute_performance_metrics",
         "continuous_bar_labels",
+        "coppock",
         "correl",
         "correlation_matrix",
+        "cross",
         "crossover",
+        "crossunder",
+        "crsi",
         "curve_slope",
         "curve_summary",
         "dema",
         "detect_breaks_cusum",
         "digital_greeks",
         "digital_price",
+        "dmi",
         "donchian",
+        "dpo",
         "drawdown_series",
         "dtw_distance",
         "dx",
         "early_exercise_premium",
+        "elder_ray",
         "ema",
+        "emv",
         "expected_move",
+        "exrem",
         "extended_greeks",
         "extract_trades",
+        "falling",
+        "fisher",
+        "flip",
+        "force_index",
         "forward_fill_nan",
+        "frama",
         "funding_cumulative_pnl",
         "futures_basis",
         "garman_klass_vol",
+        "gator",
         "half_kelly_fraction",
         "highest",
+        "historical_volatility",
         "ht_dcperiod",
         "ht_dcphase",
         "ht_phasor",
@@ -7714,13 +7736,17 @@
         "kama",
         "kelly_fraction",
         "keltner_channels",
+        "kst",
+        "kvo",
         "label_moneyness",
         "linear_interpolate",
         "linearreg",
         "linearreg_angle",
         "linearreg_intercept",
         "linearreg_slope",
+        "lowest",
         "ma",
+        "ma_envelopes",
         "macd",
         "macd_crossover_signals",
         "macdext",
@@ -7728,18 +7754,22 @@
         "make_chunk_ranges",
         "mama",
         "mark_session_boundaries",
+        "mass",
         "math_add",
         "math_div",
         "math_mult",
         "math_sub",
         "mavp",
+        "mcginley",
         "median",
+        "median_bands",
         "medprice",
         "mfi",
         "midpoint",
         "midprice",
         "minus_di",
         "minus_dm",
+        "mode",
         "model_greeks",
         "model_price",
         "model_theta",
@@ -7747,18 +7777,25 @@
         "monte_carlo_bootstrap",
         "monthly_contribution",
         "natr",
+        "nvi",
+        "nvi_with_ema",
         "obv",
+        "obv_smoothed",
         "ohlcv_agg",
         "parity_gap",
         "parkinson_vol",
         "pivot_points",
         "plus_di",
         "plus_dm",
+        "po",
         "portfolio_volatility",
         "ppo",
         "price_lower_bound",
         "price_upper_bound",
         "put_call_parity_deviation",
+        "pvi",
+        "pvi_with_signal",
+        "pvt",
         "rank_series",
         "rank_values",
         "ratio",
@@ -7766,6 +7803,7 @@
         "regime_adx",
         "regime_combined",
         "relative_strength",
+        "rising",
         "roc",
         "rocp",
         "rocr",
@@ -7781,6 +7819,9 @@
         "rolling_variance_break",
         "rsi",
         "rsi_threshold_signals",
+        "rvi",
+        "rvol",
+        "rwi",
         "sar",
         "sarext",
         "select_strike_by_delta",
@@ -7791,6 +7832,8 @@
         "sma_crossover_signals",
         "smile_metrics",
         "spread",
+        "starc",
+        "stc",
         "stddev",
         "stitch_chunks",
         "stoch",
@@ -7826,16 +7869,24 @@
         "trima",
         "trix_indicator",
         "tsf",
+        "tsi",
         "typprice",
+        "ulcer_index",
         "ultosc",
+        "valuewhen",
         "var",
+        "vidya",
         "vol_cone",
+        "volosc",
         "volume_bars",
+        "vortex",
+        "vroc",
         "vwap",
         "vwma",
         "walk_forward_indices",
         "wclprice",
         "weighted_continuous",
+        "williams_fractals",
         "willr",
         "wma",
         "yang_zhang_vol",
@@ -7844,8 +7895,9 @@
       ]
     },
     "flutter": {
-      "export_count": 143,
+      "export_count": 194,
       "exports": [
+        "ac",
         "ad",
         "adosc",
         "adx",
@@ -7853,6 +7905,7 @@
         "adxr",
         "aggregate_tick_bars",
         "aggregate_volume_bars_ticks",
+        "alligator",
         "alma",
         "annualized_basis",
         "ao",
@@ -7865,13 +7918,17 @@
         "back_adjusted_continuous",
         "bbands",
         "bbpercent",
+        "bbwidth",
         "beta_full",
         "beta_rolling",
         "bop",
         "calendar_spreads",
         "carry_spread",
         "cci",
+        "chaikin_vol",
+        "chande_kroll_stop",
         "chandelier_exit",
+        "change",
         "check_cross",
         "check_threshold",
         "cho",
@@ -7879,20 +7936,36 @@
         "close_to_close_vol",
         "cmf",
         "cmo",
+        "coppock",
         "correl",
+        "cross",
         "crossover",
+        "crossunder",
+        "crsi",
         "curve_slope",
         "dema",
         "detect_breaks_cusum",
+        "dmi",
         "donchian",
+        "dpo",
         "dx",
+        "elder_ray",
         "ema",
+        "emv",
+        "exrem",
         "extract_trades",
+        "falling",
+        "fisher",
+        "flip",
+        "force_index",
         "forward_fill_nan",
+        "frama",
         "funding_cumulative_pnl",
         "futures_basis",
         "garman_klass_vol",
+        "gator",
         "highest",
+        "historical_volatility",
         "ht_dcperiod",
         "ht_dcphase",
         "ht_phasor",
@@ -7906,38 +7979,53 @@
         "iv_zscore",
         "kama",
         "keltner_channels",
+        "kst",
+        "kvo",
         "linear_interpolate",
         "linearreg",
         "linearreg_angle",
         "linearreg_intercept",
         "linearreg_slope",
+        "lowest",
         "ma",
+        "ma_envelopes",
         "macd",
         "macdext",
         "macdfix",
         "mama",
+        "mass",
         "math_add",
         "math_div",
         "math_mult",
         "math_sub",
         "mavp",
+        "mcginley",
         "median",
+        "median_bands",
         "medprice",
         "mfi",
         "midpoint",
         "midprice",
         "minus_di",
         "minus_dm",
+        "mode",
         "mom",
         "natr",
+        "nvi",
+        "nvi_with_ema",
         "obv",
+        "obv_smoothed",
         "parity_gap",
         "parkinson_vol",
         "pivot_points",
         "plus_di",
         "plus_dm",
+        "po",
         "ppo",
         "put_call_parity_deviation",
+        "pvi",
+        "pvi_with_signal",
+        "pvt",
         "rank_series",
         "rank_values",
         "ratio",
@@ -7945,6 +8033,7 @@
         "regime_adx",
         "regime_combined",
         "relative_strength",
+        "rising",
         "roc",
         "rocp",
         "rocr",
@@ -7958,11 +8047,16 @@
         "rolling_variance_break",
         "rsi",
         "rsi_threshold_signals",
+        "rvi",
+        "rvol",
+        "rwi",
         "sar",
         "sarext",
         "single_asset_backtest",
         "sma",
         "spread",
+        "starc",
+        "stc",
         "stddev",
         "stoch",
         "stochrsi",
@@ -7976,14 +8070,22 @@
         "trima",
         "trix_indicator",
         "tsf",
+        "tsi",
         "typprice",
+        "ulcer_index",
         "ultosc",
+        "valuewhen",
         "var",
+        "vidya",
+        "volosc",
         "volume_bars",
+        "vortex",
+        "vroc",
         "vwap",
         "vwma",
         "wclprice",
         "weighted_continuous",
+        "williams_fractals",
         "willr",
         "wma",
         "yang_zhang_vol",
@@ -8047,13 +8149,14 @@
   },
   "parity_summary": {
     "python_indicator_count": 247,
-    "wasm_export_count": 293,
-    "common_python_wasm_count": 160,
+    "wasm_export_count": 344,
+    "common_python_wasm_count": 192,
     "common_python_wasm": [
       "ad",
       "adosc",
       "adx",
       "adxr",
+      "alligator",
       "alma",
       "apo",
       "aroon",
@@ -8065,6 +8168,7 @@
       "batch_sma",
       "bbands",
       "bbpercent",
+      "bbwidth",
       "bop",
       "cci",
       "cdl2crows",
@@ -8128,6 +8232,8 @@
       "cdlunique3river",
       "cdlupsidegap2crows",
       "cdlxsidegap3methods",
+      "chaikin_vol",
+      "chande_kroll_stop",
       "chandelier_exit",
       "check_cross",
       "check_threshold",
@@ -8138,12 +8244,20 @@
       "continuous_bar_labels",
       "correl",
       "correlation_matrix",
+      "crsi",
       "dema",
       "detect_breaks_cusum",
+      "dmi",
       "donchian",
       "dtw_distance",
       "dx",
+      "elder_ray",
       "ema",
+      "emv",
+      "fisher",
+      "force_index",
+      "frama",
+      "historical_volatility",
       "ht_dcperiod",
       "ht_dcphase",
       "ht_phasor",
@@ -8154,31 +8268,43 @@
       "ichimoku",
       "kama",
       "keltner_channels",
+      "kvo",
       "linearreg",
       "linearreg_angle",
       "linearreg_intercept",
       "linearreg_slope",
       "ma",
+      "ma_envelopes",
       "macd",
       "macdext",
       "macdfix",
       "mama",
+      "mass",
       "mavp",
+      "mcginley",
       "median",
+      "median_bands",
       "medprice",
       "mfi",
       "midpoint",
       "midprice",
       "minus_di",
       "minus_dm",
+      "mode",
       "mom",
       "natr",
+      "nvi",
+      "nvi_with_ema",
       "obv",
+      "obv_smoothed",
       "pivot_points",
       "plus_di",
       "plus_dm",
       "portfolio_volatility",
       "ppo",
+      "pvi",
+      "pvi_with_signal",
+      "pvt",
       "regime_adx",
       "regime_combined",
       "roc",
@@ -8187,9 +8313,12 @@
       "rocr100",
       "rolling_variance_break",
       "rsi",
+      "rvol",
+      "rwi",
       "sar",
       "sarext",
       "sma",
+      "starc",
       "stddev",
       "stoch",
       "stochf",
@@ -8201,12 +8330,17 @@
       "trima",
       "tsf",
       "typprice",
+      "ulcer_index",
       "ultosc",
       "var",
+      "vidya",
+      "volosc",
       "volume_bars",
+      "vroc",
       "vwap",
       "vwma",
       "wclprice",
+      "williams_fractals",
       "willr",
       "wma",
       "zlema"
@@ -8217,67 +8351,40 @@
       "aggregate_ticks",
       "alertevent",
       "alertmanager",
-      "alligator",
       "asin",
       "atan",
       "batch_apply",
       "batch_dtw",
-      "bbwidth",
       "beta",
       "ceil",
-      "chaikin_vol",
-      "chande_kroll_stop",
       "compose",
       "compute_many",
       "cos",
       "cosh",
-      "crsi",
       "div",
-      "dmi",
       "drawdown",
       "dtw",
-      "elder_ray",
-      "emv",
       "exp",
       "feature_matrix",
-      "fisher",
       "floor",
-      "force_index",
-      "frama",
       "funding_pnl",
-      "historical_volatility",
-      "kvo",
       "ln",
       "log10",
-      "ma_envelopes",
-      "mass",
       "max",
       "maxindex",
-      "mcginley",
-      "median_bands",
       "min",
       "minindex",
-      "mode",
       "mult",
       "multi_timeframe",
-      "nvi",
-      "nvi_with_ema",
-      "obv_smoothed",
-      "pvi",
-      "pvi_with_signal",
-      "pvt",
       "rank_signals",
       "regime",
       "resample",
       "resample_continuous",
-      "rvol",
-      "rwi",
       "screen",
       "session_boundaries",
       "sin",
       "sinh",
       "sqrt",
-      "starc",
       "streamingatr",
       "streamingbbands",
       "streamingema",
@@ -8293,14 +8400,10 @@
       "tan",
       "tanh",
       "tickaggregator",
-      "trix",
-      "ulcer_index",
-      "vidya",
-      "volosc",
-      "vroc",
-      "williams_fractals"
+      "trix"
     ],
     "wasm_only_vs_python": [
+      "ac",
       "adx_all",
       "aggregate_greeks_dense",
       "aggregate_tick_bars",
@@ -8326,26 +8429,35 @@
       "bottom_n_indices",
       "calendar_spreads",
       "carry_spread",
+      "change",
       "cho",
       "close_to_close_vol",
       "commissionmodel",
       "compose_rank",
       "compose_weighted",
       "compute_performance_metrics",
+      "coppock",
+      "cross",
       "crossover",
+      "crossunder",
       "curve_slope",
       "curve_summary",
       "digital_greeks",
       "digital_price",
+      "dpo",
       "drawdown_series",
       "early_exercise_premium",
       "expected_move",
+      "exrem",
       "extended_greeks",
       "extract_trades",
+      "falling",
+      "flip",
       "forward_fill_nan",
       "funding_cumulative_pnl",
       "futures_basis",
       "garman_klass_vol",
+      "gator",
       "half_kelly_fraction",
       "highest",
       "implied_carry_rate",
@@ -8354,8 +8466,10 @@
       "iv_rank",
       "iv_zscore",
       "kelly_fraction",
+      "kst",
       "label_moneyness",
       "linear_interpolate",
+      "lowest",
       "macd_crossover_signals",
       "make_chunk_ranges",
       "mark_session_boundaries",
@@ -8371,6 +8485,7 @@
       "ohlcv_agg",
       "parity_gap",
       "parkinson_vol",
+      "po",
       "price_lower_bound",
       "price_upper_bound",
       "put_call_parity_deviation",
@@ -8379,6 +8494,7 @@
       "ratio",
       "ratio_adjusted_continuous",
       "relative_strength",
+      "rising",
       "rogers_satchell_vol",
       "roll_yield",
       "rolling_beta",
@@ -8388,6 +8504,7 @@
       "rolling_minindex",
       "rolling_sum",
       "rsi_threshold_signals",
+      "rvi",
       "select_strike_by_delta",
       "select_strike_by_offset",
       "signal_attribution",
@@ -8395,6 +8512,7 @@
       "sma_crossover_signals",
       "smile_metrics",
       "spread",
+      "stc",
       "stitch_chunks",
       "strategy_payoff_dense",
       "strategy_value_grid",
@@ -8420,7 +8538,10 @@
       "transform_tanh",
       "trim_overlap",
       "trix_indicator",
+      "tsi",
+      "valuewhen",
       "vol_cone",
+      "vortex",
       "walk_forward_indices",
       "wasmstreamingatr",
       "wasmstreamingbbands",
@@ -8438,59 +8559,28 @@
   },
   "normalized_parity": {
     "python_indicator_count": 247,
-    "wasm_export_count": 293,
-    "common_python_wasm_count": 199,
+    "wasm_export_count": 344,
+    "common_python_wasm_count": 231,
     "python_only_vs_wasm": [
       "alertevent",
       "alertmanager",
-      "alligator",
       "batchapply",
       "batchdtw",
-      "bbwidth",
-      "chaikinvol",
-      "chandekrollstop",
       "compose",
       "computemany",
-      "crsi",
-      "dmi",
       "dtw",
-      "elderray",
-      "emv",
       "featurematrix",
-      "fisher",
-      "forceindex",
-      "frama",
-      "historicalvolatility",
-      "kvo",
-      "maenvelopes",
-      "mass",
-      "mcginley",
-      "medianbands",
-      "mode",
       "multitimeframe",
-      "nvi",
-      "nviwithema",
-      "obvsmoothed",
-      "pvi",
-      "pviwithsignal",
-      "pvt",
       "ranksignals",
       "regime",
       "resample",
       "resamplecontinuous",
-      "rvol",
-      "rwi",
       "screen",
-      "starc",
       "structuralbreaks",
-      "tickaggregator",
-      "ulcerindex",
-      "vidya",
-      "volosc",
-      "vroc",
-      "williamsfractals"
+      "tickaggregator"
     ],
     "wasm_only_vs_python": [
+      "ac",
       "adxall",
       "aggregategreeksdense",
       "aggregatetimebars",
@@ -8514,24 +8604,33 @@
       "bottomnindices",
       "calendarspreads",
       "carryspread",
+      "change",
       "cho",
       "closetoclosevol",
       "commissionmodel",
       "composerank",
       "composeweighted",
       "computeperformancemetrics",
+      "coppock",
+      "cross",
       "crossover",
+      "crossunder",
       "curveslope",
       "curvesummary",
       "digitalgreeks",
       "digitalprice",
+      "dpo",
       "earlyexercisepremium",
       "expectedmove",
+      "exrem",
       "extendedgreeks",
       "extracttrades",
+      "falling",
+      "flip",
       "forwardfillnan",
       "futuresbasis",
       "garmanklassvol",
+      "gator",
       "halfkellyfraction",
       "highest",
       "impliedcarryrate",
@@ -8540,8 +8639,10 @@
       "ivrank",
       "ivzscore",
       "kellyfraction",
+      "kst",
       "labelmoneyness",
       "linearinterpolate",
+      "lowest",
       "macdcrossoversignals",
       "makechunkranges",
       "modelgreeks",
@@ -8552,6 +8653,7 @@
       "ohlcvagg",
       "paritygap",
       "parkinsonvol",
+      "po",
       "pricelowerbound",
       "priceupperbound",
       "putcallparitydeviation",
@@ -8560,10 +8662,12 @@
       "ratio",
       "ratioadjustedcontinuous",
       "relativestrength",
+      "rising",
       "rogerssatchellvol",
       "rollingbeta",
       "rollyield",
       "rsithresholdsignals",
+      "rvi",
       "selectstrikebydelta",
       "selectstrikebyoffset",
       "signalattribution",
@@ -8571,6 +8675,7 @@
       "smacrossoversignals",
       "smilemetrics",
       "spread",
+      "stc",
       "stitchchunks",
       "strategypayoffdense",
       "strategyvaluegrid",
@@ -8580,7 +8685,10 @@
       "topnindices",
       "tradestats",
       "trimoverlap",
+      "tsi",
+      "valuewhen",
       "volcone",
+      "vortex",
       "walkforwardindices",
       "weightedcontinuous",
       "yangzhangvol",
@@ -8592,11 +8700,11 @@
       "row_count": 382,
       "core_count": 360,
       "python_count": 247,
-      "wasm_count": 293,
-      "flutter_count": 143,
+      "wasm_count": 344,
+      "flutter_count": 194,
       "flutter_excluded_count": 50,
-      "common_python_wasm_count": 199,
-      "common_all_four_count": 99
+      "common_python_wasm_count": 231,
+      "common_all_four_count": 131
     },
     "rows": [
       {
@@ -8605,13 +8713,13 @@
         "category": "extended",
         "core": true,
         "python": false,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": null,
         "core_name": "ac",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "ac",
+        "flutter_name": "ac"
       },
       {
         "key": "acos",
@@ -8801,13 +8909,13 @@
         "category": "overlap",
         "core": true,
         "python": true,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": "ALLIGATOR",
         "core_name": "alligator",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "alligator",
+        "flutter_name": "alligator"
       },
       {
         "key": "alma",
@@ -9235,13 +9343,13 @@
         "category": "volatility",
         "core": true,
         "python": true,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": "BBWIDTH",
         "core_name": "bbwidth",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "bbwidth",
+        "flutter_name": "bbwidth"
       },
       {
         "key": "beta",
@@ -10299,13 +10407,13 @@
         "category": "volatility",
         "core": true,
         "python": true,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": "CHAIKIN_VOL",
         "core_name": "chaikin_vol",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "chaikin_vol",
+        "flutter_name": "chaikin_vol"
       },
       {
         "key": "chandekrollstop",
@@ -10313,13 +10421,13 @@
         "category": "overlap",
         "core": true,
         "python": true,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": "CHANDE_KROLL_STOP",
         "core_name": "chande_kroll_stop",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "chande_kroll_stop",
+        "flutter_name": "chande_kroll_stop"
       },
       {
         "key": "chandelierexit",
@@ -10341,13 +10449,13 @@
         "category": "utils",
         "core": true,
         "python": false,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": null,
         "core_name": "change",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "change",
+        "flutter_name": "change"
       },
       {
         "key": "checkcross",
@@ -10607,13 +10715,13 @@
         "category": "extended",
         "core": true,
         "python": false,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": null,
         "core_name": "coppock",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "coppock",
+        "flutter_name": "coppock"
       },
       {
         "key": "correl",
@@ -10677,13 +10785,13 @@
         "category": "utils",
         "core": true,
         "python": false,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": null,
         "core_name": "cross",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "cross",
+        "flutter_name": "cross"
       },
       {
         "key": "crossover",
@@ -10705,13 +10813,13 @@
         "category": "utils",
         "core": true,
         "python": false,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": null,
         "core_name": "crossunder",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "crossunder",
+        "flutter_name": "crossunder"
       },
       {
         "key": "crsi",
@@ -10719,13 +10827,13 @@
         "category": "momentum",
         "core": true,
         "python": true,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": "CRSI",
         "core_name": "crsi",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "crsi",
+        "flutter_name": "crsi"
       },
       {
         "key": "curveslope",
@@ -10831,13 +10939,13 @@
         "category": "momentum",
         "core": true,
         "python": true,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": "DMI",
         "core_name": "dmi",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "dmi",
+        "flutter_name": "dmi"
       },
       {
         "key": "donchian",
@@ -10859,13 +10967,13 @@
         "category": "extended",
         "core": true,
         "python": false,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": null,
         "core_name": "dpo",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "dpo",
+        "flutter_name": "dpo"
       },
       {
         "key": "drawdown",
@@ -10957,13 +11065,13 @@
         "category": "momentum",
         "core": true,
         "python": true,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": "ELDER_RAY",
         "core_name": "elder_ray",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "elder_ray",
+        "flutter_name": "elder_ray"
       },
       {
         "key": "ema",
@@ -10985,13 +11093,13 @@
         "category": "volume",
         "core": true,
         "python": true,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": "EMV",
         "core_name": "emv",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "emv",
+        "flutter_name": "emv"
       },
       {
         "key": "exp",
@@ -11027,13 +11135,13 @@
         "category": "utils",
         "core": true,
         "python": false,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": null,
         "core_name": "exrem",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "exrem",
+        "flutter_name": "exrem"
       },
       {
         "key": "extendedgreeks",
@@ -11083,13 +11191,13 @@
         "category": "utils",
         "core": true,
         "python": false,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": null,
         "core_name": "falling",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "falling",
+        "flutter_name": "falling"
       },
       {
         "key": "featurematrix",
@@ -11111,13 +11219,13 @@
         "category": "momentum",
         "core": true,
         "python": true,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": "FISHER",
         "core_name": "fisher",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "fisher",
+        "flutter_name": "fisher"
       },
       {
         "key": "flip",
@@ -11125,13 +11233,13 @@
         "category": "utils",
         "core": true,
         "python": false,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": null,
         "core_name": "flip",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "flip",
+        "flutter_name": "flip"
       },
       {
         "key": "floor",
@@ -11153,13 +11261,13 @@
         "category": "volume",
         "core": true,
         "python": true,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": "FORCE_INDEX",
         "core_name": "force_index",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "force_index",
+        "flutter_name": "force_index"
       },
       {
         "key": "forwardfillnan",
@@ -11181,13 +11289,13 @@
         "category": "overlap",
         "core": true,
         "python": true,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": "FRAMA",
         "core_name": "frama",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "frama",
+        "flutter_name": "frama"
       },
       {
         "key": "fundingpnl",
@@ -11237,13 +11345,13 @@
         "category": "extended",
         "core": true,
         "python": false,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": null,
         "core_name": "gator",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "gator",
+        "flutter_name": "gator"
       },
       {
         "key": "halfkellyfraction",
@@ -11279,13 +11387,13 @@
         "category": "volatility",
         "core": true,
         "python": true,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": "HISTORICAL_VOLATILITY",
         "core_name": "historical_volatility",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "historical_volatility",
+        "flutter_name": "historical_volatility"
       },
       {
         "key": "htdcperiod",
@@ -11531,13 +11639,13 @@
         "category": "extended",
         "core": true,
         "python": false,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": null,
         "core_name": "kst",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "kst",
+        "flutter_name": "kst"
       },
       {
         "key": "kvo",
@@ -11545,13 +11653,13 @@
         "category": "volume",
         "core": true,
         "python": true,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": "KVO",
         "core_name": "kvo",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "kvo",
+        "flutter_name": "kvo"
       },
       {
         "key": "labelmoneyness",
@@ -11699,13 +11807,13 @@
         "category": "utils",
         "core": true,
         "python": false,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": null,
         "core_name": "lowest",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "lowest",
+        "flutter_name": "lowest"
       },
       {
         "key": "ma",
@@ -11783,13 +11891,13 @@
         "category": "overlap",
         "core": true,
         "python": true,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": "MA_ENVELOPES",
         "core_name": "ma_envelopes",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "ma_envelopes",
+        "flutter_name": "ma_envelopes"
       },
       {
         "key": "makechunkranges",
@@ -11825,13 +11933,13 @@
         "category": "volatility",
         "core": true,
         "python": true,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": "MASS",
         "core_name": "mass",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "mass",
+        "flutter_name": "mass"
       },
       {
         "key": "mavp",
@@ -11881,13 +11989,13 @@
         "category": "overlap",
         "core": true,
         "python": true,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": "MCGINLEY",
         "core_name": "mcginley",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "mcginley",
+        "flutter_name": "mcginley"
       },
       {
         "key": "median",
@@ -11909,13 +12017,13 @@
         "category": "statistic",
         "core": true,
         "python": true,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": "MEDIAN_BANDS",
         "core_name": "median_bands",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "median_bands",
+        "flutter_name": "median_bands"
       },
       {
         "key": "medprice",
@@ -12035,13 +12143,13 @@
         "category": "statistic",
         "core": true,
         "python": true,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": "MODE",
         "core_name": "mode",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "mode",
+        "flutter_name": "mode"
       },
       {
         "key": "modelextendedgreeks",
@@ -12203,13 +12311,13 @@
         "category": "volume",
         "core": true,
         "python": true,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": "NVI",
         "core_name": "nvi",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "nvi",
+        "flutter_name": "nvi"
       },
       {
         "key": "nviwithema",
@@ -12217,13 +12325,13 @@
         "category": "volume",
         "core": true,
         "python": true,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": "NVI_WITH_EMA",
         "core_name": "nvi_with_ema",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "nvi_with_ema",
+        "flutter_name": "nvi_with_ema"
       },
       {
         "key": "obv",
@@ -12245,13 +12353,13 @@
         "category": "volume",
         "core": true,
         "python": true,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": "OBV_SMOOTHED",
         "core_name": "obv_smoothed",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "obv_smoothed",
+        "flutter_name": "obv_smoothed"
       },
       {
         "key": "ohlcvagg",
@@ -12357,13 +12465,13 @@
         "category": "extended",
         "core": true,
         "python": false,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": null,
         "core_name": "po",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "po",
+        "flutter_name": "po"
       },
       {
         "key": "portfoliovolatility",
@@ -12441,13 +12549,13 @@
         "category": "volume",
         "core": true,
         "python": true,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": "PVI",
         "core_name": "pvi",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "pvi",
+        "flutter_name": "pvi"
       },
       {
         "key": "pviwithsignal",
@@ -12455,13 +12563,13 @@
         "category": "volume",
         "core": true,
         "python": true,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": "PVI_WITH_SIGNAL",
         "core_name": "pvi_with_signal",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "pvi_with_signal",
+        "flutter_name": "pvi_with_signal"
       },
       {
         "key": "pvt",
@@ -12469,13 +12577,13 @@
         "category": "volume",
         "core": true,
         "python": true,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": "PVT",
         "core_name": "pvt",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "pvt",
+        "flutter_name": "pvt"
       },
       {
         "key": "rankseries",
@@ -12651,13 +12759,13 @@
         "category": "utils",
         "core": true,
         "python": false,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": null,
         "core_name": "rising",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "rising",
+        "flutter_name": "rising"
       },
       {
         "key": "roc",
@@ -12833,13 +12941,13 @@
         "category": "extended",
         "core": true,
         "python": false,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": null,
         "core_name": "rvi",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "rvi",
+        "flutter_name": "rvi"
       },
       {
         "key": "rvol",
@@ -12847,13 +12955,13 @@
         "category": "volume",
         "core": true,
         "python": true,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": "RVOL",
         "core_name": "rvol",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "rvol",
+        "flutter_name": "rvol"
       },
       {
         "key": "rwi",
@@ -12861,13 +12969,13 @@
         "category": "extended",
         "core": true,
         "python": true,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": "RWI",
         "core_name": "rwi",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "rwi",
+        "flutter_name": "rwi"
       },
       {
         "key": "sar",
@@ -13085,13 +13193,13 @@
         "category": "volatility",
         "core": true,
         "python": true,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": "STARC",
         "core_name": "starc",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "starc",
+        "flutter_name": "starc"
       },
       {
         "key": "stc",
@@ -13099,13 +13207,13 @@
         "category": "extended",
         "core": true,
         "python": false,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": null,
         "core_name": "stc",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "stc",
+        "flutter_name": "stc"
       },
       {
         "key": "stddev",
@@ -13617,13 +13725,13 @@
         "category": "extended",
         "core": true,
         "python": false,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": null,
         "core_name": "tsi",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "tsi",
+        "flutter_name": "tsi"
       },
       {
         "key": "typprice",
@@ -13645,13 +13753,13 @@
         "category": "volatility",
         "core": true,
         "python": true,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": "ULCER_INDEX",
         "core_name": "ulcer_index",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "ulcer_index",
+        "flutter_name": "ulcer_index"
       },
       {
         "key": "ultosc",
@@ -13687,13 +13795,13 @@
         "category": "utils",
         "core": true,
         "python": false,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": null,
         "core_name": "valuewhen",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "valuewhen",
+        "flutter_name": "valuewhen"
       },
       {
         "key": "var",
@@ -13715,13 +13823,13 @@
         "category": "overlap",
         "core": true,
         "python": true,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": "VIDYA",
         "core_name": "vidya",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "vidya",
+        "flutter_name": "vidya"
       },
       {
         "key": "volcone",
@@ -13743,13 +13851,13 @@
         "category": "volume",
         "core": true,
         "python": true,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": "VOLOSC",
         "core_name": "volosc",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "volosc",
+        "flutter_name": "volosc"
       },
       {
         "key": "volumebars",
@@ -13771,13 +13879,13 @@
         "category": "extended",
         "core": true,
         "python": false,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": null,
         "core_name": "vortex",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "vortex",
+        "flutter_name": "vortex"
       },
       {
         "key": "vroc",
@@ -13785,13 +13893,13 @@
         "category": "volume",
         "core": true,
         "python": true,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": "VROC",
         "core_name": "vroc",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "vroc",
+        "flutter_name": "vroc"
       },
       {
         "key": "vwap",
@@ -13869,13 +13977,13 @@
         "category": "extended",
         "core": true,
         "python": true,
-        "wasm": false,
-        "flutter": false,
+        "wasm": true,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": "WILLIAMS_FRACTALS",
         "core_name": "williams_fractals",
-        "wasm_name": null,
-        "flutter_name": null
+        "wasm_name": "williams_fractals",
+        "flutter_name": "williams_fractals"
       },
       {
         "key": "willr",

@@ -13,8 +13,8 @@
    * - 382
      - 360
      - 247
-     - 293
-     - 143
+     - 344
+     - 194
      - 50
 
 .. list-table:: Cross-language indicator coverage
@@ -31,8 +31,8 @@
      - extended
      - yes
      - —
-     - —
-     - —
+     - yes
+     - yes
    * - ``ACOS``
      - math_ops
      - yes
@@ -115,8 +115,8 @@
      - overlap
      - yes
      - yes
-     - —
-     - —
+     - yes
+     - yes
    * - ``ALMA``
      - overlap
      - yes
@@ -301,8 +301,8 @@
      - volatility
      - yes
      - yes
-     - —
-     - —
+     - yes
+     - yes
    * - ``BETA``
      - portfolio
      - yes
@@ -757,14 +757,14 @@
      - volatility
      - yes
      - yes
-     - —
-     - —
+     - yes
+     - yes
    * - ``CHANDE_KROLL_STOP``
      - overlap
      - yes
      - yes
-     - —
-     - —
+     - yes
+     - yes
    * - ``CHANDELIER_EXIT``
      - extended
      - yes
@@ -775,8 +775,8 @@
      - utils
      - yes
      - —
-     - —
-     - —
+     - yes
+     - yes
    * - ``check_cross``
      - alerts
      - yes
@@ -889,8 +889,8 @@
      - extended
      - yes
      - —
-     - —
-     - —
+     - yes
+     - yes
    * - ``CORREL``
      - statistic
      - yes
@@ -919,8 +919,8 @@
      - utils
      - yes
      - —
-     - —
-     - —
+     - yes
+     - yes
    * - ``crossover``
      - utils
      - yes
@@ -931,14 +931,14 @@
      - utils
      - yes
      - —
-     - —
-     - —
+     - yes
+     - yes
    * - ``CRSI``
      - momentum
      - yes
      - yes
-     - —
-     - —
+     - yes
+     - yes
    * - ``curve_slope``
      - futures
      - yes
@@ -985,8 +985,8 @@
      - momentum
      - yes
      - yes
-     - —
-     - —
+     - yes
+     - yes
    * - ``DONCHIAN``
      - extended
      - yes
@@ -997,8 +997,8 @@
      - extended
      - yes
      - —
-     - —
-     - —
+     - yes
+     - yes
    * - ``drawdown``
      - portfolio
      - yes
@@ -1039,8 +1039,8 @@
      - momentum
      - yes
      - yes
-     - —
-     - —
+     - yes
+     - yes
    * - ``EMA``
      - overlap
      - yes
@@ -1051,8 +1051,8 @@
      - volume
      - yes
      - yes
-     - —
-     - —
+     - yes
+     - yes
    * - ``EXP``
      - math_ops
      - yes
@@ -1069,8 +1069,8 @@
      - utils
      - yes
      - —
-     - —
-     - —
+     - yes
+     - yes
    * - ``extended_greeks``
      - other
      - —
@@ -1093,8 +1093,8 @@
      - utils
      - yes
      - —
-     - —
-     - —
+     - yes
+     - yes
    * - ``feature_matrix``
      - features
      - —
@@ -1105,14 +1105,14 @@
      - momentum
      - yes
      - yes
-     - —
-     - —
+     - yes
+     - yes
    * - ``flip``
      - utils
      - yes
      - —
-     - —
-     - —
+     - yes
+     - yes
    * - ``FLOOR``
      - math_ops
      - yes
@@ -1123,8 +1123,8 @@
      - volume
      - yes
      - yes
-     - —
-     - —
+     - yes
+     - yes
    * - ``forward_fill_nan``
      - chunked
      - yes
@@ -1135,8 +1135,8 @@
      - overlap
      - yes
      - yes
-     - —
-     - —
+     - yes
+     - yes
    * - ``funding_pnl``
      - crypto
      - yes
@@ -1159,8 +1159,8 @@
      - extended
      - yes
      - —
-     - —
-     - —
+     - yes
+     - yes
    * - ``half_kelly_fraction``
      - backtest
      - yes
@@ -1177,8 +1177,8 @@
      - volatility
      - yes
      - yes
-     - —
-     - —
+     - yes
+     - yes
    * - ``HT_DCPERIOD``
      - cycle
      - yes
@@ -1285,14 +1285,14 @@
      - extended
      - yes
      - —
-     - —
-     - —
+     - yes
+     - yes
    * - ``KVO``
      - volume
      - yes
      - yes
-     - —
-     - —
+     - yes
+     - yes
    * - ``label_moneyness``
      - options
      - yes
@@ -1357,8 +1357,8 @@
      - utils
      - yes
      - —
-     - —
-     - —
+     - yes
+     - yes
    * - ``MA``
      - overlap
      - yes
@@ -1393,8 +1393,8 @@
      - overlap
      - yes
      - yes
-     - —
-     - —
+     - yes
+     - yes
    * - ``make_chunk_ranges``
      - chunked
      - yes
@@ -1411,8 +1411,8 @@
      - volatility
      - yes
      - yes
-     - —
-     - —
+     - yes
+     - yes
    * - ``MAVP``
      - overlap
      - yes
@@ -1435,8 +1435,8 @@
      - overlap
      - yes
      - yes
-     - —
-     - —
+     - yes
+     - yes
    * - ``MEDIAN``
      - statistic
      - yes
@@ -1447,8 +1447,8 @@
      - statistic
      - yes
      - yes
-     - —
-     - —
+     - yes
+     - yes
    * - ``MEDPRICE``
      - price_transform
      - yes
@@ -1501,8 +1501,8 @@
      - statistic
      - yes
      - yes
-     - —
-     - —
+     - yes
+     - yes
    * - ``model_extended_greeks``
      - options
      - yes
@@ -1573,14 +1573,14 @@
      - volume
      - yes
      - yes
-     - —
-     - —
+     - yes
+     - yes
    * - ``NVI_WITH_EMA``
      - volume
      - yes
      - yes
-     - —
-     - —
+     - yes
+     - yes
    * - ``OBV``
      - volume
      - yes
@@ -1591,8 +1591,8 @@
      - volume
      - yes
      - yes
-     - —
-     - —
+     - yes
+     - yes
    * - ``ohlcv_agg``
      - resampling
      - yes
@@ -1639,8 +1639,8 @@
      - extended
      - yes
      - —
-     - —
-     - —
+     - yes
+     - yes
    * - ``portfolio_volatility``
      - portfolio
      - yes
@@ -1675,20 +1675,20 @@
      - volume
      - yes
      - yes
-     - —
-     - —
+     - yes
+     - yes
    * - ``PVI_WITH_SIGNAL``
      - volume
      - yes
      - yes
-     - —
-     - —
+     - yes
+     - yes
    * - ``PVT``
      - volume
      - yes
      - yes
-     - —
-     - —
+     - yes
+     - yes
    * - ``rank_series``
      - other
      - —
@@ -1765,8 +1765,8 @@
      - utils
      - yes
      - —
-     - —
-     - —
+     - yes
+     - yes
    * - ``ROC``
      - momentum
      - yes
@@ -1843,20 +1843,20 @@
      - extended
      - yes
      - —
-     - —
-     - —
+     - yes
+     - yes
    * - ``RVOL``
      - volume
      - yes
      - yes
-     - —
-     - —
+     - yes
+     - yes
    * - ``RWI``
      - extended
      - yes
      - yes
-     - —
-     - —
+     - yes
+     - yes
    * - ``SAR``
      - overlap
      - yes
@@ -1951,14 +1951,14 @@
      - volatility
      - yes
      - yes
-     - —
-     - —
+     - yes
+     - yes
    * - ``stc``
      - extended
      - yes
      - —
-     - —
-     - —
+     - yes
+     - yes
    * - ``STDDEV``
      - statistic
      - yes
@@ -2179,8 +2179,8 @@
      - extended
      - yes
      - —
-     - —
-     - —
+     - yes
+     - yes
    * - ``TYPPRICE``
      - price_transform
      - yes
@@ -2191,8 +2191,8 @@
      - volatility
      - yes
      - yes
-     - —
-     - —
+     - yes
+     - yes
    * - ``ULTOSC``
      - momentum
      - yes
@@ -2209,8 +2209,8 @@
      - utils
      - yes
      - —
-     - —
-     - —
+     - yes
+     - yes
    * - ``VAR``
      - statistic
      - yes
@@ -2221,8 +2221,8 @@
      - overlap
      - yes
      - yes
-     - —
-     - —
+     - yes
+     - yes
    * - ``vol_cone``
      - options
      - yes
@@ -2233,8 +2233,8 @@
      - volume
      - yes
      - yes
-     - —
-     - —
+     - yes
+     - yes
    * - ``volume_bars``
      - resampling
      - yes
@@ -2245,14 +2245,14 @@
      - extended
      - yes
      - —
-     - —
-     - —
+     - yes
+     - yes
    * - ``VROC``
      - volume
      - yes
      - yes
-     - —
-     - —
+     - yes
+     - yes
    * - ``VWAP``
      - extended
      - yes
@@ -2287,8 +2287,8 @@
      - extended
      - yes
      - yes
-     - —
-     - —
+     - yes
+     - yes
    * - ``WILLR``
      - momentum
      - yes
