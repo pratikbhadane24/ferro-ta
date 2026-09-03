@@ -793,12 +793,16 @@ class TestSTOCHRSI:
 
 
 class TestAPO:
-    """APO — shape matches; values differ (EMA-based when matype != SMA)."""
+    """APO — output shape only.
 
-    def test_nan_count_match(self):
-        ft = ferro_ta.APO(CLOSE, fastperiod=12, slowperiod=26)
-        ta = talib.APO(CLOSE, fastperiod=12, slowperiod=26, matype=0)
-        assert _nan_count(ft) == _nan_count(ta)
+    The values do *not* differ from TA-Lib: with ``matype`` matched on both
+    sides APO agrees to 4.9e-12.  It is the **defaults** that differ (ferro-ta
+    ``matype=1``/EMA, TA-Lib ``matype=0``/SMA).  ``TestAPOMatype`` is the value
+    gate; the earlier "values differ" claim here was false and had suppressed
+    it.  The NaN-count check that used to live here is subsumed by
+    ``TestAPOMatype.test_nan_count_match``, which pins the exact expected count
+    at every matype.
+    """
 
     def test_output_length_match(self):
         ft = ferro_ta.APO(CLOSE, fastperiod=12, slowperiod=26)
@@ -812,7 +816,10 @@ class TestPPO:
     ferro_ta extends PPO with a signal line and histogram (similar to MACD),
     while TA-Lib's PPO only returns the percentage-difference line.  We verify
     the output length and that all three ferro_ta arrays have valid shapes.
-    The ppo line converges toward the TA-Lib value after the EMA seed window.
+
+    Value agreement on the PPO line is gated by ``TestPPOMatype``, which
+    compares against TA-Lib at every matype and subsumes the correlation-only
+    (> 0.85) check that used to live here.
     """
 
     def test_output_is_tuple_of_three(self):
@@ -827,18 +834,6 @@ class TestPPO:
     def test_all_arrays_same_length(self):
         ppo, signal, hist = ferro_ta.PPO(CLOSE, fastperiod=12, slowperiod=26)
         assert len(ppo) == len(signal) == len(hist) == N
-
-    def test_ppo_converges_to_talib(self):
-        """PPO line should be strongly correlated with TA-Lib's PPO output.
-
-        Note: EMA seeding differences mean correlation is ~0.90 for short periods.
-        We verify > 0.85 to confirm same signal direction.
-        """
-        ppo, _, _ = ferro_ta.PPO(CLOSE, fastperiod=3, slowperiod=6)
-        ta = talib.PPO(CLOSE, fastperiod=3, slowperiod=6, matype=0)
-        mask = _valid_mask(ppo, ta)
-        corr = np.corrcoef(ppo[mask], ta[mask])[0, 1]
-        assert corr > 0.85
 
 
 class TestCMO:
@@ -2155,3 +2150,866 @@ class TestCandlestickPatternAgreement:
 
         agreement = np.mean(ft == ta)
         assert agreement > 0.80
+
+
+# ---------------------------------------------------------------------------
+# Non-default ``matype`` vs TA-Lib
+#
+# Every ferro-ta function that takes a ``matype`` defaults to *one* value, so
+# the tests above only ever exercise a single MA per indicator.  This section
+# sweeps the whole enum against TA-Lib, because a ``matype`` implementation
+# that is only ever called with its default is untested against the reference
+# it exists to match.
+# ---------------------------------------------------------------------------
+
+# ``matype`` values whose *meaning* is identical in ferro-ta and TA-Lib, so a
+# direct value comparison is legitimate.
+#
+# 7 IS DELIBERATELY ABSENT.  ferro-ta numbers T3 as 7 (with 8 as an alias);
+# TA-Lib's ``TA_MAType`` numbers 7 as MAMA and 8 as T3.  Passing 7 to both
+# libraries therefore computes *different indicators* — T3 here, MAMA there —
+# and any agreement assertion at 7 is guaranteed to fail.  Do not "fix" this by
+# adding 7 to the tuple: ``TestMatypeSevenDivergence`` below pins the
+# divergence deliberately, and the reasoning is in the
+# ``crates/ferro_ta_core/src/overlap/dispatch.rs`` module docs.
+TALIB_COMPATIBLE_MATYPES = (0, 1, 2, 3, 4, 5, 6, 8)
+
+# T3 in ferro-ta, MAMA in TA-Lib.  The one incompatible value.
+FERRO_T3_TALIB_MAMA_MATYPE = 7
+
+# Largest ``matype`` ferro-ta's dispatcher understands (``overlap::MAX_MATYPE``).
+MAX_MATYPE = 8
+
+# Per-``matype`` MA warm-up, in bars, for period ``p`` — ``overlap::ma_lookback``.
+# The overlapping valid region between ferro-ta and TA-Lib shrinks as this
+# grows, which is exactly how a careless sweep ends up comparing NaN to NaN.
+MATYPE_LOOKBACK = {
+    0: lambda p: p - 1,  # SMA
+    1: lambda p: p - 1,  # EMA
+    2: lambda p: p - 1,  # WMA
+    3: lambda p: 2 * (p - 1),  # DEMA
+    4: lambda p: 3 * (p - 1),  # TEMA
+    5: lambda p: p - 1,  # TRIMA
+    6: lambda p: p,  # KAMA (the seed at p-1 is not emitted)
+    7: lambda p: 6 * (p - 1),  # T3
+    8: lambda p: 6 * (p - 1),  # T3 (alias of 7)
+}
+
+# Variable-period input for MAVP: three distinct periods inside [2, 30].
+MAVP_PERIODS = np.full(N, 5.0)
+MAVP_PERIODS[::3] = 10.0
+MAVP_PERIODS[1::7] = 20.0
+
+
+def _assert_matype_allclose(
+    ft: np.ndarray,
+    ta: np.ndarray,
+    *,
+    matype: int,
+    min_compared: int,
+    atol: float = 1e-6,
+    label: str = "",
+) -> None:
+    """Assert ferro-ta matches TA-Lib, and that a real comparison happened.
+
+    The warm-up of a ``matype``-parameterised indicator depends on the
+    ``matype`` (see :data:`MATYPE_LOOKBACK`), so the finite overlap between the
+    two libraries shrinks — from ``p - 1`` bars of padding for SMA/EMA/WMA/TRIMA
+    up to ``6 * (p - 1)`` for T3.  ``_valid_mask`` silently drops every NaN
+    position, so without ``min_compared`` a warm-up bug (or a signature change
+    that NaNs the whole array) would make this a vacuous pass over an empty
+    selection.  ``min_compared`` is the floor that makes the assertion mean
+    something.
+    """
+    mask = _valid_mask(ft, ta)
+    compared = int(mask.sum())
+    assert compared >= min_compared, (
+        f"{label} matype={matype}: only {compared} finite pairs compared "
+        f"(expected >= {min_compared}) — the comparison has degenerated to "
+        f"NaN-vs-NaN and proves nothing"
+    )
+    max_diff = float(np.max(np.abs(ft[mask] - ta[mask])))
+    assert max_diff <= atol, (
+        f"{label} matype={matype}: max abs diff {max_diff:.3e} > {atol:.0e} "
+        f"over {compared} compared bars"
+    )
+
+
+class TestAPOMatype:
+    """APO — exact TA-Lib match at every compatible ``matype``.
+
+    ferro-ta defaults ``matype`` to ``1`` (EMA) while TA-Lib defaults to ``0``
+    (SMA), so an unqualified ferro-ta call never matches an unqualified TA-Lib
+    call.  With ``matype`` passed explicitly on *both* sides the two agree to
+    floating-point noise (worst observed 4.9e-12, at ``matype=2``/WMA), which
+    is a genuine value gate — not the NaN-count-only check in ``TestAPO``.
+    """
+
+    FAST, SLOW = 12, 26
+
+    @pytest.mark.parametrize("matype", TALIB_COMPATIBLE_MATYPES)
+    def test_values_match(self, matype):
+        ft = ferro_ta.APO(
+            CLOSE, fastperiod=self.FAST, slowperiod=self.SLOW, matype=matype
+        )
+        ta = talib.APO(CLOSE, fastperiod=self.FAST, slowperiod=self.SLOW, matype=matype)
+        _assert_matype_allclose(ft, ta, matype=matype, min_compared=300, label="APO")
+
+    @pytest.mark.parametrize("matype", TALIB_COMPATIBLE_MATYPES)
+    def test_nan_count_match(self, matype):
+        """Warm-up is ``ma_lookback(slowperiod, matype)`` in both libraries."""
+        ft = ferro_ta.APO(
+            CLOSE, fastperiod=self.FAST, slowperiod=self.SLOW, matype=matype
+        )
+        ta = talib.APO(CLOSE, fastperiod=self.FAST, slowperiod=self.SLOW, matype=matype)
+        expected = MATYPE_LOOKBACK[matype](self.SLOW)
+        assert _nan_count(ft) == _nan_count(ta) == expected
+
+    def test_default_matype_is_ema_not_talib_sma(self):
+        """ferro-ta's default is TA-Lib's ``matype=1``, not TA-Lib's default."""
+        default = ferro_ta.APO(CLOSE, fastperiod=self.FAST, slowperiod=self.SLOW)
+        ema = talib.APO(CLOSE, fastperiod=self.FAST, slowperiod=self.SLOW, matype=1)
+        sma = talib.APO(CLOSE, fastperiod=self.FAST, slowperiod=self.SLOW, matype=0)
+        _assert_matype_allclose(
+            default, ema, matype=1, min_compared=400, label="APO default"
+        )
+        mask = _valid_mask(default, sma)
+        assert not np.allclose(default[mask], sma[mask], atol=1e-6)
+
+
+class TestPPOMatype:
+    """PPO — exact TA-Lib match on the PPO line at every compatible ``matype``.
+
+    ``TA_PPO`` returns a single array; ferro-ta returns
+    ``(ppo, signal, histogram)`` because it added a ``signalperiod``.  Only the
+    **first** element (the PPO line) has a TA-Lib counterpart — the signal and
+    histogram are ferro-ta extensions with nothing to compare against.
+
+    Like APO, ferro-ta defaults ``matype`` to ``1`` and TA-Lib to ``0``.  With
+    ``matype`` matched on both sides the PPO line agrees to floating-point
+    noise (worst observed 1.2e-11 at ``matype=2``/WMA), which replaces the
+    correlation-only (> 0.85) gate in ``TestPPO`` with a real value gate.
+    """
+
+    FAST, SLOW, SIGNAL = 12, 26, 9
+
+    @pytest.mark.parametrize("matype", TALIB_COMPATIBLE_MATYPES)
+    def test_ppo_line_values_match(self, matype):
+        ppo, _signal, _hist = ferro_ta.PPO(
+            CLOSE,
+            fastperiod=self.FAST,
+            slowperiod=self.SLOW,
+            signalperiod=self.SIGNAL,
+            matype=matype,
+        )
+        ta = talib.PPO(CLOSE, fastperiod=self.FAST, slowperiod=self.SLOW, matype=matype)
+        _assert_matype_allclose(
+            ppo, ta, matype=matype, min_compared=300, label="PPO line"
+        )
+
+    @pytest.mark.parametrize("matype", TALIB_COMPATIBLE_MATYPES)
+    def test_ppo_line_nan_count_match(self, matype):
+        ppo, _signal, _hist = ferro_ta.PPO(
+            CLOSE,
+            fastperiod=self.FAST,
+            slowperiod=self.SLOW,
+            signalperiod=self.SIGNAL,
+            matype=matype,
+        )
+        ta = talib.PPO(CLOSE, fastperiod=self.FAST, slowperiod=self.SLOW, matype=matype)
+        assert _nan_count(ppo) == _nan_count(ta) == MATYPE_LOOKBACK[matype](self.SLOW)
+
+    def test_default_matype_is_ema_not_talib_sma(self):
+        ppo, _, _ = ferro_ta.PPO(CLOSE, fastperiod=self.FAST, slowperiod=self.SLOW)
+        ema = talib.PPO(CLOSE, fastperiod=self.FAST, slowperiod=self.SLOW, matype=1)
+        sma = talib.PPO(CLOSE, fastperiod=self.FAST, slowperiod=self.SLOW, matype=0)
+        _assert_matype_allclose(
+            ppo, ema, matype=1, min_compared=400, label="PPO default"
+        )
+        mask = _valid_mask(ppo, sma)
+        assert not np.allclose(ppo[mask], sma[mask], atol=1e-6)
+
+
+class TestSTOCHFMatype:
+    """STOCHF — %K and %D match TA-Lib at every compatible ``fastd_matype``."""
+
+    FASTK, FASTD = 5, 3
+
+    @pytest.mark.parametrize("matype", TALIB_COMPATIBLE_MATYPES)
+    def test_fastk_and_fastd_values_match(self, matype):
+        fk, fd = ferro_ta.STOCHF(
+            HIGH,
+            LOW,
+            CLOSE,
+            fastk_period=self.FASTK,
+            fastd_period=self.FASTD,
+            fastd_matype=matype,
+        )
+        tk, td = talib.STOCHF(
+            HIGH,
+            LOW,
+            CLOSE,
+            fastk_period=self.FASTK,
+            fastd_period=self.FASTD,
+            fastd_matype=matype,
+        )
+        _assert_matype_allclose(
+            fk, tk, matype=matype, min_compared=450, atol=1e-8, label="STOCHF %K"
+        )
+        _assert_matype_allclose(
+            fd, td, matype=matype, min_compared=450, atol=1e-6, label="STOCHF %D"
+        )
+
+    @pytest.mark.parametrize("matype", TALIB_COMPATIBLE_MATYPES)
+    def test_nan_count_match(self, matype):
+        """Both libraries pad to ``fastk_period - 1 + ma_lookback(fastd)``."""
+        fk, fd = ferro_ta.STOCHF(
+            HIGH,
+            LOW,
+            CLOSE,
+            fastk_period=self.FASTK,
+            fastd_period=self.FASTD,
+            fastd_matype=matype,
+        )
+        tk, td = talib.STOCHF(
+            HIGH,
+            LOW,
+            CLOSE,
+            fastk_period=self.FASTK,
+            fastd_period=self.FASTD,
+            fastd_matype=matype,
+        )
+        expected = (self.FASTK - 1) + MATYPE_LOOKBACK[matype](self.FASTD)
+        assert _nan_count(fk) == _nan_count(tk) == expected
+        assert _nan_count(fd) == _nan_count(td) == expected
+
+
+class TestSTOCHMatype:
+    """STOCH — slow %K and %D match TA-Lib at every compatible matype.
+
+    Both ``slowk_matype`` and ``slowd_matype`` are swept together, which is the
+    configuration that stacks two non-default lookbacks and so shrinks the
+    valid overlap the most.
+    """
+
+    FASTK, SLOWK, SLOWD = 5, 3, 3
+
+    @pytest.mark.parametrize("matype", TALIB_COMPATIBLE_MATYPES)
+    def test_slowk_and_slowd_values_match(self, matype):
+        fk, fd = ferro_ta.STOCH(
+            HIGH,
+            LOW,
+            CLOSE,
+            fastk_period=self.FASTK,
+            slowk_period=self.SLOWK,
+            slowk_matype=matype,
+            slowd_period=self.SLOWD,
+            slowd_matype=matype,
+        )
+        tk, td = talib.STOCH(
+            HIGH,
+            LOW,
+            CLOSE,
+            fastk_period=self.FASTK,
+            slowk_period=self.SLOWK,
+            slowk_matype=matype,
+            slowd_period=self.SLOWD,
+            slowd_matype=matype,
+        )
+        _assert_matype_allclose(
+            fk, tk, matype=matype, min_compared=450, label="STOCH slow %K"
+        )
+        _assert_matype_allclose(
+            fd, td, matype=matype, min_compared=450, label="STOCH slow %D"
+        )
+
+    @pytest.mark.parametrize("matype", TALIB_COMPATIBLE_MATYPES)
+    def test_nan_count_match(self, matype):
+        fk, fd = ferro_ta.STOCH(
+            HIGH,
+            LOW,
+            CLOSE,
+            fastk_period=self.FASTK,
+            slowk_period=self.SLOWK,
+            slowk_matype=matype,
+            slowd_period=self.SLOWD,
+            slowd_matype=matype,
+        )
+        tk, td = talib.STOCH(
+            HIGH,
+            LOW,
+            CLOSE,
+            fastk_period=self.FASTK,
+            slowk_period=self.SLOWK,
+            slowk_matype=matype,
+            slowd_period=self.SLOWD,
+            slowd_matype=matype,
+        )
+        expected = (
+            (self.FASTK - 1)
+            + MATYPE_LOOKBACK[matype](self.SLOWK)
+            + MATYPE_LOOKBACK[matype](self.SLOWD)
+        )
+        assert _nan_count(fk) == _nan_count(tk) == expected
+        assert _nan_count(fd) == _nan_count(td) == expected
+
+    @pytest.mark.parametrize("matype", TALIB_COMPATIBLE_MATYPES)
+    def test_range_0_to_100(self, matype):
+        for arr in ferro_ta.STOCH(
+            HIGH,
+            LOW,
+            CLOSE,
+            fastk_period=self.FASTK,
+            slowk_period=self.SLOWK,
+            slowk_matype=matype,
+            slowd_period=self.SLOWD,
+            slowd_matype=matype,
+        ):
+            finite = arr[~np.isnan(arr)]
+            assert finite.size > 0
+            # DEMA/TEMA/T3 overshoot is legitimate; they are not bounded MAs.
+            assert np.isfinite(finite).all()
+
+
+# ``fastd_matype=6`` (KAMA) is excluded from the STOCHRSI %D *value* gate, and
+# it is not a ferro-ta bug.
+#
+# ``TA_KAMA`` decides its efficiency ratio with
+# ``sumROC1 <= periodROC || TA_IS_ZERO(sumROC1)``, where ``sumROC1`` is a rolling
+# ``Σ|Δ|`` maintained by subtract-then-add.  On a flat window the exact sum is
+# zero but the rolling one holds ~1e-14 of rounding residue, and *the sign of
+# that residue* selects between ER = 1 (SC = 4/9, snap) and ER = 0
+# (SC = (2/31)^2, crawl).  KAMA is recursive, so the choice persists for the
+# whole plateau.
+#
+# StochRSI's %K sits at exactly 0 or 100 for long stretches (whenever the RSI is
+# monotone across the %K window), so those flat windows are everywhere here, and
+# ``TA_KAMA`` is catastrophically ill-conditioned on this input: feeding it
+# ferro-ta's %K instead of TA-Lib's — the two differ by 5.8e-13, pure RSI/stoch
+# rounding — moves *TA-Lib's own output* by 19.2.  ferro-ta's KAMA reproduces
+# TA-Lib to 2.8e-14 on either input; see
+# ``test_talib_kama_is_ill_conditioned_on_stochrsi_fastk`` below, which pins that
+# and is what makes this a documented upstream divergence rather than a bug to
+# fix.  STOCHF/STOCH are unaffected because raw price %K has no such plateaus.
+STOCHRSI_KAMA_MATYPE = 6
+STOCHRSI_D_MATYPES = tuple(
+    m for m in TALIB_COMPATIBLE_MATYPES if m != STOCHRSI_KAMA_MATYPE
+)
+
+
+class TestSTOCHRSIMatype:
+    """STOCHRSI — %K and %D match TA-Lib at every compatible ``fastd_matype``."""
+
+    PERIOD, FASTK, FASTD = 14, 5, 3
+
+    def _ferro(self, matype):
+        return ferro_ta.STOCHRSI(
+            CLOSE,
+            timeperiod=self.PERIOD,
+            fastk_period=self.FASTK,
+            fastd_period=self.FASTD,
+            fastd_matype=matype,
+        )
+
+    def _talib(self, matype):
+        return talib.STOCHRSI(
+            CLOSE,
+            timeperiod=self.PERIOD,
+            fastk_period=self.FASTK,
+            fastd_period=self.FASTD,
+            fastd_matype=matype,
+        )
+
+    @pytest.mark.parametrize("matype", TALIB_COMPATIBLE_MATYPES)
+    def test_fastk_values_match(self, matype):
+        """%K is independent of ``fastd_matype`` except for its NaN padding."""
+        fk, _ = self._ferro(matype)
+        tk, _ = self._talib(matype)
+        _assert_matype_allclose(
+            fk, tk, matype=matype, min_compared=440, label="STOCHRSI %K"
+        )
+
+    @pytest.mark.parametrize("matype", STOCHRSI_D_MATYPES)
+    def test_fastd_values_match(self, matype):
+        _, fd = self._ferro(matype)
+        _, td = self._talib(matype)
+        _assert_matype_allclose(
+            fd, td, matype=matype, min_compared=440, label="STOCHRSI %D"
+        )
+
+    @pytest.mark.parametrize("matype", TALIB_COMPATIBLE_MATYPES)
+    def test_nan_count_match(self, matype):
+        fk, fd = self._ferro(matype)
+        tk, td = self._talib(matype)
+        assert _nan_count(fk) == _nan_count(tk)
+        assert _nan_count(fd) == _nan_count(td)
+
+
+class TestMAMatype:
+    """MA — exact TA-Lib match at every compatible ``matype``.
+
+    ``MA`` had no TA-Lib comparison in this module at all before; the
+    compatibility table's ✅ rested on the per-MA tests (SMA, EMA, …) rather
+    than on the dispatcher that routes ``matype`` to them.
+    """
+
+    PERIOD = 10
+
+    @pytest.mark.parametrize("matype", TALIB_COMPATIBLE_MATYPES)
+    def test_values_match(self, matype):
+        ft = ferro_ta.MA(CLOSE, timeperiod=self.PERIOD, matype=matype)
+        ta = talib.MA(CLOSE, timeperiod=self.PERIOD, matype=matype)
+        _assert_matype_allclose(ft, ta, matype=matype, min_compared=440, label="MA")
+
+    @pytest.mark.parametrize("matype", TALIB_COMPATIBLE_MATYPES)
+    def test_nan_count_match(self, matype):
+        ft = ferro_ta.MA(CLOSE, timeperiod=self.PERIOD, matype=matype)
+        ta = talib.MA(CLOSE, timeperiod=self.PERIOD, matype=matype)
+        assert _nan_count(ft) == _nan_count(ta) == MATYPE_LOOKBACK[matype](self.PERIOD)
+
+
+# ``matype`` values for which MAVP and MACDEXT match TA-Lib over the *whole*
+# series, versus the ones that only converge.
+#
+# TA-Lib computes each leg's MA over a sub-range that begins at the output
+# start index, not at bar 0.  For window MAs (SMA, WMA, TRIMA) that is
+# irrelevant — the value at bar i depends only on the last p bars — so the two
+# libraries agree exactly.  For the recursive EMA family (EMA, DEMA, TEMA,
+# KAMA, T3) ferro-ta seeds from bar 0 while TA-Lib seeds later, so early bars
+# differ by the seed and the difference decays.  On the converged tail the two
+# agree to ~1e-8 or better.
+PATH_INDEPENDENT_MATYPES = (0, 2, 5)  # SMA, WMA, TRIMA
+PATH_DEPENDENT_MATYPES = (1, 3, 4, 6, 8)  # EMA, DEMA, TEMA, KAMA, T3
+CONVERGED_TAIL_START = int(N * 0.7)
+
+
+def _tail_only(*arrays: np.ndarray) -> np.ndarray:
+    """Valid mask restricted to the converged tail (last 30% of bars)."""
+    mask = _valid_mask(*arrays)
+    mask[:CONVERGED_TAIL_START] = False
+    return mask
+
+
+def _assert_tail_allclose(
+    ft: np.ndarray,
+    ta: np.ndarray,
+    *,
+    matype: int,
+    min_compared: int = 120,
+    atol: float = 1e-6,
+    label: str = "",
+) -> None:
+    """Assert agreement on the converged tail, over a real number of bars."""
+    mask = _tail_only(ft, ta)
+    compared = int(mask.sum())
+    assert compared >= min_compared, (
+        f"{label} matype={matype}: only {compared} finite tail pairs compared "
+        f"(expected >= {min_compared})"
+    )
+    max_diff = float(np.max(np.abs(ft[mask] - ta[mask])))
+    assert max_diff <= atol, (
+        f"{label} matype={matype}: converged-tail max abs diff "
+        f"{max_diff:.3e} > {atol:.0e} over {compared} bars"
+    )
+
+
+class TestMAVPMatype:
+    """MAVP — no TA-Lib comparison existed in this module before.
+
+    ``TA_MAVP(real, periods, minperiod, maxperiod, matype)`` corresponds
+    argument-for-argument, so this is a real comparison.  Window MAs match
+    exactly; the recursive family matches on the converged tail (see
+    :data:`PATH_DEPENDENT_MATYPES` for why).
+    """
+
+    MINPERIOD, MAXPERIOD = 2, 30
+
+    def _pair(self, matype):
+        ft = ferro_ta.MAVP(
+            CLOSE,
+            MAVP_PERIODS,
+            minperiod=self.MINPERIOD,
+            maxperiod=self.MAXPERIOD,
+            matype=matype,
+        )
+        ta = talib.MAVP(
+            CLOSE,
+            MAVP_PERIODS,
+            minperiod=self.MINPERIOD,
+            maxperiod=self.MAXPERIOD,
+            matype=matype,
+        )
+        return ft, ta
+
+    @pytest.mark.parametrize("matype", PATH_INDEPENDENT_MATYPES)
+    def test_window_matypes_match_exactly(self, matype):
+        ft, ta = self._pair(matype)
+        _assert_matype_allclose(ft, ta, matype=matype, min_compared=400, label="MAVP")
+
+    @pytest.mark.parametrize("matype", PATH_DEPENDENT_MATYPES)
+    def test_recursive_matypes_match_on_converged_tail(self, matype):
+        ft, ta = self._pair(matype)
+        _assert_tail_allclose(ft, ta, matype=matype, label="MAVP")
+
+    @pytest.mark.parametrize("matype", TALIB_COMPATIBLE_MATYPES)
+    def test_nan_count_match(self, matype):
+        """Both pad by ``ma_lookback(maxperiod, matype)``."""
+        ft, ta = self._pair(matype)
+        expected = MATYPE_LOOKBACK[matype](self.MAXPERIOD)
+        assert _nan_count(ft) == _nan_count(ta) == expected
+
+
+# MACDEXT accepts the same ``0``-``MAX_MATYPE`` range as its APO/PPO/STOCH*/MA/
+# MAVP siblings.  Its wrappers briefly capped at 7 while the rest of the crate
+# had moved to 8; ``test_matype_8_is_accepted`` guards against that regressing.
+# ``8`` is a T3 alias, so it joins the recursive (seeded-from-bar-0) family.
+MACDEXT_WINDOW_MATYPES = (0, 2, 5)
+MACDEXT_RECURSIVE_MATYPES = (1, 3, 4, 6, 8)
+
+
+class TestMACDEXTMatype:
+    """MACDEXT — no TA-Lib comparison existed in this module before.
+
+    ferro-ta defaults ``fastmatype``/``slowmatype``/``signalmatype`` to ``1``
+    (EMA), *not* TA-Lib's ``0``; the defaults are confirmed against the runtime
+    signature rather than the stub.  With the matypes matched on both sides the
+    window MAs agree exactly and the recursive ones agree on the converged tail
+    — TA-Lib's ``TA_MACDEXT`` seeds each leg's MA at the output start index
+    while ferro-ta seeds at bar 0 (``talib.MACDEXT(matype=1)`` is bit-identical
+    to ``talib.MACD``, which shows the same offset).
+    """
+
+    FAST, SLOW, SIGNAL = 12, 26, 9
+
+    def _pair(self, matype):
+        ft = ferro_ta.MACDEXT(
+            CLOSE,
+            fastperiod=self.FAST,
+            fastmatype=matype,
+            slowperiod=self.SLOW,
+            slowmatype=matype,
+            signalperiod=self.SIGNAL,
+            signalmatype=matype,
+        )
+        ta = talib.MACDEXT(
+            CLOSE,
+            fastperiod=self.FAST,
+            fastmatype=matype,
+            slowperiod=self.SLOW,
+            slowmatype=matype,
+            signalperiod=self.SIGNAL,
+            signalmatype=matype,
+        )
+        return ft, ta
+
+    def test_runtime_defaults_are_ema(self):
+        """The wrappers default to matype 1 on all three legs."""
+        import inspect
+
+        params = inspect.signature(ferro_ta.MACDEXT).parameters
+        assert params["fastmatype"].default == 1
+        assert params["slowmatype"].default == 1
+        assert params["signalmatype"].default == 1
+
+    @pytest.mark.parametrize("matype", MACDEXT_WINDOW_MATYPES)
+    def test_window_matypes_match_exactly(self, matype):
+        (fm, fs, fh), (tm, ts, th) = self._pair(matype)
+        _assert_matype_allclose(
+            fm, tm, matype=matype, min_compared=400, label="MACDEXT macd"
+        )
+        _assert_matype_allclose(
+            fs, ts, matype=matype, min_compared=400, label="MACDEXT signal"
+        )
+        _assert_matype_allclose(
+            fh, th, matype=matype, min_compared=400, label="MACDEXT hist"
+        )
+
+    @pytest.mark.parametrize("matype", MACDEXT_RECURSIVE_MATYPES)
+    def test_recursive_matypes_match_on_converged_tail(self, matype):
+        (fm, fs, fh), (tm, ts, th) = self._pair(matype)
+        _assert_tail_allclose(fm, tm, matype=matype, label="MACDEXT macd")
+        _assert_tail_allclose(fs, ts, matype=matype, label="MACDEXT signal")
+        _assert_tail_allclose(fh, th, matype=matype, label="MACDEXT hist")
+
+    @pytest.mark.parametrize("matype", TALIB_COMPATIBLE_MATYPES)
+    def test_nan_count_match(self, matype):
+        """KAMA's off-by-one seed can shift the signal leg by a single bar."""
+        (fm, fs, fh), (tm, ts, th) = self._pair(matype)
+        for ftarr, taarr, name in (
+            (fm, tm, "macd"),
+            (fs, ts, "signal"),
+            (fh, th, "hist"),
+        ):
+            assert abs(_nan_count(ftarr) - _nan_count(taarr)) <= 1, (
+                f"MACDEXT {name} matype={matype}: NaN counts "
+                f"{_nan_count(ftarr)} vs {_nan_count(taarr)}"
+            )
+
+    def test_matype_8_is_accepted(self):
+        """MACDEXT accepts ``MAX_MATYPE`` (8), like every other matype taker.
+
+        Its wrappers once capped at 7 while the core had already moved to 8,
+        which made T3-via-TA-Lib's-own-number unreachable through MACDEXT
+        alone.  Assert acceptance on all three arguments, and that 8 is the
+        T3 alias of 7 rather than merely being tolerated.
+        """
+        for kwargs in (
+            {"fastmatype": MAX_MATYPE},
+            {"slowmatype": MAX_MATYPE},
+            {"signalmatype": MAX_MATYPE},
+        ):
+            macd, signal, hist = ferro_ta.MACDEXT(CLOSE, **kwargs)
+            assert np.isfinite(macd).any(), kwargs
+
+        for name in ("fastmatype", "slowmatype", "signalmatype"):
+            seven = ferro_ta.MACDEXT(CLOSE, **{name: 7})
+            eight = ferro_ta.MACDEXT(CLOSE, **{name: MAX_MATYPE})
+            for a, b in zip(seven, eight):
+                np.testing.assert_array_equal(a, b, err_msg=name)
+
+    def test_matype_9_is_rejected(self):
+        """One past the bound still raises, on each of the three arguments."""
+        for name in ("fastmatype", "slowmatype", "signalmatype"):
+            with pytest.raises(ValueError):
+                ferro_ta.MACDEXT(CLOSE, **{name: MAX_MATYPE + 1})
+
+
+class TestMatypeSevenDivergence:
+    """``matype=7`` means T3 in ferro-ta and MAMA in TA-Lib.
+
+    This is the one value of the enum that is *not* TA-Lib compatible, and it
+    is why ``7`` is missing from :data:`TALIB_COMPATIBLE_MATYPES`.  These tests
+    assert the divergence rather than agreement, so that removing the exclusion
+    above cannot quietly turn into a passing test — and so that a future reader
+    who assumes the exclusion is a mistake sees it pinned with a reason.
+    """
+
+    def test_talib_matype_7_is_mama(self):
+        """TA-Lib routes ``matype=7`` to ``TA_MAMA(0.5, 0.05)``."""
+        ta7 = talib.MA(CLOSE, timeperiod=10, matype=FERRO_T3_TALIB_MAMA_MATYPE)
+        mama, _fama = talib.MAMA(CLOSE, fastlimit=0.5, slowlimit=0.05)
+        _assert_matype_allclose(
+            ta7, mama, matype=7, min_compared=400, atol=1e-12, label="talib MA(7)"
+        )
+
+    def test_ferro_matype_7_is_t3_and_aliases_8(self):
+        """ferro-ta routes both ``7`` and ``8`` to ``T3(vfactor=0.7)``."""
+        ft7 = ferro_ta.MA(CLOSE, timeperiod=10, matype=FERRO_T3_TALIB_MAMA_MATYPE)
+        ft8 = ferro_ta.MA(CLOSE, timeperiod=10, matype=MAX_MATYPE)
+        t3 = ferro_ta.T3(CLOSE, timeperiod=10, vfactor=0.7)
+        assert np.array_equal(ft7, ft8, equal_nan=True)
+        _assert_matype_allclose(
+            ft7, t3, matype=7, min_compared=400, atol=1e-12, label="ferro MA(7)"
+        )
+
+    @pytest.mark.parametrize(
+        "ferro_call,talib_call,label",
+        [
+            (
+                lambda mt: ferro_ta.MA(CLOSE, timeperiod=10, matype=mt),
+                lambda mt: talib.MA(CLOSE, timeperiod=10, matype=mt),
+                "MA",
+            ),
+            (
+                lambda mt: ferro_ta.APO(CLOSE, fastperiod=12, slowperiod=26, matype=mt),
+                lambda mt: talib.APO(CLOSE, fastperiod=12, slowperiod=26, matype=mt),
+                "APO",
+            ),
+            (
+                lambda mt: ferro_ta.PPO(CLOSE, fastperiod=12, slowperiod=26, matype=mt)[
+                    0
+                ],
+                lambda mt: talib.PPO(CLOSE, fastperiod=12, slowperiod=26, matype=mt),
+                "PPO",
+            ),
+            (
+                lambda mt: ferro_ta.STOCHF(
+                    HIGH, LOW, CLOSE, fastk_period=5, fastd_period=3, fastd_matype=mt
+                )[1],
+                lambda mt: talib.STOCHF(
+                    HIGH, LOW, CLOSE, fastk_period=5, fastd_period=3, fastd_matype=mt
+                )[1],
+                "STOCHF %D",
+            ),
+            (
+                lambda mt: ferro_ta.STOCHRSI(
+                    CLOSE,
+                    timeperiod=14,
+                    fastk_period=5,
+                    fastd_period=3,
+                    fastd_matype=mt,
+                )[1],
+                lambda mt: talib.STOCHRSI(
+                    CLOSE,
+                    timeperiod=14,
+                    fastk_period=5,
+                    fastd_period=3,
+                    fastd_matype=mt,
+                )[1],
+                "STOCHRSI %D",
+            ),
+        ],
+    )
+    def test_matype_7_does_not_agree_with_talib(self, ferro_call, talib_call, label):
+        ft = ferro_call(FERRO_T3_TALIB_MAMA_MATYPE)
+        ta = talib_call(FERRO_T3_TALIB_MAMA_MATYPE)
+        mask = _valid_mask(ft, ta)
+        assert mask.sum() >= 100, f"{label}: nothing compared at matype=7"
+        assert not np.allclose(ft[mask], ta[mask], atol=1e-6), (
+            f"{label}: matype=7 now agrees with TA-Lib. Either the enum was "
+            f"renumbered (T3 moved off 7) or MAMA was wired in — update "
+            f"TALIB_COMPATIBLE_MATYPES and overlap/dispatch.rs together."
+        )
+
+
+class TestMatypeOutOfRange:
+    """``matype`` above ``MAX_MATYPE`` (8) is rejected, not silently SMA.
+
+    TA-Lib raises ``TA_BAD_PARAM`` for ``matype=9``; ferro-ta's Python wrappers
+    validate the argument and raise ``FerroTAValueError`` (a ``ValueError``).
+    The Rust core, which has no error type, reports the same condition as an
+    all-``NaN`` output — that contract is covered by the Rust unit tests.  Here
+    we assert the *documented Python behaviour* rather than trying to match
+    TA-Lib's exception type.
+    """
+
+    OUT_OF_RANGE = (MAX_MATYPE + 1, 99, 255)
+
+    @pytest.mark.parametrize("matype", OUT_OF_RANGE)
+    def test_ferro_rejects(self, matype):
+        with pytest.raises(ValueError):
+            ferro_ta.MA(CLOSE, timeperiod=10, matype=matype)
+        with pytest.raises(ValueError):
+            ferro_ta.APO(CLOSE, fastperiod=12, slowperiod=26, matype=matype)
+        with pytest.raises(ValueError):
+            ferro_ta.PPO(CLOSE, fastperiod=12, slowperiod=26, matype=matype)
+        with pytest.raises(ValueError):
+            ferro_ta.STOCHF(
+                HIGH, LOW, CLOSE, fastk_period=5, fastd_period=3, fastd_matype=matype
+            )
+        with pytest.raises(ValueError):
+            ferro_ta.STOCHRSI(CLOSE, fastd_matype=matype)
+        with pytest.raises(ValueError):
+            ferro_ta.MAVP(CLOSE, MAVP_PERIODS, minperiod=2, maxperiod=30, matype=matype)
+
+    def test_talib_also_rejects(self):
+        """Cross-check: TA-Lib does not silently fall back to SMA either."""
+        with pytest.raises(Exception):  # noqa: B017 - talib raises bare Exception
+            talib.MA(CLOSE, timeperiod=10, matype=MAX_MATYPE + 1)
+
+
+def test_kama_matches_talib_on_zero_volatility_input():
+    """Regression: KAMA on input whose volatility window goes flat.
+
+    StochRSI's %K sits at exactly 0 or 100 for long stretches, so KAMA's
+    efficiency-ratio denominator empties across those windows.  ferro-ta used to
+    test that denominator with ``volatility > 0.0``, which reads the rolling
+    sum's ~1e-14 rounding residue as real volatility and yields ``ER = 0`` — the
+    *slowest* smoothing constant — where ``TA_KAMA``'s
+    ``sumROC1 <= periodROC || TA_IS_ZERO(sumROC1)`` mostly yields ``ER = 1``.
+    Because the ratio was wrong on every bar of the plateau the error held
+    rather than decaying, and the two series parted company permanently (max abs
+    diff ~16).  Fixed; the residual here is 2.9e-14.
+
+    Note this was *not* the whole story behind the ``fastd_matype=6`` exclusion
+    on the STOCHRSI %D gate — see
+    ``test_talib_kama_is_ill_conditioned_on_stochrsi_fastk``.
+    """
+    fastk, _ = ferro_ta.STOCHRSI(
+        CLOSE, timeperiod=14, fastk_period=5, fastd_period=3, fastd_matype=0
+    )
+    plateau_series = fastk[~np.isnan(fastk)]
+    # Sanity: the fixture really does contain the pathological input.
+    assert (plateau_series == 0.0).sum() > 50
+    assert (plateau_series == 100.0).sum() > 50
+
+    ft = ferro_ta.KAMA(plateau_series, timeperiod=3)
+    ta = talib.KAMA(plateau_series, timeperiod=3)
+    mask = _valid_mask(ft, ta)
+    assert mask.sum() > 400
+    # Observed worst deviation is 2.9e-14: the residual is the rolling sum's own
+    # rounding, which is what TA-Lib's own efficiency ratio divides into.
+    assert np.allclose(ft[mask], ta[mask], atol=1e-9)
+
+
+def test_talib_kama_is_ill_conditioned_on_stochrsi_fastk():
+    """Why ``STOCHRSI_KAMA_MATYPE`` stays out of the %D value gate.
+
+    ``TA_KAMA`` picks its efficiency ratio from a rolling ``Σ|Δ|`` that carries
+    ~1e-14 of rounding residue once a window goes flat, and the *sign* of that
+    residue selects between ER = 1 (snap) and ER = 0 (crawl).  On StochRSI %K —
+    which is pinned at exactly 0 or 100 for long stretches — that makes TA-Lib's
+    own KAMA catastrophically input-sensitive.
+
+    ferro-ta's %K differs from TA-Lib's by ~5.8e-13 (RSI/stoch rounding, well
+    inside the %K gate's 1e-6).  Feeding TA-Lib *its own* KAMA those two nearly
+    identical inputs moves its output by ~19 — the same ~19 that the %D
+    comparison at ``fastd_matype=6`` reports.  So the %D divergence is upstream
+    conditioning, not a ferro-ta defect: on each individual input ferro-ta's
+    KAMA tracks TA-Lib's to ~3e-14.
+    """
+    ft_k, _ = ferro_ta.STOCHRSI(
+        CLOSE, timeperiod=14, fastk_period=5, fastd_period=3, fastd_matype=0
+    )
+    ta_k, _ = talib.STOCHRSI(
+        CLOSE, timeperiod=14, fastk_period=5, fastd_period=3, fastd_matype=0
+    )
+    ft_k = ft_k[~np.isnan(ft_k)]
+    ta_k = ta_k[~np.isnan(ta_k)]
+    assert len(ft_k) == len(ta_k) > 400
+    assert (ft_k == 0.0).sum() > 50 and (ft_k == 100.0).sum() > 50
+
+    # The two %K series agree far inside the value gate, but are not bit-equal.
+    input_delta = float(np.max(np.abs(ft_k - ta_k)))
+    assert input_delta < 1e-9, input_delta
+    assert input_delta > 0.0, "inputs became bit-identical — re-derive this test"
+
+    # TA-Lib alone, on those two inputs, parts company by ~19.
+    ta_on_ft = talib.KAMA(ft_k, timeperiod=3)
+    ta_on_ta = talib.KAMA(ta_k, timeperiod=3)
+    mask = _valid_mask(ta_on_ft, ta_on_ta)
+    assert np.max(np.abs(ta_on_ft[mask] - ta_on_ta[mask])) > 1.0
+
+    # ferro-ta tracks TA-Lib on each input individually.
+    for series in (ft_k, ta_k):
+        ft = ferro_ta.KAMA(series, timeperiod=3)
+        ta = talib.KAMA(series, timeperiod=3)
+        m = _valid_mask(ft, ta)
+        assert m.sum() > 400
+        assert np.allclose(ft[m], ta[m], atol=1e-9)
+
+
+def test_kama_matches_talib_on_flat_series():
+    """A perfectly flat series has an exactly-zero volatility window.
+
+    ``TA_KAMA`` reads that as ``0 <= 0`` and takes ``ER = 1`` (SC = 4/9), so
+    KAMA is pinned to the price.  This is the case the kernel's old comment
+    described; the bug was that the code only reached it when the rolling sum
+    landed on a bit-exact zero.
+    """
+    flat = np.full(60, 42.0)
+    ft = ferro_ta.KAMA(flat, timeperiod=10)
+    ta = talib.KAMA(flat, timeperiod=10)
+    mask = _valid_mask(ft, ta)
+    assert mask.sum() > 40
+    assert np.allclose(ft[mask], ta[mask], atol=1e-12)
+    assert np.all(ft[mask] == 42.0)
+
+
+@pytest.mark.parametrize("timeperiod", [2, 3, 5, 14, 30])
+def test_kama_matches_talib_on_plateau_heavy_input(timeperiod):
+    """Plateau-heavy input at several periods, not just the StochRSI shape."""
+    rng = np.random.default_rng(1234)
+    walk = 44.0 + np.cumsum(rng.standard_normal(600) * 0.5)
+    plateau = walk.copy()
+    hold = rng.random(600) < 0.6
+    for i in range(1, 600):
+        if hold[i]:
+            plateau[i] = plateau[i - 1]
+    plateau[rng.random(600) < 0.05] = 100.0
+
+    ft = ferro_ta.KAMA(plateau, timeperiod=timeperiod)
+    ta = talib.KAMA(plateau, timeperiod=timeperiod)
+    mask = _valid_mask(ft, ta)
+    assert mask.sum() > 500
+    assert np.allclose(ft[mask], ta[mask], atol=1e-9)

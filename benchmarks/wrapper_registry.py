@@ -2,7 +2,7 @@
 Cross-library wrapper registry — comprehensive indicator coverage.
 
 Unified interface: execute_indicator(library, indicator, data, df=None, **kwargs)
-Supported libraries: ferro_ta, talib, pandas_ta, ta, tulipy, finta
+Supported libraries: ferro_ta, talib, pandas_ta, ta, tulipy, finta, openalgo
 50+ indicators across all categories.
 """
 
@@ -28,6 +28,8 @@ _ta = _try_import("ta")
 _tl = _try_import("tulipy")
 _fi_m = _try_import("finta")
 _fi = getattr(_fi_m, "TA", None) if _fi_m else None
+_oa_m = _try_import("openalgo")
+_oa = getattr(_oa_m, "ta", None) if _oa_m else None
 
 
 def available_libraries():
@@ -42,6 +44,8 @@ def available_libraries():
         libs.append("tulipy")
     if _fi:
         libs.append("finta")
+    if _oa:
+        libs.append("openalgo")
     return libs
 
 
@@ -2447,6 +2451,464 @@ def _cdlhammer_fi(d, df, **_):
 
 _cdlhammer_fi._stub = True
 
+
+# ============================================================
+# OPENALGO (speed benches only; kwargs mapped from ferro-ta names)
+# ============================================================
+def _oa_first(result):
+    if result is None:
+        return _empty()
+    if isinstance(result, (tuple, list)):
+        result = result[0]
+    return _strip_nan(result)
+
+
+def _sma_oa(d, df, timeperiod=20, **_):
+    return _strip_nan(_oa.sma(d["close"], period=timeperiod))
+
+
+def _ema_oa(d, df, timeperiod=20, **_):
+    return _strip_nan(_oa.ema(d["close"], period=timeperiod))
+
+
+def _wma_oa(d, df, timeperiod=14, **_):
+    return _strip_nan(_oa.wma(d["close"], period=timeperiod))
+
+
+def _dema_oa(d, df, timeperiod=20, **_):
+    return _strip_nan(_oa.dema(d["close"], period=timeperiod))
+
+
+def _tema_oa(d, df, timeperiod=20, **_):
+    return _strip_nan(_oa.tema(d["close"], period=timeperiod))
+
+
+def _t3_oa(d, df, timeperiod=5, **_):
+    return _strip_nan(_oa.t3(d["close"], period=timeperiod))
+
+
+def _trima_oa(d, df, timeperiod=20, **_):
+    return _strip_nan(_oa.trima(d["close"], period=timeperiod))
+
+
+def _kama_oa(d, df, timeperiod=10, **_):
+    return _strip_nan(_oa.kama(d["close"], length=timeperiod))
+
+
+def _hma_oa(d, df, timeperiod=16, **_):
+    return _strip_nan(_oa.hma(d["close"], period=timeperiod))
+
+
+def _vwma_oa(d, df, timeperiod=20, **_):
+    return _strip_nan(_oa.vwma(d["close"], d["volume"], period=timeperiod))
+
+
+def _midpoint_oa(d, df, timeperiod=14, **_):
+    return _strip_nan(_oa.midpoint(d["close"], period=timeperiod))
+
+
+def _midprice_oa(d, df, timeperiod=14, **_):
+    return _strip_nan(_oa.midprice(d["high"], d["low"], period=timeperiod))
+
+
+def _rsi_oa(d, df, timeperiod=14, **_):
+    return _strip_nan(_oa.rsi(d["close"], period=timeperiod))
+
+
+def _macd_oa(d, df, fastperiod=12, slowperiod=26, signalperiod=9, **_):
+    return _oa_first(
+        _oa.macd(
+            d["close"],
+            fast_period=fastperiod,
+            slow_period=slowperiod,
+            signal_period=signalperiod,
+        )
+    )
+
+
+def _stoch_oa(d, df, fastk_period=14, slowk_period=3, slowd_period=3, **_):
+    return _oa_first(
+        _oa.stochastic(
+            d["high"],
+            d["low"],
+            d["close"],
+            k_period=fastk_period,
+            smooth_k=slowk_period,
+            d_period=slowd_period,
+        )
+    )
+
+
+def _cci_oa(d, df, timeperiod=14, **_):
+    return _strip_nan(_oa.cci(d["high"], d["low"], d["close"], period=timeperiod))
+
+
+def _willr_oa(d, df, timeperiod=14, **_):
+    return _strip_nan(
+        _oa.williams_r(d["high"], d["low"], d["close"], period=timeperiod)
+    )
+
+
+def _aroon_oa(d, df, timeperiod=14, **_):
+    return _oa_first(_oa.aroon(d["high"], d["low"], period=timeperiod))
+
+
+def _aroonosc_oa(d, df, timeperiod=14, **_):
+    return _strip_nan(_oa.aroon_oscillator(d["high"], d["low"], period=timeperiod))
+
+
+def _adx_oa(d, df, timeperiod=14, **_):
+    out = _oa.adx(d["high"], d["low"], d["close"], period=timeperiod)
+    if isinstance(out, (tuple, list)) and len(out) >= 3:
+        return _strip_nan(out[2])
+    return _strip_nan(out)
+
+
+def _mom_oa(d, df, timeperiod=10, **_):
+    return _strip_nan(_oa.mom(d["close"], period=timeperiod))
+
+
+def _roc_oa(d, df, timeperiod=10, **_):
+    return _strip_nan(_oa.roc(d["close"], length=timeperiod))
+
+
+def _cmo_oa(d, df, timeperiod=14, **_):
+    return _strip_nan(_oa.cmo(d["close"], period=timeperiod))
+
+
+def _ppo_oa(d, df, fastperiod=12, slowperiod=26, **_):
+    return _oa_first(
+        _oa.ppo(d["close"], fast_period=fastperiod, slow_period=slowperiod)
+    )
+
+
+def _trix_oa(d, df, timeperiod=18, **_):
+    return _strip_nan(_oa.trix(d["close"], length=timeperiod))
+
+
+def _tsf_oa(d, df, timeperiod=14, **_):
+    return _strip_nan(_oa.tsf(d["close"], period=timeperiod))
+
+
+def _ultosc_oa(d, df, timeperiod1=7, timeperiod2=14, timeperiod3=28, **_):
+    return _strip_nan(
+        _oa.ultimate_oscillator(
+            d["high"],
+            d["low"],
+            d["close"],
+            period1=timeperiod1,
+            period2=timeperiod2,
+            period3=timeperiod3,
+        )
+    )
+
+
+def _bop_oa(d, df, **_):
+    return _strip_nan(_oa.bop(d["open"], d["high"], d["low"], d["close"]))
+
+
+def _plusdi_oa(d, df, timeperiod=14, **_):
+    return _oa_first(_oa.dmi(d["high"], d["low"], d["close"], period=timeperiod))
+
+
+def _minusdi_oa(d, df, timeperiod=14, **_):
+    out = _oa.dmi(d["high"], d["low"], d["close"], period=timeperiod)
+    if isinstance(out, (tuple, list)) and len(out) >= 2:
+        return _strip_nan(out[1])
+    return _empty()
+
+
+def _bb_oa(d, df, timeperiod=20, nbdevup=2.0, **_):
+    return _oa_first(_oa.bbands(d["close"], period=timeperiod, std_dev=nbdevup))
+
+
+def _atr_oa(d, df, timeperiod=14, **_):
+    return _strip_nan(_oa.atr(d["high"], d["low"], d["close"], period=timeperiod))
+
+
+def _natr_oa(d, df, timeperiod=14, **_):
+    return _strip_nan(_oa.natr(d["high"], d["low"], d["close"], period=timeperiod))
+
+
+def _trange_oa(d, df, **_):
+    return _strip_nan(_oa.true_range(d["high"], d["low"], d["close"]))
+
+
+def _stddev_oa(d, df, timeperiod=20, **_):
+    return _strip_nan(_oa.stdev(d["close"], period=timeperiod))
+
+
+def _var_oa(d, df, timeperiod=20, **_):
+    return _oa_first(_oa.variance(d["close"], lookback=timeperiod))
+
+
+def _sar_oa(d, df, acceleration=0.02, maximum=0.2, **_):
+    return _strip_nan(
+        _oa.psar(d["high"], d["low"], acceleration=acceleration, maximum=maximum)
+    )
+
+
+def _kc_oa(d, df, timeperiod=20, **_):
+    return _oa_first(
+        _oa.keltner(d["high"], d["low"], d["close"], ema_period=timeperiod)
+    )
+
+
+def _donchian_oa(d, df, timeperiod=20, **_):
+    return _oa_first(_oa.donchian(d["high"], d["low"], period=timeperiod))
+
+
+def _supertrend_oa(d, df, timeperiod=7, **_):
+    return _oa_first(_oa.supertrend(d["high"], d["low"], d["close"], period=timeperiod))
+
+
+def _chop_oa(d, df, timeperiod=14, **_):
+    return _strip_nan(_oa.chop(d["high"], d["low"], d["close"], period=timeperiod))
+
+
+def _obv_oa(d, df, **_):
+    return _strip_nan(_oa.obv(d["close"], d["volume"]))
+
+
+def _ad_oa(d, df, **_):
+    return _strip_nan(_oa.adl(d["high"], d["low"], d["close"], d["volume"]))
+
+
+def _adosc_oa(d, df, fastperiod=3, slowperiod=10, **_):
+    return _strip_nan(
+        _oa.cho(
+            d["high"],
+            d["low"],
+            d["close"],
+            d["volume"],
+            fast_period=fastperiod,
+            slow_period=slowperiod,
+        )
+    )
+
+
+def _mfi_oa(d, df, timeperiod=14, **_):
+    return _strip_nan(
+        _oa.mfi(d["high"], d["low"], d["close"], d["volume"], period=timeperiod)
+    )
+
+
+def _vwap_oa(d, df, **_):
+    return _strip_nan(_oa.vwap(d["high"], d["low"], d["close"], d["volume"]))
+
+
+def _avgprice_oa(d, df, **_):
+    return _strip_nan(_oa.avgprice(d["open"], d["high"], d["low"], d["close"]))
+
+
+def _medprice_oa(d, df, **_):
+    return _strip_nan(_oa.medprice(d["high"], d["low"]))
+
+
+def _typprice_oa(d, df, **_):
+    return _strip_nan(_oa.typprice(d["high"], d["low"], d["close"]))
+
+
+def _wclprice_oa(d, df, **_):
+    return _strip_nan(_oa.wclprice(d["high"], d["low"], d["close"]))
+
+
+def _linearreg_oa(d, df, timeperiod=14, **_):
+    return _strip_nan(_oa.linreg(d["close"], period=timeperiod))
+
+
+def _linreg_slope_oa(d, df, timeperiod=14, **_):
+    return _strip_nan(_oa.lrslope(d["close"], period=timeperiod))
+
+
+def _correl_oa(d, df, timeperiod=30, **_):
+    return _strip_nan(_oa.correlation(d["high"], d["low"], period=timeperiod))
+
+
+def _beta_oa(d, df, timeperiod=5, **_):
+    return _strip_nan(_oa.beta(d["high"], d["low"], period=timeperiod))
+
+
+def _apo_oa(d, df, fastperiod=12, slowperiod=26, **_):
+    return _strip_nan(
+        _oa.apo(d["close"], fast_period=fastperiod, slow_period=slowperiod)
+    )
+
+
+def _rocp_oa(d, df, timeperiod=10, **_):
+    return _strip_nan(_oa.rocp(d["close"], period=timeperiod))
+
+
+def _rocr_oa(d, df, timeperiod=10, **_):
+    return _strip_nan(_oa.rocr(d["close"], period=timeperiod))
+
+
+def _rocr100_oa(d, df, timeperiod=10, **_):
+    return _strip_nan(_oa.rocr100(d["close"], period=timeperiod))
+
+
+def _stochf_oa(d, df, fastk_period=5, fastd_period=3, **_):
+    return _oa_first(
+        _oa.stochf(
+            d["high"],
+            d["low"],
+            d["close"],
+            fastk_period=fastk_period,
+            fastd_period=fastd_period,
+        )
+    )
+
+
+def _stochrsi_oa(d, df, timeperiod=14, **_):
+    return _oa_first(_oa.stochrsi(d["close"], rsi_period=timeperiod))
+
+
+def _plusdm_oa(d, df, timeperiod=14, **_):
+    return _strip_nan(_oa.plus_dm(d["high"], d["low"], period=timeperiod))
+
+
+def _minusdm_oa(d, df, timeperiod=14, **_):
+    return _strip_nan(_oa.minus_dm(d["high"], d["low"], period=timeperiod))
+
+
+def _dx_oa(d, df, timeperiod=14, **_):
+    return _strip_nan(_oa.dx(d["high"], d["low"], d["close"], period=timeperiod))
+
+
+def _adxr_oa(d, df, timeperiod=14, **_):
+    return _strip_nan(_oa.adxr(d["high"], d["low"], d["close"], period=timeperiod))
+
+
+def _linregangle_oa(d, df, timeperiod=14, **_):
+    return _strip_nan(_oa.linregangle(d["close"], period=timeperiod))
+
+
+def _linregintercept_oa(d, df, timeperiod=14, **_):
+    return _strip_nan(_oa.linregintercept(d["close"], period=timeperiod))
+
+
+def _ichimoku_oa(d, df, **_):
+    return _oa_first(_oa.ichimoku(d["high"], d["low"], d["close"]))
+
+
+def _pivot_oa(d, df, **_):
+    return _oa_first(_oa.pivot_points(d["high"], d["low"], d["close"]))
+
+
+def _chandelier_oa(d, df, timeperiod=22, **_):
+    return _oa_first(
+        _oa.chandelier_exit(d["high"], d["low"], d["close"], period=timeperiod)
+    )
+
+
+def _apo_ft(d, df, fastperiod=12, slowperiod=26, **_):
+    import ferro_ta
+
+    return _strip_nan(
+        ferro_ta.APO(d["close"], fastperiod=fastperiod, slowperiod=slowperiod)
+    )
+
+
+def _rocp_ft(d, df, timeperiod=10, **_):
+    import ferro_ta
+
+    return _strip_nan(ferro_ta.ROCP(d["close"], timeperiod=timeperiod))
+
+
+def _rocr_ft(d, df, timeperiod=10, **_):
+    import ferro_ta
+
+    return _strip_nan(ferro_ta.ROCR(d["close"], timeperiod=timeperiod))
+
+
+def _rocr100_ft(d, df, timeperiod=10, **_):
+    import ferro_ta
+
+    return _strip_nan(ferro_ta.ROCR100(d["close"], timeperiod=timeperiod))
+
+
+def _stochf_ft(d, df, fastk_period=5, fastd_period=3, **_):
+    import ferro_ta
+
+    k, _d = ferro_ta.STOCHF(
+        d["high"],
+        d["low"],
+        d["close"],
+        fastk_period=fastk_period,
+        fastd_period=fastd_period,
+    )
+    return _strip_nan(k)
+
+
+def _stochrsi_ft(d, df, timeperiod=14, **_):
+    import ferro_ta
+
+    out = ferro_ta.STOCHRSI(d["close"], timeperiod=timeperiod)
+    if isinstance(out, (tuple, list)):
+        return _strip_nan(out[0])
+    return _strip_nan(out)
+
+
+def _plusdm_ft(d, df, timeperiod=14, **_):
+    import ferro_ta
+
+    return _strip_nan(ferro_ta.PLUS_DM(d["high"], d["low"], timeperiod=timeperiod))
+
+
+def _minusdm_ft(d, df, timeperiod=14, **_):
+    import ferro_ta
+
+    return _strip_nan(ferro_ta.MINUS_DM(d["high"], d["low"], timeperiod=timeperiod))
+
+
+def _dx_ft(d, df, timeperiod=14, **_):
+    import ferro_ta
+
+    return _strip_nan(
+        ferro_ta.DX(d["high"], d["low"], d["close"], timeperiod=timeperiod)
+    )
+
+
+def _adxr_ft(d, df, timeperiod=14, **_):
+    import ferro_ta
+
+    return _strip_nan(
+        ferro_ta.ADXR(d["high"], d["low"], d["close"], timeperiod=timeperiod)
+    )
+
+
+def _linregangle_ft(d, df, timeperiod=14, **_):
+    import ferro_ta
+
+    return _strip_nan(ferro_ta.LINEARREG_ANGLE(d["close"], timeperiod=timeperiod))
+
+
+def _linregintercept_ft(d, df, timeperiod=14, **_):
+    import ferro_ta
+
+    return _strip_nan(ferro_ta.LINEARREG_INTERCEPT(d["close"], timeperiod=timeperiod))
+
+
+def _ichimoku_ft(d, df, **_):
+    import ferro_ta
+
+    return _oa_first(ferro_ta.ICHIMOKU(d["high"], d["low"], d["close"]))
+
+
+def _pivot_ft(d, df, **_):
+    import ferro_ta
+
+    return _oa_first(ferro_ta.PIVOT_POINTS(d["high"], d["low"], d["close"]))
+
+
+def _chandelier_ft(d, df, timeperiod=22, **_):
+    import ferro_ta
+
+    return _oa_first(
+        ferro_ta.CHANDELIER_EXIT(d["high"], d["low"], d["close"], timeperiod=timeperiod)
+    )
+
+
 # ============================================================
 # REGISTRY BUILD
 # ============================================================
@@ -2472,6 +2934,20 @@ def _reg(ind, ft, tl, pt, ta_, tu, fi):
         if getattr(fn, "_stub", False):
             continue
         REGISTRY[(lib, ind)] = fn
+
+
+def _reg_oa(ind, fn):
+    """Register an openalgo wrapper when the optional extra is installed."""
+    if _oa is None or getattr(fn, "_stub", False):
+        return
+    REGISTRY[("openalgo", ind)] = fn
+
+
+def _reg_ft_oa(ind, ft, oa):
+    """Register a ferro-ta + openalgo pair that is not in the six-library table."""
+    if not getattr(ft, "_stub", False):
+        REGISTRY[("ferro_ta", ind)] = ft
+    _reg_oa(ind, oa)
 
 
 _reg("SMA", _sma_ft, _sma_tl, _sma_pt, _sma_ta, _sma_tu, _sma_fi)
@@ -2673,6 +3149,79 @@ _reg(
     _cdlhammer_fi,
 )
 
+# Existing catalog names that both libraries implement.
+_reg_oa("SMA", _sma_oa)
+_reg_oa("EMA", _ema_oa)
+_reg_oa("WMA", _wma_oa)
+_reg_oa("DEMA", _dema_oa)
+_reg_oa("TEMA", _tema_oa)
+_reg_oa("T3", _t3_oa)
+_reg_oa("TRIMA", _trima_oa)
+_reg_oa("KAMA", _kama_oa)
+_reg_oa("HULL_MA", _hma_oa)
+_reg_oa("VWMA", _vwma_oa)
+_reg_oa("MIDPOINT", _midpoint_oa)
+_reg_oa("MIDPRICE", _midprice_oa)
+_reg_oa("RSI", _rsi_oa)
+_reg_oa("MACD", _macd_oa)
+_reg_oa("STOCH", _stoch_oa)
+_reg_oa("CCI", _cci_oa)
+_reg_oa("WILLR", _willr_oa)
+_reg_oa("AROON", _aroon_oa)
+_reg_oa("AROONOSC", _aroonosc_oa)
+_reg_oa("ADX", _adx_oa)
+_reg_oa("MOM", _mom_oa)
+_reg_oa("ROC", _roc_oa)
+_reg_oa("CMO", _cmo_oa)
+_reg_oa("PPO", _ppo_oa)
+_reg_oa("TRIX", _trix_oa)
+_reg_oa("TSF", _tsf_oa)
+_reg_oa("ULTOSC", _ultosc_oa)
+_reg_oa("BOP", _bop_oa)
+_reg_oa("PLUS_DI", _plusdi_oa)
+_reg_oa("MINUS_DI", _minusdi_oa)
+_reg_oa("BBANDS", _bb_oa)
+_reg_oa("ATR", _atr_oa)
+_reg_oa("NATR", _natr_oa)
+_reg_oa("TRANGE", _trange_oa)
+_reg_oa("STDDEV", _stddev_oa)
+_reg_oa("VAR", _var_oa)
+_reg_oa("SAR", _sar_oa)
+_reg_oa("KELTNER_CHANNELS", _kc_oa)
+_reg_oa("DONCHIAN", _donchian_oa)
+_reg_oa("SUPERTREND", _supertrend_oa)
+_reg_oa("CHOPPINESS_INDEX", _chop_oa)
+_reg_oa("OBV", _obv_oa)
+_reg_oa("AD", _ad_oa)
+_reg_oa("ADOSC", _adosc_oa)
+_reg_oa("MFI", _mfi_oa)
+_reg_oa("VWAP", _vwap_oa)
+_reg_oa("AVGPRICE", _avgprice_oa)
+_reg_oa("MEDPRICE", _medprice_oa)
+_reg_oa("TYPPRICE", _typprice_oa)
+_reg_oa("WCLPRICE", _wclprice_oa)
+_reg_oa("LINEARREG", _linearreg_oa)
+_reg_oa("LINEARREG_SLOPE", _linreg_slope_oa)
+_reg_oa("CORREL", _correl_oa)
+_reg_oa("BETA", _beta_oa)
+
+# Additional existing ferro-ta names that the six-library table did not cover.
+_reg_ft_oa("APO", _apo_ft, _apo_oa)
+_reg_ft_oa("ROCP", _rocp_ft, _rocp_oa)
+_reg_ft_oa("ROCR", _rocr_ft, _rocr_oa)
+_reg_ft_oa("ROCR100", _rocr100_ft, _rocr100_oa)
+_reg_ft_oa("STOCHF", _stochf_ft, _stochf_oa)
+_reg_ft_oa("STOCHRSI", _stochrsi_ft, _stochrsi_oa)
+_reg_ft_oa("PLUS_DM", _plusdm_ft, _plusdm_oa)
+_reg_ft_oa("MINUS_DM", _minusdm_ft, _minusdm_oa)
+_reg_ft_oa("DX", _dx_ft, _dx_oa)
+_reg_ft_oa("ADXR", _adxr_ft, _adxr_oa)
+_reg_ft_oa("LINEARREG_ANGLE", _linregangle_ft, _linregangle_oa)
+_reg_ft_oa("LINEARREG_INTERCEPT", _linregintercept_ft, _linregintercept_oa)
+_reg_ft_oa("ICHIMOKU", _ichimoku_ft, _ichimoku_oa)
+_reg_ft_oa("PIVOT_POINTS", _pivot_ft, _pivot_oa)
+_reg_ft_oa("CHANDELIER_EXIT", _chandelier_ft, _chandelier_oa)
+
 # ============================================================
 # METADATA
 # ============================================================
@@ -2739,10 +3288,44 @@ INDICATOR_DEFAULTS: dict[str, dict] = {
     "CDLENGULFING": {},
     "CDLDOJI": {},
     "CDLHAMMER": {},
+    "APO": {"fastperiod": 12, "slowperiod": 26},
+    "ROCP": {"timeperiod": 10},
+    "ROCR": {"timeperiod": 10},
+    "ROCR100": {"timeperiod": 10},
+    "STOCHF": {"fastk_period": 5, "fastd_period": 3},
+    "STOCHRSI": {"timeperiod": 14},
+    "PLUS_DM": {"timeperiod": 14},
+    "MINUS_DM": {"timeperiod": 14},
+    "DX": {"timeperiod": 14},
+    "ADXR": {"timeperiod": 14},
+    "LINEARREG_ANGLE": {"timeperiod": 14},
+    "LINEARREG_INTERCEPT": {"timeperiod": 14},
+    "ICHIMOKU": {},
+    "PIVOT_POINTS": {},
+    "CHANDELIER_EXIT": {"timeperiod": 22},
 }
 
 INDICATOR_NAMES = list(INDICATOR_DEFAULTS.keys())
-LIBRARY_NAMES = ["ferro_ta", "talib", "pandas_ta", "ta", "tulipy", "finta"]
+LIBRARY_NAMES = [
+    "ferro_ta",
+    "talib",
+    "pandas_ta",
+    "ta",
+    "tulipy",
+    "finta",
+    "openalgo",
+]
+
+
+def openalgo_overlap_names() -> list[str]:
+    """ferro-ta names that have an openalgo wrapper registered (if installed)."""
+    names = [
+        name
+        for name in INDICATOR_NAMES
+        if ("ferro_ta", name) in REGISTRY and ("openalgo", name) in REGISTRY
+    ]
+    return names
+
 
 INDICATOR_CATEGORIES: dict[str, list[str]] = {
     "Overlap": [
@@ -2758,11 +3341,15 @@ INDICATOR_CATEGORIES: dict[str, list[str]] = {
         "VWMA",
         "MIDPOINT",
         "MIDPRICE",
+        "ICHIMOKU",
+        "PIVOT_POINTS",
     ],
     "Momentum": [
         "RSI",
         "MACD",
         "STOCH",
+        "STOCHF",
+        "STOCHRSI",
         "CCI",
         "WILLR",
         "AROON",
@@ -2770,7 +3357,11 @@ INDICATOR_CATEGORIES: dict[str, list[str]] = {
         "ADX",
         "MOM",
         "ROC",
+        "ROCP",
+        "ROCR",
+        "ROCR100",
         "CMO",
+        "APO",
         "PPO",
         "TRIX",
         "TSF",
@@ -2778,6 +3369,10 @@ INDICATOR_CATEGORIES: dict[str, list[str]] = {
         "BOP",
         "PLUS_DI",
         "MINUS_DI",
+        "PLUS_DM",
+        "MINUS_DM",
+        "DX",
+        "ADXR",
     ],
     "Volatility": [
         "BBANDS",
@@ -2791,11 +3386,19 @@ INDICATOR_CATEGORIES: dict[str, list[str]] = {
         "DONCHIAN",
         "SUPERTREND",
         "CHOPPINESS_INDEX",
+        "CHANDELIER_EXIT",
     ],
     "Volume": ["OBV", "AD", "ADOSC", "MFI", "VWAP"],
     "Price Transform": ["AVGPRICE", "MEDPRICE", "TYPPRICE", "WCLPRICE"],
     "Math": ["SQRT", "LOG10", "ADD"],
-    "Statistics": ["LINEARREG", "LINEARREG_SLOPE", "CORREL", "BETA"],
+    "Statistics": [
+        "LINEARREG",
+        "LINEARREG_SLOPE",
+        "LINEARREG_INTERCEPT",
+        "LINEARREG_ANGLE",
+        "CORREL",
+        "BETA",
+    ],
     "Cycle": ["HT_DCPERIOD", "HT_TRENDMODE"],
     "Pattern": ["CDLENGULFING", "CDLDOJI", "CDLHAMMER"],
 }

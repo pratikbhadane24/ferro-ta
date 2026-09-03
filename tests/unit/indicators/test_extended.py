@@ -1,6 +1,7 @@
 """Unit tests for ferro_ta.indicators.extended"""
 
 import numpy as np
+import pytest
 
 from ferro_ta.indicators.extended import (
     CHANDELIER_EXIT,
@@ -10,9 +11,11 @@ from ferro_ta.indicators.extended import (
     ICHIMOKU,
     KELTNER_CHANNELS,
     PIVOT_POINTS,
+    RWI,
     SUPERTREND,
     VWAP,
     VWMA,
+    WILLIAMS_FRACTALS,
 )
 
 # ---------------------------------------------------------------------------
@@ -321,3 +324,42 @@ class TestCHOPPINESS_INDEX:
         result = CHOPPINESS_INDEX(_H, _L, _C, timeperiod=14)
         valid = result[~np.isnan(result)]
         assert np.all(np.isfinite(valid))
+
+
+# ---------------------------------------------------------------------------
+# WILLIAMS_FRACTALS / RWI
+# ---------------------------------------------------------------------------
+
+
+class TestWILLIAMS_FRACTALS:
+    def test_peak_and_trough(self):
+        high = np.array([1.0, 2.0, 5.0, 2.0, 1.0, 3.0, 4.0])
+        low = np.array([0.0, 1.0, 3.0, 1.0, 0.0, 2.0, 3.0])
+        up, down = WILLIAMS_FRACTALS(high, low, timeperiod=2)
+        assert up[2] == pytest.approx(5.0)
+        assert down[4] == pytest.approx(0.0)
+        assert np.all(np.isnan(up[:2])) and np.all(np.isnan(up[-2:]))
+        assert np.isnan(up[3]) and np.isnan(up[4])
+        assert np.isnan(down[2]) and np.isnan(down[3])
+
+    def test_length(self):
+        up, down = WILLIAMS_FRACTALS(_H, _L, timeperiod=2)
+        assert len(up) == len(down) == N
+
+
+class TestRWI:
+    def test_golden_period2(self):
+        high = np.array([10.0, 11.0, 12.0, 13.0, 14.0])
+        low = np.array([9.0, 10.0, 11.0, 12.0, 13.0])
+        close = np.array([9.5, 10.5, 11.5, 12.5, 13.5])
+        rh, rl = RWI(high, low, close, timeperiod=2)
+        assert np.all(np.isnan(rh[:2])) and np.all(np.isnan(rl[:2]))
+        denom = 1.5 * np.sqrt(2.0)
+        assert rh[2] == pytest.approx(3.0 / denom, abs=1e-12)
+        assert rl[2] == pytest.approx(-1.0 / denom, abs=1e-12)
+
+    def test_length_and_warmup(self):
+        rh, rl = RWI(_H, _L, _C, timeperiod=14)
+        assert len(rh) == len(rl) == N
+        assert np.all(np.isnan(rh[:14]))
+        assert np.all(np.isfinite(rh[14:]))

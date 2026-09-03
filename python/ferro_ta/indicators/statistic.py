@@ -15,6 +15,9 @@ CORREL           — Pearson's Correlation Coefficient (r)
 DTW              — Dynamic Time Warping (distance + warping path)
 DTW_DISTANCE     — Dynamic Time Warping distance only (faster)
 BATCH_DTW        — Batch DTW: N series vs 1 reference, in parallel
+MEDIAN           — Rolling median
+MEDIAN_BANDS     — Median of (high+low)/2 with ATR bands and median EMA
+MODE             — Rolling mode via equal-width binning
 """
 
 from __future__ import annotations
@@ -50,6 +53,15 @@ from ferro_ta._ferro_ta import (
 )
 from ferro_ta._ferro_ta import (
     linearreg_slope as _linearreg_slope,
+)
+from ferro_ta._ferro_ta import (
+    median as _median,
+)
+from ferro_ta._ferro_ta import (
+    median_bands as _median_bands,
+)
+from ferro_ta._ferro_ta import (
+    mode as _mode,
 )
 from ferro_ta._ferro_ta import (
     stddev as _stddev,
@@ -353,6 +365,90 @@ def BATCH_DTW(
         _normalize_rust_error(e)
 
 
+def MEDIAN(close: ArrayLike, timeperiod: int = 3) -> np.ndarray:
+    """Rolling median.
+
+    Parameters
+    ----------
+    close : array-like
+        Input series.
+    timeperiod : int, optional
+        Window length (default 3). Even windows average the two central values.
+
+    Returns
+    -------
+    numpy.ndarray
+        Rolling median; leading ``timeperiod - 1`` entries are ``NaN``.
+    """
+    try:
+        return _median(_to_f64(close), timeperiod)
+    except ValueError as e:
+        _normalize_rust_error(e)
+
+
+def MEDIAN_BANDS(
+    high: ArrayLike,
+    low: ArrayLike,
+    close: ArrayLike,
+    timeperiod: int = 3,
+    atr_period: int = 14,
+    multiplier: float = 2.0,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Median of ``(high + low) / 2`` with ATR envelopes and an EMA of the median.
+
+    Parameters
+    ----------
+    high, low, close : array-like
+        Price series of equal length.
+    timeperiod : int, optional
+        Median and median-EMA window (default 3).
+    atr_period : int, optional
+        ATR period (default 14).
+    multiplier : float, optional
+        ATR band width (default 2.0).
+
+    Returns
+    -------
+    median, upper, lower, median_ema : numpy.ndarray
+        Midline, upper band, lower band, and EMA of the midline.
+    """
+    try:
+        return _median_bands(
+            _to_f64(high),
+            _to_f64(low),
+            _to_f64(close),
+            timeperiod,
+            atr_period,
+            multiplier,
+        )
+    except ValueError as e:
+        _normalize_rust_error(e)
+
+
+def MODE(close: ArrayLike, timeperiod: int = 20, bins: int = 10) -> np.ndarray:
+    """Rolling mode via equal-width discretization of each window.
+
+    Parameters
+    ----------
+    close : array-like
+        Input series.
+    timeperiod : int, optional
+        Window length (default 20).
+    bins : int, optional
+        Number of equal-width bins between the window min and max (default 10).
+
+    Returns
+    -------
+    numpy.ndarray
+        Centre of the most populous bin; leading ``timeperiod - 1`` entries
+        are ``NaN``. A constant window returns that constant.
+    """
+    try:
+        return _mode(_to_f64(close), timeperiod, bins)
+    except ValueError as e:
+        _normalize_rust_error(e)
+
+
 __all__ = [
     "STDDEV",
     "VAR",
@@ -366,4 +462,7 @@ __all__ = [
     "DTW",
     "DTW_DISTANCE",
     "BATCH_DTW",
+    "MEDIAN",
+    "MEDIAN_BANDS",
+    "MODE",
 ]

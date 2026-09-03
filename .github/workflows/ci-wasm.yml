@@ -21,10 +21,28 @@ jobs:
         with:
           toolchain: stable
           targets: wasm32-unknown-unknown
+          components: clippy, rustfmt
       - uses: Swatinem/rust-cache@v2
       - uses: taiki-e/install-action@v2
         with:
           tool: wasm-pack
+      # `wasm/` carries its own [workspace] table, so it is NOT a member of the
+      # root workspace: the `cargo clippy --workspace` in ci-rust.yml never sees
+      # it. Lint it here, where the wasm32 target is already installed.
+      # Scoped to the lib target (what wasm-pack actually ships) rather than
+      # --all-targets: `mod tests` still has two pending manual_range_contains
+      # findings. Once those are fixed, add --all-targets here.
+      - name: Clippy WASM binding
+        working-directory: wasm
+        run: cargo clippy --target wasm32-unknown-unknown -- -D warnings
+      # Advisory only, for now. The crate carries ~130 hunks of pre-existing
+      # rustfmt drift; reformatting it in one shot would bury the reviewable
+      # changes. Follow-up: land the one-shot `cargo fmt` for wasm/ on its own,
+      # then drop `continue-on-error` to make this gating.
+      - name: Rustfmt WASM binding (advisory)
+        working-directory: wasm
+        continue-on-error: true
+        run: cargo fmt --check
       - name: Test WASM binding
         working-directory: wasm
         run: wasm-pack test --node

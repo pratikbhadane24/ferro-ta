@@ -17,87 +17,70 @@ The authoritative benchmark workflow lives in ``benchmarks/``:
 - Table generation from benchmark JSON: ``benchmarks/benchmark_table.py``
 - Perf-contract artifact bundle: ``benchmarks/run_perf_contract.py``
 
-Backtesting engine — competitor comparison
-------------------------------------------
+Backtesting engine
+------------------
 
-Measured on Apple M-series, Python 3.13, Rust 1.91, using an SMA(20/50)
-crossover strategy with 0.1% commission and 5 bps slippage.  Median of 5 runs.
+The backtester is built for the vectorized case: you already hold a signal
+array (or an OHLCV frame plus signals) and you want the equity curve, the trade
+list and the summary statistics.
 
-.. list-table:: Speed vs backtesting libraries (signal → equity curve)
-   :header-rows: 1
+What that buys you, structurally:
 
-   * - Library
-     - 1k bars
-     - 10k bars
-     - 100k bars
-     - vs ferro-ta core (100k)
-   * - **ferro-ta** ``backtest_core``
-     - 0.004 ms
-     - 0.033 ms
-     - 0.286 ms
-     - —
-   * - **ferro-ta** ``backtest_ohlcv_core``
-     - 0.004 ms
-     - 0.037 ms
-     - 0.332 ms
-     - ~same
-   * - NumPy vectorized (manual)
-     - 0.013 ms
-     - 0.042 ms
-     - 0.459 ms
-     - 1.6× slower
-   * - vectorbt 0.28
-     - 1.32 ms
-     - 1.31 ms
-     - 2.90 ms
-     - **10× slower**
-   * - backtesting.py
-     - 10.5 ms
-     - 42.3 ms
-     - 319.6 ms
-     - **1,117× slower**
-   * - backtrader 1.9
-     - 53.9 ms
-     - 518 ms
-     - n/a (skipped)
-     - **>15,000× slower**
+- **The signal → equity loop runs entirely in Rust.** ``backtest_core`` and
+  ``backtest_ohlcv_core`` are single O(n) passes over the bars with the GIL
+  released; there is no Python on the hot path. Commission and slippage are
+  applied inside the same pass rather than as a follow-up Python step
+  (``crates/ferro_ta_core/src/backtest.rs``, ``src/backtest/mod.rs``).
+- **All 23 performance metrics come from one call.**
+  ``compute_performance_metrics`` computes the whole set in a single traversal,
+  so asking for twenty-three statistics costs about what asking for one costs.
+  The corollary matters: against a NumPy snippet that computes only Sharpe and
+  max drawdown, the full call is *slower*, and the checked-in artifact records
+  that ratio explicitly. You are buying the other twenty-one metrics.
+- **Monte Carlo and multi-asset runs are Rayon-parallel** with deterministic
+  LCG seeding and the GIL released, so a bootstrap over many simulations scales
+  across cores instead of serialising on the interpreter.
+- **Walk-forward index generation is O(number of folds)**, not O(bars) — it
+  produces slice boundaries, not copies.
 
-Accuracy: ferro-ta positions and bar-returns are **bit-exact** against the NumPy
-reference implementation (max per-bar equity diff = 0.00e+00 with zero
-commission/slippage).
+When it is the right tool: signal-array backtests, parameter sweeps, bootstrap
+confidence intervals, and multi-asset portfolio runs whose per-bar logic is
+expressible as arrays.
 
-Additional ferro-ta capabilities not present in the libraries above:
+When it is not: path-dependent strategies that must make a decision inside the
+bar loop in Python, or anything that needs a broker event model. For those, use
+a dedicated event-driven engine — ``ferro_ta.analysis.backtest`` says as much in
+its own module docstring.
 
-.. list-table::
-   :header-rows: 1
+For numbers, read the artifact rather than this page
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-   * - Capability
-     - ferro-ta result
-     - NumPy baseline
-     - Speedup
-   * - Monte Carlo 1,000 sims (100k bars)
-     - 50 ms (parallel Rayon + LCG)
-     - 612 ms (Python loop)
-     - **12×**
-   * - 23 performance metrics, single call (100k bars)
-     - 2.8 ms
-     - 0.36 ms (2 metrics only)
-     - 0.12 ms / metric
-   * - Multi-asset 100 assets (100k bars)
-     - 43 ms parallel / 88 ms serial
-     - —
-     - 2× parallel speedup
-   * - Walk-forward fold indices (100k bars)
-     - 0.3 µs
-     - —
-     - —
-
-Reproduce the backtest benchmark:
+``benchmarks/artifacts/latest/bench_backtest_results.json`` carries per-size
+timings for every path above, together with the machine, commit, Python version
+and Rust toolchain that produced them. Regenerate it with:
 
 .. code-block:: bash
 
    python benchmarks/bench_backtest.py --sizes 10000 100000 \
-       --json benchmarks/artifacts/latest/bench_backtest_results.json
+       --json /tmp/bench_backtest_results.json
+
+Add ``--skip-competitors`` to run only the ferro-ta paths, and ``--assets`` /
+``--sims`` to change the multi-asset and Monte Carlo shapes. Absolute figures
+move a great deal between builds and machines — a fresh local run of the same
+script has disagreed with the committed artifact by more than 2× on several
+rows, including flipping the sign of the multi-asset parallel-vs-loop
+comparison — which is exactly why they are not reproduced here.
+
+.. note::
+
+   Earlier revisions of this page carried a table ranking the backtester
+   against named third-party backtesting libraries. Most of those numbers were
+   not reproducible from anything in this repository:
+   ``benchmarks/bench_backtest.py`` has never contained an event-driven-library
+   comparison, and its only optional competitor path covers a single vectorized
+   library. Comparative numbers now live in the benchmark artifacts under
+   ``benchmarks/``, where they carry their own provenance and are regenerated
+   rather than transcribed.
 
 Latest checked-in TA-Lib artifact
 ---------------------------------
@@ -107,26 +90,35 @@ The current checked-in TA-Lib comparison artifact benchmarks contiguous
 cores, about 38.7 GB RAM, ``CPython 3.13.5``, and ``Rust 1.91.1`` using the
 default release profile (``lto = true``, ``codegen-units = 1``).
 
-Summary from ``benchmarks/artifacts/latest/benchmark_vs_talib.json``:
+Summary transcribed from the ``summary`` block of
+``benchmarks/artifacts/latest/benchmark_vs_talib.json`` (generated
+2026-03-24). "Wins", "ties" and "losses" use that artifact's own tie band of
+0.95–1.05; a tie is therefore *not* a ferro-ta win.
 
 .. list-table::
    :header-rows: 1
 
    * - Size
      - Rows
-     - ferro-ta wins
+     - Wins
+     - Ties
+     - Losses
      - Median speedup
      - TA-Lib wins or ties
    * - ``10,000``
      - 12
-     - 6
-     - ``1.0850x``
-     - ``EMA``, ``RSI``, ``ATR``, ``STOCH``, ``ADX``, ``OBV``
+     - 5
+     - 4
+     - 3
+     - ``1.0383x``
+     - ``EMA``, ``RSI``, ``ATR``, ``STOCH``, ``ADX``, ``OBV``, ``MFI``
    * - ``100,000``
      - 12
-     - 6
-     - ``1.0784x``
-     - ``EMA``, ``RSI``, ``ATR``, ``STOCH``, ``ADX``, ``OBV``
+     - 7
+     - 3
+     - 2
+     - ``1.1748x``
+     - ``EMA``, ``ATR``, ``STOCH``, ``ADX``, ``OBV``
 
 Examples from the 100k-bar run:
 
@@ -138,36 +130,41 @@ Examples from the 100k-bar run:
      - TA-Lib
      - Speedup
      - Read
-   * - ``SMA``
-     - ``0.0985 ms``
-     - ``0.2241 ms``
-     - ``2.2751x``
+   * - ``MFI``
+     - ``0.1736 ms``
+     - ``0.5635 ms``
+     - ``3.2460x``
      - clear ferro-ta win
    * - ``BBANDS``
-     - ``0.2122 ms``
-     - ``0.4966 ms``
-     - ``2.3402x``
+     - ``0.2213 ms``
+     - ``0.4350 ms``
+     - ``1.9657x``
+     - clear ferro-ta win
+   * - ``SMA``
+     - ``0.0758 ms``
+     - ``0.1466 ms``
+     - ``1.9340x``
      - clear ferro-ta win
    * - ``MACD``
-     - ``0.5152 ms``
-     - ``0.7111 ms``
-     - ``1.3801x``
+     - ``0.4458 ms``
+     - ``0.6455 ms``
+     - ``1.4480x``
      - ferro-ta win
-   * - ``STOCH``
-     - ``1.7064 ms``
-     - ``0.7603 ms``
-     - ``0.4455x``
-     - TA-Lib win
-   * - ``ADX``
-     - ``0.7910 ms``
-     - ``0.5769 ms``
-     - ``0.7294x``
-     - TA-Lib win
    * - ``ATR``
-     - ``0.5087 ms``
-     - ``0.5147 ms``
-     - ``1.0118x``
+     - ``0.5035 ms``
+     - ``0.5014 ms``
+     - ``0.9958x``
      - tie on this machine
+   * - ``ADX``
+     - ``0.8133 ms``
+     - ``0.5973 ms``
+     - ``0.7344x``
+     - TA-Lib win
+   * - ``STOCH``
+     - ``1.7758 ms``
+     - ``0.8185 ms``
+     - ``0.4609x``
+     - TA-Lib win
 
 Methodology notes
 -----------------
@@ -207,29 +204,20 @@ Run the broader speed suite on 100,000 bars:
 
    uv run pytest benchmarks/test_speed.py --benchmark-only --benchmark-json=benchmarks/results.json -v
 
-Selected throughput examples from the checked-in table:
+That run writes ``benchmarks/results.json``; render it as a markdown table
+with:
 
-.. list-table::
-   :header-rows: 1
+.. code-block:: bash
 
-   * - Indicator
-     - Throughput
-   * - ``ADD``
-     - 1.9 G bars/s
-   * - ``CDLENGULFING``
-     - 454 M bars/s
-   * - ``EMA``
-     - 444 M bars/s
-   * - ``SMA``
-     - 259 M bars/s
-   * - ``RSI``
-     - 145 M bars/s
-   * - ``ATR``
-     - 70 M bars/s
-   * - ``MACD``
-     - 104 M bars/s
-   * - ``STOCH``
-     - 33 M bars/s
+   uv run python benchmarks/benchmark_table.py
+
+The rendered table is checked in at ``benchmarks/README.md``. Per-indicator
+throughput figures are deliberately not repeated on this page: the same
+indicator measures very differently across the harnesses in this repository
+(the pytest suite reports median µs per call, ``bench_vs_talib.py`` and
+``bench_vs_openalgo.py`` each report their own ``M bars/s``), so a transcribed
+number is ambiguous about which harness produced it. Read the artifact that
+matches the harness you care about.
 
 Perf-contract artifacts
 -----------------------
@@ -240,7 +228,23 @@ hotspot attribution:
 
 .. code-block:: bash
 
-   uv run python benchmarks/run_perf_contract.py --output-dir benchmarks/artifacts/latest
+   uv run python benchmarks/run_perf_contract.py \
+       --output-dir benchmarks/artifacts/latest --skip-simd --skip-talib
+
+.. warning::
+
+   Pass ``--skip-simd`` unless you specifically want the portable-vs-SIMD
+   comparison. Without it the runner calls ``benchmarks/bench_simd.py``, which
+   runs ``maturin develop --release`` **twice** — once with
+   ``--no-default-features`` and once with the default features — replacing
+   whatever build you currently have installed. ``--skip-talib`` skips the
+   TA-Lib suite, which needs ``ta-lib`` present.
+
+The committed ``perf-contract/*.json`` files are a **local snapshot, not the
+enforced gate.** CI regenerates that directory from this same runner on its own
+hardware and then checks the fresh output, so treat the committed copies as an
+example of the format and of one machine's result rather than as the numbers CI
+is asserting. ``benchmarks/README.md`` documents this in more detail.
 
 See ``benchmarks/README.md`` for the detailed benchmark playbook and the
 checked-in comparison tables.

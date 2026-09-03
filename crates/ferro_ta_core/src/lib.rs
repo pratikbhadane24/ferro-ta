@@ -56,10 +56,14 @@ pub mod portfolio;
 pub mod price_transform;
 pub mod regime;
 pub mod resampling;
+/// Shared rolling-window machinery: monotonic extremum deques and running
+/// sum / variance accumulators (internal).
+pub(crate) mod rolling;
 pub mod signals;
 /// Runtime-dispatched SIMD reduction primitives (internal).
 pub(crate) mod simd;
 pub mod statistic;
 pub mod streaming;
+pub mod utils;
 pub mod volatility;
 pub mod volume;

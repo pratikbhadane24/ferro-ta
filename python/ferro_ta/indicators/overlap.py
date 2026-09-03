@@ -22,6 +22,14 @@ MAVP     — Moving Average with Variable Period
 MAMA     — MESA Adaptive Moving Average
 MIDPOINT — MidPoint over period
 MIDPRICE — MidPrice over period (High/Low)
+ALMA     — Arnaud Legoux Moving Average
+ZLEMA    — Zero-Lag EMA
+FRAMA    — Fractal Adaptive Moving Average
+MCGINLEY — McGinley Dynamic
+VIDYA    — Variable Index Dynamic Average
+ALLIGATOR — Bill Williams Alligator (jaw / teeth / lips)
+MA_ENVELOPES — Moving-average envelopes
+CHANDE_KROLL_STOP — Chande Kroll Stop
 """
 
 from __future__ import annotations
@@ -30,7 +38,16 @@ import numpy as np
 from numpy.typing import ArrayLike
 
 from ferro_ta._ferro_ta import (
+    alligator as _alligator,
+)
+from ferro_ta._ferro_ta import (
+    alma as _alma,
+)
+from ferro_ta._ferro_ta import (
     bbands as _bbands,
+)
+from ferro_ta._ferro_ta import (
+    chande_kroll_stop as _chande_kroll_stop,
 )
 from ferro_ta._ferro_ta import (
     dema as _dema,
@@ -39,10 +56,16 @@ from ferro_ta._ferro_ta import (
     ema as _ema,
 )
 from ferro_ta._ferro_ta import (
+    frama as _frama,
+)
+from ferro_ta._ferro_ta import (
     kama as _kama,
 )
 from ferro_ta._ferro_ta import (
     ma as _ma,
+)
+from ferro_ta._ferro_ta import (
+    ma_envelopes as _ma_envelopes,
 )
 from ferro_ta._ferro_ta import (
     macd as _macd,
@@ -58,6 +81,9 @@ from ferro_ta._ferro_ta import (
 )
 from ferro_ta._ferro_ta import (
     mavp as _mavp,
+)
+from ferro_ta._ferro_ta import (
+    mcginley as _mcginley,
 )
 from ferro_ta._ferro_ta import (
     midpoint as _midpoint,
@@ -84,7 +110,13 @@ from ferro_ta._ferro_ta import (
     trima as _trima,
 )
 from ferro_ta._ferro_ta import (
+    vidya as _vidya,
+)
+from ferro_ta._ferro_ta import (
     wma as _wma,
+)
+from ferro_ta._ferro_ta import (
+    zlema as _zlema,
 )
 from ferro_ta._utils import _to_f64
 from ferro_ta.core.exceptions import _normalize_rust_error
@@ -265,8 +297,13 @@ def BBANDS(
     timeperiod: int = 5,
     nbdevup: float = 2.0,
     nbdevdn: float = 2.0,
+    matype: int = 0,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Bollinger Bands.
+
+    The middle band is a moving average of type *matype*; the outer bands are
+    offset from it by ``nbdevup`` / ``nbdevdn`` population standard deviations
+    of the same window.
 
     Parameters
     ----------
@@ -278,15 +315,74 @@ def BBANDS(
         Number of standard deviations above the middle band (default 2.0).
     nbdevdn : float, optional
         Number of standard deviations below the middle band (default 2.0).
+    matype : int, optional
+        Middle-band moving average type, as in :func:`MA` (default 0 = SMA,
+        which is both TA-Lib's default and this function's historical
+        behaviour):
+
+        * 0 = SMA (Simple)
+        * 1 = EMA (Exponential)
+        * 2 = WMA (Weighted)
+        * 3 = DEMA (Double EMA)
+        * 4 = TEMA (Triple EMA)
+        * 5 = TRIMA (Triangular)
+        * 6 = KAMA (Kaufman Adaptive)
+        * 7 = T3 (Tillson)
+        * 8 = T3 (Tillson; exact alias of 7)
+
+        Values ``0``-``6`` and ``8`` match TA-Lib's numbering, but ``7`` is T3
+        here where TA-Lib's ``7`` is MAMA.  MAMA is not reachable through any
+        ``matype`` value -- call :func:`ferro_ta.MAMA` directly.  A value
+        outside ``0``-``8`` raises :class:`ValueError`.
 
     Returns
     -------
     tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray]
         ``(upperband, middleband, lowerband)`` — three arrays of equal length.
-        Leading ``timeperiod - 1`` entries are ``NaN``.
+
+    Notes
+    -----
+    **The deviation is always measured about the SMA, whatever matype is.**
+    TA-Lib centres the bands on the selected MA but computes the half-width
+    from a standard deviation that is never told about *matype*
+    (``ta_BBANDS.c`` passes ``optInMAType`` to ``TA_MA`` for the middle band,
+    but its ``TA_STDDEV`` call does not receive it), and ferro-ta matches that.
+    So for ``matype != 0`` the centre and the deviation reference are
+    *different* series: the half-width is ``nbdev`` × the window's sigma about
+    the window **mean**, while the centre is elsewhere.
+
+    The bands are therefore *not* a ``nbdev``-sigma envelope of the series they
+    are centred on, and the usual statistical reading of the ``nbdev``
+    multiplier does not carry over.  How often price closes outside the bands
+    changes substantially with *matype* -- on a random walk, a lagging centre
+    such as ``matype=8`` (T3) can put several times as many bars outside the
+    bands as ``matype=0`` does at the same ``nbdev``, and a well-centred one
+    such as ``matype=4`` (TEMA) far fewer.  Whenever the selected MA sits
+    further from the window SMA than ``nbdev`` × that sigma, the whole envelope
+    stops bracketing the SMA at all.  Band *ordering* is unaffected
+    (``upperband >= middleband >= lowerband`` still holds for non-negative
+    ``nbdev``, since both outer bands are offsets from the same centre); it is
+    the bands' meaning relative to the price distribution that shifts.
+
+    **Warm-up depends on matype**, and is the selected MA's lookback (writing
+    ``p`` for *timeperiod*), identical in all three output arrays so index
+    alignment is preserved:
+
+    ==============================  ==================
+    ``matype``                      leading ``NaN`` count
+    ==============================  ==================
+    0, 1, 2, 5 (SMA/EMA/WMA/TRIMA)  ``p - 1``
+    3 (DEMA)                        ``2 * (p - 1)``
+    4 (TEMA)                        ``3 * (p - 1)``
+    6 (KAMA)                        ``p``
+    7, 8 (T3)                       ``6 * (p - 1)``
+    ==============================  ==================
+
+    All three arrays are entirely ``NaN`` if that warm-up runs past the end of
+    *close*.
     """
     try:
-        return _bbands(_to_f64(close), timeperiod, nbdevup, nbdevdn)
+        return _bbands(_to_f64(close), timeperiod, nbdevup, nbdevdn, matype)
     except ValueError as e:
         _normalize_rust_error(e)
 
@@ -442,6 +538,11 @@ def MA(close: ArrayLike, timeperiod: int = 30, matype: int = 0) -> np.ndarray:
         * 5 = TRIMA (Triangular)
         * 6 = KAMA (Kaufman Adaptive)
         * 7 = T3 (Tillson)
+        * 8 = T3 (Tillson; exact alias of 7)
+
+        Values ``0``-``6`` and ``8`` match TA-Lib's numbering, but ``7`` is T3
+        here where TA-Lib's ``7`` is MAMA.  MAMA is not reachable through any
+        ``matype`` value -- call :func:`ferro_ta.MAMA` directly.
 
     Returns
     -------
@@ -459,10 +560,11 @@ def MAVP(
     periods: ArrayLike,
     minperiod: int = 2,
     maxperiod: int = 30,
+    matype: int = 0,
 ) -> np.ndarray:
     """Moving Average with Variable Period.
 
-    Computes a simple moving average at each bar using the period given by the
+    Computes a moving average at each bar using the period given by the
     corresponding element of *periods*.  Periods are clamped to
     ``[minperiod, maxperiod]``.
 
@@ -476,14 +578,31 @@ def MAVP(
         Minimum allowed period (default 2).
     maxperiod : int, optional
         Maximum allowed period (default 30).
+    matype : int, optional
+        Moving average type, as in :func:`MA` (default 0 = SMA):
+
+        * 0 = SMA (Simple)
+        * 1 = EMA (Exponential)
+        * 2 = WMA (Weighted)
+        * 3 = DEMA (Double EMA)
+        * 4 = TEMA (Triple EMA)
+        * 5 = TRIMA (Triangular)
+        * 6 = KAMA (Kaufman Adaptive)
+        * 7 = T3 (Tillson)
+        * 8 = T3 (Tillson; exact alias of 7)
+
+        Values ``0``-``6`` and ``8`` match TA-Lib's numbering, but ``7`` is T3
+        here where TA-Lib's ``7`` is MAMA.  MAMA is not reachable through any
+        ``matype`` value -- call :func:`ferro_ta.MAMA` directly.
 
     Returns
     -------
     numpy.ndarray
-        Array of variable-period MA values.
+        Array of variable-period MA values.  Leading entries are ``NaN`` for
+        the *maxperiod* MA's lookback, which depends on *matype*.
     """
     try:
-        return _mavp(_to_f64(close), _to_f64(periods), minperiod, maxperiod)
+        return _mavp(_to_f64(close), _to_f64(periods), minperiod, maxperiod, matype)
     except ValueError as e:
         _normalize_rust_error(e)
 
@@ -633,6 +752,260 @@ def MACDEXT(
         _normalize_rust_error(e)
 
 
+def ALMA(
+    close: ArrayLike,
+    timeperiod: int = 21,
+    offset: float = 0.85,
+    sigma: float = 6.0,
+) -> np.ndarray:
+    """Arnaud Legoux Moving Average.
+
+    Gaussian-weighted moving average. The peak sits at
+    ``floor(offset * (timeperiod - 1))`` from the oldest bar in the window;
+    the width is ``timeperiod / sigma``. Leading ``timeperiod - 1`` values
+    are ``NaN``.
+
+    Parameters
+    ----------
+    close : array-like
+        Sequence of closing prices.
+    timeperiod : int, optional
+        Window length (default 21).
+    offset : float, optional
+        Gaussian peak location in ``[0, 1]`` (default 0.85).
+    sigma : float, optional
+        Gaussian width control (default 6.0). Must be ``> 0``.
+
+    Returns
+    -------
+    numpy.ndarray
+        ALMA values.
+    """
+    try:
+        return _alma(_to_f64(close), timeperiod, offset, sigma)
+    except ValueError as e:
+        _normalize_rust_error(e)
+
+
+def ZLEMA(close: ArrayLike, timeperiod: int = 14) -> np.ndarray:
+    """Zero-Lag Exponential Moving Average.
+
+    Applies an EMA to the error-corrected series
+    ``close + (close - close[lag])`` where ``lag = floor((timeperiod - 1) / 2)``.
+
+    Parameters
+    ----------
+    close : array-like
+        Sequence of closing prices.
+    timeperiod : int, optional
+        EMA period (default 14).
+
+    Returns
+    -------
+    numpy.ndarray
+        ZLEMA values.
+    """
+    try:
+        return _zlema(_to_f64(close), timeperiod)
+    except ValueError as e:
+        _normalize_rust_error(e)
+
+
+def FRAMA(close: ArrayLike, timeperiod: int = 16) -> np.ndarray:
+    """Fractal Adaptive Moving Average.
+
+    Adaptive EMA whose smoothing follows the fractal dimension of ``close``
+    over ``timeperiod`` (two half-windows versus the full window).
+    ``alpha = exp(-4.6 * (dim - 1))`` clipped to ``[0.01, 1]``.
+    Prefer an even ``timeperiod``.
+
+    Parameters
+    ----------
+    close : array-like
+        Sequence of closing prices.
+    timeperiod : int, optional
+        Fractal lookback (default 16). Must be ``>= 2``.
+
+    Returns
+    -------
+    numpy.ndarray
+        FRAMA values; leading ``timeperiod - 1`` entries are ``NaN``.
+    """
+    try:
+        return _frama(_to_f64(close), timeperiod)
+    except ValueError as e:
+        _normalize_rust_error(e)
+
+
+def MCGINLEY(close: ArrayLike, timeperiod: int = 14) -> np.ndarray:
+    """McGinley Dynamic.
+
+    ``MD = MD[1] + (close - MD[1]) / (timeperiod * (close / MD[1]) ** 4)``,
+    seeded with the SMA of the first ``timeperiod`` bars.
+
+    Parameters
+    ----------
+    close : array-like
+        Sequence of closing prices.
+    timeperiod : int, optional
+        Smoothing period (default 14).
+
+    Returns
+    -------
+    numpy.ndarray
+        McGinley Dynamic values.
+    """
+    try:
+        return _mcginley(_to_f64(close), timeperiod)
+    except ValueError as e:
+        _normalize_rust_error(e)
+
+
+def VIDYA(
+    close: ArrayLike,
+    timeperiod: int = 14,
+    cmo_period: int = 9,
+) -> np.ndarray:
+    """Variable Index Dynamic Average.
+
+    EMA whose smoothing constant is scaled by ``|CMO(cmo_period)| / 100``.
+
+    Parameters
+    ----------
+    close : array-like
+        Sequence of closing prices.
+    timeperiod : int, optional
+        Base EMA period (default 14).
+    cmo_period : int, optional
+        Chande Momentum Oscillator lookback (default 9).
+
+    Returns
+    -------
+    numpy.ndarray
+        VIDYA values.
+    """
+    try:
+        return _vidya(_to_f64(close), timeperiod, cmo_period)
+    except ValueError as e:
+        _normalize_rust_error(e)
+
+
+def ALLIGATOR(
+    high: ArrayLike,
+    low: ArrayLike,
+    jaw_period: int = 13,
+    jaw_shift: int = 8,
+    teeth_period: int = 8,
+    teeth_shift: int = 5,
+    lips_period: int = 5,
+    lips_shift: int = 3,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Bill Williams Alligator (jaw, teeth, lips).
+
+    Each line is an SMMA of the median price ``(high + low) / 2``, shifted
+    forward by the given offset.
+
+    Parameters
+    ----------
+    high, low : array-like
+        High and low price series.
+    jaw_period, teeth_period, lips_period : int, optional
+        SMMA periods (defaults 13, 8, 5).
+    jaw_shift, teeth_shift, lips_shift : int, optional
+        Forward displacements (defaults 8, 5, 3).
+
+    Returns
+    -------
+    jaw, teeth, lips : numpy.ndarray
+    """
+    try:
+        return _alligator(
+            _to_f64(high),
+            _to_f64(low),
+            jaw_period,
+            jaw_shift,
+            teeth_period,
+            teeth_shift,
+            lips_period,
+            lips_shift,
+        )
+    except ValueError as e:
+        _normalize_rust_error(e)
+
+
+def MA_ENVELOPES(
+    close: ArrayLike,
+    timeperiod: int = 20,
+    percent: float = 2.5,
+    matype: int = 0,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Moving-average envelopes.
+
+    ``upper = MA * (1 + percent / 100)``, ``lower = MA * (1 - percent / 100)``.
+
+    Parameters
+    ----------
+    close : array-like
+        Sequence of closing prices.
+    timeperiod : int, optional
+        Moving-average window (default 20).
+    percent : float, optional
+        Envelope width in percent (default 2.5).
+    matype : int, optional
+        Moving-average type, same as :func:`MA` (default 0 = SMA).
+
+    Returns
+    -------
+    upper, middle, lower : numpy.ndarray
+    """
+    try:
+        return _ma_envelopes(_to_f64(close), timeperiod, percent, matype)
+    except ValueError as e:
+        _normalize_rust_error(e)
+
+
+def CHANDE_KROLL_STOP(
+    high: ArrayLike,
+    low: ArrayLike,
+    close: ArrayLike,
+    timeperiod: int = 10,
+    multiplier: float = 1.0,
+    stop_period: int = 9,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Chande Kroll Stop.
+
+    First stops are ``HH(high, p) - x * ATR(p)`` and ``LL(low, p) + x * ATR(p)``.
+    The published stops are the ``stop_period``-bar highest first-long and
+    lowest first-short.
+
+    Parameters
+    ----------
+    high, low, close : array-like
+        OHLC series of equal length.
+    timeperiod : int, optional
+        ``p`` — HH/LL and ATR lookback (default 10).
+    multiplier : float, optional
+        ``x`` — ATR multiplier (default 1.0).
+    stop_period : int, optional
+        ``q`` — stop confirmation window (default 9).
+
+    Returns
+    -------
+    long_stop, short_stop : numpy.ndarray
+    """
+    try:
+        return _chande_kroll_stop(
+            _to_f64(high),
+            _to_f64(low),
+            _to_f64(close),
+            timeperiod,
+            multiplier,
+            stop_period,
+        )
+    except ValueError as e:
+        _normalize_rust_error(e)
+
+
 __all__ = [
     "SMA",
     "EMA",
@@ -653,4 +1026,12 @@ __all__ = [
     "MAMA",
     "MIDPOINT",
     "MIDPRICE",
+    "ALMA",
+    "ZLEMA",
+    "FRAMA",
+    "MCGINLEY",
+    "VIDYA",
+    "ALLIGATOR",
+    "MA_ENVELOPES",
+    "CHANDE_KROLL_STOP",
 ]

@@ -10,7 +10,20 @@ A lightweight vectorized backtester that uses ferro_ta indicators as the engine.
 - Optional **commission** (per trade) and **slippage** (basis points) for more realistic equity.
 - Returns a :class:`BacktestResult` with signals, positions, and equity curve.
 
-For production backtesting consider `backtrader`, `zipline`, or `vectorbt`.
+**Who it is for.** Use this module when you already hold a price series (or an
+OHLCV frame) and want an equity curve, a trade list and summary statistics from
+a signal array — indicator research, parameter sweeps, bootstrap confidence
+intervals and array-expressible multi-asset runs. The signal-to-equity loop,
+commission and slippage application, performance metrics, trade extraction and
+Monte Carlo bootstrap all run in the Rust extension with the GIL released, so
+there is no Python on the hot path.
+
+**What it is not.** It is not an event-driven trading framework. There is no
+broker model, no order-type simulation, no portfolio accounting beyond a single
+notional equity series, and no hook for making a decision partway through a bar
+in Python. Strategies whose logic is genuinely path-dependent inside the bar, or
+that need realistic order routing and fills, want a dedicated event-driven
+engine instead.
 
 Quick start
 -----------

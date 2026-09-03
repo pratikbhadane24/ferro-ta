@@ -13,6 +13,9 @@ from ferro_ta.indicators.statistic import (
     LINEARREG_ANGLE,
     LINEARREG_INTERCEPT,
     LINEARREG_SLOPE,
+    MEDIAN,
+    MEDIAN_BANDS,
+    MODE,
     STDDEV,
     TSF,
     VAR,
@@ -315,14 +318,85 @@ class TestTSF:
 
 
 # ---------------------------------------------------------------------------
+# MEDIAN / MEDIAN_BANDS / MODE
+# ---------------------------------------------------------------------------
+
+
+class TestMEDIAN:
+    def test_odd_window_golden(self):
+        result = MEDIAN(np.array([1.0, 5.0, 3.0, 4.0, 2.0]), timeperiod=3)
+        assert np.all(np.isnan(result[:2]))
+        np.testing.assert_allclose(result[2:], [3.0, 4.0, 3.0], atol=1e-12)
+
+    def test_even_window_averages_centres(self):
+        result = MEDIAN(np.array([1.0, 2.0, 3.0, 4.0]), timeperiod=4)
+        assert np.all(np.isnan(result[:3]))
+        assert result[3] == pytest.approx(2.5, abs=1e-12)
+
+    def test_matches_numpy_rolling(self):
+        period = 5
+        result = MEDIAN(_A, timeperiod=period)
+        expected = np.full(N, np.nan)
+        for i in range(period - 1, N):
+            expected[i] = np.median(_A[i + 1 - period : i + 1])
+        np.testing.assert_allclose(result, expected, atol=1e-12, equal_nan=True)
+
+    def test_length(self):
+        assert len(MEDIAN(_A, timeperiod=3)) == N
+
+
+class TestMEDIAN_BANDS:
+    def test_returns_four_arrays(self):
+        out = MEDIAN_BANDS(_A + 1.0, _A - 1.0, _A, timeperiod=3, atr_period=5)
+        assert isinstance(out, tuple) and len(out) == 4
+        assert all(len(arr) == N for arr in out)
+
+    def test_bands_are_median_plus_minus_atr(self):
+        from ferro_ta import ATR, EMA
+
+        high, low, close = _A + 1.0, _A - 1.0, _A
+        mid, upper, lower, mid_ema = MEDIAN_BANDS(
+            high, low, close, timeperiod=3, atr_period=5, multiplier=2.0
+        )
+        hl2 = 0.5 * (high + low)
+        expected_mid = MEDIAN(hl2, timeperiod=3)
+        atr = ATR(high, low, close, timeperiod=5)
+        np.testing.assert_allclose(mid, expected_mid, atol=1e-12, equal_nan=True)
+        mask = np.isfinite(mid) & np.isfinite(atr)
+        np.testing.assert_allclose(upper[mask], mid[mask] + 2.0 * atr[mask], atol=1e-12)
+        np.testing.assert_allclose(lower[mask], mid[mask] - 2.0 * atr[mask], atol=1e-12)
+        np.testing.assert_allclose(
+            mid_ema, EMA(expected_mid, timeperiod=3), atol=1e-12, equal_nan=True
+        )
+
+
+class TestMODE:
+    def test_constant_window(self):
+        result = MODE(np.ones(8), timeperiod=4, bins=10)
+        assert np.all(np.isnan(result[:3]))
+        np.testing.assert_allclose(result[3:], 1.0, atol=1e-12)
+
+    def test_binned_golden(self):
+        result = MODE(np.array([1.0, 1.0, 1.0, 2.0, 3.0]), timeperiod=5, bins=2)
+        assert result[4] == pytest.approx(1.5, abs=1e-12)
+
+    def test_length(self):
+        assert len(MODE(_A, timeperiod=10, bins=8)) == N
+
+
+# ---------------------------------------------------------------------------
 # DTW — Dynamic Time Warping
 # ---------------------------------------------------------------------------
 
-dtai = pytest.importorskip("dtaidistance", reason="dtaidistance not installed")
+try:
+    import dtaidistance as dtai
+except ImportError:  # pragma: no cover
+    dtai = None
 
 _DTW_RNG = np.random.default_rng(42)
 
 
+@pytest.mark.skipif(dtai is None, reason="dtaidistance not installed")
 class TestDTW:
     # --- Validation against dtaidistance (SOTA reference) ---
 

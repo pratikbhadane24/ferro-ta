@@ -5,6 +5,11 @@
 // WASM bindings so all language surfaces stay in lockstep.
 #![allow(clippy::too_many_arguments)]
 
+/// Accelerator Oscillator: `AO - SMA(AO, timeperiod)`.
+pub fn ac(high: Vec<f64>, low: Vec<f64>, fastperiod: usize, slowperiod: usize, timeperiod: usize) -> Vec<f64> {
+    ferro_ta_core::extended::ac(&high, &low, fastperiod, slowperiod, timeperiod)
+}
+
 pub fn ad(high: Vec<f64>, low: Vec<f64>, close: Vec<f64>, volume: Vec<f64>) -> Vec<f64> {
     ferro_ta_core::volume::ad(&high, &low, &close, &volume)
 }
@@ -49,14 +54,31 @@ pub fn aggregate_volume_bars_ticks(price: Vec<f64>, size: Vec<f64>, volume_thres
     ferro_ta_core::aggregation::aggregate_volume_bars_ticks(&price, &size, volume_threshold)
 }
 
+/// Bill Williams Alligator.
+/// Returns `[jaw, teeth, lips]`.
+pub fn alligator(high: Vec<f64>, low: Vec<f64>, jaw_period: usize, jaw_shift: usize, teeth_period: usize, teeth_shift: usize, lips_period: usize, lips_shift: usize) -> (Vec<f64>, Vec<f64>, Vec<f64>) {
+    ferro_ta_core::extended::alligator(&high, &low, jaw_period, jaw_shift, teeth_period, teeth_shift, lips_period, lips_shift)
+}
+
+/// Arnaud Legoux Moving Average.
+pub fn alma(close: Vec<f64>, timeperiod: usize, offset: f64, sigma: f64) -> Vec<f64> {
+    ferro_ta_core::extended::alma(&close, timeperiod, offset, sigma)
+}
+
 /// Annualized basis.
 pub fn annualized_basis(spot: f64, future: f64, time_to_expiry: f64) -> f64 {
     ferro_ta_core::futures::basis::annualized_basis(spot, future, time_to_expiry)
 }
 
-/// Absolute Price Oscillator.
-pub fn apo(close: Vec<f64>, fastperiod: usize, slowperiod: usize) -> Vec<f64> {
-    ferro_ta_core::momentum::apo(&close, fastperiod, slowperiod)
+/// Awesome Oscillator.
+pub fn ao(high: Vec<f64>, low: Vec<f64>, fastperiod: usize, slowperiod: usize) -> Vec<f64> {
+    ferro_ta_core::extended::ao(&high, &low, fastperiod, slowperiod)
+}
+
+/// Absolute Price Oscillator. `matype` as in `ma`; this binding's historical
+/// behaviour is the EMA form, so pass `1` for it (TA-Lib's own default is `0`).
+pub fn apo(close: Vec<f64>, fastperiod: usize, slowperiod: usize, matype: u8) -> Vec<f64> {
+    ferro_ta_core::momentum::apo(&close, fastperiod, slowperiod, matype)
 }
 
 /// Aroon indicator. Returns [aroon_down, aroon_up].
@@ -98,19 +120,39 @@ pub fn back_adjusted_continuous(front: Vec<f64>, next: Vec<f64>, next_weights: V
     ferro_ta_core::futures::roll::back_adjusted_continuous(&front, &next, &next_weights)
 }
 
-/// Bollinger Bands (SMA ± k × rolling standard deviation).
+/// Bollinger Bands (moving average ± k × rolling standard deviation).
 ///
 /// # Arguments
 /// - `close` – `Float64Array` of close prices.
 /// - `timeperiod` – look-back window (default 5, minimum 1).
 /// - `nbdevup` – multiplier for the upper band (default 2.0).
 /// - `nbdevdn` – multiplier for the lower band (default 2.0).
+/// - `matype` – middle-band MA type, `0`=SMA … `8`=T3; `0` is TA-Lib's
+///   default. `0`–`6` and `8` match TA-Lib's numbering, but `7` is T3 here
+///   where TA-Lib's `7` is MAMA; MAMA is not reachable through any `matype`
+///   (use `mama`). Above `8` every output is `NaN`.
+///
+/// Like TA-Lib, the deviation is measured about the window **SMA** even when the
+/// centre is a different MA (`ta_BBANDS.c` never passes `optInMAType` to its
+/// `TA_STDDEV` call). For `matype != 0` the bands are therefore not an
+/// `nbdev`-sigma envelope of the series they are centred on. Warm-up follows the
+/// selected MA's lookback and is identical in all three vectors.
 ///
 /// # Returns
 /// A `js_sys::Array` containing three `Float64Array` elements:
 /// `[upperband, middleband, lowerband]`.
-pub fn bbands(close: Vec<f64>, timeperiod: usize, nbdevup: f64, nbdevdn: f64) -> (Vec<f64>, Vec<f64>, Vec<f64>) {
-    ferro_ta_core::overlap::bbands(&close, timeperiod, nbdevup, nbdevdn)
+pub fn bbands(close: Vec<f64>, timeperiod: usize, nbdevup: f64, nbdevdn: f64, matype: u8) -> (Vec<f64>, Vec<f64>, Vec<f64>) {
+    ferro_ta_core::overlap::bbands(&close, timeperiod, nbdevup, nbdevdn, matype)
+}
+
+/// Bollinger %B.
+pub fn bbpercent(close: Vec<f64>, timeperiod: usize, nbdevup: f64, nbdevdn: f64) -> Vec<f64> {
+    ferro_ta_core::extended::bbpercent(&close, timeperiod, nbdevup, nbdevdn)
+}
+
+/// Bollinger Bandwidth.
+pub fn bbwidth(close: Vec<f64>, timeperiod: usize, nbdevup: f64, nbdevdn: f64) -> Vec<f64> {
+    ferro_ta_core::extended::bbwidth(&close, timeperiod, nbdevup, nbdevdn)
 }
 
 /// Full-sample OLS beta of asset vs benchmark returns.
@@ -143,10 +185,26 @@ pub fn cci(high: Vec<f64>, low: Vec<f64>, close: Vec<f64>, timeperiod: usize) ->
     ferro_ta_core::momentum::cci(&high, &low, &close, timeperiod)
 }
 
+/// Chaikin Volatility.
+pub fn chaikin_vol(high: Vec<f64>, low: Vec<f64>, timeperiod: usize, rocperiod: usize) -> Vec<f64> {
+    ferro_ta_core::extended::chaikin_vol(&high, &low, timeperiod, rocperiod)
+}
+
+/// Chande Kroll Stop.
+/// Returns `[long_stop, short_stop]`.
+pub fn chande_kroll_stop(high: Vec<f64>, low: Vec<f64>, close: Vec<f64>, timeperiod: usize, multiplier: f64, stop_period: usize) -> (Vec<f64>, Vec<f64>) {
+    ferro_ta_core::extended::chande_kroll_stop(&high, &low, &close, timeperiod, multiplier, stop_period)
+}
+
 /// Chandelier Exit — ATR-based trailing stop levels.
 /// Returns `[long_exit, short_exit]`.
 pub fn chandelier_exit(high: Vec<f64>, low: Vec<f64>, close: Vec<f64>, timeperiod: usize, multiplier: f64) -> (Vec<f64>, Vec<f64>) {
     ferro_ta_core::extended::chandelier_exit(&high, &low, &close, timeperiod, multiplier)
+}
+
+/// Lookback difference: `real[i] - real[i - timeperiod]`.
+pub fn change(real: Vec<f64>, timeperiod: usize) -> Vec<f64> {
+    ferro_ta_core::utils::change(&real, timeperiod)
 }
 
 /// Detect cross-over/cross-under events between fast and slow series.
@@ -162,6 +220,11 @@ pub fn check_threshold(series: Vec<f64>, level: f64, direction: i32) -> Vec<i8> 
     ferro_ta_core::alerts::check_threshold(&series, level, direction)
 }
 
+/// Chaikin Oscillator (same math as ADOSC).
+pub fn cho(high: Vec<f64>, low: Vec<f64>, close: Vec<f64>, volume: Vec<f64>, fastperiod: usize, slowperiod: usize) -> Vec<f64> {
+    ferro_ta_core::extended::cho(&high, &low, &close, &volume, fastperiod, slowperiod)
+}
+
 /// Choppiness Index — measures market choppiness vs trending.
 pub fn choppiness_index(high: Vec<f64>, low: Vec<f64>, close: Vec<f64>, timeperiod: usize) -> Vec<f64> {
     ferro_ta_core::extended::choppiness_index(&high, &low, &close, timeperiod)
@@ -174,14 +237,44 @@ pub fn close_to_close_vol(close: Vec<f64>, window: usize, trading_days: f64) -> 
     ferro_ta_core::options::realized_vol::close_to_close_vol(&close, window, trading_days)
 }
 
+/// Chaikin Money Flow.
+pub fn cmf(high: Vec<f64>, low: Vec<f64>, close: Vec<f64>, volume: Vec<f64>, timeperiod: usize) -> Vec<f64> {
+    ferro_ta_core::extended::cmf(&high, &low, &close, &volume, timeperiod)
+}
+
 /// Chande Momentum Oscillator.
 pub fn cmo(close: Vec<f64>, timeperiod: usize) -> Vec<f64> {
     ferro_ta_core::momentum::cmo(&close, timeperiod)
 }
 
+/// Coppock Curve.
+pub fn coppock(close: Vec<f64>, wma_period: usize, roc1: usize, roc2: usize) -> Vec<f64> {
+    ferro_ta_core::extended::coppock(&close, wma_period, roc1, roc2)
+}
+
 /// Rolling Pearson correlation.
 pub fn correl(real0: Vec<f64>, real1: Vec<f64>, timeperiod: usize) -> Vec<f64> {
     ferro_ta_core::statistic::correl(&real0, &real1, timeperiod)
+}
+
+/// 1.0 on any bar where series0 crosses series1 in either direction.
+pub fn cross(real0: Vec<f64>, real1: Vec<f64>) -> Vec<f64> {
+    ferro_ta_core::utils::cross(&real0, &real1)
+}
+
+/// 1.0 where series0 crosses strictly above series1.
+pub fn crossover(real0: Vec<f64>, real1: Vec<f64>) -> Vec<f64> {
+    ferro_ta_core::utils::crossover(&real0, &real1)
+}
+
+/// 1.0 where series0 crosses strictly below series1.
+pub fn crossunder(real0: Vec<f64>, real1: Vec<f64>) -> Vec<f64> {
+    ferro_ta_core::utils::crossunder(&real0, &real1)
+}
+
+/// Connors RSI.
+pub fn crsi(close: Vec<f64>, timeperiod: usize, streakperiod: usize, rankperiod: usize) -> Vec<f64> {
+    ferro_ta_core::extended::crsi(&close, timeperiod, streakperiod, rankperiod)
 }
 
 /// Curve slope (linear regression).
@@ -199,15 +292,32 @@ pub fn detect_breaks_cusum(series: Vec<f64>, window: usize, threshold: f64, slac
     ferro_ta_core::regime::detect_breaks_cusum(&series, window, threshold, slack)
 }
 
+/// Directional Movement Index.
+/// Returns `[plus_di, minus_di, adx]`.
+pub fn dmi(high: Vec<f64>, low: Vec<f64>, close: Vec<f64>, timeperiod: usize) -> (Vec<f64>, Vec<f64>, Vec<f64>) {
+    ferro_ta_core::extended::dmi(&high, &low, &close, timeperiod)
+}
+
 /// Donchian Channels — rolling highest high / lowest low.
 /// Returns `[upper, middle, lower]`.
 pub fn donchian(high: Vec<f64>, low: Vec<f64>, timeperiod: usize) -> (Vec<f64>, Vec<f64>, Vec<f64>) {
     ferro_ta_core::extended::donchian(&high, &low, timeperiod)
 }
 
+/// Detrended Price Oscillator.
+pub fn dpo(close: Vec<f64>, timeperiod: usize) -> Vec<f64> {
+    ferro_ta_core::extended::dpo(&close, timeperiod)
+}
+
 /// Directional Movement Index (DX).
 pub fn dx(high: Vec<f64>, low: Vec<f64>, close: Vec<f64>, timeperiod: usize) -> Vec<f64> {
     ferro_ta_core::momentum::dx(&high, &low, &close, timeperiod)
+}
+
+/// Elder Ray Index.
+/// Returns `[bull_power, bear_power]`.
+pub fn elder_ray(high: Vec<f64>, low: Vec<f64>, close: Vec<f64>, timeperiod: usize) -> (Vec<f64>, Vec<f64>) {
+    ferro_ta_core::extended::elder_ray(&high, &low, &close, timeperiod)
 }
 
 /// Exponential Moving Average (SMA-seeded).
@@ -222,15 +332,51 @@ pub fn ema(close: Vec<f64>, timeperiod: usize) -> Vec<f64> {
     ferro_ta_core::overlap::ema(&close, timeperiod)
 }
 
+/// Ease of Movement, then SMA.
+pub fn emv(high: Vec<f64>, low: Vec<f64>, volume: Vec<f64>, timeperiod: usize, scale: f64) -> Vec<f64> {
+    ferro_ta_core::extended::emv(&high, &low, &volume, timeperiod, scale)
+}
+
+/// Excess-removal: keep the first primary signal until a secondary occurs.
+pub fn exrem(primary: Vec<f64>, secondary: Vec<f64>) -> Vec<f64> {
+    ferro_ta_core::utils::exrem(&primary, &secondary)
+}
+
 /// Extract trade PnL and hold durations from positions and strategy returns.
 /// Returns `[pnl, hold_durations]`.
 pub fn extract_trades(positions: Vec<f64>, strategy_returns: Vec<f64>) -> (Vec<f64>, Vec<f64>) {
     ferro_ta_core::attribution::extract_trades(&positions, &strategy_returns)
 }
 
+/// 1.0 when `real[i]` is strictly less than `real[i - timeperiod]`.
+pub fn falling(real: Vec<f64>, timeperiod: usize) -> Vec<f64> {
+    ferro_ta_core::utils::falling(&real, timeperiod)
+}
+
+/// Ehlers Fisher Transform of median price, plus a 1-bar trigger.
+/// Returns `[fisher, signal]`.
+pub fn fisher(high: Vec<f64>, low: Vec<f64>, timeperiod: usize) -> (Vec<f64>, Vec<f64>) {
+    ferro_ta_core::extended::fisher(&high, &low, timeperiod)
+}
+
+/// Hold 1.0 from a primary signal until a secondary signal clears it.
+pub fn flip(primary: Vec<f64>, secondary: Vec<f64>) -> Vec<f64> {
+    ferro_ta_core::utils::flip(&primary, &secondary)
+}
+
+/// Force Index (`timeperiod <= 1` returns the raw 1-bar force).
+pub fn force_index(close: Vec<f64>, volume: Vec<f64>, timeperiod: usize) -> Vec<f64> {
+    ferro_ta_core::extended::force_index(&close, &volume, timeperiod)
+}
+
 /// Forward-fill NaN values in a 1-D array.
 pub fn forward_fill_nan(values: Vec<f64>) -> Vec<f64> {
     ferro_ta_core::chunked::forward_fill_nan(&values)
+}
+
+/// Fractal Adaptive Moving Average (Ehlers).
+pub fn frama(close: Vec<f64>, timeperiod: usize) -> Vec<f64> {
+    ferro_ta_core::extended::frama(&close, timeperiod)
 }
 
 /// Cumulative PnL from funding rate payments.
@@ -246,6 +392,22 @@ pub fn futures_basis(spot: f64, future: f64) -> f64 {
 /// Garman-Klass OHLC volatility estimator (rolling).
 pub fn garman_klass_vol(open: Vec<f64>, high: Vec<f64>, low: Vec<f64>, close: Vec<f64>, window: usize, trading_days: f64) -> Vec<f64> {
     ferro_ta_core::options::realized_vol::garman_klass_vol(&open, &high, &low, &close, window, trading_days)
+}
+
+/// Gator Oscillator from the Alligator jaw / teeth / lips.
+/// Returns `[upper, lower]` = `[ |jaw - teeth|, -|teeth - lips| ]`.
+pub fn gator(high: Vec<f64>, low: Vec<f64>, jaw_period: usize, jaw_shift: usize, teeth_period: usize, teeth_shift: usize, lips_period: usize, lips_shift: usize) -> (Vec<f64>, Vec<f64>) {
+    ferro_ta_core::extended::gator(&high, &low, jaw_period, jaw_shift, teeth_period, teeth_shift, lips_period, lips_shift)
+}
+
+/// Rolling maximum (same math as MAX).
+pub fn highest(real: Vec<f64>, timeperiod: usize) -> Vec<f64> {
+    ferro_ta_core::utils::highest(&real, timeperiod)
+}
+
+/// Close-to-close historical volatility, annualized and in percent.
+pub fn historical_volatility(close: Vec<f64>, timeperiod: usize, annual: f64) -> Vec<f64> {
+    ferro_ta_core::extended::historical_volatility(&close, timeperiod, annual)
 }
 
 pub fn ht_dcperiod(close: Vec<f64>) -> Vec<f64> {
@@ -310,6 +472,18 @@ pub fn keltner_channels(high: Vec<f64>, low: Vec<f64>, close: Vec<f64>, timeperi
     ferro_ta_core::extended::keltner_channels(&high, &low, &close, timeperiod, atr_period, multiplier)
 }
 
+/// Know Sure Thing: weighted sum of four ROC SMAs, plus a signal SMA.
+/// Returns `[kst, signal]`.
+pub fn kst(close: Vec<f64>, roc1: usize, roc2: usize, roc3: usize, roc4: usize, sma1: usize, sma2: usize, sma3: usize, sma4: usize, signalperiod: usize) -> (Vec<f64>, Vec<f64>) {
+    ferro_ta_core::extended::kst(&close, roc1, roc2, roc3, roc4, sma1, sma2, sma3, sma4, signalperiod)
+}
+
+/// Klinger Volume Oscillator and its EMA signal.
+/// Returns `[kvo, signal]`.
+pub fn kvo(high: Vec<f64>, low: Vec<f64>, close: Vec<f64>, volume: Vec<f64>, fastperiod: usize, slowperiod: usize, signalperiod: usize) -> (Vec<f64>, Vec<f64>) {
+    ferro_ta_core::extended::kvo(&high, &low, &close, &volume, fastperiod, slowperiod, signalperiod)
+}
+
 /// Linear interpolation helper.
 pub fn linear_interpolate(xs: Vec<f64>, ys: Vec<f64>, target: f64) -> f64 {
     ferro_ta_core::options::surface::linear_interpolate(&xs, &ys, target)
@@ -335,9 +509,23 @@ pub fn linearreg_slope(close: Vec<f64>, timeperiod: usize) -> Vec<f64> {
     ferro_ta_core::statistic::linearreg_slope(&close, timeperiod)
 }
 
-/// Generic Moving Average (matype: 0=SMA, 1=EMA, 2=WMA, 3=DEMA, 4=TEMA, 5=TRIMA, 6=KAMA, 7=T3).
+/// Rolling minimum (same math as MIN).
+pub fn lowest(real: Vec<f64>, timeperiod: usize) -> Vec<f64> {
+    ferro_ta_core::utils::lowest(&real, timeperiod)
+}
+
+/// Generic Moving Average (matype: 0=SMA, 1=EMA, 2=WMA, 3=DEMA, 4=TEMA, 5=TRIMA, 6=KAMA, 7=T3, 8=T3).
+///
+/// `0`–`6` and `8` match TA-Lib's numbering; `7` is T3 here where TA-Lib's `7`
+/// is MAMA, and MAMA is not reachable through any `matype` (use `mama`).
 pub fn ma(close: Vec<f64>, timeperiod: usize, matype: u8) -> Vec<f64> {
     ferro_ta_core::overlap::ma(&close, timeperiod, matype)
+}
+
+/// Moving-average envelopes: `MA * (1 +/- percent / 100)`.
+/// `matype` matches `MA` (0=SMA … 7=T3). Returns `[upper, middle, lower]`.
+pub fn ma_envelopes(close: Vec<f64>, timeperiod: usize, percent: f64, matype: u8) -> (Vec<f64>, Vec<f64>, Vec<f64>) {
+    ferro_ta_core::extended::ma_envelopes(&close, timeperiod, percent, matype)
 }
 
 /// Moving Average Convergence/Divergence.
@@ -370,6 +558,11 @@ pub fn mama(close: Vec<f64>, fastlimit: f64, slowlimit: f64) -> (Vec<f64>, Vec<f
     ferro_ta_core::overlap::mama(&close, fastlimit, slowlimit)
 }
 
+/// Mass Index.
+pub fn mass(high: Vec<f64>, low: Vec<f64>, timeperiod: usize, sumperiod: usize) -> Vec<f64> {
+    ferro_ta_core::extended::mass(&high, &low, timeperiod, sumperiod)
+}
+
 /// Element-wise addition.
 pub fn math_add(a: Vec<f64>, b: Vec<f64>) -> Vec<f64> {
     ferro_ta_core::math::add(&a, &b)
@@ -390,9 +583,26 @@ pub fn math_sub(a: Vec<f64>, b: Vec<f64>) -> Vec<f64> {
     ferro_ta_core::math::sub(&a, &b)
 }
 
-/// Moving Average with Variable Period.
-pub fn mavp(close: Vec<f64>, periods: Vec<f64>, minperiod: usize, maxperiod: usize) -> Vec<f64> {
-    ferro_ta_core::overlap::mavp(&close, &periods, minperiod, maxperiod)
+/// Moving Average with Variable Period (`matype` as in `ma`, TA-Lib default `0`).
+pub fn mavp(close: Vec<f64>, periods: Vec<f64>, minperiod: usize, maxperiod: usize, matype: u8) -> Vec<f64> {
+    ferro_ta_core::overlap::mavp(&close, &periods, minperiod, maxperiod, matype)
+}
+
+/// McGinley Dynamic.
+pub fn mcginley(close: Vec<f64>, timeperiod: usize) -> Vec<f64> {
+    ferro_ta_core::extended::mcginley(&close, timeperiod)
+}
+
+/// Rolling median.
+pub fn median(real: Vec<f64>, timeperiod: usize) -> Vec<f64> {
+    ferro_ta_core::extended::median(&real, timeperiod)
+}
+
+/// Median bands: rolling median of `(high + low) / 2`, ATR envelopes, and an
+/// EMA of the median.
+/// Returns `[median, upper, lower, median_ema]`.
+pub fn median_bands(high: Vec<f64>, low: Vec<f64>, close: Vec<f64>, timeperiod: usize, atr_period: usize, multiplier: f64) -> (Vec<f64>, Vec<f64>, Vec<f64>, Vec<f64>) {
+    ferro_ta_core::extended::median_bands(&high, &low, &close, timeperiod, atr_period, multiplier)
 }
 
 /// Median Price: (high + low) / 2.
@@ -435,6 +645,11 @@ pub fn minus_dm(high: Vec<f64>, low: Vec<f64>, timeperiod: usize) -> Vec<f64> {
     ferro_ta_core::momentum::minus_dm(&high, &low, timeperiod)
 }
 
+/// Rolling mode via equal-width discretization of each window.
+pub fn mode(real: Vec<f64>, timeperiod: usize, bins: usize) -> Vec<f64> {
+    ferro_ta_core::extended::mode(&real, timeperiod, bins)
+}
+
 /// Momentum — difference between current close and close *timeperiod* bars ago.
 ///
 /// # Arguments
@@ -452,6 +667,17 @@ pub fn natr(high: Vec<f64>, low: Vec<f64>, close: Vec<f64>, timeperiod: usize) -
     ferro_ta_core::volatility::natr(&high, &low, &close, timeperiod)
 }
 
+/// Negative Volume Index, seeded at 1000.
+pub fn nvi(close: Vec<f64>, volume: Vec<f64>) -> Vec<f64> {
+    ferro_ta_core::extended::nvi(&close, &volume)
+}
+
+/// NVI plus an EMA signal of that series.
+/// Returns `[nvi, signal]`.
+pub fn nvi_with_ema(close: Vec<f64>, volume: Vec<f64>, timeperiod: usize) -> (Vec<f64>, Vec<f64>) {
+    ferro_ta_core::extended::nvi_with_ema(&close, &volume, timeperiod)
+}
+
 /// On-Balance Volume.
 ///
 /// # Arguments
@@ -462,6 +688,11 @@ pub fn natr(high: Vec<f64>, low: Vec<f64>, close: Vec<f64>, timeperiod: usize) -
 /// `Float64Array` — cumulative OBV.
 pub fn obv(close: Vec<f64>, volume: Vec<f64>) -> Vec<f64> {
     ferro_ta_core::volume::obv(&close, &volume)
+}
+
+/// On-Balance Volume smoothed with `MA` (`matype` 0=SMA … 7=T3).
+pub fn obv_smoothed(close: Vec<f64>, volume: Vec<f64>, timeperiod: usize, matype: u8) -> Vec<f64> {
+    ferro_ta_core::extended::obv_smoothed(&close, &volume, timeperiod, matype)
 }
 
 /// Put-call parity residual.
@@ -490,9 +721,16 @@ pub fn plus_dm(high: Vec<f64>, low: Vec<f64>, timeperiod: usize) -> Vec<f64> {
     ferro_ta_core::momentum::plus_dm(&high, &low, timeperiod)
 }
 
-/// Percentage Price Oscillator. Returns [ppo, signal, histogram].
-pub fn ppo(close: Vec<f64>, fastperiod: usize, slowperiod: usize, signalperiod: usize) -> (Vec<f64>, Vec<f64>, Vec<f64>) {
-    ferro_ta_core::momentum::ppo(&close, fastperiod, slowperiod, signalperiod)
+/// Price Oscillator (SMA).
+pub fn po(close: Vec<f64>, fastperiod: usize, slowperiod: usize) -> Vec<f64> {
+    ferro_ta_core::extended::po(&close, fastperiod, slowperiod)
+}
+
+/// Percentage Price Oscillator. Returns [ppo, signal, histogram]. `matype` as
+/// in `ma`; this binding's historical behaviour is the EMA form, so pass `1`
+/// for it (TA-Lib's own default is `0`).
+pub fn ppo(close: Vec<f64>, fastperiod: usize, slowperiod: usize, signalperiod: usize, matype: u8) -> (Vec<f64>, Vec<f64>, Vec<f64>) {
+    ferro_ta_core::momentum::ppo(&close, fastperiod, slowperiod, signalperiod, matype)
 }
 
 /// Put-call parity deviation: `C - P - (S·e^{-qT} - K·e^{-rT})`.
@@ -500,6 +738,22 @@ pub fn ppo(close: Vec<f64>, fastperiod: usize, slowperiod: usize, signalperiod: 
 /// Returns 0 at no-arbitrage.
 pub fn put_call_parity_deviation(call_price: f64, put_price: f64, spot: f64, strike: f64, rate: f64, carry: f64, time_to_expiry: f64) -> f64 {
     ferro_ta_core::options::pricing::put_call_parity_deviation(call_price, put_price, spot, strike, rate, carry, time_to_expiry)
+}
+
+/// Positive Volume Index, seeded at 1000.
+pub fn pvi(close: Vec<f64>, volume: Vec<f64>) -> Vec<f64> {
+    ferro_ta_core::extended::pvi(&close, &volume)
+}
+
+/// PVI plus a moving-average signal (`matype` matches `MA`).
+/// Returns `[pvi, signal]`.
+pub fn pvi_with_signal(close: Vec<f64>, volume: Vec<f64>, timeperiod: usize, matype: u8) -> (Vec<f64>, Vec<f64>) {
+    ferro_ta_core::extended::pvi_with_signal(&close, &volume, timeperiod, matype)
+}
+
+/// Price Volume Trend.
+pub fn pvt(close: Vec<f64>, volume: Vec<f64>) -> Vec<f64> {
+    ferro_ta_core::extended::pvt(&close, &volume)
 }
 
 /// Compute fractional rank of each element (1-based, ascending).
@@ -535,6 +789,11 @@ pub fn regime_combined(adx: Vec<f64>, atr: Vec<f64>, close: Vec<f64>, adx_thresh
 /// Relative strength of asset vs benchmark (cumulative return ratio).
 pub fn relative_strength(asset_returns: Vec<f64>, benchmark_returns: Vec<f64>) -> Vec<f64> {
     ferro_ta_core::portfolio::relative_strength(&asset_returns, &benchmark_returns)
+}
+
+/// 1.0 when `real[i]` is strictly greater than `real[i - timeperiod]`.
+pub fn rising(real: Vec<f64>, timeperiod: usize) -> Vec<f64> {
+    ferro_ta_core::utils::rising(&real, timeperiod)
 }
 
 /// Rate of Change: `(close[i] - close[i-p]) / close[i-p] * 100`.
@@ -609,6 +868,23 @@ pub fn rsi_threshold_signals(close: Vec<f64>, timeperiod: usize, oversold: f64, 
     ferro_ta_core::backtest::rsi_threshold_signals(&close, timeperiod, oversold, overbought)
 }
 
+/// Relative Vigor Index and its 4-bar weighted signal.
+/// Returns `[rvi, signal]`.
+pub fn rvi(open: Vec<f64>, high: Vec<f64>, low: Vec<f64>, close: Vec<f64>, timeperiod: usize) -> (Vec<f64>, Vec<f64>) {
+    ferro_ta_core::extended::rvi(&open, &high, &low, &close, timeperiod)
+}
+
+/// Relative volume: `volume / SMA(volume, timeperiod)`.
+pub fn rvol(volume: Vec<f64>, timeperiod: usize) -> Vec<f64> {
+    ferro_ta_core::extended::rvol(&volume, timeperiod)
+}
+
+/// Random Walk Index (Poulos).
+/// Returns `[rwi_high, rwi_low]`.
+pub fn rwi(high: Vec<f64>, low: Vec<f64>, close: Vec<f64>, timeperiod: usize) -> (Vec<f64>, Vec<f64>) {
+    ferro_ta_core::extended::rwi(&high, &low, &close, timeperiod)
+}
+
 /// Parabolic SAR.
 pub fn sar(high: Vec<f64>, low: Vec<f64>, acceleration: f64, maximum: f64) -> Vec<f64> {
     ferro_ta_core::overlap::sar(&high, &low, acceleration, maximum)
@@ -641,19 +917,37 @@ pub fn spread(a: Vec<f64>, b: Vec<f64>, hedge: f64) -> Vec<f64> {
     ferro_ta_core::portfolio::spread(&a, &b, hedge)
 }
 
+/// Stoller Average Range Channels.
+/// Returns `[upper, middle, lower]`.
+pub fn starc(high: Vec<f64>, low: Vec<f64>, close: Vec<f64>, timeperiod: usize, atr_period: usize, multiplier: f64) -> (Vec<f64>, Vec<f64>, Vec<f64>) {
+    ferro_ta_core::extended::starc(&high, &low, &close, timeperiod, atr_period, multiplier)
+}
+
+/// Schaff Trend Cycle: stochastic of MACD, double-smoothed (`d1`, `d2`).
+pub fn stc(close: Vec<f64>, fastperiod: usize, slowperiod: usize, cycleperiod: usize, d1: usize, d2: usize) -> Vec<f64> {
+    ferro_ta_core::extended::stc(&close, fastperiod, slowperiod, cycleperiod, d1, d2)
+}
+
 /// Rolling population standard deviation scaled by `nbdev`.
 pub fn stddev(close: Vec<f64>, timeperiod: usize, nbdev: f64) -> Vec<f64> {
     ferro_ta_core::statistic::stddev(&close, timeperiod, nbdev)
 }
 
 /// Full Stochastic Oscillator (slow %K and slow %D).
-pub fn stoch(high: Vec<f64>, low: Vec<f64>, close: Vec<f64>, fastk_period: usize, slowk_period: usize, slowd_period: usize) -> (Vec<f64>, Vec<f64>) {
-    ferro_ta_core::momentum::stoch(&high, &low, &close, fastk_period, slowk_period, slowd_period)
+///
+/// Arguments follow TA-Lib's *interleaved* order — each matype immediately
+/// after the period it types. `slowk_matype`/`slowd_matype` are `0`=SMA …
+/// `8`=T3 (TA-Lib default `0`); `0`–`6` and `8` match TA-Lib, but `7` is T3
+/// here where TA-Lib's `7` is MAMA, and MAMA is not reachable through any
+/// `matype`.
+pub fn stoch(high: Vec<f64>, low: Vec<f64>, close: Vec<f64>, fastk_period: usize, slowk_period: usize, slowk_matype: u8, slowd_period: usize, slowd_matype: u8) -> (Vec<f64>, Vec<f64>) {
+    ferro_ta_core::momentum::stoch(&high, &low, &close, fastk_period, slowk_period, slowk_matype, slowd_period, slowd_matype)
 }
 
-/// Stochastic RSI. Returns [fastk, fastd].
-pub fn stochrsi(close: Vec<f64>, timeperiod: usize, fastk_period: usize, fastd_period: usize) -> (Vec<f64>, Vec<f64>) {
-    ferro_ta_core::momentum::stochrsi(&close, timeperiod, fastk_period, fastd_period)
+/// Stochastic RSI. Returns [fastk, fastd]. `fastd_matype` as in `ma`
+/// (TA-Lib default `0`).
+pub fn stochrsi(close: Vec<f64>, timeperiod: usize, fastk_period: usize, fastd_period: usize, fastd_matype: u8) -> (Vec<f64>, Vec<f64>) {
+    ferro_ta_core::momentum::stochrsi(&close, timeperiod, fastk_period, fastd_period, fastd_matype)
 }
 
 /// Synthetic forward price from put-call parity.
@@ -706,9 +1000,20 @@ pub fn tsf(close: Vec<f64>, timeperiod: usize) -> Vec<f64> {
     ferro_ta_core::statistic::tsf(&close, timeperiod)
 }
 
+/// True Strength Index and an EMA signal of that series.
+/// Returns `[tsi, signal]`.
+pub fn tsi(close: Vec<f64>, longperiod: usize, shortperiod: usize, signalperiod: usize) -> (Vec<f64>, Vec<f64>) {
+    ferro_ta_core::extended::tsi(&close, longperiod, shortperiod, signalperiod)
+}
+
 /// Typical Price: (high + low + close) / 3.
 pub fn typprice(high: Vec<f64>, low: Vec<f64>, close: Vec<f64>) -> Vec<f64> {
     ferro_ta_core::price_transform::typprice(&high, &low, &close)
+}
+
+/// Ulcer Index.
+pub fn ulcer_index(close: Vec<f64>, timeperiod: usize) -> Vec<f64> {
+    ferro_ta_core::extended::ulcer_index(&close, timeperiod)
 }
 
 /// Ultimate Oscillator.
@@ -716,15 +1021,41 @@ pub fn ultosc(high: Vec<f64>, low: Vec<f64>, close: Vec<f64>, timeperiod1: usize
     ferro_ta_core::momentum::ultosc(&high, &low, &close, timeperiod1, timeperiod2, timeperiod3)
 }
 
+/// Value of `real` at the `occurrence`-th most recent true `condition`.
+pub fn valuewhen(condition: Vec<f64>, real: Vec<f64>, occurrence: usize) -> Vec<f64> {
+    ferro_ta_core::utils::valuewhen(&condition, &real, occurrence)
+}
+
 /// Rolling population variance scaled by `nbdev²`.
 pub fn var(close: Vec<f64>, timeperiod: usize, nbdev: f64) -> Vec<f64> {
     ferro_ta_core::statistic::var(&close, timeperiod, nbdev)
+}
+
+/// Variable Index Dynamic Average (Chande).
+pub fn vidya(close: Vec<f64>, timeperiod: usize, cmo_period: usize) -> Vec<f64> {
+    ferro_ta_core::extended::vidya(&close, timeperiod, cmo_period)
+}
+
+/// Volume oscillator.
+pub fn volosc(volume: Vec<f64>, fastperiod: usize, slowperiod: usize) -> Vec<f64> {
+    ferro_ta_core::extended::volosc(&volume, fastperiod, slowperiod)
 }
 
 /// Aggregate OHLCV data into volume bars of a fixed volume threshold.
 /// Returns `[open, high, low, close, volume]`.
 pub fn volume_bars(open: Vec<f64>, high: Vec<f64>, low: Vec<f64>, close: Vec<f64>, volume: Vec<f64>, volume_threshold: f64) -> (Vec<f64>, Vec<f64>, Vec<f64>, Vec<f64>, Vec<f64>) {
     ferro_ta_core::resampling::volume_bars(&open, &high, &low, &close, &volume, volume_threshold)
+}
+
+/// Vortex Indicator.
+/// Returns `[plus_vi, minus_vi]`.
+pub fn vortex(high: Vec<f64>, low: Vec<f64>, close: Vec<f64>, timeperiod: usize) -> (Vec<f64>, Vec<f64>) {
+    ferro_ta_core::extended::vortex(&high, &low, &close, timeperiod)
+}
+
+/// Volume rate of change.
+pub fn vroc(volume: Vec<f64>, timeperiod: usize) -> Vec<f64> {
+    ferro_ta_core::extended::vroc(&volume, timeperiod)
 }
 
 /// Volume Weighted Average Price (cumulative or rolling).
@@ -745,6 +1076,12 @@ pub fn wclprice(high: Vec<f64>, low: Vec<f64>, close: Vec<f64>) -> Vec<f64> {
 /// Weighted continuous contract.
 pub fn weighted_continuous(front: Vec<f64>, next: Vec<f64>, next_weights: Vec<f64>) -> Vec<f64> {
     ferro_ta_core::futures::roll::weighted_continuous(&front, &next, &next_weights)
+}
+
+/// Williams Fractals — local swing highs / lows.
+/// Returns `[up, down]`.
+pub fn williams_fractals(high: Vec<f64>, low: Vec<f64>, timeperiod: usize) -> (Vec<f64>, Vec<f64>) {
+    ferro_ta_core::extended::williams_fractals(&high, &low, timeperiod)
 }
 
 /// Williams %R.
@@ -769,6 +1106,11 @@ pub fn wma(close: Vec<f64>, timeperiod: usize) -> Vec<f64> {
 /// Most efficient estimator — handles overnight gaps.
 pub fn yang_zhang_vol(open: Vec<f64>, high: Vec<f64>, low: Vec<f64>, close: Vec<f64>, window: usize, trading_days: f64) -> Vec<f64> {
     ferro_ta_core::options::realized_vol::yang_zhang_vol(&open, &high, &low, &close, window, trading_days)
+}
+
+/// Zero-lag EMA.
+pub fn zlema(close: Vec<f64>, timeperiod: usize) -> Vec<f64> {
+    ferro_ta_core::extended::zlema(&close, timeperiod)
 }
 
 /// Rolling Z-score of a 1-D series.

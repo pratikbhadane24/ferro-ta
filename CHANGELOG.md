@@ -9,6 +9,30 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Extended the public catalog with adaptive moving averages and stops (`ALMA`,
+  `ZLEMA`, `FRAMA`, `MCGINLEY`, `VIDYA`, `ALLIGATOR`, `MA_ENVELOPES`,
+  `CHANDE_KROLL_STOP`), momentum and volatility studies (`ELDER_RAY`,
+  `FISHER`, `CRSI`, `CHAIKIN_VOL`, `MASS`, `BBPERCENT`, `BBWIDTH`,
+  `HISTORICAL_VOLATILITY`, `ULCER_INDEX`, `STARC`), volume indicators
+  (`OBV_SMOOTHED`, `CMF`, `EMV`, `FORCE_INDEX`, `NVI`, `NVI_WITH_EMA`, `PVI`,
+  `PVI_WITH_SIGNAL`, `VOLOSC`, `VROC`, `KVO`, `PVT`, `RVOL`), oscillators
+  (`AO`, `AC`, `PO`, `DPO`, `RVI`, `CHO`, `KST`, `TSI`, `VORTEX`, `STC`,
+  `GATOR`, `COPPOCK`), statistic/hybrid helpers (`MEDIAN`, `MEDIAN_BANDS`,
+  `MODE`, `DMI`, `WILLIAMS_FRACTALS`, `RWI`), and signal utilities
+  (`CROSSOVER`, `CROSSUNDER`, `CROSS`, `HIGHEST`, `LOWEST`, `CHANGE`,
+  `RISING`, `FALLING`, `EXREM`, `FLIP`, `VALUEWHEN`).
+- Internal speed-bench harness for overlapping catalog names (JSON artifacts
+  under `benchmarks/artifacts/latest/`).
+- Bound the full extended catalog on the JavaScript (WASM) and Flutter surfaces.
+  51 additional exports — every trend, momentum, volatility, volume, oscillator,
+  statistic, hybrid, and signal-utility kernel listed above — bringing the WASM
+  package to 344 exports and the generated Flutter wrappers to 194. Multi-output
+  indicators follow the existing convention (a JS `Array` of `Float64Array`, a
+  Dart tuple), and the documented output order is pinned by tests in
+  `wasm/src/lib.rs` and `flutter/rust/tests/api_parity.rs`.
+
 ### Fixed
 
 - Pinned the optional `mcp` extra to `>=1.0,<2`. Unpinned `pip install mcp`

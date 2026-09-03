@@ -1,0 +1,7685 @@
+{
+  "schema_version": 2,
+  "command": "python benchmarks/bench_vs_openalgo.py --sizes 10000 100000",
+  "n_warmup": 1,
+  "n_runs": 7,
+  "sizes": [
+    10000,
+    100000
+  ],
+  "openalgo_available": true,
+  "indicators": [
+    "SMA",
+    "EMA",
+    "WMA",
+    "DEMA",
+    "TEMA",
+    "T3",
+    "TRIMA",
+    "KAMA",
+    "HULL_MA",
+    "VWMA",
+    "MIDPOINT",
+    "MIDPRICE",
+    "RSI",
+    "MACD",
+    "STOCH",
+    "CCI",
+    "WILLR",
+    "AROON",
+    "AROONOSC",
+    "ADX",
+    "MOM",
+    "ROC",
+    "CMO",
+    "PPO",
+    "TRIX",
+    "TSF",
+    "ULTOSC",
+    "BOP",
+    "PLUS_DI",
+    "MINUS_DI",
+    "BBANDS",
+    "ATR",
+    "NATR",
+    "TRANGE",
+    "STDDEV",
+    "VAR",
+    "SAR",
+    "KELTNER_CHANNELS",
+    "DONCHIAN",
+    "SUPERTREND",
+    "CHOPPINESS_INDEX",
+    "OBV",
+    "AD",
+    "ADOSC",
+    "MFI",
+    "VWAP",
+    "AVGPRICE",
+    "MEDPRICE",
+    "TYPPRICE",
+    "WCLPRICE",
+    "LINEARREG",
+    "LINEARREG_SLOPE",
+    "CORREL",
+    "BETA",
+    "APO",
+    "ROCP",
+    "ROCR",
+    "ROCR100",
+    "STOCHF",
+    "STOCHRSI",
+    "PLUS_DM",
+    "MINUS_DM",
+    "DX",
+    "ADXR",
+    "LINEARREG_ANGLE",
+    "LINEARREG_INTERCEPT",
+    "ICHIMOKU",
+    "PIVOT_POINTS",
+    "CHANDELIER_EXIT"
+  ],
+  "runtime": {
+    "generated_at_utc": "2026-09-03T08:47:14.744395+00:00",
+    "python_version": "3.13.5",
+    "python_implementation": "CPython",
+    "python_executable": "/Users/pratikbhadane/Work/Projects/ferro-ta/.worktrees/extended-indicators/.venv/bin/python3",
+    "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+    "system": "Darwin",
+    "release": "25.6.0",
+    "machine": "arm64",
+    "processor": "arm",
+    "cpu_model": "Apple M3 Max",
+    "cpu_count_logical": 14,
+    "total_memory_bytes": 38654705664
+  },
+  "git": {
+    "commit": "fd92e141250a34a2fbe1843fc313a8ca196d79af",
+    "dirty": false,
+    "branch": "feat/extended-indicators"
+  },
+  "metadata": {
+    "suite": "benchmark_vs_openalgo",
+    "runtime": {
+      "generated_at_utc": "2026-09-03T08:47:14.744395+00:00",
+      "python_version": "3.13.5",
+      "python_implementation": "CPython",
+      "python_executable": "/Users/pratikbhadane/Work/Projects/ferro-ta/.worktrees/extended-indicators/.venv/bin/python3",
+      "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+      "system": "Darwin",
+      "release": "25.6.0",
+      "machine": "arm64",
+      "processor": "arm",
+      "cpu_model": "Apple M3 Max",
+      "cpu_count_logical": 14,
+      "total_memory_bytes": 38654705664
+    },
+    "git": {
+      "commit": "fd92e141250a34a2fbe1843fc313a8ca196d79af",
+      "dirty": false,
+      "branch": "feat/extended-indicators"
+    },
+    "build": {
+      "rustc": "rustc 1.93.1 (01f6ddf75 2026-02-11)\nbinary: rustc\ncommit-hash: 01f6ddf7588f42ae2d7eb0a2f21d44e8e96674cf\ncommit-date: 2026-02-11\nhost: aarch64-apple-darwin\nrelease: 1.93.1\nLLVM version: 21.1.8",
+      "cargo": "cargo 1.93.1 (083ac5135 2025-12-15)",
+      "cargo_release_profile": {
+        "lto": true,
+        "codegen-units": 1
+      },
+      "rustflags": null,
+      "cargo_build_rustflags": null,
+      "maturin_flags": null
+    },
+    "packages": {
+      "numpy": "2.2.6",
+      "ferro-ta": "1.2.0",
+      "openalgo": "2.0.3"
+    },
+    "dataset": {
+      "generator": "synthetic_ohlcv",
+      "sizes": [
+        10000,
+        100000
+      ],
+      "dtype": "float64",
+      "array_layout": "C-contiguous",
+      "seed": 42
+    },
+    "methodology": {
+      "warmup_runs": 1,
+      "measured_runs": 7,
+      "reported_metric": "median_us",
+      "speedup_definition": "openalgo_median_us / ferro_ta_median_us",
+      "tie_band": "0.95 to 1.05",
+      "input_layout_notes": "Benchmarks use contiguous float64 arrays. If your workload passes non-contiguous arrays or other dtypes, benchmark that separately because wrapper overhead can dominate.",
+      "allocation_notes": "python_peak_allocation_bytes is a tracemalloc snapshot of Python-tracked allocations only; it is not a full native RSS or allocator profile."
+    }
+  },
+  "summary": {
+    "total_rows": 138,
+    "by_size": [
+      {
+        "size": 10000,
+        "rows": 69,
+        "wins": 49,
+        "ties": 2,
+        "losses": 18,
+        "win_rate": 0.7101,
+        "non_loss_rate": 0.7391,
+        "median_speedup": 1.2595,
+        "min_speedup": 0.2134,
+        "max_speedup": 11.1909,
+        "openalgo_wins_or_ties": [
+          "TRIMA",
+          "KAMA",
+          "HULL_MA",
+          "RSI",
+          "STOCH",
+          "CCI",
+          "AROON",
+          "AROONOSC",
+          "ROC",
+          "CMO",
+          "ULTOSC",
+          "STDDEV",
+          "VAR",
+          "SAR",
+          "DONCHIAN",
+          "CHOPPINESS_INDEX",
+          "OBV",
+          "DX",
+          "ADXR",
+          "ICHIMOKU"
+        ]
+      },
+      {
+        "size": 100000,
+        "rows": 69,
+        "wins": 49,
+        "ties": 7,
+        "losses": 13,
+        "win_rate": 0.7101,
+        "non_loss_rate": 0.8116,
+        "median_speedup": 1.3649,
+        "min_speedup": 0.1862,
+        "max_speedup": 20.7052,
+        "openalgo_wins_or_ties": [
+          "TRIMA",
+          "KAMA",
+          "HULL_MA",
+          "RSI",
+          "CCI",
+          "AROON",
+          "AROONOSC",
+          "ROC",
+          "ULTOSC",
+          "STDDEV",
+          "VAR",
+          "SAR",
+          "DONCHIAN",
+          "SUPERTREND",
+          "CHOPPINESS_INDEX",
+          "OBV",
+          "ROCR",
+          "DX",
+          "ICHIMOKU",
+          "CHANDELIER_EXIT"
+        ]
+      }
+    ]
+  },
+  "results": [
+    {
+      "indicator": "SMA",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 16.5,
+      "ferro_ta_ms": 0.0165,
+      "ferro_ta_m_bars_s": 606.06,
+      "ferro_ta_runs_us": [
+        24.25,
+        18.417,
+        16.583,
+        16.5,
+        16.292,
+        15.625,
+        15.667
+      ],
+      "ferro_ta_stats": {
+        "median_us": 16.5,
+        "mean_us": 17.6191,
+        "min_us": 15.625,
+        "max_us": 24.25,
+        "stddev_us": 3.0681,
+        "cv_pct": 17.413
+      },
+      "openalgo_us": 24.583,
+      "openalgo_ms": 0.0246,
+      "openalgo_m_bars_s": 406.79,
+      "openalgo_runs_us": [
+        33.167,
+        30.209,
+        28.333,
+        24.583,
+        24.292,
+        24.0,
+        24.083
+      ],
+      "openalgo_stats": {
+        "median_us": 24.583,
+        "mean_us": 26.9524,
+        "min_us": 24.0,
+        "max_us": 33.167,
+        "stddev_us": 3.6691,
+        "cv_pct": 13.613
+      },
+      "speedup": 1.4899,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90960,
+        "openalgo": 90656
+      }
+    },
+    {
+      "indicator": "SMA",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 126.25,
+      "ferro_ta_ms": 0.1263,
+      "ferro_ta_m_bars_s": 792.08,
+      "ferro_ta_runs_us": [
+        127.709,
+        126.209,
+        125.792,
+        126.0,
+        128.875,
+        126.25,
+        127.0
+      ],
+      "ferro_ta_stats": {
+        "median_us": 126.25,
+        "mean_us": 126.8336,
+        "min_us": 125.792,
+        "max_us": 128.875,
+        "stddev_us": 1.1159,
+        "cv_pct": 0.88
+      },
+      "openalgo_us": 209.458,
+      "openalgo_ms": 0.2095,
+      "openalgo_m_bars_s": 477.42,
+      "openalgo_runs_us": [
+        208.375,
+        206.958,
+        209.166,
+        209.708,
+        209.458,
+        210.333,
+        209.583
+      ],
+      "openalgo_stats": {
+        "median_us": 209.458,
+        "mean_us": 209.083,
+        "min_us": 206.958,
+        "max_us": 210.333,
+        "stddev_us": 1.1081,
+        "cv_pct": 0.53
+      },
+      "speedup": 1.6591,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900840,
+        "openalgo": 900536
+      }
+    },
+    {
+      "indicator": "EMA",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 21.166,
+      "ferro_ta_ms": 0.0212,
+      "ferro_ta_m_bars_s": 472.46,
+      "ferro_ta_runs_us": [
+        24.625,
+        21.959,
+        21.166,
+        20.708,
+        21.333,
+        20.333,
+        20.25
+      ],
+      "ferro_ta_stats": {
+        "median_us": 21.166,
+        "mean_us": 21.482,
+        "min_us": 20.25,
+        "max_us": 24.625,
+        "stddev_us": 1.5091,
+        "cv_pct": 7.025
+      },
+      "openalgo_us": 35.875,
+      "openalgo_ms": 0.0359,
+      "openalgo_m_bars_s": 278.75,
+      "openalgo_runs_us": [
+        35.25,
+        35.875,
+        37.417,
+        76.292,
+        41.792,
+        30.25,
+        29.0
+      ],
+      "openalgo_stats": {
+        "median_us": 35.875,
+        "mean_us": 40.8394,
+        "min_us": 29.0,
+        "max_us": 76.292,
+        "stddev_us": 16.2157,
+        "cv_pct": 39.706
+      },
+      "speedup": 1.6949,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90840,
+        "openalgo": 90688
+      }
+    },
+    {
+      "indicator": "EMA",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 171.167,
+      "ferro_ta_ms": 0.1712,
+      "ferro_ta_m_bars_s": 584.22,
+      "ferro_ta_runs_us": [
+        168.625,
+        174.458,
+        175.375,
+        180.25,
+        168.208,
+        166.0,
+        171.167
+      ],
+      "ferro_ta_stats": {
+        "median_us": 171.167,
+        "mean_us": 172.0119,
+        "min_us": 166.0,
+        "max_us": 180.25,
+        "stddev_us": 4.9658,
+        "cv_pct": 2.887
+      },
+      "openalgo_us": 249.458,
+      "openalgo_ms": 0.2495,
+      "openalgo_m_bars_s": 400.87,
+      "openalgo_runs_us": [
+        250.75,
+        250.125,
+        249.458,
+        249.25,
+        249.5,
+        249.333,
+        249.208
+      ],
+      "openalgo_stats": {
+        "median_us": 249.458,
+        "mean_us": 249.6606,
+        "min_us": 249.208,
+        "max_us": 250.75,
+        "stddev_us": 0.5701,
+        "cv_pct": 0.228
+      },
+      "speedup": 1.4574,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900840,
+        "openalgo": 900688
+      }
+    },
+    {
+      "indicator": "WMA",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 16.833,
+      "ferro_ta_ms": 0.0168,
+      "ferro_ta_m_bars_s": 594.07,
+      "ferro_ta_runs_us": [
+        18.792,
+        17.0,
+        16.708,
+        16.667,
+        16.583,
+        16.875,
+        16.833
+      ],
+      "ferro_ta_stats": {
+        "median_us": 16.833,
+        "mean_us": 17.0654,
+        "min_us": 16.583,
+        "max_us": 18.792,
+        "stddev_us": 0.774,
+        "cv_pct": 4.536
+      },
+      "openalgo_us": 24.042,
+      "openalgo_ms": 0.024,
+      "openalgo_m_bars_s": 415.94,
+      "openalgo_runs_us": [
+        25.583,
+        24.167,
+        24.042,
+        24.083,
+        23.917,
+        24.0,
+        23.959
+      ],
+      "openalgo_stats": {
+        "median_us": 24.042,
+        "mean_us": 24.2501,
+        "min_us": 23.917,
+        "max_us": 25.583,
+        "stddev_us": 0.5934,
+        "cv_pct": 2.447
+      },
+      "speedup": 1.4283,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90888,
+        "openalgo": 90584
+      }
+    },
+    {
+      "indicator": "WMA",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 169.958,
+      "ferro_ta_ms": 0.17,
+      "ferro_ta_m_bars_s": 588.38,
+      "ferro_ta_runs_us": [
+        204.875,
+        183.75,
+        175.625,
+        148.833,
+        152.875,
+        150.708,
+        169.958
+      ],
+      "ferro_ta_stats": {
+        "median_us": 169.958,
+        "mean_us": 169.5177,
+        "min_us": 148.833,
+        "max_us": 204.875,
+        "stddev_us": 20.6108,
+        "cv_pct": 12.158
+      },
+      "openalgo_us": 215.958,
+      "openalgo_ms": 0.216,
+      "openalgo_m_bars_s": 463.05,
+      "openalgo_runs_us": [
+        219.958,
+        233.417,
+        280.167,
+        215.958,
+        210.25,
+        207.708,
+        207.583
+      ],
+      "openalgo_stats": {
+        "median_us": 215.958,
+        "mean_us": 225.0059,
+        "min_us": 207.583,
+        "max_us": 280.167,
+        "stddev_us": 25.953,
+        "cv_pct": 11.534
+      },
+      "speedup": 1.2707,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900888,
+        "openalgo": 900584
+      }
+    },
+    {
+      "indicator": "DEMA",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 39.208,
+      "ferro_ta_ms": 0.0392,
+      "ferro_ta_m_bars_s": 255.05,
+      "ferro_ta_runs_us": [
+        41.0,
+        39.208,
+        39.875,
+        39.292,
+        38.792,
+        38.917,
+        38.667
+      ],
+      "ferro_ta_stats": {
+        "median_us": 39.208,
+        "mean_us": 39.393,
+        "min_us": 38.667,
+        "max_us": 41.0,
+        "stddev_us": 0.8138,
+        "cv_pct": 2.066
+      },
+      "openalgo_us": 56.458,
+      "openalgo_ms": 0.0565,
+      "openalgo_m_bars_s": 177.12,
+      "openalgo_runs_us": [
+        61.125,
+        57.667,
+        57.083,
+        56.458,
+        56.166,
+        56.25,
+        55.875
+      ],
+      "openalgo_stats": {
+        "median_us": 56.458,
+        "mean_us": 57.232,
+        "min_us": 55.875,
+        "max_us": 61.125,
+        "stddev_us": 1.8215,
+        "cv_pct": 3.183
+      },
+      "speedup": 1.44,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90688,
+        "openalgo": 320796
+      }
+    },
+    {
+      "indicator": "DEMA",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 351.75,
+      "ferro_ta_ms": 0.3518,
+      "ferro_ta_m_bars_s": 284.29,
+      "ferro_ta_runs_us": [
+        351.917,
+        351.417,
+        351.125,
+        351.75,
+        352.208,
+        352.125,
+        351.75
+      ],
+      "ferro_ta_stats": {
+        "median_us": 351.75,
+        "mean_us": 351.756,
+        "min_us": 351.125,
+        "max_us": 352.208,
+        "stddev_us": 0.3829,
+        "cv_pct": 0.109
+      },
+      "openalgo_us": 536.708,
+      "openalgo_ms": 0.5367,
+      "openalgo_m_bars_s": 186.32,
+      "openalgo_runs_us": [
+        494.959,
+        492.792,
+        492.334,
+        609.042,
+        745.958,
+        554.625,
+        536.708
+      ],
+      "openalgo_stats": {
+        "median_us": 536.708,
+        "mean_us": 560.9169,
+        "min_us": 492.334,
+        "max_us": 745.958,
+        "stddev_us": 92.0842,
+        "cv_pct": 16.417
+      },
+      "speedup": 1.5258,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900688,
+        "openalgo": 2400804
+      }
+    },
+    {
+      "indicator": "TEMA",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 55.0,
+      "ferro_ta_ms": 0.055,
+      "ferro_ta_m_bars_s": 181.82,
+      "ferro_ta_runs_us": [
+        62.458,
+        58.375,
+        55.0,
+        58.208,
+        54.792,
+        54.584,
+        54.709
+      ],
+      "ferro_ta_stats": {
+        "median_us": 55.0,
+        "mean_us": 56.8751,
+        "min_us": 54.584,
+        "max_us": 62.458,
+        "stddev_us": 2.9719,
+        "cv_pct": 5.225
+      },
+      "openalgo_us": 95.208,
+      "openalgo_ms": 0.0952,
+      "openalgo_m_bars_s": 105.03,
+      "openalgo_runs_us": [
+        102.25,
+        95.917,
+        95.208,
+        95.25,
+        94.75,
+        94.208,
+        94.125
+      ],
+      "openalgo_stats": {
+        "median_us": 95.208,
+        "mean_us": 95.9583,
+        "min_us": 94.125,
+        "max_us": 102.25,
+        "stddev_us": 2.8442,
+        "cv_pct": 2.964
+      },
+      "speedup": 1.7311,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90536,
+        "openalgo": 561100
+      }
+    },
+    {
+      "indicator": "TEMA",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 518.458,
+      "ferro_ta_ms": 0.5185,
+      "ferro_ta_m_bars_s": 192.88,
+      "ferro_ta_runs_us": [
+        518.458,
+        520.625,
+        524.5,
+        604.708,
+        500.583,
+        493.625,
+        492.917
+      ],
+      "ferro_ta_stats": {
+        "median_us": 518.458,
+        "mean_us": 522.2023,
+        "min_us": 492.917,
+        "max_us": 604.708,
+        "stddev_us": 38.6667,
+        "cv_pct": 7.405
+      },
+      "openalgo_us": 947.041,
+      "openalgo_ms": 0.947,
+      "openalgo_m_bars_s": 105.59,
+      "openalgo_runs_us": [
+        1176.167,
+        1021.25,
+        1013.667,
+        947.041,
+        850.542,
+        842.583,
+        917.625
+      ],
+      "openalgo_stats": {
+        "median_us": 947.041,
+        "mean_us": 966.9821,
+        "min_us": 842.583,
+        "max_us": 1176.167,
+        "stddev_us": 116.0101,
+        "cv_pct": 11.997
+      },
+      "speedup": 1.8266,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900536,
+        "openalgo": 4801092
+      }
+    },
+    {
+      "indicator": "T3",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 89.0,
+      "ferro_ta_ms": 0.089,
+      "ferro_ta_m_bars_s": 112.36,
+      "ferro_ta_runs_us": [
+        91.041,
+        89.417,
+        89.0,
+        88.792,
+        88.875,
+        88.917,
+        89.042
+      ],
+      "ferro_ta_stats": {
+        "median_us": 89.0,
+        "mean_us": 89.2977,
+        "min_us": 88.792,
+        "max_us": 91.041,
+        "stddev_us": 0.7944,
+        "cv_pct": 0.89
+      },
+      "openalgo_us": 136.292,
+      "openalgo_ms": 0.1363,
+      "openalgo_m_bars_s": 73.37,
+      "openalgo_runs_us": [
+        139.0,
+        136.417,
+        136.292,
+        136.417,
+        135.5,
+        135.25,
+        135.542
+      ],
+      "openalgo_stats": {
+        "median_us": 136.292,
+        "mean_us": 136.3454,
+        "min_us": 135.25,
+        "max_us": 139.0,
+        "stddev_us": 1.2662,
+        "cv_pct": 0.929
+      },
+      "speedup": 1.5314,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90800,
+        "openalgo": 90688
+      }
+    },
+    {
+      "indicator": "T3",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 913.917,
+      "ferro_ta_ms": 0.9139,
+      "ferro_ta_m_bars_s": 109.42,
+      "ferro_ta_runs_us": [
+        965.833,
+        969.625,
+        921.0,
+        913.917,
+        904.792,
+        856.792,
+        874.208
+      ],
+      "ferro_ta_stats": {
+        "median_us": 913.917,
+        "mean_us": 915.1667,
+        "min_us": 856.792,
+        "max_us": 969.625,
+        "stddev_us": 42.3502,
+        "cv_pct": 4.628
+      },
+      "openalgo_us": 1394.042,
+      "openalgo_ms": 1.394,
+      "openalgo_m_bars_s": 71.73,
+      "openalgo_runs_us": [
+        1394.042,
+        1420.625,
+        1467.583,
+        1338.083,
+        1313.833,
+        1311.25,
+        1605.792
+      ],
+      "openalgo_stats": {
+        "median_us": 1394.042,
+        "mean_us": 1407.3154,
+        "min_us": 1311.25,
+        "max_us": 1605.792,
+        "stddev_us": 104.9914,
+        "cv_pct": 7.46
+      },
+      "speedup": 1.5253,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900800,
+        "openalgo": 900688
+      }
+    },
+    {
+      "indicator": "TRIMA",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 49.375,
+      "ferro_ta_ms": 0.0494,
+      "ferro_ta_m_bars_s": 202.53,
+      "ferro_ta_runs_us": [
+        52.5,
+        50.417,
+        49.292,
+        49.75,
+        49.209,
+        49.292,
+        49.375
+      ],
+      "ferro_ta_stats": {
+        "median_us": 49.375,
+        "mean_us": 49.9764,
+        "min_us": 49.209,
+        "max_us": 52.5,
+        "stddev_us": 1.1903,
+        "cv_pct": 2.382
+      },
+      "openalgo_us": 37.792,
+      "openalgo_ms": 0.0378,
+      "openalgo_m_bars_s": 264.61,
+      "openalgo_runs_us": [
+        41.167,
+        39.25,
+        37.791,
+        37.75,
+        38.0,
+        37.792,
+        37.417
+      ],
+      "openalgo_stats": {
+        "median_us": 37.792,
+        "mean_us": 38.4524,
+        "min_us": 37.417,
+        "max_us": 41.167,
+        "stddev_us": 1.3322,
+        "cv_pct": 3.465
+      },
+      "speedup": 0.7654,
+      "outcome": "openalgo_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90840,
+        "openalgo": 90536
+      }
+    },
+    {
+      "indicator": "TRIMA",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 462.25,
+      "ferro_ta_ms": 0.4622,
+      "ferro_ta_m_bars_s": 216.33,
+      "ferro_ta_runs_us": [
+        462.0,
+        467.333,
+        462.25,
+        461.583,
+        461.75,
+        462.25,
+        479.208
+      ],
+      "ferro_ta_stats": {
+        "median_us": 462.25,
+        "mean_us": 465.1963,
+        "min_us": 461.583,
+        "max_us": 479.208,
+        "stddev_us": 6.4988,
+        "cv_pct": 1.397
+      },
+      "openalgo_us": 352.167,
+      "openalgo_ms": 0.3522,
+      "openalgo_m_bars_s": 283.96,
+      "openalgo_runs_us": [
+        454.167,
+        541.334,
+        420.083,
+        352.167,
+        344.917,
+        346.084,
+        347.917
+      ],
+      "openalgo_stats": {
+        "median_us": 352.167,
+        "mean_us": 400.9527,
+        "min_us": 344.917,
+        "max_us": 541.334,
+        "stddev_us": 75.5514,
+        "cv_pct": 18.843
+      },
+      "speedup": 0.7619,
+      "outcome": "openalgo_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900840,
+        "openalgo": 900536
+      }
+    },
+    {
+      "indicator": "KAMA",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 85.792,
+      "ferro_ta_ms": 0.0858,
+      "ferro_ta_m_bars_s": 116.56,
+      "ferro_ta_runs_us": [
+        94.583,
+        85.792,
+        85.584,
+        84.834,
+        85.0,
+        91.625,
+        86.542
+      ],
+      "ferro_ta_stats": {
+        "median_us": 85.792,
+        "mean_us": 87.7086,
+        "min_us": 84.834,
+        "max_us": 94.583,
+        "stddev_us": 3.8241,
+        "cv_pct": 4.36
+      },
+      "openalgo_us": 41.625,
+      "openalgo_ms": 0.0416,
+      "openalgo_m_bars_s": 240.24,
+      "openalgo_runs_us": [
+        45.25,
+        42.417,
+        41.75,
+        41.417,
+        41.625,
+        41.375,
+        41.542
+      ],
+      "openalgo_stats": {
+        "median_us": 41.625,
+        "mean_us": 42.1966,
+        "min_us": 41.375,
+        "max_us": 45.25,
+        "stddev_us": 1.391,
+        "cv_pct": 3.296
+      },
+      "speedup": 0.4852,
+      "outcome": "openalgo_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90912,
+        "openalgo": 90608
+      }
+    },
+    {
+      "indicator": "KAMA",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 846.125,
+      "ferro_ta_ms": 0.8461,
+      "ferro_ta_m_bars_s": 118.19,
+      "ferro_ta_runs_us": [
+        880.375,
+        854.167,
+        846.125,
+        833.166,
+        840.542,
+        852.916,
+        836.792
+      ],
+      "ferro_ta_stats": {
+        "median_us": 846.125,
+        "mean_us": 849.1547,
+        "min_us": 833.166,
+        "max_us": 880.375,
+        "stddev_us": 15.842,
+        "cv_pct": 1.866
+      },
+      "openalgo_us": 396.0,
+      "openalgo_ms": 0.396,
+      "openalgo_m_bars_s": 252.53,
+      "openalgo_runs_us": [
+        402.625,
+        432.125,
+        392.166,
+        396.0,
+        405.208,
+        395.416,
+        395.833
+      ],
+      "openalgo_stats": {
+        "median_us": 396.0,
+        "mean_us": 402.7676,
+        "min_us": 392.166,
+        "max_us": 432.125,
+        "stddev_us": 13.7123,
+        "cv_pct": 3.405
+      },
+      "speedup": 0.468,
+      "outcome": "openalgo_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900912,
+        "openalgo": 900608
+      }
+    },
+    {
+      "indicator": "HULL_MA",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 84.041,
+      "ferro_ta_ms": 0.084,
+      "ferro_ta_m_bars_s": 118.99,
+      "ferro_ta_runs_us": [
+        103.125,
+        89.958,
+        76.583,
+        84.041,
+        85.875,
+        83.833,
+        83.583
+      ],
+      "ferro_ta_stats": {
+        "median_us": 84.041,
+        "mean_us": 86.714,
+        "min_us": 76.583,
+        "max_us": 103.125,
+        "stddev_us": 8.2506,
+        "cv_pct": 9.515
+      },
+      "openalgo_us": 57.833,
+      "openalgo_ms": 0.0578,
+      "openalgo_m_bars_s": 172.91,
+      "openalgo_runs_us": [
+        60.708,
+        58.375,
+        57.833,
+        60.5,
+        57.417,
+        57.5,
+        57.333
+      ],
+      "openalgo_stats": {
+        "median_us": 57.833,
+        "mean_us": 58.5237,
+        "min_us": 57.333,
+        "max_us": 60.708,
+        "stddev_us": 1.4644,
+        "cv_pct": 2.502
+      },
+      "speedup": 0.6882,
+      "outcome": "openalgo_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90848,
+        "openalgo": 90544
+      }
+    },
+    {
+      "indicator": "HULL_MA",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 821.292,
+      "ferro_ta_ms": 0.8213,
+      "ferro_ta_m_bars_s": 121.76,
+      "ferro_ta_runs_us": [
+        749.958,
+        829.708,
+        821.542,
+        821.292,
+        812.041,
+        759.542,
+        849.583
+      ],
+      "ferro_ta_stats": {
+        "median_us": 821.292,
+        "mean_us": 806.238,
+        "min_us": 749.958,
+        "max_us": 849.583,
+        "stddev_us": 37.1306,
+        "cv_pct": 4.605
+      },
+      "openalgo_us": 550.291,
+      "openalgo_ms": 0.5503,
+      "openalgo_m_bars_s": 181.72,
+      "openalgo_runs_us": [
+        539.666,
+        538.0,
+        590.041,
+        542.833,
+        642.25,
+        565.875,
+        550.291
+      ],
+      "openalgo_stats": {
+        "median_us": 550.291,
+        "mean_us": 566.9937,
+        "min_us": 538.0,
+        "max_us": 642.25,
+        "stddev_us": 37.9607,
+        "cv_pct": 6.695
+      },
+      "speedup": 0.67,
+      "outcome": "openalgo_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900848,
+        "openalgo": 900544
+      }
+    },
+    {
+      "indicator": "VWMA",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 26.625,
+      "ferro_ta_ms": 0.0266,
+      "ferro_ta_m_bars_s": 375.59,
+      "ferro_ta_runs_us": [
+        30.416,
+        27.333,
+        26.708,
+        26.458,
+        26.25,
+        26.292,
+        26.625
+      ],
+      "ferro_ta_stats": {
+        "median_us": 26.625,
+        "mean_us": 27.1546,
+        "min_us": 26.25,
+        "max_us": 30.416,
+        "stddev_us": 1.483,
+        "cv_pct": 5.461
+      },
+      "openalgo_us": 28.541,
+      "openalgo_ms": 0.0285,
+      "openalgo_m_bars_s": 350.37,
+      "openalgo_runs_us": [
+        31.208,
+        28.541,
+        27.292,
+        27.459,
+        27.417,
+        28.667,
+        34.541
+      ],
+      "openalgo_stats": {
+        "median_us": 28.541,
+        "mean_us": 29.3036,
+        "min_us": 27.292,
+        "max_us": 34.541,
+        "stddev_us": 2.6787,
+        "cv_pct": 9.141
+      },
+      "speedup": 1.072,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90840,
+        "openalgo": 160544
+      }
+    },
+    {
+      "indicator": "VWMA",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 219.042,
+      "ferro_ta_ms": 0.219,
+      "ferro_ta_m_bars_s": 456.53,
+      "ferro_ta_runs_us": [
+        216.208,
+        215.166,
+        225.792,
+        215.125,
+        219.042,
+        245.875,
+        233.167
+      ],
+      "ferro_ta_stats": {
+        "median_us": 219.042,
+        "mean_us": 224.3393,
+        "min_us": 215.125,
+        "max_us": 245.875,
+        "stddev_us": 11.5978,
+        "cv_pct": 5.17
+      },
+      "openalgo_us": 238.375,
+      "openalgo_ms": 0.2384,
+      "openalgo_m_bars_s": 419.51,
+      "openalgo_runs_us": [
+        259.208,
+        235.417,
+        256.583,
+        238.375,
+        236.75,
+        235.833,
+        279.042
+      ],
+      "openalgo_stats": {
+        "median_us": 238.375,
+        "mean_us": 248.744,
+        "min_us": 235.417,
+        "max_us": 279.042,
+        "stddev_us": 16.756,
+        "cv_pct": 6.736
+      },
+      "speedup": 1.0883,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900840,
+        "openalgo": 1600544
+      }
+    },
+    {
+      "indicator": "MIDPOINT",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 79.958,
+      "ferro_ta_ms": 0.08,
+      "ferro_ta_m_bars_s": 125.07,
+      "ferro_ta_runs_us": [
+        81.458,
+        80.125,
+        79.75,
+        79.791,
+        79.792,
+        79.958,
+        80.0
+      ],
+      "ferro_ta_stats": {
+        "median_us": 79.958,
+        "mean_us": 80.1249,
+        "min_us": 79.75,
+        "max_us": 81.458,
+        "stddev_us": 0.6033,
+        "cv_pct": 0.753
+      },
+      "openalgo_us": 101.291,
+      "openalgo_ms": 0.1013,
+      "openalgo_m_bars_s": 98.73,
+      "openalgo_runs_us": [
+        153.834,
+        131.584,
+        115.5,
+        100.0,
+        101.291,
+        95.5,
+        96.791
+      ],
+      "openalgo_stats": {
+        "median_us": 101.291,
+        "mean_us": 113.5,
+        "min_us": 95.5,
+        "max_us": 153.834,
+        "stddev_us": 21.9559,
+        "cv_pct": 19.344
+      },
+      "speedup": 1.2668,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90888,
+        "openalgo": 90584
+      }
+    },
+    {
+      "indicator": "MIDPOINT",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 767.041,
+      "ferro_ta_ms": 0.767,
+      "ferro_ta_m_bars_s": 130.37,
+      "ferro_ta_runs_us": [
+        769.0,
+        768.541,
+        768.458,
+        767.041,
+        753.583,
+        753.458,
+        753.208
+      ],
+      "ferro_ta_stats": {
+        "median_us": 767.041,
+        "mean_us": 761.8984,
+        "min_us": 753.208,
+        "max_us": 769.0,
+        "stddev_us": 7.9576,
+        "cv_pct": 1.044
+      },
+      "openalgo_us": 1655.75,
+      "openalgo_ms": 1.6558,
+      "openalgo_m_bars_s": 60.4,
+      "openalgo_runs_us": [
+        1655.75,
+        1637.708,
+        1702.083,
+        1605.417,
+        1618.792,
+        1691.541,
+        1760.583
+      ],
+      "openalgo_stats": {
+        "median_us": 1655.75,
+        "mean_us": 1667.4106,
+        "min_us": 1605.417,
+        "max_us": 1760.583,
+        "stddev_us": 54.2997,
+        "cv_pct": 3.257
+      },
+      "speedup": 2.1586,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900888,
+        "openalgo": 900584
+      }
+    },
+    {
+      "indicator": "MIDPRICE",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 80.25,
+      "ferro_ta_ms": 0.0803,
+      "ferro_ta_m_bars_s": 124.61,
+      "ferro_ta_runs_us": [
+        81.875,
+        80.666,
+        80.416,
+        80.25,
+        80.25,
+        80.25,
+        80.208
+      ],
+      "ferro_ta_stats": {
+        "median_us": 80.25,
+        "mean_us": 80.5593,
+        "min_us": 80.208,
+        "max_us": 81.875,
+        "stddev_us": 0.6019,
+        "cv_pct": 0.747
+      },
+      "openalgo_us": 113.041,
+      "openalgo_ms": 0.113,
+      "openalgo_m_bars_s": 88.46,
+      "openalgo_runs_us": [
+        155.084,
+        127.75,
+        119.708,
+        113.041,
+        109.542,
+        107.667,
+        105.709
+      ],
+      "openalgo_stats": {
+        "median_us": 113.041,
+        "mean_us": 119.7859,
+        "min_us": 105.709,
+        "max_us": 155.084,
+        "stddev_us": 17.3438,
+        "cv_pct": 14.479
+      },
+      "speedup": 1.4086,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90888,
+        "openalgo": 160544
+      }
+    },
+    {
+      "indicator": "MIDPRICE",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 788.708,
+      "ferro_ta_ms": 0.7887,
+      "ferro_ta_m_bars_s": 126.79,
+      "ferro_ta_runs_us": [
+        754.542,
+        754.167,
+        754.208,
+        886.333,
+        927.541,
+        804.167,
+        788.708
+      ],
+      "ferro_ta_stats": {
+        "median_us": 788.708,
+        "mean_us": 809.9523,
+        "min_us": 754.167,
+        "max_us": 927.541,
+        "stddev_us": 70.0424,
+        "cv_pct": 8.648
+      },
+      "openalgo_us": 1722.875,
+      "openalgo_ms": 1.7229,
+      "openalgo_m_bars_s": 58.04,
+      "openalgo_runs_us": [
+        1753.541,
+        1690.834,
+        1725.916,
+        1733.75,
+        1722.875,
+        1582.583,
+        1674.208
+      ],
+      "openalgo_stats": {
+        "median_us": 1722.875,
+        "mean_us": 1697.6724,
+        "min_us": 1582.583,
+        "max_us": 1753.541,
+        "stddev_us": 57.2985,
+        "cv_pct": 3.375
+      },
+      "speedup": 2.1844,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900888,
+        "openalgo": 1600544
+      }
+    },
+    {
+      "indicator": "RSI",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 56.5,
+      "ferro_ta_ms": 0.0565,
+      "ferro_ta_m_bars_s": 176.99,
+      "ferro_ta_runs_us": [
+        59.292,
+        56.75,
+        56.5,
+        56.541,
+        56.458,
+        56.417,
+        56.334
+      ],
+      "ferro_ta_stats": {
+        "median_us": 56.5,
+        "mean_us": 56.8989,
+        "min_us": 56.334,
+        "max_us": 59.292,
+        "stddev_us": 1.0632,
+        "cv_pct": 1.869
+      },
+      "openalgo_us": 56.333,
+      "openalgo_ms": 0.0563,
+      "openalgo_m_bars_s": 177.52,
+      "openalgo_runs_us": [
+        63.292,
+        56.917,
+        56.291,
+        56.5,
+        56.333,
+        56.333,
+        56.208
+      ],
+      "openalgo_stats": {
+        "median_us": 56.333,
+        "mean_us": 57.4106,
+        "min_us": 56.208,
+        "max_us": 63.292,
+        "stddev_us": 2.604,
+        "cv_pct": 4.536
+      },
+      "speedup": 0.997,
+      "outcome": "tie",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90880,
+        "openalgo": 90576
+      }
+    },
+    {
+      "indicator": "RSI",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 558.542,
+      "ferro_ta_ms": 0.5585,
+      "ferro_ta_m_bars_s": 179.04,
+      "ferro_ta_runs_us": [
+        563.667,
+        576.792,
+        547.875,
+        558.542,
+        563.875,
+        550.625,
+        540.917
+      ],
+      "ferro_ta_stats": {
+        "median_us": 558.542,
+        "mean_us": 557.4704,
+        "min_us": 540.917,
+        "max_us": 576.792,
+        "stddev_us": 12.0197,
+        "cv_pct": 2.156
+      },
+      "openalgo_us": 543.583,
+      "openalgo_ms": 0.5436,
+      "openalgo_m_bars_s": 183.96,
+      "openalgo_runs_us": [
+        553.917,
+        539.458,
+        543.583,
+        561.916,
+        527.625,
+        548.625,
+        535.417
+      ],
+      "openalgo_stats": {
+        "median_us": 543.583,
+        "mean_us": 544.363,
+        "min_us": 527.625,
+        "max_us": 561.916,
+        "stddev_us": 11.5644,
+        "cv_pct": 2.124
+      },
+      "speedup": 0.9732,
+      "outcome": "tie",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900880,
+        "openalgo": 900576
+      }
+    },
+    {
+      "indicator": "MACD",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 56.083,
+      "ferro_ta_ms": 0.0561,
+      "ferro_ta_m_bars_s": 178.31,
+      "ferro_ta_runs_us": [
+        56.083,
+        54.333,
+        75.833,
+        57.333,
+        57.167,
+        53.958,
+        54.125
+      ],
+      "ferro_ta_stats": {
+        "median_us": 56.083,
+        "mean_us": 58.4046,
+        "min_us": 53.958,
+        "max_us": 75.833,
+        "stddev_us": 7.8154,
+        "cv_pct": 13.382
+      },
+      "openalgo_us": 75.958,
+      "openalgo_ms": 0.076,
+      "openalgo_m_bars_s": 131.65,
+      "openalgo_runs_us": [
+        82.416,
+        93.583,
+        75.958,
+        74.583,
+        74.333,
+        76.5,
+        74.667
+      ],
+      "openalgo_stats": {
+        "median_us": 75.958,
+        "mean_us": 78.8629,
+        "min_us": 74.333,
+        "max_us": 93.583,
+        "stddev_us": 7.0684,
+        "cv_pct": 8.963
+      },
+      "speedup": 1.3544,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 91016,
+        "openalgo": 240472
+      }
+    },
+    {
+      "indicator": "MACD",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 520.291,
+      "ferro_ta_ms": 0.5203,
+      "ferro_ta_m_bars_s": 192.2,
+      "ferro_ta_runs_us": [
+        525.541,
+        535.166,
+        520.291,
+        515.958,
+        531.333,
+        510.167,
+        503.584
+      ],
+      "ferro_ta_stats": {
+        "median_us": 520.291,
+        "mean_us": 520.2914,
+        "min_us": 503.584,
+        "max_us": 535.166,
+        "stddev_us": 11.3369,
+        "cv_pct": 2.179
+      },
+      "openalgo_us": 708.292,
+      "openalgo_ms": 0.7083,
+      "openalgo_m_bars_s": 141.18,
+      "openalgo_runs_us": [
+        708.292,
+        750.458,
+        706.791,
+        727.041,
+        691.792,
+        701.083,
+        717.084
+      ],
+      "openalgo_stats": {
+        "median_us": 708.292,
+        "mean_us": 714.6487,
+        "min_us": 691.792,
+        "max_us": 750.458,
+        "stddev_us": 19.3667,
+        "cv_pct": 2.71
+      },
+      "speedup": 1.3613,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 901016,
+        "openalgo": 2400472
+      }
+    },
+    {
+      "indicator": "STOCH",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 124.875,
+      "ferro_ta_ms": 0.1249,
+      "ferro_ta_m_bars_s": 80.08,
+      "ferro_ta_runs_us": [
+        121.0,
+        118.75,
+        155.5,
+        136.125,
+        132.791,
+        124.875,
+        120.25
+      ],
+      "ferro_ta_stats": {
+        "median_us": 124.875,
+        "mean_us": 129.8987,
+        "min_us": 118.75,
+        "max_us": 155.5,
+        "stddev_us": 13.0663,
+        "cv_pct": 10.059
+      },
+      "openalgo_us": 111.667,
+      "openalgo_ms": 0.1117,
+      "openalgo_m_bars_s": 89.55,
+      "openalgo_runs_us": [
+        183.333,
+        143.5,
+        121.834,
+        111.667,
+        100.334,
+        94.291,
+        92.041
+      ],
+      "openalgo_stats": {
+        "median_us": 111.667,
+        "mean_us": 121.0,
+        "min_us": 92.041,
+        "max_us": 183.333,
+        "stddev_us": 32.8089,
+        "cv_pct": 27.115
+      },
+      "speedup": 0.8942,
+      "outcome": "openalgo_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 91000,
+        "openalgo": 240668
+      }
+    },
+    {
+      "indicator": "STOCH",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 1176.125,
+      "ferro_ta_ms": 1.1761,
+      "ferro_ta_m_bars_s": 85.02,
+      "ferro_ta_runs_us": [
+        1166.958,
+        1220.625,
+        1176.125,
+        1223.25,
+        1136.75,
+        1135.0,
+        1178.584
+      ],
+      "ferro_ta_stats": {
+        "median_us": 1176.125,
+        "mean_us": 1176.756,
+        "min_us": 1135.0,
+        "max_us": 1223.25,
+        "stddev_us": 35.4259,
+        "cv_pct": 3.01
+      },
+      "openalgo_us": 1875.833,
+      "openalgo_ms": 1.8758,
+      "openalgo_m_bars_s": 53.31,
+      "openalgo_runs_us": [
+        1887.209,
+        1875.833,
+        1858.125,
+        1986.625,
+        1930.292,
+        1854.084,
+        1799.375
+      ],
+      "openalgo_stats": {
+        "median_us": 1875.833,
+        "mean_us": 1884.5061,
+        "min_us": 1799.375,
+        "max_us": 1986.625,
+        "stddev_us": 59.8274,
+        "cv_pct": 3.175
+      },
+      "speedup": 1.5949,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 901000,
+        "openalgo": 2400668
+      }
+    },
+    {
+      "indicator": "CCI",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 82.208,
+      "ferro_ta_ms": 0.0822,
+      "ferro_ta_m_bars_s": 121.64,
+      "ferro_ta_runs_us": [
+        83.5,
+        81.917,
+        81.541,
+        82.25,
+        82.083,
+        82.208,
+        82.291
+      ],
+      "ferro_ta_stats": {
+        "median_us": 82.208,
+        "mean_us": 82.2557,
+        "min_us": 81.541,
+        "max_us": 83.5,
+        "stddev_us": 0.6065,
+        "cv_pct": 0.737
+      },
+      "openalgo_us": 76.583,
+      "openalgo_ms": 0.0766,
+      "openalgo_m_bars_s": 130.58,
+      "openalgo_runs_us": [
+        78.459,
+        76.833,
+        76.333,
+        76.583,
+        77.958,
+        76.583,
+        76.166
+      ],
+      "openalgo_stats": {
+        "median_us": 76.583,
+        "mean_us": 76.9879,
+        "min_us": 76.166,
+        "max_us": 78.459,
+        "stddev_us": 0.8719,
+        "cv_pct": 1.133
+      },
+      "speedup": 0.9316,
+      "outcome": "openalgo_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90888,
+        "openalgo": 240668
+      }
+    },
+    {
+      "indicator": "CCI",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 780.084,
+      "ferro_ta_ms": 0.7801,
+      "ferro_ta_m_bars_s": 128.19,
+      "ferro_ta_runs_us": [
+        770.5,
+        776.666,
+        804.917,
+        779.917,
+        796.333,
+        780.084,
+        786.583
+      ],
+      "ferro_ta_stats": {
+        "median_us": 780.084,
+        "mean_us": 785.0,
+        "min_us": 770.5,
+        "max_us": 804.917,
+        "stddev_us": 11.9537,
+        "cv_pct": 1.523
+      },
+      "openalgo_us": 705.625,
+      "openalgo_ms": 0.7056,
+      "openalgo_m_bars_s": 141.72,
+      "openalgo_runs_us": [
+        704.875,
+        703.875,
+        723.25,
+        691.334,
+        705.625,
+        710.417,
+        730.625
+      ],
+      "openalgo_stats": {
+        "median_us": 705.625,
+        "mean_us": 710.0001,
+        "min_us": 691.334,
+        "max_us": 730.625,
+        "stddev_us": 13.1179,
+        "cv_pct": 1.848
+      },
+      "speedup": 0.9046,
+      "outcome": "openalgo_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900888,
+        "openalgo": 2400668
+      }
+    },
+    {
+      "indicator": "WILLR",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 95.958,
+      "ferro_ta_ms": 0.096,
+      "ferro_ta_m_bars_s": 104.21,
+      "ferro_ta_runs_us": [
+        98.25,
+        96.209,
+        103.5,
+        95.958,
+        88.292,
+        88.458,
+        88.041
+      ],
+      "ferro_ta_stats": {
+        "median_us": 95.958,
+        "mean_us": 94.1011,
+        "min_us": 88.041,
+        "max_us": 103.5,
+        "stddev_us": 5.9967,
+        "cv_pct": 6.373
+      },
+      "openalgo_us": 114.666,
+      "openalgo_ms": 0.1147,
+      "openalgo_m_bars_s": 87.21,
+      "openalgo_runs_us": [
+        160.125,
+        138.625,
+        123.333,
+        114.666,
+        110.292,
+        107.875,
+        111.583
+      ],
+      "openalgo_stats": {
+        "median_us": 114.666,
+        "mean_us": 123.7856,
+        "min_us": 107.875,
+        "max_us": 160.125,
+        "stddev_us": 19.1845,
+        "cv_pct": 15.498
+      },
+      "speedup": 1.195,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90888,
+        "openalgo": 240668
+      }
+    },
+    {
+      "indicator": "WILLR",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 860.333,
+      "ferro_ta_ms": 0.8603,
+      "ferro_ta_m_bars_s": 116.23,
+      "ferro_ta_runs_us": [
+        860.333,
+        847.333,
+        918.458,
+        843.084,
+        841.458,
+        891.5,
+        897.208
+      ],
+      "ferro_ta_stats": {
+        "median_us": 860.333,
+        "mean_us": 871.3391,
+        "min_us": 841.458,
+        "max_us": 918.458,
+        "stddev_us": 30.7802,
+        "cv_pct": 3.533
+      },
+      "openalgo_us": 1618.292,
+      "openalgo_ms": 1.6183,
+      "openalgo_m_bars_s": 61.79,
+      "openalgo_runs_us": [
+        1714.292,
+        1571.25,
+        1616.209,
+        1547.5,
+        1638.625,
+        1671.375,
+        1618.292
+      ],
+      "openalgo_stats": {
+        "median_us": 1618.292,
+        "mean_us": 1625.3633,
+        "min_us": 1547.5,
+        "max_us": 1714.292,
+        "stddev_us": 56.7539,
+        "cv_pct": 3.492
+      },
+      "speedup": 1.881,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900888,
+        "openalgo": 2400668
+      }
+    },
+    {
+      "indicator": "AROON",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 131.25,
+      "ferro_ta_ms": 0.1313,
+      "ferro_ta_m_bars_s": 76.19,
+      "ferro_ta_runs_us": [
+        138.0,
+        131.083,
+        136.292,
+        143.125,
+        131.0,
+        131.25,
+        131.125
+      ],
+      "ferro_ta_stats": {
+        "median_us": 131.25,
+        "mean_us": 134.5536,
+        "min_us": 131.0,
+        "max_us": 143.125,
+        "stddev_us": 4.7559,
+        "cv_pct": 3.535
+      },
+      "openalgo_us": 76.833,
+      "openalgo_ms": 0.0768,
+      "openalgo_m_bars_s": 130.15,
+      "openalgo_runs_us": [
+        128.709,
+        94.209,
+        76.833,
+        74.458,
+        79.833,
+        67.25,
+        64.75
+      ],
+      "openalgo_stats": {
+        "median_us": 76.833,
+        "mean_us": 83.7203,
+        "min_us": 64.75,
+        "max_us": 128.709,
+        "stddev_us": 22.0359,
+        "cv_pct": 26.321
+      },
+      "speedup": 0.5854,
+      "outcome": "openalgo_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 91024,
+        "openalgo": 160544
+      }
+    },
+    {
+      "indicator": "AROON",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 1318.167,
+      "ferro_ta_ms": 1.3182,
+      "ferro_ta_m_bars_s": 75.86,
+      "ferro_ta_runs_us": [
+        1318.167,
+        1326.458,
+        1336.916,
+        1295.584,
+        1312.959,
+        1420.042,
+        1261.333
+      ],
+      "ferro_ta_stats": {
+        "median_us": 1318.167,
+        "mean_us": 1324.4941,
+        "min_us": 1261.333,
+        "max_us": 1420.042,
+        "stddev_us": 48.7951,
+        "cv_pct": 3.684
+      },
+      "openalgo_us": 1324.625,
+      "openalgo_ms": 1.3246,
+      "openalgo_m_bars_s": 75.49,
+      "openalgo_runs_us": [
+        1377.125,
+        1336.125,
+        1330.334,
+        1324.625,
+        1309.916,
+        1283.584,
+        1268.667
+      ],
+      "openalgo_stats": {
+        "median_us": 1324.625,
+        "mean_us": 1318.6251,
+        "min_us": 1268.667,
+        "max_us": 1377.125,
+        "stddev_us": 35.8262,
+        "cv_pct": 2.717
+      },
+      "speedup": 1.0049,
+      "outcome": "tie",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 901024,
+        "openalgo": 1600544
+      }
+    },
+    {
+      "indicator": "AROONOSC",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 140.208,
+      "ferro_ta_ms": 0.1402,
+      "ferro_ta_m_bars_s": 71.32,
+      "ferro_ta_runs_us": [
+        140.208,
+        137.666,
+        137.833,
+        137.875,
+        141.541,
+        141.583,
+        141.375
+      ],
+      "ferro_ta_stats": {
+        "median_us": 140.208,
+        "mean_us": 139.7259,
+        "min_us": 137.666,
+        "max_us": 141.583,
+        "stddev_us": 1.8685,
+        "cv_pct": 1.337
+      },
+      "openalgo_us": 66.416,
+      "openalgo_ms": 0.0664,
+      "openalgo_m_bars_s": 150.57,
+      "openalgo_runs_us": [
+        97.792,
+        78.667,
+        70.042,
+        66.416,
+        64.875,
+        64.0,
+        63.416
+      ],
+      "openalgo_stats": {
+        "median_us": 66.416,
+        "mean_us": 72.1726,
+        "min_us": 63.416,
+        "max_us": 97.792,
+        "stddev_us": 12.4695,
+        "cv_pct": 17.277
+      },
+      "speedup": 0.4737,
+      "outcome": "openalgo_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90880,
+        "openalgo": 240576
+      }
+    },
+    {
+      "indicator": "AROONOSC",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 1367.042,
+      "ferro_ta_ms": 1.367,
+      "ferro_ta_m_bars_s": 73.15,
+      "ferro_ta_runs_us": [
+        1367.042,
+        1399.583,
+        1386.042,
+        1389.25,
+        1354.208,
+        1347.292,
+        1351.833
+      ],
+      "ferro_ta_stats": {
+        "median_us": 1367.042,
+        "mean_us": 1370.75,
+        "min_us": 1347.292,
+        "max_us": 1399.583,
+        "stddev_us": 20.8285,
+        "cv_pct": 1.519
+      },
+      "openalgo_us": 1354.792,
+      "openalgo_ms": 1.3548,
+      "openalgo_m_bars_s": 73.81,
+      "openalgo_runs_us": [
+        1487.916,
+        1429.834,
+        1403.958,
+        1352.0,
+        1354.792,
+        1337.75,
+        1334.459
+      ],
+      "openalgo_stats": {
+        "median_us": 1354.792,
+        "mean_us": 1385.8156,
+        "min_us": 1334.459,
+        "max_us": 1487.916,
+        "stddev_us": 57.3658,
+        "cv_pct": 4.139
+      },
+      "speedup": 0.991,
+      "outcome": "tie",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900880,
+        "openalgo": 2400576
+      }
+    },
+    {
+      "indicator": "ADX",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 75.416,
+      "ferro_ta_ms": 0.0754,
+      "ferro_ta_m_bars_s": 132.6,
+      "ferro_ta_runs_us": [
+        76.584,
+        78.667,
+        75.416,
+        75.375,
+        75.125,
+        75.458,
+        75.375
+      ],
+      "ferro_ta_stats": {
+        "median_us": 75.416,
+        "mean_us": 76.0,
+        "min_us": 75.125,
+        "max_us": 78.667,
+        "stddev_us": 1.2673,
+        "cv_pct": 1.667
+      },
+      "openalgo_us": 112.458,
+      "openalgo_ms": 0.1125,
+      "openalgo_m_bars_s": 88.92,
+      "openalgo_runs_us": [
+        116.959,
+        113.958,
+        112.458,
+        112.083,
+        111.833,
+        114.875,
+        112.125
+      ],
+      "openalgo_stats": {
+        "median_us": 112.458,
+        "mean_us": 113.4701,
+        "min_us": 111.833,
+        "max_us": 116.959,
+        "stddev_us": 1.9071,
+        "cv_pct": 1.681
+      },
+      "speedup": 1.4912,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90776,
+        "openalgo": 240760
+      }
+    },
+    {
+      "indicator": "ADX",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 691.0,
+      "ferro_ta_ms": 0.691,
+      "ferro_ta_m_bars_s": 144.72,
+      "ferro_ta_runs_us": [
+        684.833,
+        684.25,
+        685.0,
+        691.0,
+        694.0,
+        697.166,
+        696.875
+      ],
+      "ferro_ta_stats": {
+        "median_us": 691.0,
+        "mean_us": 690.4463,
+        "min_us": 684.25,
+        "max_us": 697.166,
+        "stddev_us": 5.7588,
+        "cv_pct": 0.834
+      },
+      "openalgo_us": 1204.5,
+      "openalgo_ms": 1.2045,
+      "openalgo_m_bars_s": 83.02,
+      "openalgo_runs_us": [
+        1152.916,
+        1145.583,
+        1234.209,
+        1317.209,
+        1317.916,
+        1204.5,
+        1100.0
+      ],
+      "openalgo_stats": {
+        "median_us": 1204.5,
+        "mean_us": 1210.3333,
+        "min_us": 1100.0,
+        "max_us": 1317.916,
+        "stddev_us": 84.915,
+        "cv_pct": 7.016
+      },
+      "speedup": 1.7431,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900776,
+        "openalgo": 2400760
+      }
+    },
+    {
+      "indicator": "MOM",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 11.917,
+      "ferro_ta_ms": 0.0119,
+      "ferro_ta_m_bars_s": 839.14,
+      "ferro_ta_runs_us": [
+        15.042,
+        12.5,
+        11.959,
+        11.917,
+        11.709,
+        11.666,
+        11.917
+      ],
+      "ferro_ta_stats": {
+        "median_us": 11.917,
+        "mean_us": 12.3871,
+        "min_us": 11.666,
+        "max_us": 15.042,
+        "stddev_us": 1.2018,
+        "cv_pct": 9.702
+      },
+      "openalgo_us": 14.959,
+      "openalgo_ms": 0.015,
+      "openalgo_m_bars_s": 668.49,
+      "openalgo_runs_us": [
+        19.083,
+        15.792,
+        15.0,
+        14.959,
+        14.542,
+        14.333,
+        14.375
+      ],
+      "openalgo_stats": {
+        "median_us": 14.959,
+        "mean_us": 15.4406,
+        "min_us": 14.333,
+        "max_us": 19.083,
+        "stddev_us": 1.6826,
+        "cv_pct": 10.897
+      },
+      "speedup": 1.2553,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90912,
+        "openalgo": 240432
+      }
+    },
+    {
+      "indicator": "MOM",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 81.25,
+      "ferro_ta_ms": 0.0813,
+      "ferro_ta_m_bars_s": 1230.77,
+      "ferro_ta_runs_us": [
+        81.25,
+        81.791,
+        80.625,
+        81.25,
+        81.5,
+        81.375,
+        81.25
+      ],
+      "ferro_ta_stats": {
+        "median_us": 81.25,
+        "mean_us": 81.2916,
+        "min_us": 80.625,
+        "max_us": 81.791,
+        "stddev_us": 0.3534,
+        "cv_pct": 0.435
+      },
+      "openalgo_us": 108.583,
+      "openalgo_ms": 0.1086,
+      "openalgo_m_bars_s": 920.95,
+      "openalgo_runs_us": [
+        104.5,
+        112.167,
+        110.375,
+        107.333,
+        110.167,
+        103.833,
+        108.583
+      ],
+      "openalgo_stats": {
+        "median_us": 108.583,
+        "mean_us": 108.1369,
+        "min_us": 103.833,
+        "max_us": 112.167,
+        "stddev_us": 3.1083,
+        "cv_pct": 2.874
+      },
+      "speedup": 1.3364,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900912,
+        "openalgo": 2400432
+      }
+    },
+    {
+      "indicator": "ROC",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 15.584,
+      "ferro_ta_ms": 0.0156,
+      "ferro_ta_m_bars_s": 641.68,
+      "ferro_ta_runs_us": [
+        17.125,
+        15.792,
+        15.625,
+        15.417,
+        15.584,
+        15.541,
+        15.083
+      ],
+      "ferro_ta_stats": {
+        "median_us": 15.584,
+        "mean_us": 15.7381,
+        "min_us": 15.083,
+        "max_us": 17.125,
+        "stddev_us": 0.6499,
+        "cv_pct": 4.129
+      },
+      "openalgo_us": 14.417,
+      "openalgo_ms": 0.0144,
+      "openalgo_m_bars_s": 693.63,
+      "openalgo_runs_us": [
+        17.208,
+        14.917,
+        14.417,
+        14.458,
+        14.333,
+        13.916,
+        14.375
+      ],
+      "openalgo_stats": {
+        "median_us": 14.417,
+        "mean_us": 14.8034,
+        "min_us": 13.916,
+        "max_us": 17.208,
+        "stddev_us": 1.0997,
+        "cv_pct": 7.429
+      },
+      "speedup": 0.9251,
+      "outcome": "openalgo_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90912,
+        "openalgo": 90608
+      }
+    },
+    {
+      "indicator": "ROC",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 116.625,
+      "ferro_ta_ms": 0.1166,
+      "ferro_ta_m_bars_s": 857.45,
+      "ferro_ta_runs_us": [
+        168.083,
+        127.75,
+        116.625,
+        115.292,
+        114.625,
+        114.25,
+        121.25
+      ],
+      "ferro_ta_stats": {
+        "median_us": 116.625,
+        "mean_us": 125.4107,
+        "min_us": 114.25,
+        "max_us": 168.083,
+        "stddev_us": 19.4258,
+        "cv_pct": 15.49
+      },
+      "openalgo_us": 107.291,
+      "openalgo_ms": 0.1073,
+      "openalgo_m_bars_s": 932.04,
+      "openalgo_runs_us": [
+        107.291,
+        107.292,
+        106.209,
+        106.542,
+        112.541,
+        107.0,
+        112.375
+      ],
+      "openalgo_stats": {
+        "median_us": 107.291,
+        "mean_us": 108.4643,
+        "min_us": 106.209,
+        "max_us": 112.541,
+        "stddev_us": 2.7565,
+        "cv_pct": 2.541
+      },
+      "speedup": 0.92,
+      "outcome": "openalgo_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 816896,
+        "openalgo": 816592
+      }
+    },
+    {
+      "indicator": "CMO",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 58.458,
+      "ferro_ta_ms": 0.0585,
+      "ferro_ta_m_bars_s": 171.06,
+      "ferro_ta_runs_us": [
+        59.833,
+        58.875,
+        58.375,
+        58.25,
+        58.375,
+        58.458,
+        58.667
+      ],
+      "ferro_ta_stats": {
+        "median_us": 58.458,
+        "mean_us": 58.6904,
+        "min_us": 58.25,
+        "max_us": 59.833,
+        "stddev_us": 0.5458,
+        "cv_pct": 0.93
+      },
+      "openalgo_us": 43.292,
+      "openalgo_ms": 0.0433,
+      "openalgo_m_bars_s": 230.99,
+      "openalgo_runs_us": [
+        63.875,
+        43.375,
+        43.292,
+        41.417,
+        43.916,
+        36.375,
+        35.583
+      ],
+      "openalgo_stats": {
+        "median_us": 43.292,
+        "mean_us": 43.9761,
+        "min_us": 35.583,
+        "max_us": 63.875,
+        "stddev_us": 9.4125,
+        "cv_pct": 21.404
+      },
+      "speedup": 0.7406,
+      "outcome": "openalgo_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90880,
+        "openalgo": 90576
+      }
+    },
+    {
+      "indicator": "CMO",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 541.791,
+      "ferro_ta_ms": 0.5418,
+      "ferro_ta_m_bars_s": 184.57,
+      "ferro_ta_runs_us": [
+        545.75,
+        535.958,
+        535.625,
+        542.5,
+        541.5,
+        541.791,
+        611.084
+      ],
+      "ferro_ta_stats": {
+        "median_us": 541.791,
+        "mean_us": 550.6011,
+        "min_us": 535.625,
+        "max_us": 611.084,
+        "stddev_us": 26.915,
+        "cv_pct": 4.888
+      },
+      "openalgo_us": 747.791,
+      "openalgo_ms": 0.7478,
+      "openalgo_m_bars_s": 133.73,
+      "openalgo_runs_us": [
+        799.167,
+        747.791,
+        792.208,
+        755.833,
+        690.916,
+        671.458,
+        707.875
+      ],
+      "openalgo_stats": {
+        "median_us": 747.791,
+        "mean_us": 737.8926,
+        "min_us": 671.458,
+        "max_us": 799.167,
+        "stddev_us": 49.4064,
+        "cv_pct": 6.696
+      },
+      "speedup": 1.3802,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900880,
+        "openalgo": 900576
+      }
+    },
+    {
+      "indicator": "PPO",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 77.459,
+      "ferro_ta_ms": 0.0775,
+      "ferro_ta_m_bars_s": 129.1,
+      "ferro_ta_runs_us": [
+        77.459,
+        69.459,
+        69.625,
+        84.25,
+        84.333,
+        84.375,
+        76.458
+      ],
+      "ferro_ta_stats": {
+        "median_us": 77.459,
+        "mean_us": 77.9941,
+        "min_us": 69.459,
+        "max_us": 84.375,
+        "stddev_us": 6.6529,
+        "cv_pct": 8.53
+      },
+      "openalgo_us": 102.25,
+      "openalgo_ms": 0.1022,
+      "openalgo_m_bars_s": 97.8,
+      "openalgo_runs_us": [
+        102.0,
+        101.208,
+        134.083,
+        112.666,
+        102.25,
+        104.916,
+        97.5
+      ],
+      "openalgo_stats": {
+        "median_us": 102.25,
+        "mean_us": 107.8033,
+        "min_us": 97.5,
+        "max_us": 134.083,
+        "stddev_us": 12.4952,
+        "cv_pct": 11.591
+      },
+      "speedup": 1.3201,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 91080,
+        "openalgo": 331224
+      }
+    },
+    {
+      "indicator": "PPO",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 681.084,
+      "ferro_ta_ms": 0.6811,
+      "ferro_ta_m_bars_s": 146.82,
+      "ferro_ta_runs_us": [
+        681.084,
+        717.125,
+        710.958,
+        610.958,
+        682.833,
+        590.833,
+        574.042
+      ],
+      "ferro_ta_stats": {
+        "median_us": 681.084,
+        "mean_us": 652.5476,
+        "min_us": 574.042,
+        "max_us": 717.125,
+        "stddev_us": 59.182,
+        "cv_pct": 9.069
+      },
+      "openalgo_us": 854.458,
+      "openalgo_ms": 0.8545,
+      "openalgo_m_bars_s": 117.03,
+      "openalgo_runs_us": [
+        916.542,
+        881.292,
+        854.458,
+        844.25,
+        843.25,
+        843.375,
+        857.584
+      ],
+      "openalgo_stats": {
+        "median_us": 854.458,
+        "mean_us": 862.9644,
+        "min_us": 843.25,
+        "max_us": 916.542,
+        "stddev_us": 27.1735,
+        "cv_pct": 3.149
+      },
+      "speedup": 1.2546,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 901080,
+        "openalgo": 2602432
+      }
+    },
+    {
+      "indicator": "TRIX",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 50.125,
+      "ferro_ta_ms": 0.0501,
+      "ferro_ta_m_bars_s": 199.5,
+      "ferro_ta_runs_us": [
+        53.5,
+        50.583,
+        50.125,
+        49.875,
+        50.125,
+        50.083,
+        49.666
+      ],
+      "ferro_ta_stats": {
+        "median_us": 50.125,
+        "mean_us": 50.5653,
+        "min_us": 49.666,
+        "max_us": 53.5,
+        "stddev_us": 1.324,
+        "cv_pct": 2.618
+      },
+      "openalgo_us": 103.875,
+      "openalgo_ms": 0.1039,
+      "openalgo_m_bars_s": 96.27,
+      "openalgo_runs_us": [
+        108.5,
+        105.166,
+        103.958,
+        103.708,
+        103.417,
+        103.875,
+        103.25
+      ],
+      "openalgo_stats": {
+        "median_us": 103.875,
+        "mean_us": 104.5534,
+        "min_us": 103.25,
+        "max_us": 108.5,
+        "stddev_us": 1.8471,
+        "cv_pct": 1.767
+      },
+      "speedup": 2.0723,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90576,
+        "openalgo": 320616
+      }
+    },
+    {
+      "indicator": "TRIX",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 468.958,
+      "ferro_ta_ms": 0.469,
+      "ferro_ta_m_bars_s": 213.24,
+      "ferro_ta_runs_us": [
+        467.25,
+        469.416,
+        480.166,
+        473.708,
+        457.208,
+        456.667,
+        468.958
+      ],
+      "ferro_ta_stats": {
+        "median_us": 468.958,
+        "mean_us": 467.6247,
+        "min_us": 456.667,
+        "max_us": 480.166,
+        "stddev_us": 8.4459,
+        "cv_pct": 1.806
+      },
+      "openalgo_us": 915.292,
+      "openalgo_ms": 0.9153,
+      "openalgo_m_bars_s": 109.25,
+      "openalgo_runs_us": [
+        931.75,
+        910.583,
+        915.292,
+        888.792,
+        894.208,
+        946.584,
+        943.75
+      ],
+      "openalgo_stats": {
+        "median_us": 915.292,
+        "mean_us": 918.7084,
+        "min_us": 888.792,
+        "max_us": 946.584,
+        "stddev_us": 22.9026,
+        "cv_pct": 2.493
+      },
+      "speedup": 1.9518,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900576,
+        "openalgo": 2401070
+      }
+    },
+    {
+      "indicator": "TSF",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 26.666,
+      "ferro_ta_ms": 0.0267,
+      "ferro_ta_m_bars_s": 375.01,
+      "ferro_ta_runs_us": [
+        28.458,
+        27.083,
+        26.791,
+        26.625,
+        26.666,
+        26.542,
+        26.584
+      ],
+      "ferro_ta_stats": {
+        "median_us": 26.666,
+        "mean_us": 26.9641,
+        "min_us": 26.542,
+        "max_us": 28.458,
+        "stddev_us": 0.6834,
+        "cv_pct": 2.535
+      },
+      "openalgo_us": 32.917,
+      "openalgo_ms": 0.0329,
+      "openalgo_m_bars_s": 303.79,
+      "openalgo_runs_us": [
+        34.583,
+        33.417,
+        33.167,
+        32.834,
+        32.917,
+        32.792,
+        32.916
+      ],
+      "openalgo_stats": {
+        "median_us": 32.917,
+        "mean_us": 33.2323,
+        "min_us": 32.792,
+        "max_us": 34.583,
+        "stddev_us": 0.6344,
+        "cv_pct": 1.909
+      },
+      "speedup": 1.2344,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90888,
+        "openalgo": 90584
+      }
+    },
+    {
+      "indicator": "TSF",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 233.375,
+      "ferro_ta_ms": 0.2334,
+      "ferro_ta_m_bars_s": 428.49,
+      "ferro_ta_runs_us": [
+        239.209,
+        234.666,
+        233.375,
+        232.417,
+        233.417,
+        232.792,
+        232.375
+      ],
+      "ferro_ta_stats": {
+        "median_us": 233.375,
+        "mean_us": 234.0359,
+        "min_us": 232.375,
+        "max_us": 239.209,
+        "stddev_us": 2.4119,
+        "cv_pct": 1.031
+      },
+      "openalgo_us": 296.625,
+      "openalgo_ms": 0.2966,
+      "openalgo_m_bars_s": 337.13,
+      "openalgo_runs_us": [
+        296.625,
+        296.791,
+        296.917,
+        293.958,
+        294.209,
+        299.084,
+        293.333
+      ],
+      "openalgo_stats": {
+        "median_us": 296.625,
+        "mean_us": 295.8453,
+        "min_us": 293.333,
+        "max_us": 299.084,
+        "stddev_us": 2.0693,
+        "cv_pct": 0.699
+      },
+      "speedup": 1.271,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900888,
+        "openalgo": 900584
+      }
+    },
+    {
+      "indicator": "ULTOSC",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 204.667,
+      "ferro_ta_ms": 0.2047,
+      "ferro_ta_m_bars_s": 48.86,
+      "ferro_ta_runs_us": [
+        205.458,
+        204.75,
+        204.667,
+        203.583,
+        203.333,
+        204.375,
+        207.0
+      ],
+      "ferro_ta_stats": {
+        "median_us": 204.667,
+        "mean_us": 204.738,
+        "min_us": 203.333,
+        "max_us": 207.0,
+        "stddev_us": 1.2302,
+        "cv_pct": 0.601
+      },
+      "openalgo_us": 44.208,
+      "openalgo_ms": 0.0442,
+      "openalgo_m_bars_s": 226.2,
+      "openalgo_runs_us": [
+        47.5,
+        45.167,
+        44.5,
+        44.167,
+        44.208,
+        43.958,
+        44.208
+      ],
+      "openalgo_stats": {
+        "median_us": 44.208,
+        "mean_us": 44.8154,
+        "min_us": 43.958,
+        "max_us": 47.5,
+        "stddev_us": 1.2466,
+        "cv_pct": 2.782
+      },
+      "speedup": 0.216,
+      "outcome": "openalgo_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90768,
+        "openalgo": 240668
+      }
+    },
+    {
+      "indicator": "ULTOSC",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 2040.083,
+      "ferro_ta_ms": 2.0401,
+      "ferro_ta_m_bars_s": 49.02,
+      "ferro_ta_runs_us": [
+        2187.208,
+        2040.083,
+        1927.583,
+        1961.292,
+        2590.375,
+        3001.625,
+        1983.416
+      ],
+      "ferro_ta_stats": {
+        "median_us": 2040.083,
+        "mean_us": 2241.6546,
+        "min_us": 1927.583,
+        "max_us": 3001.625,
+        "stddev_us": 405.5218,
+        "cv_pct": 18.09
+      },
+      "openalgo_us": 392.667,
+      "openalgo_ms": 0.3927,
+      "openalgo_m_bars_s": 254.67,
+      "openalgo_runs_us": [
+        396.792,
+        393.709,
+        392.667,
+        393.041,
+        391.292,
+        391.041,
+        391.083
+      ],
+      "openalgo_stats": {
+        "median_us": 392.667,
+        "mean_us": 392.8036,
+        "min_us": 391.041,
+        "max_us": 396.792,
+        "stddev_us": 2.0475,
+        "cv_pct": 0.521
+      },
+      "speedup": 0.1925,
+      "outcome": "openalgo_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900768,
+        "openalgo": 2400668
+      }
+    },
+    {
+      "indicator": "BOP",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 14.0,
+      "ferro_ta_ms": 0.014,
+      "ferro_ta_m_bars_s": 714.29,
+      "ferro_ta_runs_us": [
+        16.375,
+        14.458,
+        14.0,
+        13.833,
+        13.833,
+        13.875,
+        14.0
+      ],
+      "ferro_ta_stats": {
+        "median_us": 14.0,
+        "mean_us": 14.3391,
+        "min_us": 13.833,
+        "max_us": 16.375,
+        "stddev_us": 0.9235,
+        "cv_pct": 6.44
+      },
+      "openalgo_us": 23.084,
+      "openalgo_ms": 0.0231,
+      "openalgo_m_bars_s": 433.2,
+      "openalgo_runs_us": [
+        25.25,
+        23.625,
+        22.791,
+        23.333,
+        23.084,
+        23.042,
+        22.917
+      ],
+      "openalgo_stats": {
+        "median_us": 23.084,
+        "mean_us": 23.4346,
+        "min_us": 22.791,
+        "max_us": 25.25,
+        "stddev_us": 0.8467,
+        "cv_pct": 3.613
+      },
+      "speedup": 1.6489,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90752,
+        "openalgo": 320792
+      }
+    },
+    {
+      "indicator": "BOP",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 104.458,
+      "ferro_ta_ms": 0.1045,
+      "ferro_ta_m_bars_s": 957.32,
+      "ferro_ta_runs_us": [
+        111.084,
+        104.458,
+        104.292,
+        509.792,
+        107.084,
+        104.0,
+        104.0
+      ],
+      "ferro_ta_stats": {
+        "median_us": 104.458,
+        "mean_us": 163.53,
+        "min_us": 104.0,
+        "max_us": 509.792,
+        "stddev_us": 152.7091,
+        "cv_pct": 93.383
+      },
+      "openalgo_us": 182.958,
+      "openalgo_ms": 0.183,
+      "openalgo_m_bars_s": 546.57,
+      "openalgo_runs_us": [
+        180.167,
+        181.667,
+        181.459,
+        187.625,
+        188.958,
+        182.958,
+        260.958
+      ],
+      "openalgo_stats": {
+        "median_us": 182.958,
+        "mean_us": 194.8274,
+        "min_us": 180.167,
+        "max_us": 260.958,
+        "stddev_us": 29.3465,
+        "cv_pct": 15.063
+      },
+      "speedup": 1.7515,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900752,
+        "openalgo": 3200792
+      }
+    },
+    {
+      "indicator": "PLUS_DI",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 144.625,
+      "ferro_ta_ms": 0.1446,
+      "ferro_ta_m_bars_s": 69.14,
+      "ferro_ta_runs_us": [
+        157.791,
+        195.625,
+        174.459,
+        144.625,
+        97.916,
+        82.708,
+        75.416
+      ],
+      "ferro_ta_stats": {
+        "median_us": 144.625,
+        "mean_us": 132.6486,
+        "min_us": 75.416,
+        "max_us": 195.625,
+        "stddev_us": 47.3739,
+        "cv_pct": 35.714
+      },
+      "openalgo_us": 185.875,
+      "openalgo_ms": 0.1859,
+      "openalgo_m_bars_s": 53.8,
+      "openalgo_runs_us": [
+        116.583,
+        114.625,
+        255.542,
+        254.333,
+        301.417,
+        118.292,
+        185.875
+      ],
+      "openalgo_stats": {
+        "median_us": 185.875,
+        "mean_us": 192.381,
+        "min_us": 114.625,
+        "max_us": 301.417,
+        "stddev_us": 78.5696,
+        "cv_pct": 40.841
+      },
+      "speedup": 1.2852,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90880,
+        "openalgo": 240760
+      }
+    },
+    {
+      "indicator": "PLUS_DI",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 743.416,
+      "ferro_ta_ms": 0.7434,
+      "ferro_ta_m_bars_s": 134.51,
+      "ferro_ta_runs_us": [
+        742.5,
+        743.75,
+        743.416,
+        720.958,
+        701.958,
+        816.042,
+        745.25
+      ],
+      "ferro_ta_stats": {
+        "median_us": 743.416,
+        "mean_us": 744.8391,
+        "min_us": 701.958,
+        "max_us": 816.042,
+        "stddev_us": 35.3266,
+        "cv_pct": 4.743
+      },
+      "openalgo_us": 1108.166,
+      "openalgo_ms": 1.1082,
+      "openalgo_m_bars_s": 90.24,
+      "openalgo_runs_us": [
+        1093.292,
+        1478.458,
+        1121.75,
+        1103.334,
+        1108.166,
+        1094.708,
+        1222.75
+      ],
+      "openalgo_stats": {
+        "median_us": 1108.166,
+        "mean_us": 1174.6369,
+        "min_us": 1093.292,
+        "max_us": 1478.458,
+        "stddev_us": 141.3785,
+        "cv_pct": 12.036
+      },
+      "speedup": 1.4906,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900880,
+        "openalgo": 2400760
+      }
+    },
+    {
+      "indicator": "MINUS_DI",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 75.167,
+      "ferro_ta_ms": 0.0752,
+      "ferro_ta_m_bars_s": 133.04,
+      "ferro_ta_runs_us": [
+        78.209,
+        76.167,
+        75.542,
+        75.041,
+        74.667,
+        75.167,
+        74.542
+      ],
+      "ferro_ta_stats": {
+        "median_us": 75.167,
+        "mean_us": 75.6193,
+        "min_us": 74.542,
+        "max_us": 78.209,
+        "stddev_us": 1.2662,
+        "cv_pct": 1.674
+      },
+      "openalgo_us": 114.0,
+      "openalgo_ms": 0.114,
+      "openalgo_m_bars_s": 87.72,
+      "openalgo_runs_us": [
+        115.416,
+        114.208,
+        113.75,
+        113.875,
+        114.0,
+        114.0,
+        113.708
+      ],
+      "openalgo_stats": {
+        "median_us": 114.0,
+        "mean_us": 114.1367,
+        "min_us": 113.708,
+        "max_us": 115.416,
+        "stddev_us": 0.5889,
+        "cv_pct": 0.516
+      },
+      "speedup": 1.5166,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90880,
+        "openalgo": 240760
+      }
+    },
+    {
+      "indicator": "MINUS_DI",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 696.583,
+      "ferro_ta_ms": 0.6966,
+      "ferro_ta_m_bars_s": 143.56,
+      "ferro_ta_runs_us": [
+        696.583,
+        698.625,
+        694.417,
+        1482.916,
+        721.416,
+        693.5,
+        694.333
+      ],
+      "ferro_ta_stats": {
+        "median_us": 696.583,
+        "mean_us": 811.6843,
+        "min_us": 693.5,
+        "max_us": 1482.916,
+        "stddev_us": 296.1479,
+        "cv_pct": 36.486
+      },
+      "openalgo_us": 1100.209,
+      "openalgo_ms": 1.1002,
+      "openalgo_m_bars_s": 90.89,
+      "openalgo_runs_us": [
+        1100.209,
+        1092.833,
+        1091.75,
+        1144.709,
+        1155.917,
+        1819.416,
+        1097.709
+      ],
+      "openalgo_stats": {
+        "median_us": 1100.209,
+        "mean_us": 1214.649,
+        "min_us": 1091.75,
+        "max_us": 1819.416,
+        "stddev_us": 267.9549,
+        "cv_pct": 22.06
+      },
+      "speedup": 1.5794,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900880,
+        "openalgo": 2400760
+      }
+    },
+    {
+      "indicator": "BBANDS",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 34.333,
+      "ferro_ta_ms": 0.0343,
+      "ferro_ta_m_bars_s": 291.26,
+      "ferro_ta_runs_us": [
+        39.333,
+        35.875,
+        34.584,
+        34.333,
+        34.167,
+        33.917,
+        33.667
+      ],
+      "ferro_ta_stats": {
+        "median_us": 34.333,
+        "mean_us": 35.1251,
+        "min_us": 33.667,
+        "max_us": 39.333,
+        "stddev_us": 1.9871,
+        "cv_pct": 5.657
+      },
+      "openalgo_us": 51.917,
+      "openalgo_ms": 0.0519,
+      "openalgo_m_bars_s": 192.62,
+      "openalgo_runs_us": [
+        56.708,
+        53.709,
+        52.042,
+        51.917,
+        51.416,
+        51.625,
+        51.583
+      ],
+      "openalgo_stats": {
+        "median_us": 51.917,
+        "mean_us": 52.7143,
+        "min_us": 51.416,
+        "max_us": 56.708,
+        "stddev_us": 1.9226,
+        "cv_pct": 3.647
+      },
+      "speedup": 1.5122,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 91128,
+        "openalgo": 320792
+      }
+    },
+    {
+      "indicator": "BBANDS",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 297.375,
+      "ferro_ta_ms": 0.2974,
+      "ferro_ta_m_bars_s": 336.28,
+      "ferro_ta_runs_us": [
+        298.417,
+        296.667,
+        297.541,
+        296.625,
+        297.375,
+        296.625,
+        298.291
+      ],
+      "ferro_ta_stats": {
+        "median_us": 297.375,
+        "mean_us": 297.363,
+        "min_us": 296.625,
+        "max_us": 298.417,
+        "stddev_us": 0.7722,
+        "cv_pct": 0.26
+      },
+      "openalgo_us": 456.791,
+      "openalgo_ms": 0.4568,
+      "openalgo_m_bars_s": 218.92,
+      "openalgo_runs_us": [
+        455.708,
+        460.5,
+        461.583,
+        456.791,
+        455.833,
+        456.708,
+        1485.833
+      ],
+      "openalgo_stats": {
+        "median_us": 456.791,
+        "mean_us": 604.708,
+        "min_us": 455.708,
+        "max_us": 1485.833,
+        "stddev_us": 388.5465,
+        "cv_pct": 64.254
+      },
+      "speedup": 1.5361,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 901128,
+        "openalgo": 3200792
+      }
+    },
+    {
+      "indicator": "ATR",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 57.709,
+      "ferro_ta_ms": 0.0577,
+      "ferro_ta_m_bars_s": 173.28,
+      "ferro_ta_runs_us": [
+        60.459,
+        58.5,
+        58.334,
+        57.709,
+        57.625,
+        57.667,
+        57.5
+      ],
+      "ferro_ta_stats": {
+        "median_us": 57.709,
+        "mean_us": 58.2563,
+        "min_us": 57.5,
+        "max_us": 60.459,
+        "stddev_us": 1.0436,
+        "cv_pct": 1.791
+      },
+      "openalgo_us": 66.5,
+      "openalgo_ms": 0.0665,
+      "openalgo_m_bars_s": 150.38,
+      "openalgo_runs_us": [
+        69.792,
+        67.584,
+        66.5,
+        66.666,
+        66.458,
+        66.333,
+        66.5
+      ],
+      "openalgo_stats": {
+        "median_us": 66.5,
+        "mean_us": 67.119,
+        "min_us": 66.333,
+        "max_us": 69.792,
+        "stddev_us": 1.2508,
+        "cv_pct": 1.864
+      },
+      "speedup": 1.1523,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90880,
+        "openalgo": 240668
+      }
+    },
+    {
+      "indicator": "ATR",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 541.334,
+      "ferro_ta_ms": 0.5413,
+      "ferro_ta_m_bars_s": 184.73,
+      "ferro_ta_runs_us": [
+        620.0,
+        546.208,
+        541.334,
+        540.959,
+        541.125,
+        540.417,
+        551.166
+      ],
+      "ferro_ta_stats": {
+        "median_us": 541.334,
+        "mean_us": 554.4584,
+        "min_us": 540.417,
+        "max_us": 620.0,
+        "stddev_us": 29.1663,
+        "cv_pct": 5.26
+      },
+      "openalgo_us": 614.792,
+      "openalgo_ms": 0.6148,
+      "openalgo_m_bars_s": 162.66,
+      "openalgo_runs_us": [
+        632.833,
+        619.083,
+        615.083,
+        614.25,
+        614.333,
+        614.667,
+        614.792
+      ],
+      "openalgo_stats": {
+        "median_us": 614.792,
+        "mean_us": 617.863,
+        "min_us": 614.25,
+        "max_us": 632.833,
+        "stddev_us": 6.8127,
+        "cv_pct": 1.103
+      },
+      "speedup": 1.1357,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900880,
+        "openalgo": 2400668
+      }
+    },
+    {
+      "indicator": "NATR",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 60.916,
+      "ferro_ta_ms": 0.0609,
+      "ferro_ta_m_bars_s": 164.16,
+      "ferro_ta_runs_us": [
+        63.417,
+        61.083,
+        60.417,
+        68.333,
+        60.834,
+        60.25,
+        60.916
+      ],
+      "ferro_ta_stats": {
+        "median_us": 60.916,
+        "mean_us": 62.1786,
+        "min_us": 60.25,
+        "max_us": 68.333,
+        "stddev_us": 2.9108,
+        "cv_pct": 4.681
+      },
+      "openalgo_us": 75.417,
+      "openalgo_ms": 0.0754,
+      "openalgo_m_bars_s": 132.6,
+      "openalgo_runs_us": [
+        94.209,
+        110.416,
+        82.75,
+        75.417,
+        73.417,
+        73.042,
+        72.875
+      ],
+      "openalgo_stats": {
+        "median_us": 75.417,
+        "mean_us": 83.1609,
+        "min_us": 72.875,
+        "max_us": 110.416,
+        "stddev_us": 14.3072,
+        "cv_pct": 17.204
+      },
+      "speedup": 1.238,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90880,
+        "openalgo": 251736
+      }
+    },
+    {
+      "indicator": "NATR",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 564.75,
+      "ferro_ta_ms": 0.5647,
+      "ferro_ta_m_bars_s": 177.07,
+      "ferro_ta_runs_us": [
+        559.75,
+        566.625,
+        1187.333,
+        566.208,
+        564.75,
+        564.75,
+        564.292
+      ],
+      "ferro_ta_stats": {
+        "median_us": 564.75,
+        "mean_us": 653.3869,
+        "min_us": 559.75,
+        "max_us": 1187.333,
+        "stddev_us": 235.4588,
+        "cv_pct": 36.037
+      },
+      "openalgo_us": 687.709,
+      "openalgo_ms": 0.6877,
+      "openalgo_m_bars_s": 145.41,
+      "openalgo_runs_us": [
+        1134.791,
+        693.042,
+        674.042,
+        703.042,
+        687.709,
+        673.5,
+        670.5
+      ],
+      "openalgo_stats": {
+        "median_us": 687.709,
+        "mean_us": 748.0894,
+        "min_us": 670.5,
+        "max_us": 1134.791,
+        "stddev_us": 170.9338,
+        "cv_pct": 22.849
+      },
+      "speedup": 1.2177,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 816784,
+        "openalgo": 2501992
+      }
+    },
+    {
+      "indicator": "TRANGE",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 13.375,
+      "ferro_ta_ms": 0.0134,
+      "ferro_ta_m_bars_s": 747.66,
+      "ferro_ta_runs_us": [
+        16.083,
+        13.834,
+        13.708,
+        13.375,
+        13.209,
+        13.25,
+        13.042
+      ],
+      "ferro_ta_stats": {
+        "median_us": 13.375,
+        "mean_us": 13.7859,
+        "min_us": 13.042,
+        "max_us": 16.083,
+        "stddev_us": 1.051,
+        "cv_pct": 7.624
+      },
+      "openalgo_us": 17.208,
+      "openalgo_ms": 0.0172,
+      "openalgo_m_bars_s": 581.13,
+      "openalgo_runs_us": [
+        19.375,
+        17.833,
+        17.083,
+        17.208,
+        16.833,
+        16.791,
+        17.292
+      ],
+      "openalgo_stats": {
+        "median_us": 17.208,
+        "mean_us": 17.4879,
+        "min_us": 16.791,
+        "max_us": 19.375,
+        "stddev_us": 0.9014,
+        "cv_pct": 5.155
+      },
+      "speedup": 1.2866,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90744,
+        "openalgo": 240668
+      }
+    },
+    {
+      "indicator": "TRANGE",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 86.25,
+      "ferro_ta_ms": 0.0862,
+      "ferro_ta_m_bars_s": 1159.42,
+      "ferro_ta_runs_us": [
+        92.791,
+        89.791,
+        89.625,
+        86.25,
+        84.875,
+        85.208,
+        85.042
+      ],
+      "ferro_ta_stats": {
+        "median_us": 86.25,
+        "mean_us": 87.6546,
+        "min_us": 84.875,
+        "max_us": 92.791,
+        "stddev_us": 3.0914,
+        "cv_pct": 3.527
+      },
+      "openalgo_us": 122.584,
+      "openalgo_ms": 0.1226,
+      "openalgo_m_bars_s": 815.77,
+      "openalgo_runs_us": [
+        121.208,
+        123.667,
+        122.584,
+        124.084,
+        124.25,
+        121.875,
+        122.166
+      ],
+      "openalgo_stats": {
+        "median_us": 122.584,
+        "mean_us": 122.8334,
+        "min_us": 121.208,
+        "max_us": 124.25,
+        "stddev_us": 1.1785,
+        "cv_pct": 0.959
+      },
+      "speedup": 1.4213,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900744,
+        "openalgo": 2400668
+      }
+    },
+    {
+      "indicator": "STDDEV",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 118.125,
+      "ferro_ta_ms": 0.1181,
+      "ferro_ta_m_bars_s": 84.66,
+      "ferro_ta_runs_us": [
+        123.417,
+        120.417,
+        119.417,
+        118.125,
+        117.917,
+        117.959,
+        117.917
+      ],
+      "ferro_ta_stats": {
+        "median_us": 118.125,
+        "mean_us": 119.3099,
+        "min_us": 117.917,
+        "max_us": 123.417,
+        "stddev_us": 2.05,
+        "cv_pct": 1.718
+      },
+      "openalgo_us": 25.208,
+      "openalgo_ms": 0.0252,
+      "openalgo_m_bars_s": 396.7,
+      "openalgo_runs_us": [
+        26.291,
+        25.25,
+        25.25,
+        25.208,
+        25.208,
+        25.084,
+        25.125
+      ],
+      "openalgo_stats": {
+        "median_us": 25.208,
+        "mean_us": 25.3451,
+        "min_us": 25.084,
+        "max_us": 26.291,
+        "stddev_us": 0.4217,
+        "cv_pct": 1.664
+      },
+      "speedup": 0.2134,
+      "outcome": "openalgo_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90840,
+        "openalgo": 90536
+      }
+    },
+    {
+      "indicator": "STDDEV",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 1195.208,
+      "ferro_ta_ms": 1.1952,
+      "ferro_ta_m_bars_s": 83.67,
+      "ferro_ta_runs_us": [
+        1192.042,
+        1269.5,
+        1242.25,
+        1235.417,
+        1195.208,
+        1147.792,
+        1147.833
+      ],
+      "ferro_ta_stats": {
+        "median_us": 1195.208,
+        "mean_us": 1204.2917,
+        "min_us": 1147.792,
+        "max_us": 1269.5,
+        "stddev_us": 47.0356,
+        "cv_pct": 3.906
+      },
+      "openalgo_us": 222.583,
+      "openalgo_ms": 0.2226,
+      "openalgo_m_bars_s": 449.27,
+      "openalgo_runs_us": [
+        224.667,
+        225.458,
+        225.041,
+        221.208,
+        217.042,
+        222.583,
+        220.625
+      ],
+      "openalgo_stats": {
+        "median_us": 222.583,
+        "mean_us": 222.3749,
+        "min_us": 217.042,
+        "max_us": 225.458,
+        "stddev_us": 3.0214,
+        "cv_pct": 1.359
+      },
+      "speedup": 0.1862,
+      "outcome": "openalgo_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900840,
+        "openalgo": 900536
+      }
+    },
+    {
+      "indicator": "VAR",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 120.708,
+      "ferro_ta_ms": 0.1207,
+      "ferro_ta_m_bars_s": 82.84,
+      "ferro_ta_runs_us": [
+        119.0,
+        118.042,
+        162.417,
+        132.792,
+        120.708,
+        120.0,
+        122.917
+      ],
+      "ferro_ta_stats": {
+        "median_us": 120.708,
+        "mean_us": 127.9823,
+        "min_us": 118.042,
+        "max_us": 162.417,
+        "stddev_us": 15.9722,
+        "cv_pct": 12.48
+      },
+      "openalgo_us": 45.666,
+      "openalgo_ms": 0.0457,
+      "openalgo_m_bars_s": 218.98,
+      "openalgo_runs_us": [
+        52.375,
+        47.167,
+        49.333,
+        45.666,
+        45.208,
+        45.125,
+        45.125
+      ],
+      "openalgo_stats": {
+        "median_us": 45.666,
+        "mean_us": 47.1427,
+        "min_us": 45.125,
+        "max_us": 52.375,
+        "stddev_us": 2.7761,
+        "cv_pct": 5.889
+      },
+      "speedup": 0.3783,
+      "outcome": "openalgo_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90840,
+        "openalgo": 161016
+      }
+    },
+    {
+      "indicator": "VAR",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 1177.041,
+      "ferro_ta_ms": 1.177,
+      "ferro_ta_m_bars_s": 84.96,
+      "ferro_ta_runs_us": [
+        1189.209,
+        1173.625,
+        1174.958,
+        1177.041,
+        1188.0,
+        1165.125,
+        1196.042
+      ],
+      "ferro_ta_stats": {
+        "median_us": 1177.041,
+        "mean_us": 1180.5714,
+        "min_us": 1165.125,
+        "max_us": 1196.042,
+        "stddev_us": 10.8008,
+        "cv_pct": 0.915
+      },
+      "openalgo_us": 405.083,
+      "openalgo_ms": 0.4051,
+      "openalgo_m_bars_s": 246.86,
+      "openalgo_runs_us": [
+        405.083,
+        406.792,
+        408.041,
+        408.125,
+        403.125,
+        400.25,
+        401.75
+      ],
+      "openalgo_stats": {
+        "median_us": 405.083,
+        "mean_us": 404.738,
+        "min_us": 400.25,
+        "max_us": 408.125,
+        "stddev_us": 3.1196,
+        "cv_pct": 0.771
+      },
+      "speedup": 0.3442,
+      "outcome": "openalgo_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900840,
+        "openalgo": 1601016
+      }
+    },
+    {
+      "indicator": "SAR",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 34.5,
+      "ferro_ta_ms": 0.0345,
+      "ferro_ta_m_bars_s": 289.86,
+      "ferro_ta_runs_us": [
+        46.917,
+        36.416,
+        35.125,
+        34.417,
+        34.5,
+        34.125,
+        34.0
+      ],
+      "ferro_ta_stats": {
+        "median_us": 34.5,
+        "mean_us": 36.5,
+        "min_us": 34.0,
+        "max_us": 46.917,
+        "stddev_us": 4.6662,
+        "cv_pct": 12.784
+      },
+      "openalgo_us": 35.833,
+      "openalgo_ms": 0.0358,
+      "openalgo_m_bars_s": 279.07,
+      "openalgo_runs_us": [
+        49.75,
+        38.583,
+        35.833,
+        36.041,
+        35.167,
+        35.083,
+        34.875
+      ],
+      "openalgo_stats": {
+        "median_us": 35.833,
+        "mean_us": 37.9046,
+        "min_us": 34.875,
+        "max_us": 49.75,
+        "stddev_us": 5.3723,
+        "cv_pct": 14.173
+      },
+      "speedup": 1.0386,
+      "outcome": "tie",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90984,
+        "openalgo": 160544
+      }
+    },
+    {
+      "indicator": "SAR",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 680.292,
+      "ferro_ta_ms": 0.6803,
+      "ferro_ta_m_bars_s": 147.0,
+      "ferro_ta_runs_us": [
+        575.5,
+        513.166,
+        474.25,
+        682.208,
+        680.292,
+        704.0,
+        683.334
+      ],
+      "ferro_ta_stats": {
+        "median_us": 680.292,
+        "mean_us": 616.1071,
+        "min_us": 474.25,
+        "max_us": 704.0,
+        "stddev_us": 94.077,
+        "cv_pct": 15.27
+      },
+      "openalgo_us": 481.083,
+      "openalgo_ms": 0.4811,
+      "openalgo_m_bars_s": 207.86,
+      "openalgo_runs_us": [
+        617.25,
+        532.209,
+        515.458,
+        481.083,
+        451.833,
+        463.875,
+        465.917
+      ],
+      "openalgo_stats": {
+        "median_us": 481.083,
+        "mean_us": 503.9464,
+        "min_us": 451.833,
+        "max_us": 617.25,
+        "stddev_us": 57.8208,
+        "cv_pct": 11.474
+      },
+      "speedup": 0.7072,
+      "outcome": "openalgo_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900984,
+        "openalgo": 1600544
+      }
+    },
+    {
+      "indicator": "KELTNER_CHANNELS",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 78.042,
+      "ferro_ta_ms": 0.078,
+      "ferro_ta_m_bars_s": 128.14,
+      "ferro_ta_runs_us": [
+        80.375,
+        78.042,
+        77.875,
+        78.041,
+        78.125,
+        78.083,
+        76.167
+      ],
+      "ferro_ta_stats": {
+        "median_us": 78.042,
+        "mean_us": 78.1011,
+        "min_us": 76.167,
+        "max_us": 80.375,
+        "stddev_us": 1.2227,
+        "cv_pct": 1.566
+      },
+      "openalgo_us": 97.458,
+      "openalgo_ms": 0.0975,
+      "openalgo_m_bars_s": 102.61,
+      "openalgo_runs_us": [
+        102.291,
+        99.458,
+        96.708,
+        95.458,
+        101.833,
+        97.458,
+        97.417
+      ],
+      "openalgo_stats": {
+        "median_us": 97.458,
+        "mean_us": 98.6604,
+        "min_us": 95.458,
+        "max_us": 102.291,
+        "stddev_us": 2.6122,
+        "cv_pct": 2.648
+      },
+      "speedup": 1.2488,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 91128,
+        "openalgo": 480880
+      }
+    },
+    {
+      "indicator": "KELTNER_CHANNELS",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 756.417,
+      "ferro_ta_ms": 0.7564,
+      "ferro_ta_m_bars_s": 132.2,
+      "ferro_ta_runs_us": [
+        739.0,
+        883.792,
+        789.042,
+        781.583,
+        756.417,
+        753.542,
+        753.209
+      ],
+      "ferro_ta_stats": {
+        "median_us": 756.417,
+        "mean_us": 779.5121,
+        "min_us": 739.0,
+        "max_us": 883.792,
+        "stddev_us": 49.1771,
+        "cv_pct": 6.309
+      },
+      "openalgo_us": 920.083,
+      "openalgo_ms": 0.9201,
+      "openalgo_m_bars_s": 108.69,
+      "openalgo_runs_us": [
+        918.0,
+        917.958,
+        920.083,
+        919.916,
+        1606.167,
+        2122.792,
+        1684.791
+      ],
+      "openalgo_stats": {
+        "median_us": 920.083,
+        "mean_us": 1298.5296,
+        "min_us": 917.958,
+        "max_us": 2122.792,
+        "stddev_us": 499.9091,
+        "cv_pct": 38.498
+      },
+      "speedup": 1.2164,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 901128,
+        "openalgo": 4800880
+      }
+    },
+    {
+      "indicator": "DONCHIAN",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 437.041,
+      "ferro_ta_ms": 0.437,
+      "ferro_ta_m_bars_s": 22.88,
+      "ferro_ta_runs_us": [
+        442.125,
+        581.625,
+        437.041,
+        375.833,
+        377.166,
+        403.542,
+        461.541
+      ],
+      "ferro_ta_stats": {
+        "median_us": 437.041,
+        "mean_us": 439.839,
+        "min_us": 375.833,
+        "max_us": 581.625,
+        "stddev_us": 70.6275,
+        "cv_pct": 16.058
+      },
+      "openalgo_us": 176.708,
+      "openalgo_ms": 0.1767,
+      "openalgo_m_bars_s": 56.59,
+      "openalgo_runs_us": [
+        176.708,
+        149.208,
+        137.917,
+        240.625,
+        206.209,
+        157.25,
+        187.708
+      ],
+      "openalgo_stats": {
+        "median_us": 176.708,
+        "mean_us": 179.375,
+        "min_us": 137.917,
+        "max_us": 240.625,
+        "stddev_us": 35.7456,
+        "cv_pct": 19.928
+      },
+      "speedup": 0.4043,
+      "outcome": "openalgo_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 91128,
+        "openalgo": 320776
+      }
+    },
+    {
+      "indicator": "DONCHIAN",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 2042.917,
+      "ferro_ta_ms": 2.0429,
+      "ferro_ta_m_bars_s": 48.95,
+      "ferro_ta_runs_us": [
+        2184.666,
+        2185.667,
+        2085.791,
+        2042.917,
+        2022.042,
+        2017.333,
+        2001.916
+      ],
+      "ferro_ta_stats": {
+        "median_us": 2042.917,
+        "mean_us": 2077.1903,
+        "min_us": 2001.916,
+        "max_us": 2185.667,
+        "stddev_us": 78.3766,
+        "cv_pct": 3.773
+      },
+      "openalgo_us": 1679.625,
+      "openalgo_ms": 1.6796,
+      "openalgo_m_bars_s": 59.54,
+      "openalgo_runs_us": [
+        1794.667,
+        1753.542,
+        1684.833,
+        1679.625,
+        1661.708,
+        1654.0,
+        1645.375
+      ],
+      "openalgo_stats": {
+        "median_us": 1679.625,
+        "mean_us": 1696.25,
+        "min_us": 1645.375,
+        "max_us": 1794.667,
+        "stddev_us": 56.1864,
+        "cv_pct": 3.312
+      },
+      "speedup": 0.8222,
+      "outcome": "openalgo_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 901128,
+        "openalgo": 2400680
+      }
+    },
+    {
+      "indicator": "SUPERTREND",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 107.792,
+      "ferro_ta_ms": 0.1078,
+      "ferro_ta_m_bars_s": 92.77,
+      "ferro_ta_runs_us": [
+        119.583,
+        112.875,
+        108.792,
+        107.792,
+        107.708,
+        107.166,
+        106.5
+      ],
+      "ferro_ta_stats": {
+        "median_us": 107.792,
+        "mean_us": 110.0594,
+        "min_us": 106.5,
+        "max_us": 119.583,
+        "stddev_us": 4.6894,
+        "cv_pct": 4.261
+      },
+      "openalgo_us": 124.125,
+      "openalgo_ms": 0.1241,
+      "openalgo_m_bars_s": 80.56,
+      "openalgo_runs_us": [
+        129.625,
+        124.459,
+        124.542,
+        123.834,
+        123.667,
+        123.667,
+        124.125
+      ],
+      "openalgo_stats": {
+        "median_us": 124.125,
+        "mean_us": 124.8456,
+        "min_us": 123.667,
+        "max_us": 129.625,
+        "stddev_us": 2.1372,
+        "cv_pct": 1.712
+      },
+      "speedup": 1.1515,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 91080,
+        "openalgo": 240668
+      }
+    },
+    {
+      "indicator": "SUPERTREND",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 1143.583,
+      "ferro_ta_ms": 1.1436,
+      "ferro_ta_m_bars_s": 87.44,
+      "ferro_ta_runs_us": [
+        1293.583,
+        1211.083,
+        1143.583,
+        1119.083,
+        1090.209,
+        1087.208,
+        2528.625
+      ],
+      "ferro_ta_stats": {
+        "median_us": 1143.583,
+        "mean_us": 1353.3391,
+        "min_us": 1087.208,
+        "max_us": 2528.625,
+        "stddev_us": 523.4567,
+        "cv_pct": 38.679
+      },
+      "openalgo_us": 1194.083,
+      "openalgo_ms": 1.1941,
+      "openalgo_m_bars_s": 83.75,
+      "openalgo_runs_us": [
+        1210.916,
+        1200.5,
+        1194.083,
+        1188.5,
+        1193.334,
+        1202.167,
+        1180.209
+      ],
+      "openalgo_stats": {
+        "median_us": 1194.083,
+        "mean_us": 1195.6727,
+        "min_us": 1180.209,
+        "max_us": 1210.916,
+        "stddev_us": 9.97,
+        "cv_pct": 0.834
+      },
+      "speedup": 1.0442,
+      "outcome": "tie",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 901080,
+        "openalgo": 2400668
+      }
+    },
+    {
+      "indicator": "CHOPPINESS_INDEX",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 239.166,
+      "ferro_ta_ms": 0.2392,
+      "ferro_ta_m_bars_s": 41.81,
+      "ferro_ta_runs_us": [
+        289.834,
+        261.291,
+        247.208,
+        239.166,
+        234.416,
+        231.959,
+        230.25
+      ],
+      "ferro_ta_stats": {
+        "median_us": 239.166,
+        "mean_us": 247.732,
+        "min_us": 230.25,
+        "max_us": 289.834,
+        "stddev_us": 21.4546,
+        "cv_pct": 8.66
+      },
+      "openalgo_us": 177.542,
+      "openalgo_ms": 0.1775,
+      "openalgo_m_bars_s": 56.32,
+      "openalgo_runs_us": [
+        270.625,
+        217.292,
+        188.083,
+        177.542,
+        170.666,
+        165.25,
+        164.208
+      ],
+      "openalgo_stats": {
+        "median_us": 177.542,
+        "mean_us": 193.3809,
+        "min_us": 164.208,
+        "max_us": 270.625,
+        "stddev_us": 38.6775,
+        "cv_pct": 20.001
+      },
+      "speedup": 0.7423,
+      "outcome": "openalgo_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90880,
+        "openalgo": 650928
+      }
+    },
+    {
+      "indicator": "CHOPPINESS_INDEX",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 2913.833,
+      "ferro_ta_ms": 2.9138,
+      "ferro_ta_m_bars_s": 34.32,
+      "ferro_ta_runs_us": [
+        2934.0,
+        2913.833,
+        2741.25,
+        2686.917,
+        4275.708,
+        3935.25,
+        2838.5
+      ],
+      "ferro_ta_stats": {
+        "median_us": 2913.833,
+        "mean_us": 3189.3511,
+        "min_us": 2686.917,
+        "max_us": 4275.708,
+        "stddev_us": 639.5287,
+        "cv_pct": 20.052
+      },
+      "openalgo_us": 2897.417,
+      "openalgo_ms": 2.8974,
+      "openalgo_m_bars_s": 34.51,
+      "openalgo_runs_us": [
+        2478.708,
+        2424.333,
+        4239.417,
+        2746.209,
+        2897.417,
+        7847.666,
+        6910.375
+      ],
+      "openalgo_stats": {
+        "median_us": 2897.417,
+        "mean_us": 4220.5893,
+        "min_us": 2424.333,
+        "max_us": 7847.666,
+        "stddev_us": 2257.4416,
+        "cv_pct": 53.486
+      },
+      "speedup": 0.9944,
+      "outcome": "tie",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 817640,
+        "openalgo": 5534696
+      }
+    },
+    {
+      "indicator": "OBV",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 20.75,
+      "ferro_ta_ms": 0.0208,
+      "ferro_ta_m_bars_s": 481.93,
+      "ferro_ta_runs_us": [
+        38.083,
+        26.5,
+        23.25,
+        20.75,
+        20.084,
+        19.709,
+        19.75
+      ],
+      "ferro_ta_stats": {
+        "median_us": 20.75,
+        "mean_us": 24.018,
+        "min_us": 19.709,
+        "max_us": 38.083,
+        "stddev_us": 6.6772,
+        "cv_pct": 27.801
+      },
+      "openalgo_us": 19.541,
+      "openalgo_ms": 0.0195,
+      "openalgo_m_bars_s": 511.74,
+      "openalgo_runs_us": [
+        22.833,
+        20.334,
+        19.625,
+        19.541,
+        19.458,
+        19.458,
+        19.375
+      ],
+      "openalgo_stats": {
+        "median_us": 19.541,
+        "mean_us": 20.0891,
+        "min_us": 19.375,
+        "max_us": 22.833,
+        "stddev_us": 1.2524,
+        "cv_pct": 6.234
+      },
+      "speedup": 0.9417,
+      "outcome": "openalgo_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90752,
+        "openalgo": 160544
+      }
+    },
+    {
+      "indicator": "OBV",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 350.417,
+      "ferro_ta_ms": 0.3504,
+      "ferro_ta_m_bars_s": 285.37,
+      "ferro_ta_runs_us": [
+        379.208,
+        365.166,
+        354.541,
+        350.417,
+        347.459,
+        345.459,
+        343.292
+      ],
+      "ferro_ta_stats": {
+        "median_us": 350.417,
+        "mean_us": 355.0774,
+        "min_us": 343.292,
+        "max_us": 379.208,
+        "stddev_us": 12.881,
+        "cv_pct": 3.628
+      },
+      "openalgo_us": 154.875,
+      "openalgo_ms": 0.1549,
+      "openalgo_m_bars_s": 645.68,
+      "openalgo_runs_us": [
+        155.667,
+        154.875,
+        155.375,
+        154.167,
+        155.042,
+        153.792,
+        154.292
+      ],
+      "openalgo_stats": {
+        "median_us": 154.875,
+        "mean_us": 154.7443,
+        "min_us": 153.792,
+        "max_us": 155.667,
+        "stddev_us": 0.6831,
+        "cv_pct": 0.441
+      },
+      "speedup": 0.442,
+      "outcome": "openalgo_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900752,
+        "openalgo": 1600544
+      }
+    },
+    {
+      "indicator": "AD",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 20.916,
+      "ferro_ta_ms": 0.0209,
+      "ferro_ta_m_bars_s": 478.1,
+      "ferro_ta_runs_us": [
+        22.208,
+        21.542,
+        20.958,
+        20.916,
+        20.667,
+        20.125,
+        20.208
+      ],
+      "ferro_ta_stats": {
+        "median_us": 20.916,
+        "mean_us": 20.9463,
+        "min_us": 20.125,
+        "max_us": 22.208,
+        "stddev_us": 0.7355,
+        "cv_pct": 3.511
+      },
+      "openalgo_us": 26.166,
+      "openalgo_ms": 0.0262,
+      "openalgo_m_bars_s": 382.18,
+      "openalgo_runs_us": [
+        28.417,
+        26.833,
+        26.25,
+        26.166,
+        25.5,
+        25.75,
+        25.708
+      ],
+      "openalgo_stats": {
+        "median_us": 26.166,
+        "mean_us": 26.3749,
+        "min_us": 25.5,
+        "max_us": 28.417,
+        "stddev_us": 1.0033,
+        "cv_pct": 3.804
+      },
+      "speedup": 1.251,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90752,
+        "openalgo": 320792
+      }
+    },
+    {
+      "indicator": "AD",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 154.375,
+      "ferro_ta_ms": 0.1544,
+      "ferro_ta_m_bars_s": 647.77,
+      "ferro_ta_runs_us": [
+        154.75,
+        155.792,
+        152.625,
+        152.583,
+        154.5,
+        152.333,
+        154.375
+      ],
+      "ferro_ta_stats": {
+        "median_us": 154.375,
+        "mean_us": 153.8511,
+        "min_us": 152.333,
+        "max_us": 155.792,
+        "stddev_us": 1.3346,
+        "cv_pct": 0.867
+      },
+      "openalgo_us": 215.0,
+      "openalgo_ms": 0.215,
+      "openalgo_m_bars_s": 465.12,
+      "openalgo_runs_us": [
+        220.667,
+        215.0,
+        214.667,
+        214.083,
+        216.0,
+        214.625,
+        215.167
+      ],
+      "openalgo_stats": {
+        "median_us": 215.0,
+        "mean_us": 215.7441,
+        "min_us": 214.083,
+        "max_us": 220.667,
+        "stddev_us": 2.2494,
+        "cv_pct": 1.043
+      },
+      "speedup": 1.3927,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900752,
+        "openalgo": 3200792
+      }
+    },
+    {
+      "indicator": "ADOSC",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 41.042,
+      "ferro_ta_ms": 0.041,
+      "ferro_ta_m_bars_s": 243.65,
+      "ferro_ta_runs_us": [
+        42.792,
+        41.625,
+        41.375,
+        41.0,
+        41.042,
+        40.75,
+        40.916
+      ],
+      "ferro_ta_stats": {
+        "median_us": 41.042,
+        "mean_us": 41.3571,
+        "min_us": 40.75,
+        "max_us": 42.792,
+        "stddev_us": 0.6977,
+        "cv_pct": 1.687
+      },
+      "openalgo_us": 69.875,
+      "openalgo_ms": 0.0699,
+      "openalgo_m_bars_s": 143.11,
+      "openalgo_runs_us": [
+        72.291,
+        70.042,
+        69.458,
+        69.875,
+        69.625,
+        70.208,
+        69.292
+      ],
+      "openalgo_stats": {
+        "median_us": 69.875,
+        "mean_us": 70.113,
+        "min_us": 69.292,
+        "max_us": 72.291,
+        "stddev_us": 1.0129,
+        "cv_pct": 1.445
+      },
+      "speedup": 1.7025,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90920,
+        "openalgo": 320792
+      }
+    },
+    {
+      "indicator": "ADOSC",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 355.375,
+      "ferro_ta_ms": 0.3554,
+      "ferro_ta_m_bars_s": 281.39,
+      "ferro_ta_runs_us": [
+        356.834,
+        355.458,
+        355.125,
+        355.291,
+        355.375,
+        357.166,
+        354.833
+      ],
+      "ferro_ta_stats": {
+        "median_us": 355.375,
+        "mean_us": 355.726,
+        "min_us": 354.833,
+        "max_us": 357.166,
+        "stddev_us": 0.8985,
+        "cv_pct": 0.253
+      },
+      "openalgo_us": 647.125,
+      "openalgo_ms": 0.6471,
+      "openalgo_m_bars_s": 154.53,
+      "openalgo_runs_us": [
+        654.959,
+        649.833,
+        638.291,
+        640.5,
+        661.125,
+        647.125,
+        646.833
+      ],
+      "openalgo_stats": {
+        "median_us": 647.125,
+        "mean_us": 648.3809,
+        "min_us": 638.291,
+        "max_us": 661.125,
+        "stddev_us": 7.9129,
+        "cv_pct": 1.22
+      },
+      "speedup": 1.821,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900920,
+        "openalgo": 3200792
+      }
+    },
+    {
+      "indicator": "MFI",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 30.875,
+      "ferro_ta_ms": 0.0309,
+      "ferro_ta_m_bars_s": 323.89,
+      "ferro_ta_runs_us": [
+        34.375,
+        31.167,
+        30.958,
+        30.833,
+        30.792,
+        30.875,
+        30.458
+      ],
+      "ferro_ta_stats": {
+        "median_us": 30.875,
+        "mean_us": 31.3511,
+        "min_us": 30.458,
+        "max_us": 34.375,
+        "stddev_us": 1.3502,
+        "cv_pct": 4.307
+      },
+      "openalgo_us": 63.375,
+      "openalgo_ms": 0.0634,
+      "openalgo_m_bars_s": 157.79,
+      "openalgo_runs_us": [
+        78.542,
+        73.583,
+        67.708,
+        63.375,
+        61.459,
+        58.916,
+        58.333
+      ],
+      "openalgo_stats": {
+        "median_us": 63.375,
+        "mean_us": 65.988,
+        "min_us": 58.333,
+        "max_us": 78.542,
+        "stddev_us": 7.6833,
+        "cv_pct": 11.643
+      },
+      "speedup": 2.0526,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90880,
+        "openalgo": 320792
+      }
+    },
+    {
+      "indicator": "MFI",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 249.375,
+      "ferro_ta_ms": 0.2494,
+      "ferro_ta_m_bars_s": 401.0,
+      "ferro_ta_runs_us": [
+        252.125,
+        252.167,
+        249.167,
+        248.792,
+        251.084,
+        249.375,
+        247.834
+      ],
+      "ferro_ta_stats": {
+        "median_us": 249.375,
+        "mean_us": 250.0777,
+        "min_us": 247.834,
+        "max_us": 252.167,
+        "stddev_us": 1.7117,
+        "cv_pct": 0.684
+      },
+      "openalgo_us": 684.625,
+      "openalgo_ms": 0.6846,
+      "openalgo_m_bars_s": 146.07,
+      "openalgo_runs_us": [
+        3138.541,
+        1115.625,
+        725.875,
+        684.625,
+        681.917,
+        669.75,
+        668.041
+      ],
+      "openalgo_stats": {
+        "median_us": 684.625,
+        "mean_us": 1097.7677,
+        "min_us": 668.041,
+        "max_us": 3138.541,
+        "stddev_us": 914.2266,
+        "cv_pct": 83.281
+      },
+      "speedup": 2.7454,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900880,
+        "openalgo": 3200792
+      }
+    },
+    {
+      "indicator": "VWAP",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 22.334,
+      "ferro_ta_ms": 0.0223,
+      "ferro_ta_m_bars_s": 447.75,
+      "ferro_ta_runs_us": [
+        24.042,
+        76.875,
+        37.25,
+        22.334,
+        20.958,
+        21.25,
+        20.917
+      ],
+      "ferro_ta_stats": {
+        "median_us": 22.334,
+        "mean_us": 31.9466,
+        "min_us": 20.917,
+        "max_us": 76.875,
+        "stddev_us": 20.6494,
+        "cv_pct": 64.637
+      },
+      "openalgo_us": 82.042,
+      "openalgo_ms": 0.082,
+      "openalgo_m_bars_s": 121.89,
+      "openalgo_runs_us": [
+        227.209,
+        290.916,
+        201.583,
+        82.042,
+        59.416,
+        53.625,
+        51.875
+      ],
+      "openalgo_stats": {
+        "median_us": 82.042,
+        "mean_us": 138.0951,
+        "min_us": 51.875,
+        "max_us": 290.916,
+        "stddev_us": 99.3543,
+        "cv_pct": 71.946
+      },
+      "speedup": 3.6734,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90752,
+        "openalgo": 491080
+      }
+    },
+    {
+      "indicator": "VWAP",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 187.542,
+      "ferro_ta_ms": 0.1875,
+      "ferro_ta_m_bars_s": 533.21,
+      "ferro_ta_runs_us": [
+        432.959,
+        495.792,
+        435.875,
+        187.542,
+        167.209,
+        165.5,
+        163.5
+      ],
+      "ferro_ta_stats": {
+        "median_us": 187.542,
+        "mean_us": 292.6253,
+        "min_us": 163.5,
+        "max_us": 495.792,
+        "stddev_us": 153.3496,
+        "cv_pct": 52.405
+      },
+      "openalgo_us": 481.875,
+      "openalgo_ms": 0.4819,
+      "openalgo_m_bars_s": 207.52,
+      "openalgo_runs_us": [
+        728.041,
+        1049.333,
+        1865.541,
+        481.875,
+        441.375,
+        427.875,
+        422.292
+      ],
+      "openalgo_stats": {
+        "median_us": 481.875,
+        "mean_us": 773.7617,
+        "min_us": 422.292,
+        "max_us": 1865.541,
+        "stddev_us": 533.6758,
+        "cv_pct": 68.972
+      },
+      "speedup": 2.5694,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900752,
+        "openalgo": 4901080
+      }
+    },
+    {
+      "indicator": "AVGPRICE",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 13.208,
+      "ferro_ta_ms": 0.0132,
+      "ferro_ta_m_bars_s": 757.12,
+      "ferro_ta_runs_us": [
+        17.333,
+        13.792,
+        13.458,
+        12.959,
+        12.875,
+        13.166,
+        13.208
+      ],
+      "ferro_ta_stats": {
+        "median_us": 13.208,
+        "mean_us": 13.8273,
+        "min_us": 12.875,
+        "max_us": 17.333,
+        "stddev_us": 1.5763,
+        "cv_pct": 11.4
+      },
+      "openalgo_us": 25.792,
+      "openalgo_ms": 0.0258,
+      "openalgo_m_bars_s": 387.72,
+      "openalgo_runs_us": [
+        28.25,
+        26.208,
+        26.166,
+        25.792,
+        25.25,
+        25.584,
+        25.667
+      ],
+      "openalgo_stats": {
+        "median_us": 25.792,
+        "mean_us": 26.131,
+        "min_us": 25.25,
+        "max_us": 28.25,
+        "stddev_us": 0.9919,
+        "cv_pct": 3.796
+      },
+      "speedup": 1.9528,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90752,
+        "openalgo": 480680
+      }
+    },
+    {
+      "indicator": "AVGPRICE",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 94.708,
+      "ferro_ta_ms": 0.0947,
+      "ferro_ta_m_bars_s": 1055.88,
+      "ferro_ta_runs_us": [
+        95.875,
+        96.041,
+        94.208,
+        94.5,
+        94.708,
+        93.875,
+        94.833
+      ],
+      "ferro_ta_stats": {
+        "median_us": 94.708,
+        "mean_us": 94.8629,
+        "min_us": 93.875,
+        "max_us": 96.041,
+        "stddev_us": 0.8138,
+        "cv_pct": 0.858
+      },
+      "openalgo_us": 192.959,
+      "openalgo_ms": 0.193,
+      "openalgo_m_bars_s": 518.24,
+      "openalgo_runs_us": [
+        181.541,
+        184.875,
+        192.959,
+        192.334,
+        199.209,
+        203.417,
+        199.833
+      ],
+      "openalgo_stats": {
+        "median_us": 192.959,
+        "mean_us": 193.4526,
+        "min_us": 181.541,
+        "max_us": 203.417,
+        "stddev_us": 8.0632,
+        "cv_pct": 4.168
+      },
+      "speedup": 2.0374,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900752,
+        "openalgo": 4000584
+      }
+    },
+    {
+      "indicator": "MEDPRICE",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 10.625,
+      "ferro_ta_ms": 0.0106,
+      "ferro_ta_m_bars_s": 941.18,
+      "ferro_ta_runs_us": [
+        12.625,
+        10.875,
+        10.791,
+        10.417,
+        10.5,
+        10.625,
+        10.416
+      ],
+      "ferro_ta_stats": {
+        "median_us": 10.625,
+        "mean_us": 10.8927,
+        "min_us": 10.416,
+        "max_us": 12.625,
+        "stddev_us": 0.7843,
+        "cv_pct": 7.2
+      },
+      "openalgo_us": 15.583,
+      "openalgo_ms": 0.0156,
+      "openalgo_m_bars_s": 641.72,
+      "openalgo_runs_us": [
+        17.208,
+        15.875,
+        15.583,
+        15.708,
+        15.5,
+        15.416,
+        15.5
+      ],
+      "openalgo_stats": {
+        "median_us": 15.583,
+        "mean_us": 15.8271,
+        "min_us": 15.416,
+        "max_us": 17.208,
+        "stddev_us": 0.628,
+        "cv_pct": 3.968
+      },
+      "speedup": 1.4666,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90752,
+        "openalgo": 320488
+      }
+    },
+    {
+      "indicator": "MEDPRICE",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 78.917,
+      "ferro_ta_ms": 0.0789,
+      "ferro_ta_m_bars_s": 1267.15,
+      "ferro_ta_runs_us": [
+        78.917,
+        79.208,
+        79.083,
+        79.125,
+        77.917,
+        77.833,
+        77.75
+      ],
+      "ferro_ta_stats": {
+        "median_us": 78.917,
+        "mean_us": 78.5476,
+        "min_us": 77.75,
+        "max_us": 79.208,
+        "stddev_us": 0.6754,
+        "cv_pct": 0.86
+      },
+      "openalgo_us": 117.25,
+      "openalgo_ms": 0.1172,
+      "openalgo_m_bars_s": 852.88,
+      "openalgo_runs_us": [
+        117.208,
+        117.208,
+        117.833,
+        117.125,
+        117.541,
+        117.25,
+        118.583
+      ],
+      "openalgo_stats": {
+        "median_us": 117.25,
+        "mean_us": 117.5354,
+        "min_us": 117.125,
+        "max_us": 118.583,
+        "stddev_us": 0.5245,
+        "cv_pct": 0.446
+      },
+      "speedup": 1.4857,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900752,
+        "openalgo": 2400392
+      }
+    },
+    {
+      "indicator": "TYPPRICE",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 11.333,
+      "ferro_ta_ms": 0.0113,
+      "ferro_ta_m_bars_s": 882.38,
+      "ferro_ta_runs_us": [
+        12.666,
+        11.542,
+        11.583,
+        11.333,
+        11.208,
+        11.167,
+        11.25
+      ],
+      "ferro_ta_stats": {
+        "median_us": 11.333,
+        "mean_us": 11.5356,
+        "min_us": 11.167,
+        "max_us": 12.666,
+        "stddev_us": 0.5238,
+        "cv_pct": 4.54
+      },
+      "openalgo_us": 20.708,
+      "openalgo_ms": 0.0207,
+      "openalgo_m_bars_s": 482.91,
+      "openalgo_runs_us": [
+        22.167,
+        21.041,
+        20.708,
+        20.542,
+        20.167,
+        20.709,
+        20.375
+      ],
+      "openalgo_stats": {
+        "median_us": 20.708,
+        "mean_us": 20.8156,
+        "min_us": 20.167,
+        "max_us": 22.167,
+        "stddev_us": 0.657,
+        "cv_pct": 3.156
+      },
+      "speedup": 1.8272,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90752,
+        "openalgo": 400584
+      }
+    },
+    {
+      "indicator": "TYPPRICE",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 86.667,
+      "ferro_ta_ms": 0.0867,
+      "ferro_ta_m_bars_s": 1153.84,
+      "ferro_ta_runs_us": [
+        87.0,
+        86.667,
+        126.5,
+        135.167,
+        84.458,
+        82.333,
+        81.166
+      ],
+      "ferro_ta_stats": {
+        "median_us": 86.667,
+        "mean_us": 97.613,
+        "min_us": 81.166,
+        "max_us": 135.167,
+        "stddev_us": 22.9283,
+        "cv_pct": 23.489
+      },
+      "openalgo_us": 297.333,
+      "openalgo_ms": 0.2973,
+      "openalgo_m_bars_s": 336.32,
+      "openalgo_runs_us": [
+        297.333,
+        681.0,
+        403.625,
+        1144.541,
+        178.041,
+        156.583,
+        154.166
+      ],
+      "openalgo_stats": {
+        "median_us": 297.333,
+        "mean_us": 430.7556,
+        "min_us": 154.166,
+        "max_us": 1144.541,
+        "stddev_us": 366.5575,
+        "cv_pct": 85.096
+      },
+      "speedup": 3.4308,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900752,
+        "openalgo": 3200488
+      }
+    },
+    {
+      "indicator": "WCLPRICE",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 11.667,
+      "ferro_ta_ms": 0.0117,
+      "ferro_ta_m_bars_s": 857.12,
+      "ferro_ta_runs_us": [
+        14.75,
+        12.208,
+        11.75,
+        11.667,
+        11.583,
+        11.583,
+        11.5
+      ],
+      "ferro_ta_stats": {
+        "median_us": 11.667,
+        "mean_us": 12.1487,
+        "min_us": 11.5,
+        "max_us": 14.75,
+        "stddev_us": 1.1706,
+        "cv_pct": 9.636
+      },
+      "openalgo_us": 23.25,
+      "openalgo_ms": 0.0232,
+      "openalgo_m_bars_s": 430.11,
+      "openalgo_runs_us": [
+        25.542,
+        23.709,
+        23.25,
+        23.5,
+        23.083,
+        22.833,
+        22.916
+      ],
+      "openalgo_stats": {
+        "median_us": 23.25,
+        "mean_us": 23.5476,
+        "min_us": 22.833,
+        "max_us": 25.542,
+        "stddev_us": 0.9327,
+        "cv_pct": 3.961
+      },
+      "speedup": 1.9928,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90752,
+        "openalgo": 480576
+      }
+    },
+    {
+      "indicator": "WCLPRICE",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 86.75,
+      "ferro_ta_ms": 0.0867,
+      "ferro_ta_m_bars_s": 1152.74,
+      "ferro_ta_runs_us": [
+        87.167,
+        86.708,
+        86.75,
+        86.375,
+        86.583,
+        86.958,
+        87.458
+      ],
+      "ferro_ta_stats": {
+        "median_us": 86.75,
+        "mean_us": 86.857,
+        "min_us": 86.375,
+        "max_us": 87.458,
+        "stddev_us": 0.3671,
+        "cv_pct": 0.423
+      },
+      "openalgo_us": 169.167,
+      "openalgo_ms": 0.1692,
+      "openalgo_m_bars_s": 591.13,
+      "openalgo_runs_us": [
+        168.084,
+        169.125,
+        171.292,
+        169.167,
+        170.667,
+        168.792,
+        170.375
+      ],
+      "openalgo_stats": {
+        "median_us": 169.167,
+        "mean_us": 169.6431,
+        "min_us": 168.084,
+        "max_us": 171.292,
+        "stddev_us": 1.1513,
+        "cv_pct": 0.679
+      },
+      "speedup": 1.9501,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900752,
+        "openalgo": 4000584
+      }
+    },
+    {
+      "indicator": "LINEARREG",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 26.333,
+      "ferro_ta_ms": 0.0263,
+      "ferro_ta_m_bars_s": 379.75,
+      "ferro_ta_runs_us": [
+        28.125,
+        26.667,
+        26.208,
+        26.25,
+        26.25,
+        26.333,
+        26.333
+      ],
+      "ferro_ta_stats": {
+        "median_us": 26.333,
+        "mean_us": 26.5951,
+        "min_us": 26.208,
+        "max_us": 28.125,
+        "stddev_us": 0.6918,
+        "cv_pct": 2.601
+      },
+      "openalgo_us": 33.167,
+      "openalgo_ms": 0.0332,
+      "openalgo_m_bars_s": 301.5,
+      "openalgo_runs_us": [
+        35.542,
+        33.958,
+        33.167,
+        33.0,
+        33.167,
+        32.833,
+        32.958
+      ],
+      "openalgo_stats": {
+        "median_us": 33.167,
+        "mean_us": 33.5179,
+        "min_us": 32.833,
+        "max_us": 35.542,
+        "stddev_us": 0.965,
+        "cv_pct": 2.879
+      },
+      "speedup": 1.2595,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90888,
+        "openalgo": 90584
+      }
+    },
+    {
+      "indicator": "LINEARREG",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 233.459,
+      "ferro_ta_ms": 0.2335,
+      "ferro_ta_m_bars_s": 428.34,
+      "ferro_ta_runs_us": [
+        233.208,
+        234.125,
+        233.875,
+        233.292,
+        233.042,
+        233.708,
+        233.459
+      ],
+      "ferro_ta_stats": {
+        "median_us": 233.459,
+        "mean_us": 233.5299,
+        "min_us": 233.042,
+        "max_us": 234.125,
+        "stddev_us": 0.3891,
+        "cv_pct": 0.167
+      },
+      "openalgo_us": 311.125,
+      "openalgo_ms": 0.3111,
+      "openalgo_m_bars_s": 321.41,
+      "openalgo_runs_us": [
+        297.5,
+        300.209,
+        296.541,
+        348.5,
+        320.042,
+        582.458,
+        311.125
+      ],
+      "openalgo_stats": {
+        "median_us": 311.125,
+        "mean_us": 350.9107,
+        "min_us": 296.541,
+        "max_us": 582.458,
+        "stddev_us": 103.7105,
+        "cv_pct": 29.555
+      },
+      "speedup": 1.3327,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900888,
+        "openalgo": 900584
+      }
+    },
+    {
+      "indicator": "LINEARREG_SLOPE",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 24.917,
+      "ferro_ta_ms": 0.0249,
+      "ferro_ta_m_bars_s": 401.33,
+      "ferro_ta_runs_us": [
+        26.25,
+        25.333,
+        25.083,
+        24.875,
+        24.75,
+        24.917,
+        24.834
+      ],
+      "ferro_ta_stats": {
+        "median_us": 24.917,
+        "mean_us": 25.1489,
+        "min_us": 24.75,
+        "max_us": 26.25,
+        "stddev_us": 0.5225,
+        "cv_pct": 2.077
+      },
+      "openalgo_us": 33.459,
+      "openalgo_ms": 0.0335,
+      "openalgo_m_bars_s": 298.87,
+      "openalgo_runs_us": [
+        35.584,
+        33.834,
+        33.75,
+        33.417,
+        33.417,
+        33.459,
+        33.209
+      ],
+      "openalgo_stats": {
+        "median_us": 33.459,
+        "mean_us": 33.81,
+        "min_us": 33.209,
+        "max_us": 35.584,
+        "stddev_us": 0.8108,
+        "cv_pct": 2.398
+      },
+      "speedup": 1.3428,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90888,
+        "openalgo": 90576
+      }
+    },
+    {
+      "indicator": "LINEARREG_SLOPE",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 219.458,
+      "ferro_ta_ms": 0.2195,
+      "ferro_ta_m_bars_s": 455.67,
+      "ferro_ta_runs_us": [
+        219.458,
+        218.875,
+        219.584,
+        219.292,
+        219.083,
+        219.625,
+        219.5
+      ],
+      "ferro_ta_stats": {
+        "median_us": 219.458,
+        "mean_us": 219.3453,
+        "min_us": 218.875,
+        "max_us": 219.625,
+        "stddev_us": 0.2783,
+        "cv_pct": 0.127
+      },
+      "openalgo_us": 299.542,
+      "openalgo_ms": 0.2995,
+      "openalgo_m_bars_s": 333.84,
+      "openalgo_runs_us": [
+        301.667,
+        299.542,
+        297.167,
+        298.959,
+        307.292,
+        302.375,
+        299.459
+      ],
+      "openalgo_stats": {
+        "median_us": 299.542,
+        "mean_us": 300.923,
+        "min_us": 297.167,
+        "max_us": 307.292,
+        "stddev_us": 3.2975,
+        "cv_pct": 1.096
+      },
+      "speedup": 1.3649,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900888,
+        "openalgo": 900576
+      }
+    },
+    {
+      "indicator": "CORREL",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 33.167,
+      "ferro_ta_ms": 0.0332,
+      "ferro_ta_m_bars_s": 301.5,
+      "ferro_ta_runs_us": [
+        34.583,
+        33.25,
+        33.208,
+        32.875,
+        32.75,
+        32.791,
+        33.167
+      ],
+      "ferro_ta_stats": {
+        "median_us": 33.167,
+        "mean_us": 33.232,
+        "min_us": 32.75,
+        "max_us": 34.583,
+        "stddev_us": 0.6304,
+        "cv_pct": 1.897
+      },
+      "openalgo_us": 371.167,
+      "openalgo_ms": 0.3712,
+      "openalgo_m_bars_s": 26.94,
+      "openalgo_runs_us": [
+        372.416,
+        371.625,
+        370.667,
+        370.041,
+        371.167,
+        371.166,
+        377.291
+      ],
+      "openalgo_stats": {
+        "median_us": 371.167,
+        "mean_us": 372.0533,
+        "min_us": 370.041,
+        "max_us": 377.291,
+        "stddev_us": 2.4253,
+        "cv_pct": 0.652
+      },
+      "speedup": 11.1909,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90760,
+        "openalgo": 160544
+      }
+    },
+    {
+      "indicator": "CORREL",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 284.25,
+      "ferro_ta_ms": 0.2843,
+      "ferro_ta_m_bars_s": 351.8,
+      "ferro_ta_runs_us": [
+        285.834,
+        284.208,
+        284.208,
+        284.792,
+        284.125,
+        284.333,
+        284.25
+      ],
+      "ferro_ta_stats": {
+        "median_us": 284.25,
+        "mean_us": 284.5357,
+        "min_us": 284.125,
+        "max_us": 285.834,
+        "stddev_us": 0.6134,
+        "cv_pct": 0.216
+      },
+      "openalgo_us": 5885.459,
+      "openalgo_ms": 5.8855,
+      "openalgo_m_bars_s": 16.99,
+      "openalgo_runs_us": [
+        8808.5,
+        4021.167,
+        7047.125,
+        3857.125,
+        4251.209,
+        5885.459,
+        7815.209
+      ],
+      "openalgo_stats": {
+        "median_us": 5885.459,
+        "mean_us": 5955.1134,
+        "min_us": 3857.125,
+        "max_us": 8808.5,
+        "stddev_us": 1993.4938,
+        "cv_pct": 33.475
+      },
+      "speedup": 20.7052,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 817856,
+        "openalgo": 1600544
+      }
+    },
+    {
+      "indicator": "BETA",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 39.084,
+      "ferro_ta_ms": 0.0391,
+      "ferro_ta_m_bars_s": 255.86,
+      "ferro_ta_runs_us": [
+        41.042,
+        39.084,
+        37.959,
+        78.292,
+        43.291,
+        38.416,
+        37.625
+      ],
+      "ferro_ta_stats": {
+        "median_us": 39.084,
+        "mean_us": 45.1013,
+        "min_us": 37.625,
+        "max_us": 78.292,
+        "stddev_us": 14.7715,
+        "cv_pct": 32.752
+      },
+      "openalgo_us": 42.416,
+      "openalgo_ms": 0.0424,
+      "openalgo_m_bars_s": 235.76,
+      "openalgo_runs_us": [
+        46.292,
+        42.416,
+        41.125,
+        40.0,
+        39.916,
+        127.583,
+        58.459
+      ],
+      "openalgo_stats": {
+        "median_us": 42.416,
+        "mean_us": 56.5416,
+        "min_us": 39.916,
+        "max_us": 127.583,
+        "stddev_us": 31.997,
+        "cv_pct": 56.59
+      },
+      "speedup": 1.0853,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90952,
+        "openalgo": 160544
+      }
+    },
+    {
+      "indicator": "BETA",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 320.792,
+      "ferro_ta_ms": 0.3208,
+      "ferro_ta_m_bars_s": 311.73,
+      "ferro_ta_runs_us": [
+        742.583,
+        329.416,
+        319.667,
+        318.666,
+        320.792,
+        321.083,
+        318.875
+      ],
+      "ferro_ta_stats": {
+        "median_us": 320.792,
+        "mean_us": 381.5831,
+        "min_us": 318.666,
+        "max_us": 742.583,
+        "stddev_us": 159.2287,
+        "cv_pct": 41.728
+      },
+      "openalgo_us": 755.416,
+      "openalgo_ms": 0.7554,
+      "openalgo_m_bars_s": 132.38,
+      "openalgo_runs_us": [
+        1047.25,
+        813.917,
+        755.416,
+        750.333,
+        374.208,
+        426.458,
+        1635.5
+      ],
+      "openalgo_stats": {
+        "median_us": 755.416,
+        "mean_us": 829.0117,
+        "min_us": 374.208,
+        "max_us": 1635.5,
+        "stddev_us": 424.0247,
+        "cv_pct": 51.148
+      },
+      "speedup": 2.3548,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 816248,
+        "openalgo": 1600544
+      }
+    },
+    {
+      "indicator": "APO",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 43.416,
+      "ferro_ta_ms": 0.0434,
+      "ferro_ta_m_bars_s": 230.33,
+      "ferro_ta_runs_us": [
+        72.084,
+        228.708,
+        49.75,
+        41.833,
+        43.416,
+        41.833,
+        41.833
+      ],
+      "ferro_ta_stats": {
+        "median_us": 43.416,
+        "mean_us": 74.2081,
+        "min_us": 41.833,
+        "max_us": 228.708,
+        "stddev_us": 68.9994,
+        "cv_pct": 92.981
+      },
+      "openalgo_us": 150.667,
+      "openalgo_ms": 0.1507,
+      "openalgo_m_bars_s": 66.37,
+      "openalgo_runs_us": [
+        152.875,
+        152.708,
+        150.125,
+        152.208,
+        149.875,
+        150.667,
+        150.042
+      ],
+      "openalgo_stats": {
+        "median_us": 150.667,
+        "mean_us": 151.2143,
+        "min_us": 149.875,
+        "max_us": 152.875,
+        "stddev_us": 1.3311,
+        "cv_pct": 0.88
+      },
+      "speedup": 3.4703,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90792,
+        "openalgo": 170440
+      }
+    },
+    {
+      "indicator": "APO",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 399.708,
+      "ferro_ta_ms": 0.3997,
+      "ferro_ta_m_bars_s": 250.18,
+      "ferro_ta_runs_us": [
+        404.041,
+        387.292,
+        399.708,
+        391.416,
+        386.917,
+        446.458,
+        643.292
+      ],
+      "ferro_ta_stats": {
+        "median_us": 399.708,
+        "mean_us": 437.0177,
+        "min_us": 386.917,
+        "max_us": 643.292,
+        "stddev_us": 93.2559,
+        "cv_pct": 21.339
+      },
+      "openalgo_us": 1458.959,
+      "openalgo_ms": 1.459,
+      "openalgo_m_bars_s": 68.54,
+      "openalgo_runs_us": [
+        1440.958,
+        1438.0,
+        1460.667,
+        1458.042,
+        1458.959,
+        1490.416,
+        1469.167
+      ],
+      "openalgo_stats": {
+        "median_us": 1458.959,
+        "mean_us": 1459.4584,
+        "min_us": 1438.0,
+        "max_us": 1490.416,
+        "stddev_us": 17.6024,
+        "cv_pct": 1.206
+      },
+      "speedup": 3.6501,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900792,
+        "openalgo": 1700440
+      }
+    },
+    {
+      "indicator": "ROCP",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 14.25,
+      "ferro_ta_ms": 0.0143,
+      "ferro_ta_m_bars_s": 701.75,
+      "ferro_ta_runs_us": [
+        18.75,
+        16.666,
+        14.583,
+        14.083,
+        14.25,
+        13.917,
+        13.667
+      ],
+      "ferro_ta_stats": {
+        "median_us": 14.25,
+        "mean_us": 15.1309,
+        "min_us": 13.667,
+        "max_us": 18.75,
+        "stddev_us": 1.8817,
+        "cv_pct": 12.436
+      },
+      "openalgo_us": 18.458,
+      "openalgo_ms": 0.0185,
+      "openalgo_m_bars_s": 541.77,
+      "openalgo_runs_us": [
+        24.459,
+        19.75,
+        18.958,
+        18.458,
+        18.25,
+        18.125,
+        18.125
+      ],
+      "openalgo_stats": {
+        "median_us": 18.458,
+        "mean_us": 19.4464,
+        "min_us": 18.125,
+        "max_us": 24.459,
+        "stddev_us": 2.2861,
+        "cv_pct": 11.756
+      },
+      "speedup": 1.2953,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90912,
+        "openalgo": 320808
+      }
+    },
+    {
+      "indicator": "ROCP",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 120.75,
+      "ferro_ta_ms": 0.1207,
+      "ferro_ta_m_bars_s": 828.16,
+      "ferro_ta_runs_us": [
+        107.75,
+        105.417,
+        106.416,
+        122.875,
+        120.75,
+        429.875,
+        279.541
+      ],
+      "ferro_ta_stats": {
+        "median_us": 120.75,
+        "mean_us": 181.8034,
+        "min_us": 105.417,
+        "max_us": 429.875,
+        "stddev_us": 126.0253,
+        "cv_pct": 69.32
+      },
+      "openalgo_us": 161.458,
+      "openalgo_ms": 0.1615,
+      "openalgo_m_bars_s": 619.36,
+      "openalgo_runs_us": [
+        126.334,
+        400.792,
+        161.458,
+        128.042,
+        415.833,
+        204.042,
+        143.208
+      ],
+      "openalgo_stats": {
+        "median_us": 161.458,
+        "mean_us": 225.6727,
+        "min_us": 126.334,
+        "max_us": 415.833,
+        "stddev_us": 127.5536,
+        "cv_pct": 56.521
+      },
+      "speedup": 1.3371,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 816896,
+        "openalgo": 2400888
+      }
+    },
+    {
+      "indicator": "ROCR",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 14.208,
+      "ferro_ta_ms": 0.0142,
+      "ferro_ta_m_bars_s": 703.83,
+      "ferro_ta_runs_us": [
+        17.375,
+        15.125,
+        14.333,
+        14.0,
+        14.208,
+        14.042,
+        13.75
+      ],
+      "ferro_ta_stats": {
+        "median_us": 14.208,
+        "mean_us": 14.6904,
+        "min_us": 13.75,
+        "max_us": 17.375,
+        "stddev_us": 1.2608,
+        "cv_pct": 8.583
+      },
+      "openalgo_us": 16.375,
+      "openalgo_ms": 0.0164,
+      "openalgo_m_bars_s": 610.69,
+      "openalgo_runs_us": [
+        20.0,
+        17.083,
+        16.375,
+        16.458,
+        16.208,
+        15.625,
+        15.75
+      ],
+      "openalgo_stats": {
+        "median_us": 16.375,
+        "mean_us": 16.7856,
+        "min_us": 15.625,
+        "max_us": 20.0,
+        "stddev_us": 1.4972,
+        "cv_pct": 8.92
+      },
+      "speedup": 1.1525,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90912,
+        "openalgo": 240888
+      }
+    },
+    {
+      "indicator": "ROCR",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 110.5,
+      "ferro_ta_ms": 0.1105,
+      "ferro_ta_m_bars_s": 904.98,
+      "ferro_ta_runs_us": [
+        106.792,
+        110.875,
+        110.416,
+        110.792,
+        111.333,
+        110.5,
+        108.625
+      ],
+      "ferro_ta_stats": {
+        "median_us": 110.5,
+        "mean_us": 109.9047,
+        "min_us": 106.792,
+        "max_us": 111.333,
+        "stddev_us": 1.6182,
+        "cv_pct": 1.472
+      },
+      "openalgo_us": 111.125,
+      "openalgo_ms": 0.1111,
+      "openalgo_m_bars_s": 899.89,
+      "openalgo_runs_us": [
+        117.625,
+        112.042,
+        111.125,
+        109.709,
+        105.959,
+        108.042,
+        111.209
+      ],
+      "openalgo_stats": {
+        "median_us": 111.125,
+        "mean_us": 110.8159,
+        "min_us": 105.959,
+        "max_us": 117.625,
+        "stddev_us": 3.6658,
+        "cv_pct": 3.308
+      },
+      "speedup": 1.0057,
+      "outcome": "tie",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 816896,
+        "openalgo": 2400888
+      }
+    },
+    {
+      "indicator": "ROCR100",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 15.0,
+      "ferro_ta_ms": 0.015,
+      "ferro_ta_m_bars_s": 666.67,
+      "ferro_ta_runs_us": [
+        17.583,
+        15.625,
+        15.208,
+        14.833,
+        14.833,
+        14.75,
+        15.0
+      ],
+      "ferro_ta_stats": {
+        "median_us": 15.0,
+        "mean_us": 15.4046,
+        "min_us": 14.75,
+        "max_us": 17.583,
+        "stddev_us": 1.0065,
+        "cv_pct": 6.534
+      },
+      "openalgo_us": 18.958,
+      "openalgo_ms": 0.019,
+      "openalgo_m_bars_s": 527.48,
+      "openalgo_runs_us": [
+        24.209,
+        19.583,
+        18.958,
+        19.0,
+        18.583,
+        18.916,
+        18.583
+      ],
+      "openalgo_stats": {
+        "median_us": 18.958,
+        "mean_us": 19.6903,
+        "min_us": 18.583,
+        "max_us": 24.209,
+        "stddev_us": 2.0205,
+        "cv_pct": 10.261
+      },
+      "speedup": 1.2639,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90912,
+        "openalgo": 240888
+      }
+    },
+    {
+      "indicator": "ROCR100",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 115.083,
+      "ferro_ta_ms": 0.1151,
+      "ferro_ta_m_bars_s": 868.94,
+      "ferro_ta_runs_us": [
+        115.083,
+        119.041,
+        113.625,
+        116.083,
+        112.208,
+        109.459,
+        116.667
+      ],
+      "ferro_ta_stats": {
+        "median_us": 115.083,
+        "mean_us": 114.5951,
+        "min_us": 109.459,
+        "max_us": 119.041,
+        "stddev_us": 3.1499,
+        "cv_pct": 2.749
+      },
+      "openalgo_us": 125.083,
+      "openalgo_ms": 0.1251,
+      "openalgo_m_bars_s": 799.47,
+      "openalgo_runs_us": [
+        125.666,
+        125.083,
+        125.25,
+        125.958,
+        124.625,
+        122.458,
+        121.875
+      ],
+      "openalgo_stats": {
+        "median_us": 125.083,
+        "mean_us": 124.4164,
+        "min_us": 121.875,
+        "max_us": 125.958,
+        "stddev_us": 1.6029,
+        "cv_pct": 1.288
+      },
+      "speedup": 1.0869,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 816896,
+        "openalgo": 2400888
+      }
+    },
+    {
+      "indicator": "STOCHF",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 60.458,
+      "ferro_ta_ms": 0.0605,
+      "ferro_ta_m_bars_s": 165.4,
+      "ferro_ta_runs_us": [
+        62.833,
+        60.75,
+        60.625,
+        59.5,
+        60.125,
+        60.333,
+        60.458
+      ],
+      "ferro_ta_stats": {
+        "median_us": 60.458,
+        "mean_us": 60.6606,
+        "min_us": 59.5,
+        "max_us": 62.833,
+        "stddev_us": 1.0417,
+        "cv_pct": 1.717
+      },
+      "openalgo_us": 107.667,
+      "openalgo_ms": 0.1077,
+      "openalgo_m_bars_s": 92.88,
+      "openalgo_runs_us": [
+        159.5,
+        125.458,
+        110.25,
+        107.667,
+        102.666,
+        101.959,
+        100.042
+      ],
+      "openalgo_stats": {
+        "median_us": 107.667,
+        "mean_us": 115.3631,
+        "min_us": 100.042,
+        "max_us": 159.5,
+        "stddev_us": 21.2563,
+        "cv_pct": 18.426
+      },
+      "speedup": 1.7809,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 91088,
+        "openalgo": 240668
+      }
+    },
+    {
+      "indicator": "STOCHF",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 550.125,
+      "ferro_ta_ms": 0.5501,
+      "ferro_ta_m_bars_s": 181.78,
+      "ferro_ta_runs_us": [
+        546.459,
+        540.625,
+        550.125,
+        546.792,
+        553.041,
+        553.167,
+        556.625
+      ],
+      "ferro_ta_stats": {
+        "median_us": 550.125,
+        "mean_us": 549.5477,
+        "min_us": 540.625,
+        "max_us": 556.625,
+        "stddev_us": 5.3615,
+        "cv_pct": 0.976
+      },
+      "openalgo_us": 1706.833,
+      "openalgo_ms": 1.7068,
+      "openalgo_m_bars_s": 58.59,
+      "openalgo_runs_us": [
+        2465.542,
+        1738.0,
+        1715.333,
+        1706.833,
+        1696.875,
+        1686.167,
+        1689.334
+      ],
+      "openalgo_stats": {
+        "median_us": 1706.833,
+        "mean_us": 1814.012,
+        "min_us": 1686.167,
+        "max_us": 2465.542,
+        "stddev_us": 287.8379,
+        "cv_pct": 15.867
+      },
+      "speedup": 3.1026,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 901088,
+        "openalgo": 2400668
+      }
+    },
+    {
+      "indicator": "STOCHRSI",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 169.75,
+      "ferro_ta_ms": 0.1698,
+      "ferro_ta_m_bars_s": 58.91,
+      "ferro_ta_runs_us": [
+        175.209,
+        170.0,
+        169.917,
+        169.708,
+        169.75,
+        169.625,
+        169.25
+      ],
+      "ferro_ta_stats": {
+        "median_us": 169.75,
+        "mean_us": 170.4941,
+        "min_us": 169.25,
+        "max_us": 175.209,
+        "stddev_us": 2.0929,
+        "cv_pct": 1.228
+      },
+      "openalgo_us": 351.875,
+      "openalgo_ms": 0.3519,
+      "openalgo_m_bars_s": 28.42,
+      "openalgo_runs_us": [
+        351.875,
+        349.042,
+        348.708,
+        347.708,
+        511.708,
+        490.666,
+        566.625
+      ],
+      "openalgo_stats": {
+        "median_us": 351.875,
+        "mean_us": 423.7617,
+        "min_us": 347.708,
+        "max_us": 566.625,
+        "stddev_us": 95.5585,
+        "cv_pct": 22.55
+      },
+      "speedup": 2.0729,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90976,
+        "openalgo": 90576
+      }
+    },
+    {
+      "indicator": "STOCHRSI",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 1678.542,
+      "ferro_ta_ms": 1.6785,
+      "ferro_ta_m_bars_s": 59.58,
+      "ferro_ta_runs_us": [
+        2082.333,
+        2089.292,
+        1651.5,
+        1609.125,
+        1681.708,
+        1678.542,
+        1674.875
+      ],
+      "ferro_ta_stats": {
+        "median_us": 1678.542,
+        "mean_us": 1781.0536,
+        "min_us": 1609.125,
+        "max_us": 2089.292,
+        "stddev_us": 209.6727,
+        "cv_pct": 11.772
+      },
+      "openalgo_us": 3739.125,
+      "openalgo_ms": 3.7391,
+      "openalgo_m_bars_s": 26.74,
+      "openalgo_runs_us": [
+        3481.166,
+        4625.125,
+        3739.125,
+        3671.459,
+        4668.042,
+        4401.125,
+        3504.0
+      ],
+      "openalgo_stats": {
+        "median_us": 3739.125,
+        "mean_us": 4012.8631,
+        "min_us": 3481.166,
+        "max_us": 4668.042,
+        "stddev_us": 530.4093,
+        "cv_pct": 13.218
+      },
+      "speedup": 2.2276,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900976,
+        "openalgo": 900576
+      }
+    },
+    {
+      "indicator": "PLUS_DM",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 39.166,
+      "ferro_ta_ms": 0.0392,
+      "ferro_ta_m_bars_s": 255.32,
+      "ferro_ta_runs_us": [
+        43.542,
+        39.166,
+        39.875,
+        39.083,
+        38.834,
+        40.458,
+        37.25
+      ],
+      "ferro_ta_stats": {
+        "median_us": 39.166,
+        "mean_us": 39.744,
+        "min_us": 37.25,
+        "max_us": 43.542,
+        "stddev_us": 1.9481,
+        "cv_pct": 4.902
+      },
+      "openalgo_us": 56.25,
+      "openalgo_ms": 0.0563,
+      "openalgo_m_bars_s": 177.78,
+      "openalgo_runs_us": [
+        59.708,
+        57.083,
+        56.25,
+        56.375,
+        55.917,
+        56.083,
+        56.166
+      ],
+      "openalgo_stats": {
+        "median_us": 56.25,
+        "mean_us": 56.7974,
+        "min_us": 55.917,
+        "max_us": 59.708,
+        "stddev_us": 1.3364,
+        "cv_pct": 2.353
+      },
+      "speedup": 1.4362,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90888,
+        "openalgo": 160544
+      }
+    },
+    {
+      "indicator": "PLUS_DM",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 332.25,
+      "ferro_ta_ms": 0.3322,
+      "ferro_ta_m_bars_s": 300.98,
+      "ferro_ta_runs_us": [
+        330.959,
+        332.625,
+        332.25,
+        336.5,
+        331.25,
+        352.458,
+        330.625
+      ],
+      "ferro_ta_stats": {
+        "median_us": 332.25,
+        "mean_us": 335.2381,
+        "min_us": 330.625,
+        "max_us": 352.458,
+        "stddev_us": 7.8461,
+        "cv_pct": 2.34
+      },
+      "openalgo_us": 529.542,
+      "openalgo_ms": 0.5295,
+      "openalgo_m_bars_s": 188.84,
+      "openalgo_runs_us": [
+        531.375,
+        531.375,
+        529.542,
+        527.833,
+        526.625,
+        524.25,
+        533.0
+      ],
+      "openalgo_stats": {
+        "median_us": 529.542,
+        "mean_us": 529.1429,
+        "min_us": 524.25,
+        "max_us": 533.0,
+        "stddev_us": 3.0821,
+        "cv_pct": 0.582
+      },
+      "speedup": 1.5938,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900888,
+        "openalgo": 1600544
+      }
+    },
+    {
+      "indicator": "MINUS_DM",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 39.5,
+      "ferro_ta_ms": 0.0395,
+      "ferro_ta_m_bars_s": 253.16,
+      "ferro_ta_runs_us": [
+        40.333,
+        38.792,
+        39.959,
+        37.75,
+        40.833,
+        39.5,
+        38.709
+      ],
+      "ferro_ta_stats": {
+        "median_us": 39.5,
+        "mean_us": 39.4109,
+        "min_us": 37.75,
+        "max_us": 40.833,
+        "stddev_us": 1.0658,
+        "cv_pct": 2.704
+      },
+      "openalgo_us": 57.042,
+      "openalgo_ms": 0.057,
+      "openalgo_m_bars_s": 175.31,
+      "openalgo_runs_us": [
+        58.875,
+        57.625,
+        57.208,
+        57.041,
+        56.958,
+        57.042,
+        56.834
+      ],
+      "openalgo_stats": {
+        "median_us": 57.042,
+        "mean_us": 57.369,
+        "min_us": 56.834,
+        "max_us": 58.875,
+        "stddev_us": 0.7105,
+        "cv_pct": 1.239
+      },
+      "speedup": 1.4441,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90888,
+        "openalgo": 160544
+      }
+    },
+    {
+      "indicator": "MINUS_DM",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 331.708,
+      "ferro_ta_ms": 0.3317,
+      "ferro_ta_m_bars_s": 301.47,
+      "ferro_ta_runs_us": [
+        333.334,
+        328.083,
+        331.583,
+        336.333,
+        331.708,
+        328.334,
+        637.625
+      ],
+      "ferro_ta_stats": {
+        "median_us": 331.708,
+        "mean_us": 375.2857,
+        "min_us": 328.083,
+        "max_us": 637.625,
+        "stddev_us": 115.7156,
+        "cv_pct": 30.834
+      },
+      "openalgo_us": 525.333,
+      "openalgo_ms": 0.5253,
+      "openalgo_m_bars_s": 190.36,
+      "openalgo_runs_us": [
+        529.291,
+        528.333,
+        533.167,
+        525.333,
+        522.75,
+        524.458,
+        525.167
+      ],
+      "openalgo_stats": {
+        "median_us": 525.333,
+        "mean_us": 526.9284,
+        "min_us": 522.75,
+        "max_us": 533.167,
+        "stddev_us": 3.5516,
+        "cv_pct": 0.674
+      },
+      "speedup": 1.5837,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900888,
+        "openalgo": 1600544
+      }
+    },
+    {
+      "indicator": "DX",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 75.5,
+      "ferro_ta_ms": 0.0755,
+      "ferro_ta_m_bars_s": 132.45,
+      "ferro_ta_runs_us": [
+        79.875,
+        77.375,
+        75.667,
+        75.334,
+        75.125,
+        75.125,
+        75.5
+      ],
+      "ferro_ta_stats": {
+        "median_us": 75.5,
+        "mean_us": 76.2859,
+        "min_us": 75.125,
+        "max_us": 79.875,
+        "stddev_us": 1.764,
+        "cv_pct": 2.312
+      },
+      "openalgo_us": 63.084,
+      "openalgo_ms": 0.0631,
+      "openalgo_m_bars_s": 158.52,
+      "openalgo_runs_us": [
+        66.5,
+        63.792,
+        63.084,
+        62.833,
+        63.333,
+        62.75,
+        62.917
+      ],
+      "openalgo_stats": {
+        "median_us": 63.084,
+        "mean_us": 63.6013,
+        "min_us": 62.75,
+        "max_us": 66.5,
+        "stddev_us": 1.3268,
+        "cv_pct": 2.086
+      },
+      "speedup": 0.8355,
+      "outcome": "openalgo_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90880,
+        "openalgo": 240668
+      }
+    },
+    {
+      "indicator": "DX",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 715.125,
+      "ferro_ta_ms": 0.7151,
+      "ferro_ta_m_bars_s": 139.84,
+      "ferro_ta_runs_us": [
+        707.375,
+        715.375,
+        715.125,
+        718.208,
+        769.625,
+        707.708,
+        701.916
+      ],
+      "ferro_ta_stats": {
+        "median_us": 715.125,
+        "mean_us": 719.3331,
+        "min_us": 701.916,
+        "max_us": 769.625,
+        "stddev_us": 22.8962,
+        "cv_pct": 3.183
+      },
+      "openalgo_us": 712.916,
+      "openalgo_ms": 0.7129,
+      "openalgo_m_bars_s": 140.27,
+      "openalgo_runs_us": [
+        1109.584,
+        1024.792,
+        769.417,
+        614.125,
+        602.584,
+        592.0,
+        712.916
+      ],
+      "openalgo_stats": {
+        "median_us": 712.916,
+        "mean_us": 775.0597,
+        "min_us": 592.0,
+        "max_us": 1109.584,
+        "stddev_us": 211.0786,
+        "cv_pct": 27.234
+      },
+      "speedup": 0.9969,
+      "outcome": "tie",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900880,
+        "openalgo": 2400668
+      }
+    },
+    {
+      "indicator": "ADXR",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 151.833,
+      "ferro_ta_ms": 0.1518,
+      "ferro_ta_m_bars_s": 65.86,
+      "ferro_ta_runs_us": [
+        332.167,
+        90.583,
+        82.458,
+        196.875,
+        172.75,
+        151.833,
+        150.417
+      ],
+      "ferro_ta_stats": {
+        "median_us": 151.833,
+        "mean_us": 168.1547,
+        "min_us": 82.458,
+        "max_us": 332.167,
+        "stddev_us": 83.355,
+        "cv_pct": 49.57
+      },
+      "openalgo_us": 100.167,
+      "openalgo_ms": 0.1002,
+      "openalgo_m_bars_s": 99.83,
+      "openalgo_runs_us": [
+        104.167,
+        100.167,
+        138.958,
+        106.584,
+        99.958,
+        98.791,
+        96.708
+      ],
+      "openalgo_stats": {
+        "median_us": 100.167,
+        "mean_us": 106.4761,
+        "min_us": 96.708,
+        "max_us": 138.958,
+        "stddev_us": 14.7037,
+        "cv_pct": 13.809
+      },
+      "speedup": 0.6597,
+      "outcome": "openalgo_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90672,
+        "openalgo": 240668
+      }
+    },
+    {
+      "indicator": "ADXR",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 828.167,
+      "ferro_ta_ms": 0.8282,
+      "ferro_ta_m_bars_s": 120.75,
+      "ferro_ta_runs_us": [
+        828.167,
+        810.708,
+        824.334,
+        860.083,
+        1079.375,
+        819.583,
+        948.125
+      ],
+      "ferro_ta_stats": {
+        "median_us": 828.167,
+        "mean_us": 881.4821,
+        "min_us": 810.708,
+        "max_us": 1079.375,
+        "stddev_us": 99.1713,
+        "cv_pct": 11.251
+      },
+      "openalgo_us": 1259.666,
+      "openalgo_ms": 1.2597,
+      "openalgo_m_bars_s": 79.39,
+      "openalgo_runs_us": [
+        1237.0,
+        1847.25,
+        1259.666,
+        2110.875,
+        975.166,
+        955.291,
+        1309.458
+      ],
+      "openalgo_stats": {
+        "median_us": 1259.666,
+        "mean_us": 1384.958,
+        "min_us": 955.291,
+        "max_us": 2110.875,
+        "stddev_us": 435.2207,
+        "cv_pct": 31.425
+      },
+      "speedup": 1.521,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900672,
+        "openalgo": 2400668
+      }
+    },
+    {
+      "indicator": "LINEARREG_ANGLE",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 53.292,
+      "ferro_ta_ms": 0.0533,
+      "ferro_ta_m_bars_s": 187.65,
+      "ferro_ta_runs_us": [
+        153.625,
+        4485.958,
+        73.417,
+        53.292,
+        51.875,
+        51.583,
+        51.458
+      ],
+      "ferro_ta_stats": {
+        "median_us": 53.292,
+        "mean_us": 703.0297,
+        "min_us": 51.458,
+        "max_us": 4485.958,
+        "stddev_us": 1668.527,
+        "cv_pct": 237.334
+      },
+      "openalgo_us": 62.75,
+      "openalgo_ms": 0.0628,
+      "openalgo_m_bars_s": 159.36,
+      "openalgo_runs_us": [
+        66.417,
+        63.833,
+        62.958,
+        62.708,
+        62.25,
+        62.708,
+        62.75
+      ],
+      "openalgo_stats": {
+        "median_us": 62.75,
+        "mean_us": 63.3749,
+        "min_us": 62.25,
+        "max_us": 66.417,
+        "stddev_us": 1.425,
+        "cv_pct": 2.248
+      },
+      "speedup": 1.1775,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90888,
+        "openalgo": 90584
+      }
+    },
+    {
+      "indicator": "LINEARREG_ANGLE",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 464.458,
+      "ferro_ta_ms": 0.4645,
+      "ferro_ta_m_bars_s": 215.3,
+      "ferro_ta_runs_us": [
+        464.209,
+        462.875,
+        464.667,
+        464.458,
+        466.958,
+        466.333,
+        462.125
+      ],
+      "ferro_ta_stats": {
+        "median_us": 464.458,
+        "mean_us": 464.5179,
+        "min_us": 462.125,
+        "max_us": 466.958,
+        "stddev_us": 1.7222,
+        "cv_pct": 0.371
+      },
+      "openalgo_us": 603.583,
+      "openalgo_ms": 0.6036,
+      "openalgo_m_bars_s": 165.68,
+      "openalgo_runs_us": [
+        604.334,
+        599.167,
+        603.583,
+        604.666,
+        605.833,
+        594.209,
+        591.25
+      ],
+      "openalgo_stats": {
+        "median_us": 603.583,
+        "mean_us": 600.4346,
+        "min_us": 591.25,
+        "max_us": 605.833,
+        "stddev_us": 5.7284,
+        "cv_pct": 0.954
+      },
+      "speedup": 1.2995,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900888,
+        "openalgo": 900584
+      }
+    },
+    {
+      "indicator": "LINEARREG_INTERCEPT",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 25.958,
+      "ferro_ta_ms": 0.026,
+      "ferro_ta_m_bars_s": 385.24,
+      "ferro_ta_runs_us": [
+        27.667,
+        26.166,
+        26.0,
+        25.75,
+        25.958,
+        25.875,
+        25.458
+      ],
+      "ferro_ta_stats": {
+        "median_us": 25.958,
+        "mean_us": 26.1249,
+        "min_us": 25.458,
+        "max_us": 27.667,
+        "stddev_us": 0.7154,
+        "cv_pct": 2.738
+      },
+      "openalgo_us": 32.0,
+      "openalgo_ms": 0.032,
+      "openalgo_m_bars_s": 312.5,
+      "openalgo_runs_us": [
+        33.458,
+        32.0,
+        31.959,
+        32.0,
+        31.917,
+        32.042,
+        31.875
+      ],
+      "openalgo_stats": {
+        "median_us": 32.0,
+        "mean_us": 32.1787,
+        "min_us": 31.875,
+        "max_us": 33.458,
+        "stddev_us": 0.5669,
+        "cv_pct": 1.762
+      },
+      "speedup": 1.2328,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90888,
+        "openalgo": 90584
+      }
+    },
+    {
+      "indicator": "LINEARREG_INTERCEPT",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 225.958,
+      "ferro_ta_ms": 0.226,
+      "ferro_ta_m_bars_s": 442.56,
+      "ferro_ta_runs_us": [
+        225.708,
+        226.125,
+        224.458,
+        225.292,
+        226.167,
+        225.958,
+        226.0
+      ],
+      "ferro_ta_stats": {
+        "median_us": 225.958,
+        "mean_us": 225.6726,
+        "min_us": 224.458,
+        "max_us": 226.167,
+        "stddev_us": 0.6136,
+        "cv_pct": 0.272
+      },
+      "openalgo_us": 291.0,
+      "openalgo_ms": 0.291,
+      "openalgo_m_bars_s": 343.64,
+      "openalgo_runs_us": [
+        290.125,
+        290.708,
+        287.0,
+        291.0,
+        347.0,
+        321.667,
+        455.084
+      ],
+      "openalgo_stats": {
+        "median_us": 291.0,
+        "mean_us": 326.0834,
+        "min_us": 287.0,
+        "max_us": 455.084,
+        "stddev_us": 61.1023,
+        "cv_pct": 18.738
+      },
+      "speedup": 1.2878,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900888,
+        "openalgo": 900584
+      }
+    },
+    {
+      "indicator": "ICHIMOKU",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 1275.375,
+      "ferro_ta_ms": 1.2754,
+      "ferro_ta_m_bars_s": 7.84,
+      "ferro_ta_runs_us": [
+        1504.666,
+        1346.958,
+        1733.792,
+        884.084,
+        1275.375,
+        948.334,
+        1073.5
+      ],
+      "ferro_ta_stats": {
+        "median_us": 1275.375,
+        "mean_us": 1252.387,
+        "min_us": 884.084,
+        "max_us": 1733.792,
+        "stddev_us": 306.856,
+        "cv_pct": 24.502
+      },
+      "openalgo_us": 471.75,
+      "openalgo_ms": 0.4718,
+      "openalgo_m_bars_s": 21.2,
+      "openalgo_runs_us": [
+        508.875,
+        471.75,
+        392.208,
+        935.25,
+        561.042,
+        425.083,
+        375.875
+      ],
+      "openalgo_stats": {
+        "median_us": 471.75,
+        "mean_us": 524.2976,
+        "min_us": 375.875,
+        "max_us": 935.25,
+        "stddev_us": 192.5927,
+        "cv_pct": 36.733
+      },
+      "speedup": 0.3699,
+      "outcome": "openalgo_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90688,
+        "openalgo": 801568
+      }
+    },
+    {
+      "indicator": "ICHIMOKU",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 6683.292,
+      "ferro_ta_ms": 6.6833,
+      "ferro_ta_m_bars_s": 14.96,
+      "ferro_ta_runs_us": [
+        7549.709,
+        6683.292,
+        6802.834,
+        9060.209,
+        6624.083,
+        6409.459,
+        6318.833
+      ],
+      "ferro_ta_stats": {
+        "median_us": 6683.292,
+        "mean_us": 7064.0599,
+        "min_us": 6318.833,
+        "max_us": 9060.209,
+        "stddev_us": 967.0518,
+        "cv_pct": 13.69
+      },
+      "openalgo_us": 5442.667,
+      "openalgo_ms": 5.4427,
+      "openalgo_m_bars_s": 18.37,
+      "openalgo_runs_us": [
+        5413.25,
+        5352.208,
+        6295.875,
+        5442.667,
+        6836.209,
+        5571.834,
+        5251.916
+      ],
+      "openalgo_stats": {
+        "median_us": 5442.667,
+        "mean_us": 5737.7084,
+        "min_us": 5251.916,
+        "max_us": 6836.209,
+        "stddev_us": 594.7962,
+        "cv_pct": 10.366
+      },
+      "speedup": 0.8144,
+      "outcome": "openalgo_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900688,
+        "openalgo": 8001568
+      }
+    },
+    {
+      "indicator": "PIVOT_POINTS",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 35.75,
+      "ferro_ta_ms": 0.0357,
+      "ferro_ta_m_bars_s": 279.72,
+      "ferro_ta_runs_us": [
+        41.667,
+        54.458,
+        36.958,
+        35.625,
+        35.042,
+        35.75,
+        35.292
+      ],
+      "ferro_ta_stats": {
+        "median_us": 35.75,
+        "mean_us": 39.256,
+        "min_us": 35.042,
+        "max_us": 54.458,
+        "stddev_us": 7.0845,
+        "cv_pct": 18.047
+      },
+      "openalgo_us": 83.041,
+      "openalgo_ms": 0.083,
+      "openalgo_m_bars_s": 120.42,
+      "openalgo_runs_us": [
+        146.5,
+        355.708,
+        111.333,
+        77.417,
+        83.041,
+        80.666,
+        78.666
+      ],
+      "openalgo_stats": {
+        "median_us": 83.041,
+        "mean_us": 133.333,
+        "min_us": 77.417,
+        "max_us": 355.708,
+        "stddev_us": 101.2638,
+        "cv_pct": 75.948
+      },
+      "speedup": 2.3228,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90744,
+        "openalgo": 881224
+      }
+    },
+    {
+      "indicator": "PIVOT_POINTS",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 754.75,
+      "ferro_ta_ms": 0.7548,
+      "ferro_ta_m_bars_s": 132.49,
+      "ferro_ta_runs_us": [
+        754.75,
+        1821.875,
+        651.834,
+        329.584,
+        308.542,
+        974.458,
+        1711.833
+      ],
+      "ferro_ta_stats": {
+        "median_us": 754.75,
+        "mean_us": 936.1251,
+        "min_us": 308.542,
+        "max_us": 1821.875,
+        "stddev_us": 614.1683,
+        "cv_pct": 65.607
+      },
+      "openalgo_us": 1048.291,
+      "openalgo_ms": 1.0483,
+      "openalgo_m_bars_s": 95.39,
+      "openalgo_runs_us": [
+        834.292,
+        1048.291,
+        1301.75,
+        913.875,
+        896.292,
+        1334.625,
+        1449.792
+      ],
+      "openalgo_stats": {
+        "median_us": 1048.291,
+        "mean_us": 1111.2739,
+        "min_us": 834.292,
+        "max_us": 1449.792,
+        "stddev_us": 247.1945,
+        "cv_pct": 22.244
+      },
+      "speedup": 1.3889,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900744,
+        "openalgo": 8801120
+      }
+    },
+    {
+      "indicator": "CHANDELIER_EXIT",
+      "size": 10000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 191.958,
+      "ferro_ta_ms": 0.192,
+      "ferro_ta_m_bars_s": 52.09,
+      "ferro_ta_runs_us": [
+        264.125,
+        225.625,
+        203.417,
+        191.958,
+        184.458,
+        179.459,
+        176.708
+      ],
+      "ferro_ta_stats": {
+        "median_us": 191.958,
+        "mean_us": 203.6786,
+        "min_us": 176.708,
+        "max_us": 264.125,
+        "stddev_us": 31.5074,
+        "cv_pct": 15.469
+      },
+      "openalgo_us": 223.834,
+      "openalgo_ms": 0.2238,
+      "openalgo_m_bars_s": 44.68,
+      "openalgo_runs_us": [
+        269.959,
+        223.834,
+        341.833,
+        861.584,
+        193.458,
+        176.792,
+        171.417
+      ],
+      "openalgo_stats": {
+        "median_us": 223.834,
+        "mean_us": 319.8396,
+        "min_us": 171.417,
+        "max_us": 861.584,
+        "stddev_us": 246.3534,
+        "cv_pct": 77.024
+      },
+      "speedup": 1.1661,
+      "outcome": "ferro_ta_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 90816,
+        "openalgo": 481040
+      }
+    },
+    {
+      "indicator": "CHANDELIER_EXIT",
+      "size": 100000,
+      "input_layout": {
+        "dtype": "float64",
+        "contiguous": true
+      },
+      "ferro_ta_us": 4115.5,
+      "ferro_ta_ms": 4.1155,
+      "ferro_ta_m_bars_s": 24.3,
+      "ferro_ta_runs_us": [
+        3386.959,
+        4115.5,
+        5527.75,
+        4232.958,
+        4121.25,
+        2773.833,
+        2682.208
+      ],
+      "ferro_ta_stats": {
+        "median_us": 4115.5,
+        "mean_us": 3834.3511,
+        "min_us": 2682.208,
+        "max_us": 5527.75,
+        "stddev_us": 986.588,
+        "cv_pct": 25.73
+      },
+      "openalgo_us": 3224.25,
+      "openalgo_ms": 3.2243,
+      "openalgo_m_bars_s": 31.01,
+      "openalgo_runs_us": [
+        2651.667,
+        2607.833,
+        3758.25,
+        5085.291,
+        3224.25,
+        2734.958,
+        3584.125
+      ],
+      "openalgo_stats": {
+        "median_us": 3224.25,
+        "mean_us": 3378.0534,
+        "min_us": 2607.833,
+        "max_us": 5085.291,
+        "stddev_us": 881.266,
+        "cv_pct": 26.088
+      },
+      "speedup": 0.7834,
+      "outcome": "openalgo_win",
+      "python_peak_allocation_bytes": {
+        "ferro_ta": 900816,
+        "openalgo": 4001032
+      }
+    }
+  ]
+}

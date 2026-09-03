@@ -31,6 +31,7 @@ Run locally::
 from __future__ import annotations
 
 import pathlib
+import re
 import time
 from collections.abc import Callable
 from typing import Any
@@ -359,6 +360,43 @@ def update_baselines(ohlcv_data: dict[str, np.ndarray]) -> None:
 
     np.savez_compressed(BASELINE_PATH, **store)
     print(f"Baselines written to {BASELINE_PATH}")
+
+
+def test_every_benchmark_script_writes_json_through_the_shared_helper() -> None:
+    """No benchmark script may hand-roll its JSON write.
+
+    ``metadata.write_json_artifact`` appends the trailing newline that the
+    repo's ``end-of-file-fixer`` pre-commit hook would otherwise add *after*
+    ``metadata.file_info`` has already hashed the file. A script that writes
+    ``json.dumps(...)`` directly therefore produces a manifest whose
+    ``size_bytes`` is one short and whose ``sha256`` describes bytes that no
+    longer exist on disk -- which is precisely how the committed
+    ``perf-contract/manifest.json`` hashes became unverifiable.
+
+    The failure is silent: nothing raises, and the disagreement is one byte.
+    So guard it structurally instead of relying on review.
+    """
+    benchmarks_dir = pathlib.Path(__file__).parent
+    raw_write = re.compile(r"json\.dump\(|write_text\(json\.dumps")
+
+    offenders: list[str] = []
+    for script in sorted(benchmarks_dir.glob("*.py")):
+        for lineno, line in enumerate(
+            script.read_text(encoding="utf-8").splitlines(), start=1
+        ):
+            if raw_write.search(line):
+                offenders.append(f"{script.name}:{lineno}: {line.strip()}")
+
+    # The single legitimate hit is the helper's own implementation.
+    assert offenders == [
+        offender for offender in offenders if offender.startswith("metadata.py:")
+    ], (
+        "benchmark scripts must call metadata.write_json_artifact() instead of "
+        "writing JSON directly:\n  " + "\n  ".join(offenders)
+    )
+    assert len(offenders) == 1, (
+        f"expected exactly one raw JSON write (the helper itself), got: {offenders}"
+    )
 
 
 if __name__ == "__main__":

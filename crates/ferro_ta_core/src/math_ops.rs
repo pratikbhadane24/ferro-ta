@@ -6,8 +6,6 @@
 //! - `rolling_maxindex` — index of rolling maximum
 //! - `rolling_minindex` — index of rolling minimum
 
-use std::collections::VecDeque;
-
 /// Rolling sum over `timeperiod` bars using an O(n) sliding window.
 /// Leading `timeperiod - 1` values are NaN.
 ///
@@ -57,49 +55,24 @@ pub fn rolling_min(real: &[f64], timeperiod: usize) -> Vec<f64> {
 
 /// Index of rolling maximum over `timeperiod` bars.
 /// Returns 0-based index. During warmup the value is `-1`.
+///
+/// Thin wrapper over `rolling::sliding_maxindex_into`, which owns the shared
+/// monotonic deque. Among equal maxima the most recent index wins, matching
+/// the previous inline `VecDeque` version bit-for-bit.
 pub fn rolling_maxindex(real: &[f64], timeperiod: usize) -> Vec<i64> {
-    let n = real.len();
-    let mut result = vec![-1i64; n];
-    if timeperiod == 0 || n < timeperiod {
-        return result;
-    }
-    let mut dq: VecDeque<usize> = VecDeque::new();
-    for i in 0..n {
-        while dq.front().map(|&j| j + timeperiod <= i).unwrap_or(false) {
-            dq.pop_front();
-        }
-        while dq.back().map(|&j| real[j] <= real[i]).unwrap_or(false) {
-            dq.pop_back();
-        }
-        dq.push_back(i);
-        if i + 1 >= timeperiod {
-            result[i] = *dq.front().unwrap() as i64;
-        }
-    }
+    let mut result = vec![-1i64; real.len()];
+    crate::rolling::sliding_maxindex_into(real, timeperiod, &mut result);
     result
 }
 
 /// Index of rolling minimum over `timeperiod` bars.
 /// Returns 0-based index. During warmup the value is `-1`.
+///
+/// Thin wrapper over `rolling::sliding_minindex_into`. See
+/// [`rolling_maxindex`] for the tie-breaking contract.
 pub fn rolling_minindex(real: &[f64], timeperiod: usize) -> Vec<i64> {
-    let n = real.len();
-    let mut result = vec![-1i64; n];
-    if timeperiod == 0 || n < timeperiod {
-        return result;
-    }
-    let mut dq: VecDeque<usize> = VecDeque::new();
-    for i in 0..n {
-        while dq.front().map(|&j| j + timeperiod <= i).unwrap_or(false) {
-            dq.pop_front();
-        }
-        while dq.back().map(|&j| real[j] >= real[i]).unwrap_or(false) {
-            dq.pop_back();
-        }
-        dq.push_back(i);
-        if i + 1 >= timeperiod {
-            result[i] = *dq.front().unwrap() as i64;
-        }
-    }
+    let mut result = vec![-1i64; real.len()];
+    crate::rolling::sliding_minindex_into(real, timeperiod, &mut result);
     result
 }
 

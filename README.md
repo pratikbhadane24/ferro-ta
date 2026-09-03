@@ -134,7 +134,11 @@ See the benchmark methodology and artifacts:
 
 ## Capabilities
 
-- 160+ indicators over a shared Rust core.
+- 240+ indicators over a shared Rust core, including adaptive moving averages, volume oscillators,
+  and signal utilities (`ALMA`, `VIDYA`, `KVO`, `VORTEX`, `CROSSOVER`, and related).
+- The extended catalog is bound on every surface: 360 core symbols, 247 Python names, 344 WASM
+  exports, and 194 generated Flutter wrappers. See [docs/languages/coverage](docs/languages/coverage.rst)
+  for the per-indicator table.
 - Batch and streaming APIs for multi-series and bar-by-bar workloads.
 - Python extras: NumPy-first execution with pandas and polars adapters, type stubs, and Sphinx autodoc.
 - Pre-built artifacts: Python wheels, crates.io, npm, and Flutter natives (web reuses WASM).
@@ -144,7 +148,7 @@ Adjacent surfaces — derivatives analytics, MCP, GPU helpers, plugins, and agen
 
 ## TA-Lib compatibility
 
-- `ferro-ta` implements 156 of TA-Lib 0.6.4's 161 functions, plus 10 extended indicators and 9 streaming classes that TA-Lib does not provide. Not yet implemented: `ACCBANDS`, `IMI`, `AVGDEV`, `MINMAX`, `MINMAXINDEX`.
+- `ferro-ta` implements 156 of TA-Lib 0.6.4's 161 functions, plus an extended catalog (adaptive MAs, volume/oscillator studies, statistic helpers, and signal utilities) and 9 streaming classes that TA-Lib does not provide. Not yet implemented: `ACCBANDS`, `IMI`, `AVGDEV`, `MINMAX`, `MINMAXINDEX`.
 - Most functions are marked `Exact` or `Close`; the remaining notable non-exact categories are the Hilbert cycle indicators plus `MAMA`, `SAR`, and `SAREXT`.
 - The full parity matrix and coverage summary now live in [TA_LIB_COMPATIBILITY.md](TA_LIB_COMPATIBILITY.md).
 

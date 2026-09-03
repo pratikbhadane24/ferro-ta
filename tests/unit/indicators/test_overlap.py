@@ -1,18 +1,25 @@
 """Unit tests for ferro_ta.indicators.overlap"""
 
 import numpy as np
+import pytest
 
 from ferro_ta.indicators.overlap import (
+    ALLIGATOR,
+    ALMA,
     BBANDS,
+    CHANDE_KROLL_STOP,
     DEMA,
     EMA,
+    FRAMA,
     KAMA,
     MA,
+    MA_ENVELOPES,
     MACD,
     MACDEXT,
     MACDFIX,
     MAMA,
     MAVP,
+    MCGINLEY,
     MIDPOINT,
     MIDPRICE,
     SAR,
@@ -21,7 +28,9 @@ from ferro_ta.indicators.overlap import (
     T3,
     TEMA,
     TRIMA,
+    VIDYA,
     WMA,
+    ZLEMA,
 )
 
 # ---------------------------------------------------------------------------
@@ -483,3 +492,132 @@ class TestMIDPRICE:
 
     def test_length(self):
         assert len(MIDPRICE(_HIGH, _LOW, 14)) == N
+
+
+# ---------------------------------------------------------------------------
+# ALMA / ZLEMA / FRAMA / MCGINLEY / VIDYA / ALLIGATOR / MA_ENVELOPES /
+# CHANDE_KROLL_STOP
+# ---------------------------------------------------------------------------
+
+
+class TestALMA:
+    def test_linear_symmetric_period3(self):
+        result = ALMA(np.arange(1.0, 6.0), timeperiod=3, offset=0.85, sigma=6.0)
+        assert np.all(np.isnan(result[:2]))
+        np.testing.assert_allclose(result[2:], [2.0, 3.0, 4.0], atol=1e-12)
+
+    def test_constant_is_constant(self):
+        result = ALMA(np.full(10, 7.0), timeperiod=5)
+        assert np.all(np.isnan(result[:4]))
+        np.testing.assert_allclose(result[4:], 7.0, atol=1e-12)
+
+    def test_length(self):
+        assert len(ALMA(_CLOSE, timeperiod=21)) == N
+
+
+class TestZLEMA:
+    def test_linear_tracks_close(self):
+        close = np.arange(1.0, 11.0)
+        result = ZLEMA(close, timeperiod=3)
+        assert np.all(np.isnan(result[:3]))
+        np.testing.assert_allclose(result[3:], close[3:], atol=1e-12)
+
+    def test_length(self):
+        assert len(ZLEMA(_CLOSE, timeperiod=14)) == N
+
+
+class TestFRAMA:
+    def test_linear_tracks_close(self):
+        close = np.arange(1.0, 9.0)
+        result = FRAMA(close, timeperiod=4)
+        assert np.all(np.isnan(result[:3]))
+        np.testing.assert_allclose(result[3:], close[3:], atol=1e-12)
+
+    def test_length(self):
+        assert len(FRAMA(_CLOSE, timeperiod=16)) == N
+
+
+class TestMCGINLEY:
+    def test_first_step(self):
+        result = MCGINLEY(np.arange(1.0, 9.0), timeperiod=3)
+        assert np.all(np.isnan(result[:2]))
+        assert result[2] == pytest.approx(2.0)
+        assert result[3] == pytest.approx(49.0 / 24.0)
+
+    def test_constant_is_constant(self):
+        result = MCGINLEY(np.full(8, 10.0), timeperiod=3)
+        np.testing.assert_allclose(result[2:], 10.0, atol=1e-12)
+
+    def test_length(self):
+        assert len(MCGINLEY(_CLOSE, timeperiod=14)) == N
+
+
+class TestVIDYA:
+    def test_cmo_seed_and_step(self):
+        close = np.array([1.0, 2.0, 3.0, 2.0, 4.0, 3.0, 5.0])
+        result = VIDYA(close, timeperiod=3, cmo_period=3)
+        assert np.all(np.isnan(result[:3]))
+        assert result[3] == pytest.approx(2.0)
+        assert result[4] == pytest.approx(8.0 / 3.0)
+
+    def test_length(self):
+        assert len(VIDYA(_CLOSE, timeperiod=14)) == N
+
+
+class TestALLIGATOR:
+    def test_smma_shift(self):
+        high = 11.0 + np.arange(8, dtype=np.float64)
+        low = 9.0 + np.arange(8, dtype=np.float64)
+        jaw, teeth, lips = ALLIGATOR(
+            high,
+            low,
+            jaw_period=3,
+            jaw_shift=2,
+            teeth_period=2,
+            teeth_shift=1,
+            lips_period=2,
+            lips_shift=1,
+        )
+        assert np.all(np.isnan(jaw[:4]))
+        assert jaw[4] == pytest.approx(11.0)
+        assert jaw[5] == pytest.approx(35.0 / 3.0)
+        assert teeth[2] == pytest.approx(10.5)
+        assert lips[2] == pytest.approx(10.5)
+
+    def test_length(self):
+        jaw, teeth, lips = ALLIGATOR(_HIGH, _LOW)
+        assert len(jaw) == len(teeth) == len(lips) == N
+
+
+class TestMAEnvelopes:
+    def test_sma_percent(self):
+        upper, middle, lower = MA_ENVELOPES(
+            np.arange(1.0, 6.0), timeperiod=3, percent=10.0
+        )
+        assert np.all(np.isnan(middle[:2]))
+        np.testing.assert_allclose(middle[2:], [2.0, 3.0, 4.0], atol=1e-12)
+        np.testing.assert_allclose(upper[2:], [2.2, 3.3, 4.4], atol=1e-12)
+        np.testing.assert_allclose(lower[2:], [1.8, 2.7, 3.6], atol=1e-12)
+
+    def test_length(self):
+        upper, middle, lower = MA_ENVELOPES(_CLOSE, timeperiod=20)
+        assert len(upper) == len(middle) == len(lower) == N
+
+
+class TestChandeKrollStop:
+    def test_p3_q2(self):
+        high = np.array([10.0, 12.0, 11.0, 13.0, 14.0, 15.0])
+        low = np.array([8.0, 9.0, 8.0, 10.0, 11.0, 12.0])
+        close = np.array([9.0, 11.0, 10.0, 12.0, 13.0, 14.0])
+        long_stop, short_stop = CHANDE_KROLL_STOP(
+            high, low, close, timeperiod=3, multiplier=1.0, stop_period=2
+        )
+        assert np.all(np.isnan(long_stop[:4]))
+        assert long_stop[4] == pytest.approx(11.0)
+        assert long_stop[5] == pytest.approx(12.0)
+        assert short_stop[4] == pytest.approx(11.0)
+        assert short_stop[5] == pytest.approx(11.0)
+
+    def test_length(self):
+        long_stop, short_stop = CHANDE_KROLL_STOP(_HIGH, _LOW, _CLOSE)
+        assert len(long_stop) == len(short_stop) == N

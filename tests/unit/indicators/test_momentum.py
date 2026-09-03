@@ -11,7 +11,11 @@ from ferro_ta.indicators.momentum import (
     BOP,
     CCI,
     CMO,
+    CRSI,
+    DMI,
     DX,
+    ELDER_RAY,
+    FISHER,
     MFI,
     MINUS_DI,
     MINUS_DM,
@@ -159,6 +163,24 @@ class TestADX:
 
     def test_length(self):
         assert len(ADX(_HIGH, _LOW, _CLOSE, 14)) == N
+
+
+class TestDMI:
+    def test_matches_plus_di_minus_di_adx(self):
+        plus_di, minus_di, adx = DMI(_HIGH, _LOW, _CLOSE, timeperiod=14)
+        np.testing.assert_allclose(
+            plus_di, PLUS_DI(_HIGH, _LOW, _CLOSE, timeperiod=14), equal_nan=True
+        )
+        np.testing.assert_allclose(
+            minus_di, MINUS_DI(_HIGH, _LOW, _CLOSE, timeperiod=14), equal_nan=True
+        )
+        np.testing.assert_allclose(
+            adx, ADX(_HIGH, _LOW, _CLOSE, timeperiod=14), equal_nan=True
+        )
+
+    def test_length(self):
+        plus_di, minus_di, adx = DMI(_HIGH, _LOW, _CLOSE, 14)
+        assert len(plus_di) == len(minus_di) == len(adx) == N
 
 
 # ---------------------------------------------------------------------------
@@ -586,3 +608,80 @@ class TestULTOSC:
     def test_nan_warmup(self):
         result = ULTOSC(_HIGH, _LOW, _CLOSE, 7, 14, 28)
         assert np.any(np.isnan(result))
+
+
+# ---------------------------------------------------------------------------
+# ELDER_RAY
+# ---------------------------------------------------------------------------
+
+
+class TestELDER_RAY:
+    def test_returns_two_arrays(self):
+        bull, bear = ELDER_RAY(_HIGH, _LOW, _CLOSE, timeperiod=13)
+        assert len(bull) == len(bear) == N
+
+    def test_nan_warmup(self):
+        bull, bear = ELDER_RAY(_HIGH, _LOW, _CLOSE, timeperiod=13)
+        assert np.all(np.isnan(bull[:12]))
+        assert np.all(np.isnan(bear[:12]))
+        assert np.all(np.isfinite(bull[12:]))
+        assert np.all(np.isfinite(bear[12:]))
+
+    def test_linear_identity(self):
+        close = np.arange(1.0, 11.0)
+        high = close + 1.0
+        low = close - 1.0
+        bull, bear = ELDER_RAY(high, low, close, timeperiod=3)
+        np.testing.assert_allclose(bull[2:], 2.0, atol=1e-10)
+        np.testing.assert_allclose(bear[2:], 0.0, atol=1e-10)
+
+
+# ---------------------------------------------------------------------------
+# FISHER
+# ---------------------------------------------------------------------------
+
+
+class TestFISHER:
+    def test_returns_two_arrays(self):
+        fish, signal = FISHER(_HIGH, _LOW, timeperiod=9)
+        assert len(fish) == len(signal) == N
+
+    def test_nan_warmup(self):
+        fish, signal = FISHER(_HIGH, _LOW, timeperiod=9)
+        assert np.all(np.isnan(fish[:8]))
+        assert np.all(np.isfinite(fish[8:]))
+
+    def test_signal_is_lagged_fisher(self):
+        close = np.arange(1.0, 16.0)
+        high = close + 1.0
+        low = close - 1.0
+        fish, signal = FISHER(high, low, timeperiod=3)
+        valid = ~np.isnan(signal)
+        np.testing.assert_allclose(
+            signal[valid], fish[np.where(valid)[0] - 1], atol=1e-12
+        )
+
+
+# ---------------------------------------------------------------------------
+# CRSI
+# ---------------------------------------------------------------------------
+
+
+class TestCRSI:
+    def test_length_and_range(self):
+        result = CRSI(_CLOSE, timeperiod=3, streakperiod=2, rankperiod=20)
+        assert len(result) == N
+        valid = result[~np.isnan(result)]
+        assert len(valid) > 0
+        assert np.all(valid >= 0) and np.all(valid <= 100)
+
+    def test_small_period_golden(self):
+        close = np.array([10.0, 11.0, 12.0, 11.0, 13.0])
+        result = CRSI(close, timeperiod=2, streakperiod=2, rankperiod=2)
+        # ROC(close, 1) = [nan, 10, 100/11, -25/3, 200/11]. PercentRank uses
+        # the two *previous* ROC values with a `<=` comparison, so index 2 is
+        # nan (its window holds ROC[0] = nan), index 3 is 0 and index 4 is 100.
+        # CRSI propagates nan, so the warmup runs through index 2.
+        assert np.all(np.isnan(result[:3]))
+        np.testing.assert_allclose(result[3], 25.0, atol=1e-10)
+        np.testing.assert_allclose(result[4], 1475.0 / 18.0, atol=1e-10)

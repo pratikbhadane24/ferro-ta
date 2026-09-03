@@ -28,9 +28,13 @@ MINUS_DI  — Minus Directional Indicator
 DX        — Directional Movement Index
 ADX       — Average Directional Movement Index
 ADXR      — Average Directional Movement Index Rating
+DMI       — Directional Movement Index (+DI, -DI, ADX)
 TRIX      — 1-day Rate-Of-Change of Triple Smooth EMA
 ULTOSC    — Ultimate Oscillator
 TRANGE    — True Range (also in volatility)
+ELDER_RAY — Elder Ray bull / bear power
+FISHER    — Ehlers Fisher Transform
+CRSI      — Connors RSI
 """
 
 from __future__ import annotations
@@ -63,7 +67,19 @@ from ferro_ta._ferro_ta import (
     cmo as _cmo,
 )
 from ferro_ta._ferro_ta import (
+    crsi as _crsi,
+)
+from ferro_ta._ferro_ta import (
+    dmi as _dmi,
+)
+from ferro_ta._ferro_ta import (
     dx as _dx,
+)
+from ferro_ta._ferro_ta import (
+    elder_ray as _elder_ray,
+)
+from ferro_ta._ferro_ta import (
+    fisher as _fisher,
 )
 from ferro_ta._ferro_ta import (
     mfi as _mfi,
@@ -436,6 +452,7 @@ def STOCHF(
     close: ArrayLike,
     fastk_period: int = 5,
     fastd_period: int = 3,
+    fastd_matype: int = 0,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Stochastic Fast.
 
@@ -451,6 +468,22 @@ def STOCHF(
         %K period (default 5).
     fastd_period : int, optional
         %D smoothing period (default 3).
+    fastd_matype : int, optional
+        Moving average type applied to the %D leg (default 0):
+
+        * 0 = SMA (Simple)
+        * 1 = EMA (Exponential)
+        * 2 = WMA (Weighted)
+        * 3 = DEMA (Double EMA)
+        * 4 = TEMA (Triple EMA)
+        * 5 = TRIMA (Triangular)
+        * 6 = KAMA (Kaufman Adaptive)
+        * 7 = T3 (Tillson)
+        * 8 = T3 (Tillson; exact alias of 7)
+
+        Values ``0``-``6`` and ``8`` match TA-Lib's numbering, but ``7`` is T3
+        here where TA-Lib's ``7`` is MAMA.  MAMA is not reachable through any
+        ``matype`` value -- call :func:`ferro_ta.MAMA` directly.
 
     Returns
     -------
@@ -459,7 +492,12 @@ def STOCHF(
     """
     try:
         return _stochf(
-            _to_f64(high), _to_f64(low), _to_f64(close), fastk_period, fastd_period
+            _to_f64(high),
+            _to_f64(low),
+            _to_f64(close),
+            fastk_period,
+            fastd_period,
+            fastd_matype,
         )
     except ValueError as e:
         _normalize_rust_error(e)
@@ -471,9 +509,15 @@ def STOCH(
     close: ArrayLike,
     fastk_period: int = 5,
     slowk_period: int = 3,
+    slowk_matype: int = 0,
     slowd_period: int = 3,
+    slowd_matype: int = 0,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Stochastic.
+
+    Parameters follow TA-Lib's *interleaved* order: each ``*_matype`` comes
+    immediately after the period it types, so a mis-ordered positional call
+    fails the type checker instead of returning a wrong answer.
 
     Parameters
     ----------
@@ -487,8 +531,40 @@ def STOCH(
         Fast %K period (default 5).
     slowk_period : int, optional
         Slow %K smoothing period (default 3).
+    slowk_matype : int, optional
+        Moving average type applied to the slow %K leg (default 0):
+
+        * 0 = SMA (Simple)
+        * 1 = EMA (Exponential)
+        * 2 = WMA (Weighted)
+        * 3 = DEMA (Double EMA)
+        * 4 = TEMA (Triple EMA)
+        * 5 = TRIMA (Triangular)
+        * 6 = KAMA (Kaufman Adaptive)
+        * 7 = T3 (Tillson)
+        * 8 = T3 (Tillson; exact alias of 7)
+
+        Values ``0``-``6`` and ``8`` match TA-Lib's numbering, but ``7`` is T3
+        here where TA-Lib's ``7`` is MAMA.  MAMA is not reachable through any
+        ``matype`` value -- call :func:`ferro_ta.MAMA` directly.
     slowd_period : int, optional
         Slow %D smoothing period (default 3).
+    slowd_matype : int, optional
+        Moving average type applied to the slow %D leg (default 0):
+
+        * 0 = SMA (Simple)
+        * 1 = EMA (Exponential)
+        * 2 = WMA (Weighted)
+        * 3 = DEMA (Double EMA)
+        * 4 = TEMA (Triple EMA)
+        * 5 = TRIMA (Triangular)
+        * 6 = KAMA (Kaufman Adaptive)
+        * 7 = T3 (Tillson)
+        * 8 = T3 (Tillson; exact alias of 7)
+
+        Values ``0``-``6`` and ``8`` match TA-Lib's numbering, but ``7`` is T3
+        here where TA-Lib's ``7`` is MAMA.  MAMA is not reachable through any
+        ``matype`` value -- call :func:`ferro_ta.MAMA` directly.
 
     Returns
     -------
@@ -502,7 +578,9 @@ def STOCH(
             _to_f64(close),
             fastk_period,
             slowk_period,
+            slowk_matype,
             slowd_period,
+            slowd_matype,
         )
     except ValueError as e:
         _normalize_rust_error(e)
@@ -513,6 +591,7 @@ def STOCHRSI(
     timeperiod: int = 14,
     fastk_period: int = 5,
     fastd_period: int = 3,
+    fastd_matype: int = 0,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Stochastic Relative Strength Index.
 
@@ -526,6 +605,22 @@ def STOCHRSI(
         Stochastic %K period (default 5).
     fastd_period : int, optional
         Stochastic %D smoothing period (default 3).
+    fastd_matype : int, optional
+        Moving average type applied to the %D leg (default 0):
+
+        * 0 = SMA (Simple)
+        * 1 = EMA (Exponential)
+        * 2 = WMA (Weighted)
+        * 3 = DEMA (Double EMA)
+        * 4 = TEMA (Triple EMA)
+        * 5 = TRIMA (Triangular)
+        * 6 = KAMA (Kaufman Adaptive)
+        * 7 = T3 (Tillson)
+        * 8 = T3 (Tillson; exact alias of 7)
+
+        Values ``0``-``6`` and ``8`` match TA-Lib's numbering, but ``7`` is T3
+        here where TA-Lib's ``7`` is MAMA.  MAMA is not reachable through any
+        ``matype`` value -- call :func:`ferro_ta.MAMA` directly.
 
     Returns
     -------
@@ -533,7 +628,9 @@ def STOCHRSI(
         ``(fastk, fastd)`` — two arrays of equal length.
     """
     try:
-        return _stochrsi(_to_f64(close), timeperiod, fastk_period, fastd_period)
+        return _stochrsi(
+            _to_f64(close), timeperiod, fastk_period, fastd_period, fastd_matype
+        )
     except ValueError as e:
         _normalize_rust_error(e)
 
@@ -542,6 +639,7 @@ def APO(
     close: ArrayLike,
     fastperiod: int = 12,
     slowperiod: int = 26,
+    matype: int = 1,
 ) -> np.ndarray:
     """Absolute Price Oscillator.
 
@@ -550,17 +648,36 @@ def APO(
     close : array-like
         Sequence of closing prices.
     fastperiod : int, optional
-        Fast EMA period (default 12).
+        Fast MA period (default 12).
     slowperiod : int, optional
-        Slow EMA period (default 26).
+        Slow MA period (default 26).
+    matype : int, optional
+        Moving average type for both legs.  Defaults to ``1`` (EMA) rather
+        than TA-Lib's ``0`` (SMA), because this function has always computed
+        the EMA form; pass ``0`` for TA-Lib's SMA form (default 1):
+
+        * 0 = SMA (Simple)
+        * 1 = EMA (Exponential)
+        * 2 = WMA (Weighted)
+        * 3 = DEMA (Double EMA)
+        * 4 = TEMA (Triple EMA)
+        * 5 = TRIMA (Triangular)
+        * 6 = KAMA (Kaufman Adaptive)
+        * 7 = T3 (Tillson)
+        * 8 = T3 (Tillson; exact alias of 7)
+
+        Values ``0``-``6`` and ``8`` match TA-Lib's numbering, but ``7`` is T3
+        here where TA-Lib's ``7`` is MAMA.  MAMA is not reachable through any
+        ``matype`` value -- call :func:`ferro_ta.MAMA` directly.
 
     Returns
     -------
     numpy.ndarray
-        Array of APO values; leading ``slowperiod - 1`` entries are ``NaN``.
+        Array of APO values; leading entries are ``NaN`` for the slow leg's
+        lookback (which depends on *matype*).
     """
     try:
-        return _apo(_to_f64(close), fastperiod, slowperiod)
+        return _apo(_to_f64(close), fastperiod, slowperiod, matype)
     except ValueError as e:
         _normalize_rust_error(e)
 
@@ -570,6 +687,7 @@ def PPO(
     fastperiod: int = 12,
     slowperiod: int = 26,
     signalperiod: int = 9,
+    matype: int = 1,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Percentage Price Oscillator.
 
@@ -578,11 +696,29 @@ def PPO(
     close : array-like
         Sequence of closing prices.
     fastperiod : int, optional
-        Fast EMA period (default 12).
+        Fast MA period (default 12).
     slowperiod : int, optional
-        Slow EMA period (default 26).
+        Slow MA period (default 26).
     signalperiod : int, optional
         Signal EMA period (default 9).
+    matype : int, optional
+        Moving average type for the fast and slow legs.  Defaults to ``1``
+        (EMA) rather than TA-Lib's ``0`` (SMA), because this function has
+        always computed the EMA form; pass ``0`` for TA-Lib's SMA form (default 1):
+
+        * 0 = SMA (Simple)
+        * 1 = EMA (Exponential)
+        * 2 = WMA (Weighted)
+        * 3 = DEMA (Double EMA)
+        * 4 = TEMA (Triple EMA)
+        * 5 = TRIMA (Triangular)
+        * 6 = KAMA (Kaufman Adaptive)
+        * 7 = T3 (Tillson)
+        * 8 = T3 (Tillson; exact alias of 7)
+
+        Values ``0``-``6`` and ``8`` match TA-Lib's numbering, but ``7`` is T3
+        here where TA-Lib's ``7`` is MAMA.  MAMA is not reachable through any
+        ``matype`` value -- call :func:`ferro_ta.MAMA` directly.
 
     Returns
     -------
@@ -590,7 +726,7 @@ def PPO(
         ``(ppo, signal, histogram)`` — three arrays of equal length.
     """
     try:
-        return _ppo(_to_f64(close), fastperiod, slowperiod, signalperiod)
+        return _ppo(_to_f64(close), fastperiod, slowperiod, signalperiod, matype)
     except ValueError as e:
         _normalize_rust_error(e)
 
@@ -782,6 +918,37 @@ def ADX(
         _normalize_rust_error(e)
 
 
+def DMI(
+    high: ArrayLike,
+    low: ArrayLike,
+    close: ArrayLike,
+    timeperiod: int = 14,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Directional Movement Index — ``(PLUS_DI, MINUS_DI, ADX)`` in one pass.
+
+    Parameters
+    ----------
+    high : array-like
+        Sequence of high prices.
+    low : array-like
+        Sequence of low prices.
+    close : array-like
+        Sequence of closing prices.
+    timeperiod : int, optional
+        Wilder smoothing period (default 14).
+
+    Returns
+    -------
+    plus_di, minus_di, adx : numpy.ndarray
+        The three ADX-family series, identical to calling ``PLUS_DI``,
+        ``MINUS_DI``, and ``ADX`` separately.
+    """
+    try:
+        return _dmi(_to_f64(high), _to_f64(low), _to_f64(close), timeperiod)
+    except ValueError as e:
+        _normalize_rust_error(e)
+
+
 def ADXR(
     high: ArrayLike,
     low: ArrayLike,
@@ -876,6 +1043,95 @@ def ULTOSC(
         _normalize_rust_error(e)
 
 
+def ELDER_RAY(
+    high: ArrayLike,
+    low: ArrayLike,
+    close: ArrayLike,
+    timeperiod: int = 13,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Elder Ray Index — bull power and bear power versus EMA(close).
+
+    Parameters
+    ----------
+    high : array-like
+        Sequence of high prices.
+    low : array-like
+        Sequence of low prices.
+    close : array-like
+        Sequence of closing prices.
+    timeperiod : int, optional
+        EMA period (default 13).
+
+    Returns
+    -------
+    tuple[numpy.ndarray, numpy.ndarray]
+        ``(bull_power, bear_power)``. Leading ``timeperiod - 1`` entries
+        are ``NaN``.
+    """
+    try:
+        return _elder_ray(_to_f64(high), _to_f64(low), _to_f64(close), timeperiod)
+    except ValueError as e:
+        _normalize_rust_error(e)
+
+
+def FISHER(
+    high: ArrayLike,
+    low: ArrayLike,
+    timeperiod: int = 9,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Ehlers Fisher Transform of median price.
+
+    Parameters
+    ----------
+    high : array-like
+        Sequence of high prices.
+    low : array-like
+        Sequence of low prices.
+    timeperiod : int, optional
+        Highest / lowest lookback (default 9).
+
+    Returns
+    -------
+    tuple[numpy.ndarray, numpy.ndarray]
+        ``(fisher, signal)`` where ``signal`` is the previous Fisher value.
+        Leading ``timeperiod - 1`` Fisher entries are ``NaN``.
+    """
+    try:
+        return _fisher(_to_f64(high), _to_f64(low), timeperiod)
+    except ValueError as e:
+        _normalize_rust_error(e)
+
+
+def CRSI(
+    close: ArrayLike,
+    timeperiod: int = 3,
+    streakperiod: int = 2,
+    rankperiod: int = 100,
+) -> np.ndarray:
+    """Connors RSI — average of price RSI, streak RSI, and ROC percent rank.
+
+    Parameters
+    ----------
+    close : array-like
+        Sequence of closing prices.
+    timeperiod : int, optional
+        RSI period of close (default 3).
+    streakperiod : int, optional
+        RSI period of the up/down streak (default 2).
+    rankperiod : int, optional
+        Percent-rank lookback of 1-bar ROC (default 100).
+
+    Returns
+    -------
+    numpy.ndarray
+        Array of Connors RSI values (0–100).
+    """
+    try:
+        return _crsi(_to_f64(close), timeperiod, streakperiod, rankperiod)
+    except ValueError as e:
+        _normalize_rust_error(e)
+
+
 __all__ = [
     "RSI",
     "MOM",
@@ -901,8 +1157,12 @@ __all__ = [
     "MINUS_DI",
     "DX",
     "ADX",
+    "DMI",
     "ADXR",
     "TRIX",
     "ULTOSC",
     "TRANGE",
+    "ELDER_RAY",
+    "FISHER",
+    "CRSI",
 ]

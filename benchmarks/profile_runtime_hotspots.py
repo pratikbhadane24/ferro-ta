@@ -1,10 +1,8 @@
 from __future__ import annotations
 
 import argparse
-import json
 import time
 from collections.abc import Callable
-from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -15,9 +13,12 @@ from ferro_ta.analysis.options import iv_percentile, iv_rank, iv_zscore
 from ferro_ta.data.batch import compute_many
 
 try:
-    from benchmarks.metadata import benchmark_metadata
+    from benchmarks.metadata import benchmark_metadata, write_json_artifact
 except ModuleNotFoundError:  # pragma: no cover - script execution fallback
-    from metadata import benchmark_metadata
+    from metadata import (  # type: ignore[no-redef]
+        benchmark_metadata,
+        write_json_artifact,
+    )
 
 
 def _time_min(fn: Callable[[], object], rounds: int = 5) -> float:
@@ -273,8 +274,7 @@ def main() -> int:
         )
 
     if args.json_path:
-        path = Path(args.json_path)
-        path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        path = write_json_artifact(args.json_path, payload)
         print(f"\nWrote JSON results to {path}")
 
     return 0

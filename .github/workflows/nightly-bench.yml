@@ -33,27 +33,61 @@ jobs:
       - name: Install uv
         run: pip install uv
 
+      # The vs-TA-Lib gate below hard-fails when `talib` is missing, and
+      # `--extra dev` does not include it (only the heavy `comparison` extra
+      # does). Install just the one dependency, the same way ci-python.yml's
+      # test-vs-talib job does, so the gate can actually pass.
+      - name: Install TA-Lib C library
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential curl
+          curl -sL https://sourceforge.net/projects/ta-lib/files/ta-lib/0.4.0/ta-lib-0.4.0-src.tar.gz/download -o ta-lib-0.4.0-src.tar.gz
+          tar -xzf ta-lib-0.4.0-src.tar.gz
+          cd ta-lib && ./configure --prefix=/usr && make && sudo make install && sudo ldconfig
+
       - name: Build ferro-ta wheel
         run: |
           uv sync --extra dev
           uv run maturin build --release --out dist
           uv run pip install --force-reinstall dist/*.whl
+          uv run pip install ta-lib
+
+      - name: Fail if talib is unavailable (the vs-TA-Lib gate would be vacuous)
+        run: uv run python -c "import talib; print('talib', talib.__version__)"
+
+      # `--json`, not `--output`: neither bench script defines an --output
+      # flag, so the previous spelling made argparse exit 2 and failed this
+      # (non-continue-on-error) step before any check below could run.
+      - name: Prepare artifact directory
+        run: mkdir -p benchmarks/artifacts
 
       - name: Run vs-TA-Lib benchmark
-        run: uv run python benchmarks/bench_vs_talib.py --output benchmarks/artifacts/nightly_vs_talib.json
+        run: uv run python benchmarks/bench_vs_talib.py --json benchmarks/artifacts/nightly_vs_talib.json
 
       - name: Run SIMD benchmark matrix
-        run: uv run python benchmarks/bench_simd.py --output benchmarks/artifacts/nightly_simd.json
+        run: uv run python benchmarks/bench_simd.py --json benchmarks/artifacts/nightly_simd.json
 
+      # The hotspot gate needs an input, and nothing else in this job produces
+      # one. Use profile_runtime_hotspots.py directly rather than
+      # run_perf_contract.py: it emits exactly the runtime_hotspots.json shape
+      # the checker consumes, and run_perf_contract.py would additionally shell
+      # out to `maturin develop --release` (via bench_simd) unless --skip-simd
+      # is passed, silently replacing the wheel installed above.
+      - name: Profile runtime hotspots
+        run: uv run python benchmarks/profile_runtime_hotspots.py --json benchmarks/artifacts/nightly_runtime_hotspots.json
+
+      # continue-on-error is deliberate: a failure here must still reach the
+      # "Open issue on regression" step below, which reads steps.*.outcome.
+      # Aborting the job instead would skip the notification entirely.
       - name: Check hotspot regression
         id: hotspot
         continue-on-error: true
-        run: uv run python benchmarks/check_hotspot_regression.py --tolerance 0.05
+        run: uv run python benchmarks/check_hotspot_regression.py --input benchmarks/artifacts/nightly_runtime_hotspots.json
 
       - name: Check vs-TA-Lib regression
         id: vs_talib
         continue-on-error: true
-        run: uv run python benchmarks/check_vs_talib_regression.py --tolerance 0.05
+        run: uv run python benchmarks/check_vs_talib_regression.py --input benchmarks/artifacts/nightly_vs_talib.json
 
       - name: Run criterion bench (build only)
         run: cargo bench -p ferro_ta_core --no-run

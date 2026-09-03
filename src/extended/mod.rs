@@ -11,6 +11,14 @@ use numpy::{IntoPyArray, PyArray1, PyReadonlyArray1};
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
+mod hybrid;
+mod momentum;
+mod oscillators;
+mod stat;
+mod trend;
+mod volatility;
+mod volume;
+
 // ---------------------------------------------------------------------------
 // VWAP
 // ---------------------------------------------------------------------------
@@ -311,5 +319,12 @@ pub fn register(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(pyo3::wrap_pyfunction!(chandelier_exit, m)?)?;
     m.add_function(pyo3::wrap_pyfunction!(ichimoku, m)?)?;
     m.add_function(pyo3::wrap_pyfunction!(pivot_points, m)?)?;
+    trend::register(m)?;
+    stat::register(m)?;
+    hybrid::register(m)?;
+    momentum::register(m)?;
+    volatility::register(m)?;
+    volume::register(m)?;
+    oscillators::register(m)?;
     Ok(())
 }

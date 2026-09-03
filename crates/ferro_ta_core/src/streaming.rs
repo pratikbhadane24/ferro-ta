@@ -886,7 +886,7 @@ mod tests {
     #[test]
     fn streaming_bbands_uses_population_std() {
         let prices = vec![1.0, 2.0, 3.0, 4.0, 5.0];
-        let (bu, bm, bl) = crate::overlap::bbands(&prices, 3, 2.0, 2.0);
+        let (bu, bm, bl) = crate::overlap::bbands(&prices, 3, 2.0, 2.0, 0);
         let mut bb = StreamingBBands::new(3, 2.0, 2.0).unwrap();
         for (i, &p) in prices.iter().enumerate() {
             let (u, m, l) = bb.update(p);
@@ -956,7 +956,7 @@ mod tests {
             .collect();
         let high: Vec<f64> = close.iter().map(|c| c + 1.0).collect();
         let low: Vec<f64> = close.iter().map(|c| c - 1.0).collect();
-        let (b_k, b_d) = crate::momentum::stoch(&high, &low, &close, 3, 2, 2);
+        let (b_k, b_d) = crate::momentum::stoch(&high, &low, &close, 3, 2, 0, 2, 0);
 
         let mut stoch = StreamingStoch::new(3, 2, 2).unwrap();
         for i in 0..n {
@@ -971,7 +971,7 @@ mod tests {
         let h: Vec<f64> = (0..30).map(|i| 12.0 + i as f64).collect();
         let l: Vec<f64> = (0..30).map(|i| 8.0 + i as f64).collect();
         let c: Vec<f64> = (0..30).map(|i| 10.0 + i as f64).collect();
-        let (bk, bd) = crate::momentum::stoch(&h, &l, &c, 5, 3, 3);
+        let (bk, bd) = crate::momentum::stoch(&h, &l, &c, 5, 3, 0, 3, 0);
         let mut stream = StreamingStoch::new(5, 3, 3).unwrap();
         for i in 0..h.len() {
             let (k, d) = stream.update(h[i], l[i], c[i]);
@@ -1064,7 +1064,7 @@ mod tests {
     #[test]
     fn test_bbands_matches_batch() {
         let (_, _, close) = parity_ohlc(40);
-        let (b_up, b_mid, b_lo) = crate::overlap::bbands(&close, 5, 2.0, 2.0);
+        let (b_up, b_mid, b_lo) = crate::overlap::bbands(&close, 5, 2.0, 2.0, 0);
         let mut bb = StreamingBBands::new(5, 2.0, 2.0).unwrap();
         for (i, &c) in close.iter().enumerate() {
             let (u, m, l) = bb.update(c);

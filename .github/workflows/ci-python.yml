@@ -103,6 +103,11 @@ jobs:
       - name: Check API manifest is current
         if: matrix.python-version == '3.12'
         run: python scripts/check_api_manifest.py
+      # Needs the built extension, so it runs here (wheel installed above)
+      # rather than in the no-Rust `lint` job.
+      - name: Check type stub matches runtime signatures
+        if: matrix.python-version == '3.12'
+        run: python scripts/check_stub_parity.py
       - uses: actions/upload-artifact@v7
         if: matrix.python-version == '3.12'
         with:

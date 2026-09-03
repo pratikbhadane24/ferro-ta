@@ -44,8 +44,8 @@ JavaScript/WASM, Flutter) are first-class products — they are documented under
 Backtesting Engine
 ------------------
 
-``ferro_ta.analysis.backtest`` ships a production-grade backtesting engine
-backed entirely by Rust hot-path functions.
+``ferro_ta.analysis.backtest`` ships a vectorized backtesting engine whose
+hot paths run entirely in Rust.
 
 **Core API:**
 
@@ -83,29 +83,28 @@ backed entirely by Rust hot-path functions.
 - ``walk_forward_indices`` — anchored/rolling fold index generator
 - ``kelly_fraction`` / ``half_kelly_fraction``
 
-**Speed vs competitors** (100k bars, SMA crossover, Apple M-series):
+**Performance shape.** The signal → equity loop, commission and slippage
+application, all 23 metrics, trade extraction, the Monte Carlo bootstrap and the
+multi-asset run happen in Rust with the GIL released; ``backtest_core`` and
+``backtest_ohlcv_core`` are single O(n) passes over the bars, and
+``walk_forward_indices`` is O(number of folds) rather than O(bars). It is the
+right tool for signal-array backtests, parameter sweeps, bootstrap confidence
+intervals and array-expressible multi-asset runs — and the wrong tool for
+path-dependent strategies that must decide inside the bar loop in Python, or
+for anything needing a broker event model.
 
-.. list-table::
-   :header-rows: 1
+No timings are reproduced here. Read
+``benchmarks/artifacts/latest/bench_backtest_results.json``, which records
+per-size timings for every path above alongside the machine, commit, Python
+version and Rust toolchain that produced them, and regenerate it with:
 
-   * - Library
-     - Time
-     - vs ferro-ta
-   * - ferro-ta ``backtest_core``
-     - 0.29 ms
-     - —
-   * - NumPy vectorized
-     - 0.46 ms
-     - 1.6× slower
-   * - vectorbt
-     - 2.9 ms
-     - 10× slower
-   * - backtesting.py
-     - 320 ms
-     - 1,100× slower
-   * - backtrader
-     - ~520 ms (10k bars)
-     - >15,000× slower
+.. code-block:: bash
+
+   python benchmarks/bench_backtest.py --sizes 10000 100000 \
+       --json /tmp/bench_backtest_results.json
+
+See :doc:`benchmarks` for what the backtester buys you structurally, and
+``docs/performance.md`` for the wider performance guide.
 
 How to read the project
 -----------------------

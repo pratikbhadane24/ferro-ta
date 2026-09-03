@@ -27,6 +27,10 @@ criterion = { version = "0.8", features = ["html_reports"] }
 name = "indicators"
 harness = false
 
+[[bench]]
+name = "extended"
+harness = false
+
 [features]
 # Runtime CPU-feature dispatch (multiversion). Default ON so `cargo add
 # ferro_ta_core` and the published wheels get SIMD-accelerated reductions

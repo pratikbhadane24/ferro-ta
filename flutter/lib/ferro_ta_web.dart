@@ -34,7 +34,7 @@ extension type _FerroTaWasm(JSObject _) implements JSObject {
   external JSArray<JSFloat64Array> macd(
       JSFloat64Array close, int fast, int slow, int signal);
   external JSArray<JSFloat64Array> bbands(
-      JSFloat64Array close, int timeperiod, double up, double down);
+      JSFloat64Array close, int timeperiod, double up, double down, int matype);
   external JSFloat64Array atr(JSFloat64Array high, JSFloat64Array low,
       JSFloat64Array close, int timeperiod);
   external JSFloat64Array obv(JSFloat64Array close, JSFloat64Array volume);
@@ -67,9 +67,15 @@ Float64List rsiWeb(Float64List close, int timeperiod) =>
 }
 
 /// Bollinger Bands -> (upper, middle, lower) (web).
+///
+/// [matype] selects the middle band's moving average, `0`-`8` (default `0` =
+/// SMA). `0`-`6` and `8` match TA-Lib's numbering; `7` is T3 here where
+/// TA-Lib's `7` is MAMA. The half-width is always `nbdev * sigma` about the
+/// window mean, whichever MA centres the band.
 (Float64List, Float64List, Float64List) bbandsWeb(
-    Float64List close, int timeperiod, double up, double down) {
-  final r = _wasm.bbands(_in(close), timeperiod, up, down).toDart;
+    Float64List close, int timeperiod, double up, double down,
+    [int matype = 0]) {
+  final r = _wasm.bbands(_in(close), timeperiod, up, down, matype).toDart;
   return (_out(r[0]), _out(r[1]), _out(r[2]));
 }
 

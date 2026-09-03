@@ -48,12 +48,26 @@ env/
 # Issue tracker
 /myissues/
 
+# Isolated git worktrees
+.worktrees/
+
 # WASM build output
 wasm/pkg/
 wasm/pkg-web/
 wasm/node/
 wasm/web/
 benchmark_vs_talib.json
+
+# Generated perf-contract artifacts.
+#
+# CI regenerates this whole directory on the runner and gates the *fresh*
+# output (`.github/workflows/ci-python.yml` runs `run_perf_contract.py
+# --output-dir perf-contract`, then `check_hotspot_regression.py --input
+# perf-contract/runtime_hotspots.json`), so a committed copy is never the
+# thing that is checked. The floors that constitute the policy live in the
+# checker scripts, not here. Keep this directory generated-only.
+/perf-contract/
+
 wasm_benchmark.json
 .wasm_benchmark.prepush.json
 .coverage

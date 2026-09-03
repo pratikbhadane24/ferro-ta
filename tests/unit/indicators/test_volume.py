@@ -2,7 +2,26 @@
 
 import numpy as np
 
-from ferro_ta.indicators.volume import AD, ADOSC, OBV
+from ferro_ta.indicators.momentum import ROC
+from ferro_ta.indicators.overlap import EMA, SMA
+from ferro_ta.indicators.volume import (
+    AD,
+    ADOSC,
+    CMF,
+    EMV,
+    FORCE_INDEX,
+    KVO,
+    NVI,
+    NVI_WITH_EMA,
+    OBV,
+    OBV_SMOOTHED,
+    PVI,
+    PVI_WITH_SIGNAL,
+    PVT,
+    RVOL,
+    VOLOSC,
+    VROC,
+)
 
 # ---------------------------------------------------------------------------
 # Shared fixtures
@@ -116,3 +135,120 @@ class TestADOSC:
         valid = result[~np.isnan(result)]
         assert len(valid) > 0
         assert np.all(np.isfinite(valid))
+
+
+# ---------------------------------------------------------------------------
+# Extended volume
+# ---------------------------------------------------------------------------
+
+
+class TestOBVSmoothed:
+    def test_matches_ema_of_obv(self):
+        obv = OBV(_CLOSE, _VOL)
+        result = OBV_SMOOTHED(_CLOSE, _VOL, timeperiod=10, matype=1)
+        expected = EMA(obv, timeperiod=10)
+        np.testing.assert_allclose(result, expected, equal_nan=True, atol=1e-10)
+
+    def test_matches_sma_of_obv(self):
+        obv = OBV(_CLOSE, _VOL)
+        result = OBV_SMOOTHED(_CLOSE, _VOL, timeperiod=10, matype=0)
+        expected = SMA(obv, timeperiod=10)
+        np.testing.assert_allclose(result, expected, equal_nan=True, atol=1e-10)
+
+
+class TestCMF:
+    def test_period1_is_clv(self):
+        result = CMF(SMALL_H[:1], SMALL_L[:1], SMALL_C[:1], SMALL_V[:1], timeperiod=1)
+        clv = ((11.0 - 9.0) - (12.0 - 11.0)) / (12.0 - 9.0)
+        np.testing.assert_allclose(result[0], clv, atol=1e-10)
+
+    def test_warmup_and_length(self):
+        result = CMF(_HIGH, _LOW, _CLOSE, _VOL, timeperiod=20)
+        assert len(result) == N
+        assert np.all(np.isnan(result[:19]))
+        assert np.all(np.isfinite(result[19:]))
+
+
+class TestEMV:
+    def test_period1_known(self):
+        result = EMV(
+            np.array([12.0, 14.0]),
+            np.array([10.0, 11.0]),
+            np.array([1000.0, 2000.0]),
+            timeperiod=1,
+            divisor=10000.0,
+        )
+        assert np.isnan(result[0])
+        np.testing.assert_allclose(result[1], 22.5, atol=1e-10)
+
+    def test_length(self):
+        assert len(EMV(_HIGH, _LOW, _VOL)) == N
+
+
+class TestForceIndex:
+    def test_raw(self):
+        result = FORCE_INDEX(SMALL_C, SMALL_V, timeperiod=1)
+        assert np.isnan(result[0])
+        np.testing.assert_allclose(result[1], 1.0 * 2000.0, atol=1e-10)
+
+    def test_length(self):
+        assert len(FORCE_INDEX(_CLOSE, _VOL)) == N
+
+
+class TestNVIAndPVI:
+    def test_nvi_updates_on_down_volume(self):
+        c = np.array([10.0, 11.0, 12.0])
+        v = np.array([100.0, 80.0, 90.0])
+        result = NVI(c, v)
+        np.testing.assert_allclose(result, [1000.0, 1100.0, 1100.0], atol=1e-10)
+
+    def test_pvi_updates_on_up_volume(self):
+        c = np.array([10.0, 11.0, 12.0])
+        v = np.array([100.0, 120.0, 110.0])
+        result = PVI(c, v)
+        np.testing.assert_allclose(result, [1000.0, 1100.0, 1100.0], atol=1e-10)
+
+    def test_nvi_with_ema_signal(self):
+        nvi, signal = NVI_WITH_EMA(_CLOSE, _VOL, timeperiod=10)
+        np.testing.assert_allclose(signal, EMA(nvi, 10), equal_nan=True, atol=1e-10)
+
+    def test_pvi_with_signal(self):
+        pvi, signal = PVI_WITH_SIGNAL(_CLOSE, _VOL, timeperiod=10, matype=0)
+        np.testing.assert_allclose(signal, SMA(pvi, 10), equal_nan=True, atol=1e-10)
+
+
+class TestVolOscVrocRvolPvt:
+    def test_volosc_identity(self):
+        result = VOLOSC(_VOL, fastperiod=5, slowperiod=10)
+        fast = SMA(_VOL, 5)
+        slow = SMA(_VOL, 10)
+        expected = 100.0 * (fast - slow) / slow
+        np.testing.assert_allclose(result, expected, equal_nan=True, atol=1e-10)
+
+    def test_vroc_matches_roc(self):
+        np.testing.assert_allclose(
+            VROC(_VOL, timeperiod=10),
+            ROC(_VOL, timeperiod=10),
+            equal_nan=True,
+            atol=1e-10,
+        )
+
+    def test_rvol_identity(self):
+        result = RVOL(_VOL, timeperiod=10)
+        expected = _VOL / SMA(_VOL, 10)
+        np.testing.assert_allclose(result, expected, equal_nan=True, atol=1e-10)
+
+    def test_pvt_known(self):
+        result = PVT(np.array([10.0, 11.0, 10.0]), np.array([100.0, 200.0, 300.0]))
+        np.testing.assert_allclose(result[0], 0.0, atol=1e-10)
+        np.testing.assert_allclose(result[1], 20.0, atol=1e-10)
+
+
+class TestKVO:
+    def test_returns_two_arrays(self):
+        line, signal = KVO(
+            _HIGH, _LOW, _CLOSE, _VOL, fastperiod=5, slowperiod=10, signalperiod=3
+        )
+        assert len(line) == len(signal) == N
+        assert np.any(np.isfinite(line))
+        assert np.any(np.isfinite(signal))

@@ -28,6 +28,11 @@ and `MACD`).
 - [`mfi`] — Money Flow Index
 */
 
+// Indicator binds mirror the `ferro_ta_core` kernel signatures one-for-one,
+// and several kernels legitimately take more than seven parameters (Alligator,
+// Gator, KST, Ichimoku, …). Same allow as `ferro_ta_core::extended`.
+#![allow(clippy::too_many_arguments)]
+
 use js_sys::{Array, Float64Array};
 use wasm_bindgen::prelude::*;
 
@@ -93,13 +98,23 @@ pub fn ema(close: &Float64Array, timeperiod: usize) -> Float64Array {
 // BBANDS — Bollinger Bands
 // ---------------------------------------------------------------------------
 
-/// Bollinger Bands (SMA ± k × rolling standard deviation).
+/// Bollinger Bands (moving average ± k × rolling standard deviation).
 ///
 /// # Arguments
 /// - `close` – `Float64Array` of close prices.
 /// - `timeperiod` – look-back window (default 5, minimum 1).
 /// - `nbdevup` – multiplier for the upper band (default 2.0).
 /// - `nbdevdn` – multiplier for the lower band (default 2.0).
+/// - `matype` – middle-band MA type, `0`=SMA … `8`=T3; `0` is TA-Lib's
+///   default. `0`–`6` and `8` match TA-Lib's numbering, but `7` is T3 here
+///   where TA-Lib's `7` is MAMA; MAMA is not reachable through any `matype`
+///   (use `mama`). Above `8` every output is `NaN`.
+///
+/// Like TA-Lib, the deviation is measured about the window **SMA** even when the
+/// centre is a different MA (`ta_BBANDS.c` never passes `optInMAType` to its
+/// `TA_STDDEV` call). For `matype != 0` the bands are therefore not an
+/// `nbdev`-sigma envelope of the series they are centred on. Warm-up follows the
+/// selected MA's lookback and is identical in all three vectors.
 ///
 /// # Returns
 /// A `js_sys::Array` containing three `Float64Array` elements:
@@ -110,9 +125,10 @@ pub fn bbands(
     timeperiod: usize,
     nbdevup: f64,
     nbdevdn: f64,
+    matype: u8,
 ) -> Array {
     let prices = to_vec(close);
-    let (upper, middle, lower) = ferro_ta_core::overlap::bbands(&prices, timeperiod, nbdevup, nbdevdn);
+    let (upper, middle, lower) = ferro_ta_core::overlap::bbands(&prices, timeperiod, nbdevup, nbdevdn, matype);
     let out = Array::new();
     out.push(&from_vec(upper));
     out.push(&from_vec(middle));
@@ -231,7 +247,10 @@ pub fn mom(close: &Float64Array, timeperiod: usize) -> Float64Array {
 /// - `low`         – `Float64Array` of low prices.
 /// - `close`       – `Float64Array` of close prices.
 /// - `fastk_period` – fast-%K look-back window (default 5, minimum 1).
-/// - `fastd_period` – fast-%D SMA smoothing period (default 3, minimum 1).
+/// - `fastd_period` – fast-%D smoothing period (default 3, minimum 1).
+/// - `fastd_matype` – MA type for the %D leg (`0`=SMA … `8`=T3; TA-Lib's
+///   default is `0`). `0`–`6` and `8` match TA-Lib, but `7` is T3 here where
+///   TA-Lib's `7` is MAMA; MAMA is not reachable through any `matype`.
 ///
 /// # Returns
 /// A `js_sys::Array` containing two `Float64Array` elements: `[fastk, fastd]`.
@@ -242,12 +261,12 @@ pub fn stochf(
     close: &Float64Array,
     fastk_period: usize,
     fastd_period: usize,
+    fastd_matype: u8,
 ) -> Array {
     let h = to_vec(high);
     let l = to_vec(low);
     let c = to_vec(close);
-    // stoch with slowk_period=1 yields fastk as slowk, fastd as slowd
-    let (fastk, fastd) = ferro_ta_core::momentum::stoch(&h, &l, &c, fastk_period, 1, fastd_period);
+    let (fastk, fastd) = ferro_ta_core::momentum::stochf(&h, &l, &c, fastk_period, fastd_period, fastd_matype);
     let out = Array::new();
     out.push(&from_vec(fastk));
     out.push(&from_vec(fastd));
@@ -364,6 +383,12 @@ pub fn macd(
 #[wasm_bindgen]
 pub struct CommissionModel {
     inner: ferro_ta_core::commission::CommissionModel,
+}
+
+impl Default for CommissionModel {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 #[wasm_bindgen]
@@ -924,6 +949,861 @@ pub fn pivot_points(
     out
 }
 
+// ---------------------------------------------------------------------------
+// Trend
+// ---------------------------------------------------------------------------
+
+/// Arnaud Legoux Moving Average.
+#[wasm_bindgen]
+pub fn alma(close: &Float64Array, timeperiod: usize, offset: f64, sigma: f64) -> Float64Array {
+    let c = to_vec(close);
+    from_vec(ferro_ta_core::extended::alma(&c, timeperiod, offset, sigma))
+}
+
+/// Zero-lag EMA.
+#[wasm_bindgen]
+pub fn zlema(close: &Float64Array, timeperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::extended::zlema(&to_vec(close), timeperiod))
+}
+
+/// Fractal Adaptive Moving Average (Ehlers).
+#[wasm_bindgen]
+pub fn frama(close: &Float64Array, timeperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::extended::frama(&to_vec(close), timeperiod))
+}
+
+/// McGinley Dynamic.
+#[wasm_bindgen]
+pub fn mcginley(close: &Float64Array, timeperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::extended::mcginley(
+        &to_vec(close),
+        timeperiod,
+    ))
+}
+
+/// Variable Index Dynamic Average (Chande).
+#[wasm_bindgen]
+pub fn vidya(close: &Float64Array, timeperiod: usize, cmo_period: usize) -> Float64Array {
+    from_vec(ferro_ta_core::extended::vidya(
+        &to_vec(close),
+        timeperiod,
+        cmo_period,
+    ))
+}
+
+/// Bill Williams Alligator.
+/// Returns `[jaw, teeth, lips]`.
+#[wasm_bindgen]
+pub fn alligator(
+    high: &Float64Array,
+    low: &Float64Array,
+    jaw_period: usize,
+    jaw_shift: usize,
+    teeth_period: usize,
+    teeth_shift: usize,
+    lips_period: usize,
+    lips_shift: usize,
+) -> Array {
+    let (jaw, teeth, lips) = ferro_ta_core::extended::alligator(
+        &to_vec(high),
+        &to_vec(low),
+        jaw_period,
+        jaw_shift,
+        teeth_period,
+        teeth_shift,
+        lips_period,
+        lips_shift,
+    );
+    let out = Array::new();
+    out.push(&from_vec(jaw));
+    out.push(&from_vec(teeth));
+    out.push(&from_vec(lips));
+    out
+}
+
+/// Moving-average envelopes: `MA * (1 +/- percent / 100)`.
+/// `matype` matches `MA` (0=SMA … 7=T3). Returns `[upper, middle, lower]`.
+#[wasm_bindgen]
+pub fn ma_envelopes(close: &Float64Array, timeperiod: usize, percent: f64, matype: u8) -> Array {
+    let (upper, middle, lower) =
+        ferro_ta_core::extended::ma_envelopes(&to_vec(close), timeperiod, percent, matype);
+    let out = Array::new();
+    out.push(&from_vec(upper));
+    out.push(&from_vec(middle));
+    out.push(&from_vec(lower));
+    out
+}
+
+/// Chande Kroll Stop.
+/// Returns `[long_stop, short_stop]`.
+#[wasm_bindgen]
+pub fn chande_kroll_stop(
+    high: &Float64Array,
+    low: &Float64Array,
+    close: &Float64Array,
+    timeperiod: usize,
+    multiplier: f64,
+    stop_period: usize,
+) -> Array {
+    let (long_stop, short_stop) = ferro_ta_core::extended::chande_kroll_stop(
+        &to_vec(high),
+        &to_vec(low),
+        &to_vec(close),
+        timeperiod,
+        multiplier,
+        stop_period,
+    );
+    let out = Array::new();
+    out.push(&from_vec(long_stop));
+    out.push(&from_vec(short_stop));
+    out
+}
+
+// ---------------------------------------------------------------------------
+// Momentum
+// ---------------------------------------------------------------------------
+
+/// Elder Ray Index.
+/// Returns `[bull_power, bear_power]`.
+#[wasm_bindgen]
+pub fn elder_ray(
+    high: &Float64Array,
+    low: &Float64Array,
+    close: &Float64Array,
+    timeperiod: usize,
+) -> Array {
+    let (bull, bear) =
+        ferro_ta_core::extended::elder_ray(&to_vec(high), &to_vec(low), &to_vec(close), timeperiod);
+    let out = Array::new();
+    out.push(&from_vec(bull));
+    out.push(&from_vec(bear));
+    out
+}
+
+/// Ehlers Fisher Transform of median price, plus a 1-bar trigger.
+/// Returns `[fisher, signal]`.
+#[wasm_bindgen]
+pub fn fisher(high: &Float64Array, low: &Float64Array, timeperiod: usize) -> Array {
+    let (fisher_out, signal) =
+        ferro_ta_core::extended::fisher(&to_vec(high), &to_vec(low), timeperiod);
+    let out = Array::new();
+    out.push(&from_vec(fisher_out));
+    out.push(&from_vec(signal));
+    out
+}
+
+/// Connors RSI.
+#[wasm_bindgen]
+pub fn crsi(
+    close: &Float64Array,
+    timeperiod: usize,
+    streakperiod: usize,
+    rankperiod: usize,
+) -> Float64Array {
+    from_vec(ferro_ta_core::extended::crsi(
+        &to_vec(close),
+        timeperiod,
+        streakperiod,
+        rankperiod,
+    ))
+}
+
+// ---------------------------------------------------------------------------
+// Volatility
+// ---------------------------------------------------------------------------
+
+/// Chaikin Volatility.
+#[wasm_bindgen]
+pub fn chaikin_vol(
+    high: &Float64Array,
+    low: &Float64Array,
+    timeperiod: usize,
+    rocperiod: usize,
+) -> Float64Array {
+    from_vec(ferro_ta_core::extended::chaikin_vol(
+        &to_vec(high),
+        &to_vec(low),
+        timeperiod,
+        rocperiod,
+    ))
+}
+
+/// Mass Index.
+#[wasm_bindgen]
+pub fn mass(
+    high: &Float64Array,
+    low: &Float64Array,
+    timeperiod: usize,
+    sumperiod: usize,
+) -> Float64Array {
+    from_vec(ferro_ta_core::extended::mass(
+        &to_vec(high),
+        &to_vec(low),
+        timeperiod,
+        sumperiod,
+    ))
+}
+
+/// Bollinger %B.
+#[wasm_bindgen]
+pub fn bbpercent(
+    close: &Float64Array,
+    timeperiod: usize,
+    nbdevup: f64,
+    nbdevdn: f64,
+) -> Float64Array {
+    from_vec(ferro_ta_core::extended::bbpercent(
+        &to_vec(close),
+        timeperiod,
+        nbdevup,
+        nbdevdn,
+    ))
+}
+
+/// Bollinger Bandwidth.
+#[wasm_bindgen]
+pub fn bbwidth(
+    close: &Float64Array,
+    timeperiod: usize,
+    nbdevup: f64,
+    nbdevdn: f64,
+) -> Float64Array {
+    from_vec(ferro_ta_core::extended::bbwidth(
+        &to_vec(close),
+        timeperiod,
+        nbdevup,
+        nbdevdn,
+    ))
+}
+
+/// Close-to-close historical volatility, annualized and in percent.
+#[wasm_bindgen]
+pub fn historical_volatility(close: &Float64Array, timeperiod: usize, annual: f64) -> Float64Array {
+    from_vec(ferro_ta_core::extended::historical_volatility(
+        &to_vec(close),
+        timeperiod,
+        annual,
+    ))
+}
+
+/// Ulcer Index.
+#[wasm_bindgen]
+pub fn ulcer_index(close: &Float64Array, timeperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::extended::ulcer_index(
+        &to_vec(close),
+        timeperiod,
+    ))
+}
+
+/// Stoller Average Range Channels.
+/// Returns `[upper, middle, lower]`.
+#[wasm_bindgen]
+pub fn starc(
+    high: &Float64Array,
+    low: &Float64Array,
+    close: &Float64Array,
+    timeperiod: usize,
+    atr_period: usize,
+    multiplier: f64,
+) -> Array {
+    let (upper, middle, lower) = ferro_ta_core::extended::starc(
+        &to_vec(high),
+        &to_vec(low),
+        &to_vec(close),
+        timeperiod,
+        atr_period,
+        multiplier,
+    );
+    let out = Array::new();
+    out.push(&from_vec(upper));
+    out.push(&from_vec(middle));
+    out.push(&from_vec(lower));
+    out
+}
+
+// ---------------------------------------------------------------------------
+// Volume
+// ---------------------------------------------------------------------------
+
+/// On-Balance Volume smoothed with `MA` (`matype` 0=SMA … 7=T3).
+#[wasm_bindgen]
+pub fn obv_smoothed(
+    close: &Float64Array,
+    volume: &Float64Array,
+    timeperiod: usize,
+    matype: u8,
+) -> Float64Array {
+    from_vec(ferro_ta_core::extended::obv_smoothed(
+        &to_vec(close),
+        &to_vec(volume),
+        timeperiod,
+        matype,
+    ))
+}
+
+/// Chaikin Money Flow.
+#[wasm_bindgen]
+pub fn cmf(
+    high: &Float64Array,
+    low: &Float64Array,
+    close: &Float64Array,
+    volume: &Float64Array,
+    timeperiod: usize,
+) -> Float64Array {
+    from_vec(ferro_ta_core::extended::cmf(
+        &to_vec(high),
+        &to_vec(low),
+        &to_vec(close),
+        &to_vec(volume),
+        timeperiod,
+    ))
+}
+
+/// Ease of Movement, then SMA.
+#[wasm_bindgen]
+pub fn emv(
+    high: &Float64Array,
+    low: &Float64Array,
+    volume: &Float64Array,
+    timeperiod: usize,
+    scale: f64,
+) -> Float64Array {
+    from_vec(ferro_ta_core::extended::emv(
+        &to_vec(high),
+        &to_vec(low),
+        &to_vec(volume),
+        timeperiod,
+        scale,
+    ))
+}
+
+/// Force Index (`timeperiod <= 1` returns the raw 1-bar force).
+#[wasm_bindgen]
+pub fn force_index(close: &Float64Array, volume: &Float64Array, timeperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::extended::force_index(
+        &to_vec(close),
+        &to_vec(volume),
+        timeperiod,
+    ))
+}
+
+/// Negative Volume Index, seeded at 1000.
+#[wasm_bindgen]
+pub fn nvi(close: &Float64Array, volume: &Float64Array) -> Float64Array {
+    from_vec(ferro_ta_core::extended::nvi(
+        &to_vec(close),
+        &to_vec(volume),
+    ))
+}
+
+/// NVI plus an EMA signal of that series.
+/// Returns `[nvi, signal]`.
+#[wasm_bindgen]
+pub fn nvi_with_ema(close: &Float64Array, volume: &Float64Array, timeperiod: usize) -> Array {
+    let (nvi_out, signal) =
+        ferro_ta_core::extended::nvi_with_ema(&to_vec(close), &to_vec(volume), timeperiod);
+    let out = Array::new();
+    out.push(&from_vec(nvi_out));
+    out.push(&from_vec(signal));
+    out
+}
+
+/// Positive Volume Index, seeded at 1000.
+#[wasm_bindgen]
+pub fn pvi(close: &Float64Array, volume: &Float64Array) -> Float64Array {
+    from_vec(ferro_ta_core::extended::pvi(
+        &to_vec(close),
+        &to_vec(volume),
+    ))
+}
+
+/// PVI plus a moving-average signal (`matype` matches `MA`).
+/// Returns `[pvi, signal]`.
+#[wasm_bindgen]
+pub fn pvi_with_signal(
+    close: &Float64Array,
+    volume: &Float64Array,
+    timeperiod: usize,
+    matype: u8,
+) -> Array {
+    let (pvi_out, signal) = ferro_ta_core::extended::pvi_with_signal(
+        &to_vec(close),
+        &to_vec(volume),
+        timeperiod,
+        matype,
+    );
+    let out = Array::new();
+    out.push(&from_vec(pvi_out));
+    out.push(&from_vec(signal));
+    out
+}
+
+/// Volume oscillator.
+#[wasm_bindgen]
+pub fn volosc(volume: &Float64Array, fastperiod: usize, slowperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::extended::volosc(
+        &to_vec(volume),
+        fastperiod,
+        slowperiod,
+    ))
+}
+
+/// Volume rate of change.
+#[wasm_bindgen]
+pub fn vroc(volume: &Float64Array, timeperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::extended::vroc(&to_vec(volume), timeperiod))
+}
+
+/// Klinger Volume Oscillator and its EMA signal.
+/// Returns `[kvo, signal]`.
+#[wasm_bindgen]
+pub fn kvo(
+    high: &Float64Array,
+    low: &Float64Array,
+    close: &Float64Array,
+    volume: &Float64Array,
+    fastperiod: usize,
+    slowperiod: usize,
+    signalperiod: usize,
+) -> Array {
+    let (kvo_out, signal) = ferro_ta_core::extended::kvo(
+        &to_vec(high),
+        &to_vec(low),
+        &to_vec(close),
+        &to_vec(volume),
+        fastperiod,
+        slowperiod,
+        signalperiod,
+    );
+    let out = Array::new();
+    out.push(&from_vec(kvo_out));
+    out.push(&from_vec(signal));
+    out
+}
+
+/// Price Volume Trend.
+#[wasm_bindgen]
+pub fn pvt(close: &Float64Array, volume: &Float64Array) -> Float64Array {
+    from_vec(ferro_ta_core::extended::pvt(
+        &to_vec(close),
+        &to_vec(volume),
+    ))
+}
+
+/// Relative volume: `volume / SMA(volume, timeperiod)`.
+#[wasm_bindgen]
+pub fn rvol(volume: &Float64Array, timeperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::extended::rvol(&to_vec(volume), timeperiod))
+}
+
+// ---------------------------------------------------------------------------
+// Oscillators
+// ---------------------------------------------------------------------------
+
+/// Awesome Oscillator.
+#[wasm_bindgen]
+pub fn ao(
+    high: &Float64Array,
+    low: &Float64Array,
+    fastperiod: usize,
+    slowperiod: usize,
+) -> Float64Array {
+    from_vec(ferro_ta_core::extended::ao(
+        &to_vec(high),
+        &to_vec(low),
+        fastperiod,
+        slowperiod,
+    ))
+}
+
+/// Accelerator Oscillator: `AO - SMA(AO, timeperiod)`.
+#[wasm_bindgen]
+pub fn ac(
+    high: &Float64Array,
+    low: &Float64Array,
+    fastperiod: usize,
+    slowperiod: usize,
+    timeperiod: usize,
+) -> Float64Array {
+    from_vec(ferro_ta_core::extended::ac(
+        &to_vec(high),
+        &to_vec(low),
+        fastperiod,
+        slowperiod,
+        timeperiod,
+    ))
+}
+
+/// Price Oscillator (SMA).
+#[wasm_bindgen]
+pub fn po(close: &Float64Array, fastperiod: usize, slowperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::extended::po(
+        &to_vec(close),
+        fastperiod,
+        slowperiod,
+    ))
+}
+
+/// Detrended Price Oscillator.
+#[wasm_bindgen]
+pub fn dpo(close: &Float64Array, timeperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::extended::dpo(&to_vec(close), timeperiod))
+}
+
+/// Relative Vigor Index and its 4-bar weighted signal.
+/// Returns `[rvi, signal]`.
+#[wasm_bindgen]
+pub fn rvi(
+    open: &Float64Array,
+    high: &Float64Array,
+    low: &Float64Array,
+    close: &Float64Array,
+    timeperiod: usize,
+) -> Array {
+    let (rvi_out, signal) = ferro_ta_core::extended::rvi(
+        &to_vec(open),
+        &to_vec(high),
+        &to_vec(low),
+        &to_vec(close),
+        timeperiod,
+    );
+    let out = Array::new();
+    out.push(&from_vec(rvi_out));
+    out.push(&from_vec(signal));
+    out
+}
+
+/// Chaikin Oscillator (same math as ADOSC).
+#[wasm_bindgen]
+pub fn cho(
+    high: &Float64Array,
+    low: &Float64Array,
+    close: &Float64Array,
+    volume: &Float64Array,
+    fastperiod: usize,
+    slowperiod: usize,
+) -> Float64Array {
+    from_vec(ferro_ta_core::extended::cho(
+        &to_vec(high),
+        &to_vec(low),
+        &to_vec(close),
+        &to_vec(volume),
+        fastperiod,
+        slowperiod,
+    ))
+}
+
+/// Know Sure Thing: weighted sum of four ROC SMAs, plus a signal SMA.
+/// Returns `[kst, signal]`.
+#[wasm_bindgen]
+pub fn kst(
+    close: &Float64Array,
+    roc1: usize,
+    roc2: usize,
+    roc3: usize,
+    roc4: usize,
+    sma1: usize,
+    sma2: usize,
+    sma3: usize,
+    sma4: usize,
+    signalperiod: usize,
+) -> Array {
+    let (kst_out, signal) = ferro_ta_core::extended::kst(
+        &to_vec(close),
+        roc1,
+        roc2,
+        roc3,
+        roc4,
+        sma1,
+        sma2,
+        sma3,
+        sma4,
+        signalperiod,
+    );
+    let out = Array::new();
+    out.push(&from_vec(kst_out));
+    out.push(&from_vec(signal));
+    out
+}
+
+/// True Strength Index and an EMA signal of that series.
+/// Returns `[tsi, signal]`.
+#[wasm_bindgen]
+pub fn tsi(
+    close: &Float64Array,
+    longperiod: usize,
+    shortperiod: usize,
+    signalperiod: usize,
+) -> Array {
+    let (tsi_out, signal) =
+        ferro_ta_core::extended::tsi(&to_vec(close), longperiod, shortperiod, signalperiod);
+    let out = Array::new();
+    out.push(&from_vec(tsi_out));
+    out.push(&from_vec(signal));
+    out
+}
+
+/// Vortex Indicator.
+/// Returns `[plus_vi, minus_vi]`.
+#[wasm_bindgen]
+pub fn vortex(
+    high: &Float64Array,
+    low: &Float64Array,
+    close: &Float64Array,
+    timeperiod: usize,
+) -> Array {
+    let (plus_vi, minus_vi) =
+        ferro_ta_core::extended::vortex(&to_vec(high), &to_vec(low), &to_vec(close), timeperiod);
+    let out = Array::new();
+    out.push(&from_vec(plus_vi));
+    out.push(&from_vec(minus_vi));
+    out
+}
+
+/// Schaff Trend Cycle: stochastic of MACD, double-smoothed (`d1`, `d2`).
+#[wasm_bindgen]
+pub fn stc(
+    close: &Float64Array,
+    fastperiod: usize,
+    slowperiod: usize,
+    cycleperiod: usize,
+    d1: usize,
+    d2: usize,
+) -> Float64Array {
+    from_vec(ferro_ta_core::extended::stc(
+        &to_vec(close),
+        fastperiod,
+        slowperiod,
+        cycleperiod,
+        d1,
+        d2,
+    ))
+}
+
+/// Gator Oscillator from the Alligator jaw / teeth / lips.
+/// Returns `[upper, lower]` = `[ |jaw - teeth|, -|teeth - lips| ]`.
+#[wasm_bindgen]
+pub fn gator(
+    high: &Float64Array,
+    low: &Float64Array,
+    jaw_period: usize,
+    jaw_shift: usize,
+    teeth_period: usize,
+    teeth_shift: usize,
+    lips_period: usize,
+    lips_shift: usize,
+) -> Array {
+    let (upper, lower) = ferro_ta_core::extended::gator(
+        &to_vec(high),
+        &to_vec(low),
+        jaw_period,
+        jaw_shift,
+        teeth_period,
+        teeth_shift,
+        lips_period,
+        lips_shift,
+    );
+    let out = Array::new();
+    out.push(&from_vec(upper));
+    out.push(&from_vec(lower));
+    out
+}
+
+/// Coppock Curve.
+#[wasm_bindgen]
+pub fn coppock(close: &Float64Array, wma_period: usize, roc1: usize, roc2: usize) -> Float64Array {
+    from_vec(ferro_ta_core::extended::coppock(
+        &to_vec(close),
+        wma_period,
+        roc1,
+        roc2,
+    ))
+}
+
+// ---------------------------------------------------------------------------
+// Statistics
+// ---------------------------------------------------------------------------
+
+/// Rolling median.
+#[wasm_bindgen]
+pub fn median(real: &Float64Array, timeperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::extended::median(&to_vec(real), timeperiod))
+}
+
+/// Median bands: rolling median of `(high + low) / 2`, ATR envelopes, and an
+/// EMA of the median.
+/// Returns `[median, upper, lower, median_ema]`.
+#[wasm_bindgen]
+pub fn median_bands(
+    high: &Float64Array,
+    low: &Float64Array,
+    close: &Float64Array,
+    timeperiod: usize,
+    atr_period: usize,
+    multiplier: f64,
+) -> Array {
+    let (median_out, upper, lower, median_ema) = ferro_ta_core::extended::median_bands(
+        &to_vec(high),
+        &to_vec(low),
+        &to_vec(close),
+        timeperiod,
+        atr_period,
+        multiplier,
+    );
+    let out = Array::new();
+    out.push(&from_vec(median_out));
+    out.push(&from_vec(upper));
+    out.push(&from_vec(lower));
+    out.push(&from_vec(median_ema));
+    out
+}
+
+/// Rolling mode via equal-width discretization of each window.
+#[wasm_bindgen]
+pub fn mode(real: &Float64Array, timeperiod: usize, bins: usize) -> Float64Array {
+    from_vec(ferro_ta_core::extended::mode(
+        &to_vec(real),
+        timeperiod,
+        bins,
+    ))
+}
+
+// ---------------------------------------------------------------------------
+// Hybrid
+// ---------------------------------------------------------------------------
+
+/// Directional Movement Index.
+/// Returns `[plus_di, minus_di, adx]`.
+#[wasm_bindgen]
+pub fn dmi(
+    high: &Float64Array,
+    low: &Float64Array,
+    close: &Float64Array,
+    timeperiod: usize,
+) -> Array {
+    let (plus_di, minus_di, adx_out) =
+        ferro_ta_core::extended::dmi(&to_vec(high), &to_vec(low), &to_vec(close), timeperiod);
+    let out = Array::new();
+    out.push(&from_vec(plus_di));
+    out.push(&from_vec(minus_di));
+    out.push(&from_vec(adx_out));
+    out
+}
+
+/// Williams Fractals — local swing highs / lows.
+/// Returns `[up, down]`.
+#[wasm_bindgen]
+pub fn williams_fractals(high: &Float64Array, low: &Float64Array, timeperiod: usize) -> Array {
+    let (up, down) =
+        ferro_ta_core::extended::williams_fractals(&to_vec(high), &to_vec(low), timeperiod);
+    let out = Array::new();
+    out.push(&from_vec(up));
+    out.push(&from_vec(down));
+    out
+}
+
+/// Random Walk Index (Poulos).
+/// Returns `[rwi_high, rwi_low]`.
+#[wasm_bindgen]
+pub fn rwi(
+    high: &Float64Array,
+    low: &Float64Array,
+    close: &Float64Array,
+    timeperiod: usize,
+) -> Array {
+    let (rwi_high, rwi_low) =
+        ferro_ta_core::extended::rwi(&to_vec(high), &to_vec(low), &to_vec(close), timeperiod);
+    let out = Array::new();
+    out.push(&from_vec(rwi_high));
+    out.push(&from_vec(rwi_low));
+    out
+}
+
+// ---------------------------------------------------------------------------
+// Signal Utilities
+// ---------------------------------------------------------------------------
+
+/// 1.0 where series0 crosses strictly above series1.
+#[wasm_bindgen]
+pub fn crossover(real0: &Float64Array, real1: &Float64Array) -> Float64Array {
+    from_vec(ferro_ta_core::utils::crossover(
+        &to_vec(real0),
+        &to_vec(real1),
+    ))
+}
+
+/// 1.0 where series0 crosses strictly below series1.
+#[wasm_bindgen]
+pub fn crossunder(real0: &Float64Array, real1: &Float64Array) -> Float64Array {
+    from_vec(ferro_ta_core::utils::crossunder(
+        &to_vec(real0),
+        &to_vec(real1),
+    ))
+}
+
+/// 1.0 on any bar where series0 crosses series1 in either direction.
+#[wasm_bindgen]
+pub fn cross(real0: &Float64Array, real1: &Float64Array) -> Float64Array {
+    from_vec(ferro_ta_core::utils::cross(&to_vec(real0), &to_vec(real1)))
+}
+
+/// Rolling maximum (same math as MAX).
+#[wasm_bindgen]
+pub fn highest(real: &Float64Array, timeperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::utils::highest(&to_vec(real), timeperiod))
+}
+
+/// Rolling minimum (same math as MIN).
+#[wasm_bindgen]
+pub fn lowest(real: &Float64Array, timeperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::utils::lowest(&to_vec(real), timeperiod))
+}
+
+/// Lookback difference: `real[i] - real[i - timeperiod]`.
+#[wasm_bindgen]
+pub fn change(real: &Float64Array, timeperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::utils::change(&to_vec(real), timeperiod))
+}
+
+/// 1.0 when `real[i]` is strictly greater than `real[i - timeperiod]`.
+#[wasm_bindgen]
+pub fn rising(real: &Float64Array, timeperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::utils::rising(&to_vec(real), timeperiod))
+}
+
+/// 1.0 when `real[i]` is strictly less than `real[i - timeperiod]`.
+#[wasm_bindgen]
+pub fn falling(real: &Float64Array, timeperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::utils::falling(&to_vec(real), timeperiod))
+}
+
+/// Excess-removal: keep the first primary signal until a secondary occurs.
+#[wasm_bindgen]
+pub fn exrem(primary: &Float64Array, secondary: &Float64Array) -> Float64Array {
+    from_vec(ferro_ta_core::utils::exrem(
+        &to_vec(primary),
+        &to_vec(secondary),
+    ))
+}
+
+/// Hold 1.0 from a primary signal until a secondary signal clears it.
+#[wasm_bindgen]
+pub fn flip(primary: &Float64Array, secondary: &Float64Array) -> Float64Array {
+    from_vec(ferro_ta_core::utils::flip(
+        &to_vec(primary),
+        &to_vec(secondary),
+    ))
+}
+
+/// Value of `real` at the `occurrence`-th most recent true `condition`.
+#[wasm_bindgen]
+pub fn valuewhen(condition: &Float64Array, real: &Float64Array, occurrence: usize) -> Float64Array {
+    from_vec(ferro_ta_core::utils::valuewhen(
+        &to_vec(condition),
+        &to_vec(real),
+        occurrence,
+    ))
+}
 // ===========================================================================
 // Portfolio Analytics (Sprint 2)
 // ===========================================================================
@@ -1262,19 +2142,28 @@ pub fn adosc(high: &Float64Array, low: &Float64Array, close: &Float64Array, volu
 // ===========================================================================
 
 /// Full Stochastic Oscillator (slow %K and slow %D).
+///
+/// Arguments follow TA-Lib's *interleaved* order — each matype immediately
+/// after the period it types. `slowk_matype`/`slowd_matype` are `0`=SMA …
+/// `8`=T3 (TA-Lib default `0`); `0`–`6` and `8` match TA-Lib, but `7` is T3
+/// here where TA-Lib's `7` is MAMA, and MAMA is not reachable through any
+/// `matype`.
 #[wasm_bindgen]
+#[allow(clippy::too_many_arguments)]
 pub fn stoch(
     high: &Float64Array,
     low: &Float64Array,
     close: &Float64Array,
     fastk_period: usize,
     slowk_period: usize,
+    slowk_matype: u8,
     slowd_period: usize,
+    slowd_matype: u8,
 ) -> Array {
     let h = to_vec(high);
     let l = to_vec(low);
     let c = to_vec(close);
-    let (slowk, slowd) = ferro_ta_core::momentum::stoch(&h, &l, &c, fastk_period, slowk_period, slowd_period);
+    let (slowk, slowd) = ferro_ta_core::momentum::stoch(&h, &l, &c, fastk_period, slowk_period, slowk_matype, slowd_period, slowd_matype);
     let out = Array::new();
     out.push(&from_vec(slowk));
     out.push(&from_vec(slowd));
@@ -1457,16 +2346,19 @@ pub fn macdext(
     out
 }
 
-/// Generic Moving Average (matype: 0=SMA, 1=EMA, 2=WMA, 3=DEMA, 4=TEMA, 5=TRIMA, 6=KAMA, 7=T3).
+/// Generic Moving Average (matype: 0=SMA, 1=EMA, 2=WMA, 3=DEMA, 4=TEMA, 5=TRIMA, 6=KAMA, 7=T3, 8=T3).
+///
+/// `0`–`6` and `8` match TA-Lib's numbering; `7` is T3 here where TA-Lib's `7`
+/// is MAMA, and MAMA is not reachable through any `matype` (use `mama`).
 #[wasm_bindgen]
 pub fn ma(close: &Float64Array, timeperiod: usize, matype: u8) -> Float64Array {
     from_vec(ferro_ta_core::overlap::ma(&to_vec(close), timeperiod, matype))
 }
 
-/// Moving Average with Variable Period.
+/// Moving Average with Variable Period (`matype` as in `ma`, TA-Lib default `0`).
 #[wasm_bindgen]
-pub fn mavp(close: &Float64Array, periods: &Float64Array, minperiod: usize, maxperiod: usize) -> Float64Array {
-    from_vec(ferro_ta_core::overlap::mavp(&to_vec(close), &to_vec(periods), minperiod, maxperiod))
+pub fn mavp(close: &Float64Array, periods: &Float64Array, minperiod: usize, maxperiod: usize, matype: u8) -> Float64Array {
+    from_vec(ferro_ta_core::overlap::mavp(&to_vec(close), &to_vec(periods), minperiod, maxperiod, matype))
 }
 
 // ===========================================================================
@@ -1531,26 +2423,30 @@ pub fn bop(open: &Float64Array, high: &Float64Array, low: &Float64Array, close: 
     from_vec(ferro_ta_core::momentum::bop(&to_vec(open), &to_vec(high), &to_vec(low), &to_vec(close)))
 }
 
-/// Stochastic RSI. Returns [fastk, fastd].
+/// Stochastic RSI. Returns [fastk, fastd]. `fastd_matype` as in `ma`
+/// (TA-Lib default `0`).
 #[wasm_bindgen]
-pub fn stochrsi(close: &Float64Array, timeperiod: usize, fastk_period: usize, fastd_period: usize) -> Array {
-    let (k, d) = ferro_ta_core::momentum::stochrsi(&to_vec(close), timeperiod, fastk_period, fastd_period);
+pub fn stochrsi(close: &Float64Array, timeperiod: usize, fastk_period: usize, fastd_period: usize, fastd_matype: u8) -> Array {
+    let (k, d) = ferro_ta_core::momentum::stochrsi(&to_vec(close), timeperiod, fastk_period, fastd_period, fastd_matype);
     let out = Array::new();
     out.push(&from_vec(k));
     out.push(&from_vec(d));
     out
 }
 
-/// Absolute Price Oscillator.
+/// Absolute Price Oscillator. `matype` as in `ma`; this binding's historical
+/// behaviour is the EMA form, so pass `1` for it (TA-Lib's own default is `0`).
 #[wasm_bindgen]
-pub fn apo(close: &Float64Array, fastperiod: usize, slowperiod: usize) -> Float64Array {
-    from_vec(ferro_ta_core::momentum::apo(&to_vec(close), fastperiod, slowperiod))
+pub fn apo(close: &Float64Array, fastperiod: usize, slowperiod: usize, matype: u8) -> Float64Array {
+    from_vec(ferro_ta_core::momentum::apo(&to_vec(close), fastperiod, slowperiod, matype))
 }
 
-/// Percentage Price Oscillator. Returns [ppo, signal, histogram].
+/// Percentage Price Oscillator. Returns [ppo, signal, histogram]. `matype` as
+/// in `ma`; this binding's historical behaviour is the EMA form, so pass `1`
+/// for it (TA-Lib's own default is `0`).
 #[wasm_bindgen]
-pub fn ppo(close: &Float64Array, fastperiod: usize, slowperiod: usize, signalperiod: usize) -> Array {
-    let (p, s, h) = ferro_ta_core::momentum::ppo(&to_vec(close), fastperiod, slowperiod, signalperiod);
+pub fn ppo(close: &Float64Array, fastperiod: usize, slowperiod: usize, signalperiod: usize, matype: u8) -> Array {
+    let (p, s, h) = ferro_ta_core::momentum::ppo(&to_vec(close), fastperiod, slowperiod, signalperiod, matype);
     let out = Array::new();
     out.push(&from_vec(p));
     out.push(&from_vec(s));
@@ -1839,6 +2735,12 @@ impl WasmStreamingStoch {
 #[wasm_bindgen]
 pub struct WasmStreamingVWAP {
     inner: ferro_ta_core::streaming::StreamingVWAP,
+}
+
+impl Default for WasmStreamingVWAP {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 #[wasm_bindgen]
@@ -2415,12 +3317,10 @@ pub fn price_upper_bound(
 /// Select strike by offset from ATM.
 #[wasm_bindgen]
 pub fn select_strike_by_offset(strikes: &Float64Array, reference_price: f64, offset: i32) -> f64 {
-    match ferro_ta_core::options::chain::select_strike_by_offset(
+    ferro_ta_core::options::chain::select_strike_by_offset(
         &to_vec(strikes), reference_price, offset as isize,
-    ) {
-        Some(v) => v,
-        None => f64::NAN,
-    }
+    )
+    .unwrap_or(f64::NAN)
 }
 
 /// Smile metrics. Returns [atm_iv, risk_reversal_25d, butterfly_25d, skew_slope, convexity].
@@ -2463,10 +3363,8 @@ pub fn select_strike_by_delta(
         reference_price, rate, carry, time_to_expiry,
         kind: parse_option_kind(kind),
     };
-    match chain::select_strike_by_delta(&to_vec(strikes), &to_vec(vols), ctx, target_delta) {
-        Some(v) => v,
-        None => f64::NAN,
-    }
+    chain::select_strike_by_delta(&to_vec(strikes), &to_vec(vols), ctx, target_delta)
+        .unwrap_or(f64::NAN)
 }
 
 /// ATM implied volatility interpolated from strikes/vols.
@@ -2690,14 +3588,16 @@ pub fn backtest_ohlcv(
     signals: &Float64Array, slippage_bps: f64, initial_capital: f64, commission_per_trade: f64,
     stop_loss_pct: f64, take_profit_pct: f64, trailing_stop_pct: f64, max_hold_bars: usize,
 ) -> Array {
-    let mut config = ferro_ta_core::backtest::BacktestConfig::default();
-    config.slippage_bps = slippage_bps;
-    config.initial_capital = initial_capital;
-    config.commission_per_trade = commission_per_trade;
-    config.stop_loss_pct = stop_loss_pct;
-    config.take_profit_pct = take_profit_pct;
-    config.trailing_stop_pct = trailing_stop_pct;
-    config.max_hold_bars = max_hold_bars;
+    let config = ferro_ta_core::backtest::BacktestConfig {
+        slippage_bps,
+        initial_capital,
+        commission_per_trade,
+        stop_loss_pct,
+        take_profit_pct,
+        trailing_stop_pct,
+        max_hold_bars,
+        ..Default::default()
+    };
     match ferro_ta_core::backtest::backtest_ohlcv_core(
         &to_vec(open), &to_vec(high), &to_vec(low), &to_vec(close),
         &to_vec(signals), &config, None,
@@ -3289,7 +4189,7 @@ mod tests {
     #[wasm_bindgen_test]
     fn test_bbands_returns_three_arrays() {
         let close = make_arr(&[1.0, 2.0, 3.0, 4.0, 5.0]);
-        let out = bbands(&close, 3, 2.0, 2.0);
+        let out = bbands(&close, 3, 2.0, 2.0, 0);
         assert_eq!(out.length(), 3);
     }
 
@@ -3297,7 +4197,7 @@ mod tests {
     fn test_bbands_middle_equals_sma() {
         let data = [44.34, 44.09, 44.15, 43.61, 44.33, 44.83, 45.10];
         let close = make_arr(&data);
-        let bands = bbands(&close, 3, 2.0, 2.0);
+        let bands = bbands(&close, 3, 2.0, 2.0, 0);
 
         // Middle band should equal SMA(3)
         let middle = Float64Array::from(bands.get(1));
@@ -3317,7 +4217,7 @@ mod tests {
     fn test_bbands_upper_greater_than_lower() {
         let data = [44.34, 44.09, 44.15, 43.61, 44.33, 44.83, 45.10];
         let close = make_arr(&data);
-        let bands = bbands(&close, 3, 2.0, 2.0);
+        let bands = bbands(&close, 3, 2.0, 2.0, 0);
         let upper = Float64Array::from(bands.get(0));
         let lower = Float64Array::from(bands.get(2));
         let mut u = vec![0.0f64; 7];
@@ -3507,7 +4407,7 @@ mod tests {
         let h = make_arr(&[10.0, 11.0, 12.0, 11.0, 10.0, 12.0, 13.0]);
         let l = make_arr(&[8.0,  9.0, 10.0,  9.0,  8.0, 10.0, 11.0]);
         let c = make_arr(&[9.0, 10.0, 11.0, 10.0,  9.0, 11.0, 12.0]);
-        let out = stochf(&h, &l, &c, 3, 2);
+        let out = stochf(&h, &l, &c, 3, 2, 0);
         assert_eq!(out.length(), 2);
     }
 
@@ -3516,7 +4416,7 @@ mod tests {
         let h = make_arr(&[10.0, 11.0, 12.0, 11.0, 10.0, 12.0, 13.0]);
         let l = make_arr(&[8.0,  9.0, 10.0,  9.0,  8.0, 10.0, 11.0]);
         let c = make_arr(&[9.0, 10.0, 11.0, 10.0,  9.0, 11.0, 12.0]);
-        let out = stochf(&h, &l, &c, 3, 2);
+        let out = stochf(&h, &l, &c, 3, 2, 0);
         let fastk = Float64Array::from(out.get(0));
         assert_eq!(fastk.length(), 7);
     }
@@ -3526,7 +4426,7 @@ mod tests {
         let h = make_arr(&[10.0, 11.0, 12.0, 11.0, 10.0, 12.0, 13.0]);
         let l = make_arr(&[8.0,  9.0, 10.0,  9.0,  8.0, 10.0, 11.0]);
         let c = make_arr(&[9.0, 10.0, 11.0, 10.0,  9.0, 11.0, 12.0]);
-        let out = stochf(&h, &l, &c, 3, 2);
+        let out = stochf(&h, &l, &c, 3, 2, 0);
         let fastk = Float64Array::from(out.get(0));
         let finite = get_finite(&fastk);
         assert!(!finite.is_empty(), "fastk should have finite values");
@@ -3606,5 +4506,565 @@ mod tests {
         for val in get_finite(&out) {
             assert!((0.0..=100.0).contains(&val), "MFI out of range: {val}");
         }
+    }
+
+    // -----------------------------------------------------------------------
+    // Mismatched input length tests (must not panic)
+    // -----------------------------------------------------------------------
+
+    #[wasm_bindgen_test]
+    fn test_cmf_length_mismatch_no_panic() {
+        let h = make_arr(&[10.0, 12.0, 11.0, 13.0]);
+        let l = make_arr(&[8.0, 9.0, 9.0, 10.0]);
+        let c = make_arr(&[9.0, 10.5, 10.0, 11.5]);
+        let v = make_arr(&[100.0, 100.0, 100.0, 100.0]);
+        let short = make_arr(&[1.0, 2.0]);
+        let long = make_arr(&[1.0, 2.0, 3.0, 4.0, 5.0]);
+        for other in [&short, &long] {
+            assert_eq!(cmf(other, &l, &c, &v, 3).length(), 4);
+            assert_eq!(cmf(&h, other, &c, &v, 3).length(), 4);
+            assert_eq!(cmf(&h, &l, &c, other, 3).length(), 4);
+        }
+    }
+
+    #[wasm_bindgen_test]
+    fn test_ao_length_mismatch_no_panic() {
+        let h = make_arr(&[10.0, 12.0, 11.0, 13.0, 14.0]);
+        let short = make_arr(&[1.0, 2.0]);
+        let long = make_arr(&[1.0, 2.0, 3.0, 4.0, 5.0, 6.0]);
+        for other in [&short, &long] {
+            assert_eq!(ao(&h, other, 2, 3).length(), 5);
+        }
+    }
+
+    #[wasm_bindgen_test]
+    fn test_cho_length_mismatch_no_panic() {
+        let h = make_arr(&[10.0, 12.0, 11.0, 13.0]);
+        let l = make_arr(&[8.0, 9.0, 9.0, 10.0]);
+        let c = make_arr(&[9.0, 10.5, 10.0, 11.5]);
+        let v = make_arr(&[100.0, 100.0, 100.0, 100.0]);
+        let short = make_arr(&[1.0, 2.0]);
+        let long = make_arr(&[1.0, 2.0, 3.0, 4.0, 5.0]);
+        for other in [&short, &long] {
+            // ADOSC derives its length from `high`.
+            assert_eq!(cho(other, &l, &c, &v, 2, 3).length(), other.length());
+            assert_eq!(cho(&h, other, &c, &v, 2, 3).length(), 4);
+            assert_eq!(cho(&h, &l, other, &v, 2, 3).length(), 4);
+            assert_eq!(cho(&h, &l, &c, other, 2, 3).length(), 4);
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Extended catalog parity binds — shape / warmup assertions
+    //
+    // Each new WASM bind is a pure passthrough to `ferro_ta_core`, so these
+    // assert the marshalling: output length equals input length, multi-output
+    // binds return the documented number of arrays, and the finite values are
+    // in the range the kernel promises.
+    // -----------------------------------------------------------------------
+
+    /// 40 deterministic bars — long enough for every warmup used below.
+    fn ext_series(offset: f64) -> Vec<f64> {
+        (0..40)
+            .map(|i| {
+                let x = i as f64;
+                100.0 + offset + x * 0.5 + (x * 0.7).sin() * 3.0
+            })
+            .collect()
+    }
+
+    fn ext_open() -> Float64Array {
+        make_arr(&ext_series(-0.25))
+    }
+    fn ext_high() -> Float64Array {
+        make_arr(&ext_series(1.5))
+    }
+    fn ext_low() -> Float64Array {
+        make_arr(&ext_series(-1.5))
+    }
+    fn ext_close() -> Float64Array {
+        make_arr(&ext_series(0.0))
+    }
+    fn ext_volume() -> Float64Array {
+        make_arr(
+            &(0..40)
+                .map(|i| 1000.0 + ((i % 7) as f64) * 250.0)
+                .collect::<Vec<f64>>(),
+        )
+    }
+
+    const EXT_N: u32 = 40;
+
+    /// Assert an `Array` of `Float64Array` has `arity` members, each `EXT_N` long.
+    fn assert_multi(out: &Array, arity: u32) {
+        assert_eq!(out.length(), arity, "wrong number of output arrays");
+        for i in 0..arity {
+            let a = Float64Array::from(out.get(i));
+            assert_eq!(a.length(), EXT_N, "output {i} has the wrong length");
+        }
+    }
+
+    /// Assert at least one finite value survived the warmup.
+    fn assert_has_finite(arr: &Float64Array) {
+        assert!(
+            !get_finite(arr).is_empty(),
+            "every output value was non-finite"
+        );
+    }
+
+    // ----- Trend -----------------------------------------------------------
+
+    #[wasm_bindgen_test]
+    fn test_frama_shape() {
+        let out = frama(&ext_close(), 10);
+        assert_eq!(out.length(), EXT_N);
+        assert_has_finite(&out);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_mcginley_shape() {
+        let out = mcginley(&ext_close(), 10);
+        assert_eq!(out.length(), EXT_N);
+        assert_has_finite(&out);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_vidya_shape() {
+        let out = vidya(&ext_close(), 14, 9);
+        assert_eq!(out.length(), EXT_N);
+        assert_has_finite(&out);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_alligator_returns_three_arrays() {
+        let out = alligator(&ext_high(), &ext_low(), 13, 8, 8, 5, 5, 3);
+        assert_multi(&out, 3);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_ma_envelopes_bands_are_ordered() {
+        let out = ma_envelopes(&ext_close(), 10, 2.5, 0);
+        assert_multi(&out, 3);
+        let upper = Float64Array::from(out.get(0));
+        let middle = Float64Array::from(out.get(1));
+        let lower = Float64Array::from(out.get(2));
+        let (u, m, l) = (get_finite(&upper), get_finite(&middle), get_finite(&lower));
+        assert!(!m.is_empty());
+        for i in 0..m.len() {
+            assert!(u[i] > m[i] && m[i] > l[i], "envelope order broken at {i}");
+        }
+    }
+
+    #[wasm_bindgen_test]
+    fn test_chande_kroll_stop_returns_two_arrays() {
+        let out = chande_kroll_stop(&ext_high(), &ext_low(), &ext_close(), 10, 1.0, 9);
+        assert_multi(&out, 2);
+    }
+
+    // ----- Momentum --------------------------------------------------------
+
+    #[wasm_bindgen_test]
+    fn test_elder_ray_returns_two_arrays() {
+        let out = elder_ray(&ext_high(), &ext_low(), &ext_close(), 13);
+        assert_multi(&out, 2);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_fisher_returns_two_arrays() {
+        let out = fisher(&ext_high(), &ext_low(), 9);
+        assert_multi(&out, 2);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_crsi_in_range() {
+        let out = crsi(&ext_close(), 3, 2, 20);
+        assert_eq!(out.length(), EXT_N);
+        for v in get_finite(&out) {
+            assert!((0.0..=100.0).contains(&v), "CRSI out of range: {v}");
+        }
+    }
+
+    // ----- Volatility ------------------------------------------------------
+
+    #[wasm_bindgen_test]
+    fn test_chaikin_vol_shape() {
+        let out = chaikin_vol(&ext_high(), &ext_low(), 10, 10);
+        assert_eq!(out.length(), EXT_N);
+        assert_has_finite(&out);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_mass_shape() {
+        let out = mass(&ext_high(), &ext_low(), 9, 25);
+        assert_eq!(out.length(), EXT_N);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_bbwidth_non_negative() {
+        let out = bbwidth(&ext_close(), 10, 2.0, 2.0);
+        assert_eq!(out.length(), EXT_N);
+        for v in get_finite(&out) {
+            assert!(v >= 0.0, "BBWIDTH negative: {v}");
+        }
+    }
+
+    #[wasm_bindgen_test]
+    fn test_historical_volatility_non_negative() {
+        let out = historical_volatility(&ext_close(), 20, 252.0);
+        assert_eq!(out.length(), EXT_N);
+        for v in get_finite(&out) {
+            assert!(v >= 0.0, "HV negative: {v}");
+        }
+    }
+
+    #[wasm_bindgen_test]
+    fn test_ulcer_index_non_negative() {
+        let out = ulcer_index(&ext_close(), 14);
+        assert_eq!(out.length(), EXT_N);
+        for v in get_finite(&out) {
+            assert!(v >= 0.0, "ULCER negative: {v}");
+        }
+    }
+
+    #[wasm_bindgen_test]
+    fn test_starc_returns_three_arrays() {
+        let out = starc(&ext_high(), &ext_low(), &ext_close(), 15, 15, 2.0);
+        assert_multi(&out, 3);
+    }
+
+    // ----- Volume ----------------------------------------------------------
+
+    #[wasm_bindgen_test]
+    fn test_obv_smoothed_shape() {
+        let out = obv_smoothed(&ext_close(), &ext_volume(), 10, 1);
+        assert_eq!(out.length(), EXT_N);
+        assert_has_finite(&out);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_emv_shape() {
+        let out = emv(&ext_high(), &ext_low(), &ext_volume(), 14, 10_000.0);
+        assert_eq!(out.length(), EXT_N);
+        assert_has_finite(&out);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_force_index_raw_matches_definition() {
+        let c = ext_close();
+        let v = ext_volume();
+        let out = force_index(&c, &v, 1);
+        assert_eq!(out.length(), EXT_N);
+        let (cv, vv) = (to_vec(&c), to_vec(&v));
+        let mut vals = vec![0.0f64; EXT_N as usize];
+        out.copy_to(&mut vals);
+        for i in 1..vals.len() {
+            let want = (cv[i] - cv[i - 1]) * vv[i];
+            assert!((vals[i] - want).abs() < 1e-9, "FORCE mismatch at {i}");
+        }
+    }
+
+    #[wasm_bindgen_test]
+    fn test_nvi_and_pvi_seed_at_1000() {
+        let c = ext_close();
+        let v = ext_volume();
+        for out in [nvi(&c, &v), pvi(&c, &v)] {
+            assert_eq!(out.length(), EXT_N);
+            let mut vals = vec![0.0f64; EXT_N as usize];
+            out.copy_to(&mut vals);
+            assert!((vals[0] - 1000.0).abs() < 1e-9, "seed was {}", vals[0]);
+        }
+    }
+
+    #[wasm_bindgen_test]
+    fn test_nvi_with_ema_returns_two_arrays() {
+        let out = nvi_with_ema(&ext_close(), &ext_volume(), 10);
+        assert_multi(&out, 2);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_pvi_with_signal_returns_two_arrays() {
+        let out = pvi_with_signal(&ext_close(), &ext_volume(), 10, 0);
+        assert_multi(&out, 2);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_volosc_shape() {
+        let out = volosc(&ext_volume(), 5, 10);
+        assert_eq!(out.length(), EXT_N);
+        assert_has_finite(&out);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_vroc_shape() {
+        let out = vroc(&ext_volume(), 5);
+        assert_eq!(out.length(), EXT_N);
+        assert_has_finite(&out);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_kvo_returns_two_arrays() {
+        let out = kvo(
+            &ext_high(),
+            &ext_low(),
+            &ext_close(),
+            &ext_volume(),
+            34,
+            55,
+            13,
+        );
+        assert_multi(&out, 2);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_pvt_seeded_at_zero() {
+        let out = pvt(&ext_close(), &ext_volume());
+        assert_eq!(out.length(), EXT_N);
+        let mut vals = vec![0.0f64; EXT_N as usize];
+        out.copy_to(&mut vals);
+        assert_eq!(vals[0], 0.0);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_rvol_positive() {
+        let out = rvol(&ext_volume(), 10);
+        assert_eq!(out.length(), EXT_N);
+        for v in get_finite(&out) {
+            assert!(v > 0.0, "RVOL not positive: {v}");
+        }
+    }
+
+    // ----- Oscillators -----------------------------------------------------
+
+    #[wasm_bindgen_test]
+    fn test_ac_shape() {
+        let out = ac(&ext_high(), &ext_low(), 5, 34, 5);
+        assert_eq!(out.length(), EXT_N);
+        assert_has_finite(&out);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_po_matches_sma_difference() {
+        let c = ext_close();
+        let out = po(&c, 5, 10);
+        assert_eq!(out.length(), EXT_N);
+        let fast = to_vec(&sma(&c, 5));
+        let slow = to_vec(&sma(&c, 10));
+        let mut vals = vec![0.0f64; EXT_N as usize];
+        out.copy_to(&mut vals);
+        for i in 10..vals.len() {
+            assert!((vals[i] - (fast[i] - slow[i])).abs() < 1e-9, "PO at {i}");
+        }
+    }
+
+    #[wasm_bindgen_test]
+    fn test_dpo_shape() {
+        let out = dpo(&ext_close(), 20);
+        assert_eq!(out.length(), EXT_N);
+        assert_has_finite(&out);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_rvi_returns_two_arrays() {
+        let out = rvi(&ext_open(), &ext_high(), &ext_low(), &ext_close(), 10);
+        assert_multi(&out, 2);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_kst_returns_two_arrays() {
+        let out = kst(&ext_close(), 10, 15, 20, 30, 10, 10, 10, 15, 9);
+        assert_multi(&out, 2);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_tsi_returns_two_arrays() {
+        let out = tsi(&ext_close(), 25, 13, 13);
+        assert_multi(&out, 2);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_vortex_returns_two_positive_arrays() {
+        let out = vortex(&ext_high(), &ext_low(), &ext_close(), 14);
+        assert_multi(&out, 2);
+        for i in 0..2 {
+            let a = Float64Array::from(out.get(i));
+            for v in get_finite(&a) {
+                assert!(v >= 0.0, "VI negative: {v}");
+            }
+        }
+    }
+
+    #[wasm_bindgen_test]
+    fn test_stc_in_range() {
+        let out = stc(&ext_close(), 23, 50, 10, 3, 3);
+        assert_eq!(out.length(), EXT_N);
+        for v in get_finite(&out) {
+            assert!((0.0..=100.0).contains(&v), "STC out of range: {v}");
+        }
+    }
+
+    #[wasm_bindgen_test]
+    fn test_gator_sign_convention() {
+        let out = gator(&ext_high(), &ext_low(), 13, 8, 8, 5, 5, 3);
+        assert_multi(&out, 2);
+        let upper = Float64Array::from(out.get(0));
+        let lower = Float64Array::from(out.get(1));
+        for v in get_finite(&upper) {
+            assert!(v >= 0.0, "gator upper jaw negative: {v}");
+        }
+        for v in get_finite(&lower) {
+            assert!(v <= 0.0, "gator lower jaw positive: {v}");
+        }
+    }
+
+    #[wasm_bindgen_test]
+    fn test_coppock_shape() {
+        let out = coppock(&ext_close(), 10, 14, 11);
+        assert_eq!(out.length(), EXT_N);
+        assert_has_finite(&out);
+    }
+
+    // ----- Statistics ------------------------------------------------------
+
+    #[wasm_bindgen_test]
+    fn test_median_bands_returns_four_arrays() {
+        let out = median_bands(&ext_high(), &ext_low(), &ext_close(), 3, 14, 2.0);
+        assert_multi(&out, 4);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_mode_stays_within_window_range() {
+        let real = make_arr(&[1.0, 2.0, 2.0, 2.0, 3.0, 9.0, 9.0, 9.0]);
+        let out = mode(&real, 3, 4);
+        assert_eq!(out.length(), 8);
+        let src = to_vec(&real);
+        let mut vals = vec![0.0f64; 8];
+        out.copy_to(&mut vals);
+        for i in 2..8 {
+            let window = &src[i - 2..=i];
+            let lo = window.iter().cloned().fold(f64::INFINITY, f64::min);
+            let hi = window.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+            assert!(
+                vals[i] >= lo && vals[i] <= hi,
+                "MODE {} outside [{lo}, {hi}] at {i}",
+                vals[i]
+            );
+        }
+    }
+
+    // ----- Hybrid ----------------------------------------------------------
+
+    #[wasm_bindgen_test]
+    fn test_dmi_matches_the_adx_family() {
+        let (h, l, c) = (ext_high(), ext_low(), ext_close());
+        let out = dmi(&h, &l, &c, 14);
+        assert_multi(&out, 3);
+        let want = [
+            to_vec(&plus_di(&h, &l, &c, 14)),
+            to_vec(&minus_di(&h, &l, &c, 14)),
+            to_vec(&adx(&h, &l, &c, 14)),
+        ];
+        for (idx, expected) in want.iter().enumerate() {
+            let got = to_vec(&Float64Array::from(out.get(idx as u32)));
+            for i in 0..got.len() {
+                if got[i].is_nan() && expected[i].is_nan() {
+                    continue;
+                }
+                assert!(
+                    (got[i] - expected[i]).abs() < 1e-9,
+                    "DMI output {idx} differs at {i}"
+                );
+            }
+        }
+    }
+
+    #[wasm_bindgen_test]
+    fn test_williams_fractals_returns_two_arrays() {
+        let out = williams_fractals(&ext_high(), &ext_low(), 2);
+        assert_multi(&out, 2);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_rwi_returns_two_arrays() {
+        let out = rwi(&ext_high(), &ext_low(), &ext_close(), 10);
+        assert_multi(&out, 2);
+    }
+
+    // ----- Signal utilities ------------------------------------------------
+
+    #[wasm_bindgen_test]
+    fn test_crossunder_and_cross_are_consistent() {
+        let a = make_arr(&[1.0, 3.0, 3.0, 1.0, 1.0, 4.0]);
+        let b = make_arr(&[2.0, 2.0, 2.0, 2.0, 2.0, 2.0]);
+        let over = to_vec(&crossover(&a, &b));
+        let under = to_vec(&crossunder(&a, &b));
+        let both = to_vec(&cross(&a, &b));
+        assert_eq!(over, vec![0.0, 1.0, 0.0, 0.0, 0.0, 1.0]);
+        assert_eq!(under, vec![0.0, 0.0, 0.0, 1.0, 0.0, 0.0]);
+        for i in 0..both.len() {
+            let want = if over[i] != 0.0 || under[i] != 0.0 {
+                1.0
+            } else {
+                0.0
+            };
+            assert_eq!(both[i], want, "CROSS at {i}");
+        }
+    }
+
+    #[wasm_bindgen_test]
+    fn test_lowest_known_values() {
+        let real = make_arr(&[5.0, 3.0, 4.0, 1.0, 2.0]);
+        let out = lowest(&real, 3);
+        let mut vals = vec![0.0f64; 5];
+        out.copy_to(&mut vals);
+        assert!(vals[0].is_nan() && vals[1].is_nan());
+        assert_eq!(vals[2], 3.0);
+        assert_eq!(vals[3], 1.0);
+        assert_eq!(vals[4], 1.0);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_change_rising_falling_agree() {
+        let real = make_arr(&[1.0, 2.0, 2.0, 1.0, 5.0]);
+        let ch = to_vec(&change(&real, 1));
+        let up = to_vec(&rising(&real, 1));
+        let down = to_vec(&falling(&real, 1));
+        assert!(ch[0].is_nan() && up[0].is_nan() && down[0].is_nan());
+        for i in 1..ch.len() {
+            assert_eq!(up[i], if ch[i] > 0.0 { 1.0 } else { 0.0 }, "RISING at {i}");
+            assert_eq!(
+                down[i],
+                if ch[i] < 0.0 { 1.0 } else { 0.0 },
+                "FALLING at {i}"
+            );
+        }
+    }
+
+    #[wasm_bindgen_test]
+    fn test_exrem_and_flip_latching() {
+        let primary = make_arr(&[1.0, 1.0, 0.0, 1.0, 0.0]);
+        let secondary = make_arr(&[0.0, 0.0, 1.0, 0.0, 0.0]);
+        assert_eq!(
+            to_vec(&exrem(&primary, &secondary)),
+            vec![1.0, 0.0, 0.0, 1.0, 0.0]
+        );
+        assert_eq!(
+            to_vec(&flip(&primary, &secondary)),
+            vec![1.0, 1.0, 0.0, 1.0, 1.0]
+        );
+    }
+
+    #[wasm_bindgen_test]
+    fn test_valuewhen_picks_the_latest_hit() {
+        let condition = make_arr(&[0.0, 1.0, 0.0, 1.0, 0.0]);
+        let real = make_arr(&[10.0, 20.0, 30.0, 40.0, 50.0]);
+        let first = to_vec(&valuewhen(&condition, &real, 1));
+        assert!(first[0].is_nan());
+        assert_eq!(first[1], 20.0);
+        assert_eq!(first[2], 20.0);
+        assert_eq!(first[3], 40.0);
+        assert_eq!(first[4], 40.0);
+        let second = to_vec(&valuewhen(&condition, &real, 2));
+        assert!(second[2].is_nan());
+        assert_eq!(second[3], 20.0);
     }
 }
