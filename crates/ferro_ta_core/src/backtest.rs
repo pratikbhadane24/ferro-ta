@@ -2421,8 +2421,10 @@ mod tests {
         let high: Vec<f64> = close.iter().map(|&c| c + 1.0).collect();
         let low: Vec<f64> = close.iter().map(|&c| c - 1.0).collect();
         let signals = vec![1.0; n];
-        let mut config = BacktestConfig::default();
-        config.daily_loss_limit = 0.05;
+        let config = BacktestConfig {
+            daily_loss_limit: 0.05,
+            ..Default::default()
+        };
         let result =
             backtest_ohlcv_core(&open, &high, &low, &close, &signals, &config, None).unwrap();
         assert!(
