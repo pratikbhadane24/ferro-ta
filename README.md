@@ -2,9 +2,9 @@
 
 # ⚡ ferro-ta
 
-### Rust-powered Python technical analysis with a TA-Lib-compatible API
+## Rust-core technical analysis with first-class language bindings
 
-**Focused on one primary job: fast, reproducible technical analysis for Python users who want TA-Lib-style ergonomics without native build friction.**
+**ferro-ta is a Rust-core technical analysis library with first-class bindings for Python, Rust, JavaScript (WASM), and Flutter.**
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/pratikbhadane24/ferro-ta/HEAD?labpath=examples%2Fquickstart.ipynb)
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/pratikbhadane24/ferro-ta/blob/main/examples/quickstart.ipynb)
@@ -14,18 +14,108 @@
 
 ---
 
-> `ferro-ta` is a Rust-backed Python technical analysis library for NumPy-first workloads. It keeps TA-Lib-style ergonomics, ships pre-built wheels on supported targets, and publishes reproducible benchmark artifacts instead of blanket speed claims.
+> ferro-ta is a Rust-core technical analysis library with first-class bindings for Python, Rust, JavaScript (WASM), and Flutter.
 
-## 🚀 What ferro-ta is
+Python, JavaScript (WASM), and Flutter wrap [`ferro_ta_core`](crates/ferro_ta_core); Rust uses that crate directly. New languages may only wrap the core — reimplementing indicators is out of scope. See [Adding a language](docs/languages/adding.rst).
+
+Python is the most complete *ergonomic* surface (TA-Lib names, pandas/polars, Sphinx autodoc). It is not the only product.
+
+## What ferro-ta is
 
 | | TA-Lib | ferro-ta |
 |---|---|---|
-| **Primary product** | C-backed Python TA library | Rust-backed Python TA library |
-| **API shape** | `talib.SMA(close, 20)` | `ferro_ta.SMA(close, 20)` |
-| **Installation** | Often requires native/system setup | Pre-built wheels on supported targets |
-| **Scope** | Technical indicators | Technical indicators first; other tooling is optional and secondary |
+| **Core** | C implementations | Pure Rust [`ferro_ta_core`](crates/ferro_ta_core) |
+| **Languages** | C API plus community wrappers | First-class Python, Rust, JavaScript (WASM), and Flutter |
+| **API shape** | `talib.SMA(close, 20)` | Same indicators in each language (`SMA`, `sma`, `overlap::sma`) |
+| **Installation** | Often requires a native/system toolchain | Pre-built packages on supported targets |
+| **Scope** | Technical indicators | Technical indicators first; other tooling is optional |
 
-## ⚡ Benchmark evidence
+## Install
+
+| Language | Package | Install |
+|---|---|---|
+| Python | PyPI `ferro-ta` | `pip install ferro-ta` |
+| Rust | crates.io `ferro_ta_core` | `cargo add ferro_ta_core` |
+| JavaScript | npm `ferro-ta-wasm` | `npm install ferro-ta-wasm` |
+| Flutter / Dart | pub.dev `ferro_ta` | `flutter pub add ferro_ta` |
+
+Python extras:
+
+```bash
+pip install "ferro-ta[pandas]"   # pandas.Series support
+pip install "ferro-ta[polars]"   # polars.Series support
+pip install "ferro-ta[gpu]"      # PyTorch-backed GPU helpers
+pip install "ferro-ta[options]"  # derivatives analytics helpers
+pip install "ferro-ta[mcp]"      # MCP server for agent/tool clients
+pip install "ferro-ta[all]"      # most optional extras (excluding gpu)
+```
+
+Language guides: [Python](docs/languages/python.rst) · [Rust](docs/languages/rust.rst) · [WASM](docs/languages/wasm.rst) · [Flutter](docs/languages/flutter.rst)
+
+## Quick start
+
+The same four indicators — SMA, RSI, MACD, BBANDS — on every binding.
+
+### Python
+
+```python
+import numpy as np
+from ferro_ta import SMA, RSI, MACD, BBANDS
+
+close = np.linspace(44.0, 48.0, 40)
+sma = SMA(close, timeperiod=5)
+rsi = RSI(close, timeperiod=14)
+macd_line, signal, histogram = MACD(close, fastperiod=12, slowperiod=26, signalperiod=9)
+upper, middle, lower = BBANDS(close, timeperiod=5, nbdevup=2.0, nbdevdn=2.0)
+```
+
+### Rust
+
+```rust
+use ferro_ta_core::{momentum, overlap};
+
+fn main() {
+    let close: Vec<f64> = (0..40).map(|i| 44.0 + i as f64 * 0.1).collect();
+    let sma = overlap::sma(&close, 5);
+    let rsi = momentum::rsi(&close, 14);
+    let (macd, signal, hist) = overlap::macd(&close, 12, 26, 9);
+    let (upper, middle, lower) = overlap::bbands(&close, 5, 2.0, 2.0);
+}
+```
+
+### JavaScript (WASM)
+
+```javascript
+const { sma, rsi, macd, bbands } = require('ferro-ta-wasm');
+
+const close = Float64Array.from({ length: 40 }, (_, i) => 44 + i * 0.1);
+console.log(sma(close, 5));
+console.log(rsi(close, 14));
+const [macdLine, signal, hist] = macd(close, 12, 26, 9);
+const [upper, middle, lower] = bbands(close, 5, 2.0, 2.0);
+```
+
+### Flutter
+
+```dart
+import 'dart:typed_data';
+import 'package:ferro_ta/ferro_ta.dart';
+
+Future<void> main() async {
+  await FerroTa.init();
+  final close = Float64List.fromList([
+    for (var i = 0; i < 40; i++) 44.0 + i * 0.1,
+  ]);
+  final smaOut = await sma(close: close, timeperiod: 5);
+  final rsiOut = await rsi(close: close, timeperiod: 14);
+  final (macdLine, signal, hist) =
+      await macd(close: close, fastperiod: 12, slowperiod: 26, signalperiod: 9);
+  final (upper, middle, lower) =
+      await bbands(close: close, timeperiod: 5, nbdevup: 2, nbdevdn: 2);
+}
+```
+
+## Benchmark evidence
 
 The latest checked-in TA-Lib comparison artifact uses contiguous `float64`
 arrays at 10k and 100k bars on an `Apple M3 Max`, `CPython 3.13.5`, and `Rust
@@ -42,61 +132,17 @@ See the benchmark methodology and artifacts:
 - [benchmarks/artifacts/latest/](benchmarks/artifacts/latest/)
 - [docs/benchmarks.rst](docs/benchmarks.rst)
 
-## 🎯 Core capabilities
+## Capabilities
 
-- 160+ indicators with a TA-Lib-style public API.
+- 160+ indicators over a shared Rust core.
 - Batch and streaming APIs for multi-series and bar-by-bar workloads.
-- NumPy-first execution with pandas and polars adapters.
-- Pre-built wheels on the supported Python and OS matrix.
-- Type stubs, error codes, examples, and reproducible benchmarks.
+- Python extras: NumPy-first execution with pandas and polars adapters, type stubs, and Sphinx autodoc.
+- Pre-built artifacts: Python wheels, crates.io, npm, and Flutter natives (web reuses WASM).
+- Reproducible benchmarks instead of blanket speed claims.
 
-Adjacent and experimental surfaces such as derivatives analytics, MCP, GPU,
-plugins, and WASM remain opt-in and secondary to the core TA library story.
+Adjacent surfaces — derivatives analytics, MCP, GPU helpers, plugins, and agent wrappers — remain opt-in. See [docs/adjacent_tooling.rst](docs/adjacent_tooling.rst).
 
-## 📦 Installation
-
-```bash
-pip install ferro-ta
-```
-
-Optional extras:
-
-```bash
-pip install "ferro-ta[pandas]"   # pandas.Series support
-pip install "ferro-ta[polars]"   # polars.Series support
-pip install "ferro-ta[gpu]"      # PyTorch-backed GPU helpers
-pip install "ferro-ta[options]"  # derivatives analytics helpers
-pip install "ferro-ta[mcp]"      # MCP server for agent/tool clients
-pip install "ferro-ta[all]"      # most optional extras (excluding gpu)
-```
-
-### Other languages
-
-The same Rust core is published to several ecosystems:
-
-| Language | Install |
-|---|---|
-| Rust | `cargo add ferro_ta_core` |
-| Node / browser (WASM) | `npm install ferro-ta-wasm` |
-| Flutter / Dart | `flutter pub add ferro_ta` — see [flutter/README.md](flutter/README.md) |
-
-## ⚡ Quick start
-
-```python
-import numpy as np
-from ferro_ta import SMA, EMA, RSI, MACD, BBANDS
-
-close = np.array([44.34, 44.09, 44.15, 43.61, 44.33, 44.83, 45.10, 45.15,
-                  43.61, 44.33, 44.83, 45.10, 45.15, 43.61, 44.33])
-
-sma = SMA(close, timeperiod=5)
-ema = EMA(close, timeperiod=5)
-rsi = RSI(close, timeperiod=14)
-macd_line, signal, histogram = MACD(close, fastperiod=12, slowperiod=26, signalperiod=9)
-upper, middle, lower = BBANDS(close, timeperiod=5, nbdevup=2.0, nbdevdn=2.0)
-```
-
-## 📊 TA-Lib compatibility
+## TA-Lib compatibility
 
 - `ferro-ta` implements 156 of TA-Lib 0.6.4's 161 functions, plus 10 extended indicators and 9 streaming classes that TA-Lib does not provide. Not yet implemented: `ACCBANDS`, `IMI`, `AVGDEV`, `MINMAX`, `MINMAXINDEX`.
 - Most functions are marked `Exact` or `Close`; the remaining notable non-exact categories are the Hilbert cycle indicators plus `MAMA`, `SAR`, and `SAREXT`.
@@ -107,30 +153,31 @@ Migration and compatibility references:
 - [docs/migration_talib.rst](docs/migration_talib.rst)
 - [docs/compatibility/talib.md](docs/compatibility/talib.md)
 - [docs/support_matrix.rst](docs/support_matrix.rst)
+- [docs/languages/coverage.rst](docs/languages/coverage.rst) — generated Python / Rust / WASM / Flutter coverage
 
-## 🗺️ Docs map
+## Docs map
 
-Core guides:
+Languages:
 
+- [docs/languages/index.rst](docs/languages/index.rst)
 - [docs/quickstart.rst](docs/quickstart.rst)
-- [docs/migration_talib.rst](docs/migration_talib.rst)
-- [docs/support_matrix.rst](docs/support_matrix.rst)
+- [docs/languages/adding.rst](docs/languages/adding.rst)
 - [PLATFORMS.md](PLATFORMS.md)
 
-Evidence and APIs:
+Python guides:
 
-- [benchmarks/README.md](benchmarks/README.md)
+- [docs/migration_talib.rst](docs/migration_talib.rst)
+- [docs/support_matrix.rst](docs/support_matrix.rst)
 - [docs/batch.rst](docs/batch.rst)
 - [docs/streaming.rst](docs/streaming.rst)
 - [docs/derivatives.rst](docs/derivatives.rst)
 
-Optional and experimental surfaces:
+Evidence and optional tooling:
 
+- [benchmarks/README.md](benchmarks/README.md)
 - [docs/mcp.md](docs/mcp.md)
 - [docs/adjacent_tooling.rst](docs/adjacent_tooling.rst)
 - [docs/plugins.rst](docs/plugins.rst)
-- [wasm/README.md](wasm/README.md)
-- [flutter/README.md](flutter/README.md)
 
 Project and release docs:
 
@@ -139,7 +186,7 @@ Project and release docs:
 - [VERSIONING.md](VERSIONING.md)
 - [RELEASE.md](RELEASE.md)
 
-## 🛠️ Development
+## Development
 
 ```bash
 uv sync --extra dev
@@ -147,4 +194,4 @@ uv run pytest tests/unit tests/integration
 uv run maturin build --release --out dist
 ```
 
-More setup details live in [CONTRIBUTING.md](CONTRIBUTING.md).
+More setup details live in [CONTRIBUTING.md](CONTRIBUTING.md). New language bindings must wrap `ferro_ta_core` — see [docs/languages/adding.rst](docs/languages/adding.rst).

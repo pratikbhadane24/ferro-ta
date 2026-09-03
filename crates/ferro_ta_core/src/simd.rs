@@ -27,14 +27,13 @@ const LANES: usize = 8;
 #[multiversion::multiversion(targets = "simd")]
 pub(crate) fn sum(data: &[f64]) -> f64 {
     let mut acc = [0.0f64; LANES];
-    let mut chunks = data.chunks_exact(LANES);
-    for chunk in &mut chunks {
+    let (chunks, remainder) = data.as_chunks::<LANES>();
+    for chunk in chunks {
         for (a, &v) in acc.iter_mut().zip(chunk) {
             *a += v;
         }
     }
-    let remainder: f64 = chunks.remainder().iter().sum();
-    remainder + acc.iter().sum::<f64>()
+    remainder.iter().sum::<f64>() + acc.iter().sum::<f64>()
 }
 
 /// Pure-scalar fallback when the `simd` feature is disabled.
@@ -54,9 +53,9 @@ pub(crate) fn wma_seed(data: &[f64]) -> (f64, f64) {
     // can vectorize: `t` weights each value by its 1-based global index.
     let mut t_acc = [0.0f64; LANES];
     let mut s_acc = [0.0f64; LANES];
-    let mut chunks = data.chunks_exact(LANES);
+    let (chunks, rem) = data.as_chunks::<LANES>();
     let mut base = 0.0f64; // global index of this chunk's first element
-    for chunk in &mut chunks {
+    for chunk in chunks {
         for (lane, ((t, s), &v)) in t_acc
             .iter_mut()
             .zip(s_acc.iter_mut())
@@ -70,7 +69,7 @@ pub(crate) fn wma_seed(data: &[f64]) -> (f64, f64) {
     }
     let mut t = 0.0;
     let mut s = 0.0;
-    for (i, &v) in chunks.remainder().iter().enumerate() {
+    for (i, &v) in rem.iter().enumerate() {
         t += v * (base + i as f64 + 1.0);
         s += v;
     }

@@ -2,7 +2,7 @@
 name = "ferro_ta_core"
 version = "1.2.0"
 edition = "2021"
-description = "Pure Rust core indicator library — no PyO3, no numpy dependency"
+description = "Pure Rust technical analysis core — the compute engine behind ferro-ta language bindings"
 license = "MIT"
 readme = "README.md"
 repository = "https://github.com/pratikbhadane24/ferro-ta"

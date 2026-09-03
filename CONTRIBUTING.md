@@ -77,11 +77,16 @@ maturin develop --release        # Build and install in editable mode
 
 ## Adding a New Candlestick Pattern
 
-All candlestick patterns live in **`src/pattern/`** (Rust: `mod.rs` plus one `.rs` file per pattern) and **`python/ferro_ta/indicators/pattern.py`** (Python wrapper).
+Pattern algorithms live in **`crates/ferro_ta_core/src/pattern.rs`**. Language
+wrappers only marshal inputs: a thin PyO3 function in **`src/pattern/`** and
+the Python wrapper in **`python/ferro_ta/indicators/pattern.py`**. Do not put
+pattern-condition loops in the `#[pyfunction]`.
 
-### Step 1 — Implement the Rust function
+### Step 1 — Implement the algorithm in ferro_ta_core
 
-Add a new file `src/pattern/cdl_mypattern.rs` with your `#[pyfunction]`, or add the function to an existing pattern file. Register it in **`src/pattern/mod.rs`**. Open `src/pattern/mod.rs` to see how other patterns are declared and registered (e.g. `mod cdl_doji;` and `self::cdl_doji::cdl_doji` in `register()`). Then implement the logic in your new file (e.g. open `src/pattern/cdl_doji.rs` as a template) and add a new `#[pyfunction]` using the shared helper functions already available at the top of the file:
+Add `cdl_mypattern` next to the other CDL functions in
+`crates/ferro_ta_core/src/pattern.rs` (see `cdldoji` as a template). Use the
+shared helpers already in that file:
 
 | Helper | Description |
 |---|---|
@@ -92,44 +97,55 @@ Add a new file `src/pattern/cdl_mypattern.rs` with your `#[pyfunction]`, or add 
 | `is_bullish(open, close)` | `true` when close ≥ open |
 | `is_bearish(open, close)` | `true` when close < open |
 
-**Template for a single-candle pattern** (save as `src/pattern/cdl_mypattern.rs` and add `mod cdl_mypattern;` plus the register call in `src/pattern/mod.rs`):
+**Template for a single-candle pattern:**
 
 ```rust
-#[pyfunction]
-pub fn cdl_mypattern<'py>(
-    py: Python<'py>,
-    open: PyReadonlyArray1<'py, f64>,
-    high: PyReadonlyArray1<'py, f64>,
-    low: PyReadonlyArray1<'py, f64>,
-    close: PyReadonlyArray1<'py, f64>,
-) -> PyResult<Bound<'py, PyArray1<i32>>> {
-    let opens = open.as_slice()?;
-    let highs = high.as_slice()?;
-    let lows = low.as_slice()?;
-    let closes = close.as_slice()?;
-    let n = opens.len();
-    if n != highs.len() || n != lows.len() || n != closes.len() {
-        return Err(PyValueError::new_err("arrays must have the same length"));
-    }
+pub fn cdl_mypattern(open: &[f64], high: &[f64], low: &[f64], close: &[f64]) -> Vec<i32> {
+    let n = validate_ohlc(open, high, low, close).expect("OHLC length mismatch");
     let mut result = vec![0i32; n];
     for i in 0..n {
-        let body  = body_size(opens[i], closes[i]);
-        let range = candle_range(highs[i], lows[i]);
-        let lower = lower_shadow(opens[i], lows[i], closes[i]);
-        let upper = upper_shadow(opens[i], highs[i], closes[i]);
+        let body = body_size(open[i], close[i]);
+        let range = candle_range(high[i], low[i]);
+        let lower = lower_shadow(open[i], low[i], close[i]);
+        let upper = upper_shadow(open[i], high[i], close[i]);
 
         // TODO: replace with your pattern conditions
         if range > 0.0 && /* pattern conditions */ {
-            result[i] = 100;  // bullish  (use -100 for bearish)
+            result[i] = 100; // bullish (use -100 for bearish)
         }
     }
-    Ok(result.into_pyarray(py))
+    result
 }
 ```
 
 **Template for a multi-candle pattern** (adjust `i in K..n` for K-candle lookback):
 
 ```rust
+pub fn cdl_mypattern(open: &[f64], high: &[f64], low: &[f64], close: &[f64]) -> Vec<i32> {
+    let n = validate_ohlc(open, high, low, close).expect("OHLC length mismatch");
+    let mut result = vec![0i32; n];
+    for i in 2..n { // 3-candle: use 2..n; 2-candle: use 1..n
+        let (o1, h1, l1, c1) = (open[i - 2], high[i - 2], low[i - 2], close[i - 2]);
+        let (o2, h2, l2, c2) = (open[i - 1], high[i - 1], low[i - 1], close[i - 1]);
+        let (o3, h3, l3, c3) = (open[i], high[i], low[i], close[i]);
+
+        // TODO: add your multi-candle conditions here
+        if /* conditions */ {
+            result[i] = 100; // or -100
+        }
+    }
+    result
+}
+```
+
+Add a unit test in `crates/ferro_ta_core` alongside the other pattern tests.
+
+### Step 2 — Add a thin PyO3 wrapper
+
+Add `src/pattern/cdl_mypattern.rs` that only converts arrays and calls core
+(see `src/pattern/cdldoji.rs`):
+
+```rust
 #[pyfunction]
 pub fn cdl_mypattern<'py>(
     py: Python<'py>,
@@ -138,32 +154,18 @@ pub fn cdl_mypattern<'py>(
     low: PyReadonlyArray1<'py, f64>,
     close: PyReadonlyArray1<'py, f64>,
 ) -> PyResult<Bound<'py, PyArray1<i32>>> {
-    let opens  = open.as_slice()?;
-    let highs  = high.as_slice()?;
-    let lows   = low.as_slice()?;
-    let closes = close.as_slice()?;
-    let n = opens.len();
-    if n != highs.len() || n != lows.len() || n != closes.len() {
-        return Err(PyValueError::new_err("arrays must have the same length"));
-    }
-    let mut result = vec![0i32; n];
-    for i in 2..n {  // 3-candle: use 2..n; 2-candle: use 1..n
-        let (o1, h1, l1, c1) = (opens[i-2], highs[i-2], lows[i-2], closes[i-2]);
-        let (o2, h2, l2, c2) = (opens[i-1], highs[i-1], lows[i-1], closes[i-1]);
-        let (o3, h3, l3, c3) = (opens[i],   highs[i],   lows[i],   closes[i]  );
-
-        // TODO: add your multi-candle conditions here
-        if /* conditions */ {
-            result[i] = 100;  // or -100
-        }
-    }
+    let o = open.as_slice()?;
+    let h = high.as_slice()?;
+    let l = low.as_slice()?;
+    let c = close.as_slice()?;
+    let result = ferro_ta_core::pattern::cdl_mypattern(o, h, l, c);
     Ok(result.into_pyarray(py))
 }
 ```
 
-### Step 2 — Register the function
-
-In **`src/pattern/mod.rs`**, add `mod cdl_mypattern;` at the top with the other pattern modules, and in the `register()` function add `self::cdl_mypattern::cdl_mypattern` to the list of registered functions.
+In **`src/pattern/mod.rs`**, add `mod cdl_mypattern;` with the other pattern
+modules, and in `register()` add
+`m.add_function(pyo3::wrap_pyfunction!(self::cdl_mypattern::cdl_mypattern, m)?)?;`.
 
 ### Step 3 — Add the Python wrapper
 
@@ -246,12 +248,37 @@ pytest tests/unit/test_ferro_ta.py -v -k mypattern
 
 ## Adding Other Indicators
 
+Indicator algorithms land in **`crates/ferro_ta_core` first**. Language
+wrappers are marshalling only — see [docs/rust_first.md](docs/rust_first.md)
+and [docs/languages/adding.rst](docs/languages/adding.rst).
+
+1. Implement and unit-test the function in `crates/ferro_ta_core/src/<module>.rs`.
+2. Add a thin PyO3 wrapper in `src/<module>/` that calls core.
+3. Add the Python wrapper in `python/ferro_ta/indicators/<module>.py`.
+4. Expose the same symbol on WASM (`wasm/src/lib.rs`) and regenerate Flutter
+   (`python3 scripts/build_flutter_bridge.py`) when the indicator is in the
+   shared core set.
+5. Refresh `python3 scripts/build_api_manifest.py`.
+
+Category paths (Python + PyO3 wrappers):
+
 - **Overlap Studies** (MAs, bands): `src/overlap/` (e.g. `mod.rs`, `sma.rs`) + `python/ferro_ta/indicators/overlap.py`
 - **Momentum Indicators**: `src/momentum/` + `python/ferro_ta/indicators/momentum.py`
 - **Cycle Indicators**: `src/cycle/` + `python/ferro_ta/indicators/cycle.py`
 - **Volatility / Volume / Statistics**: corresponding `src/*/` directories + `python/ferro_ta/indicators/*.py` files
 
-Each module has a `pub fn register(m: &Bound<'_, PyModule>) -> PyResult<()>` at the bottom — add your `wrap_pyfunction!` call there.
+Each PyO3 module has a `pub fn register(m: &Bound<'_, PyModule>) -> PyResult<()>` at the bottom — add your `wrap_pyfunction!` call there.
+
+## Language bindings
+
+Rust is the core surface (`ferro_ta_core`). Python, JavaScript (WASM), and
+Flutter are peer wrappers over it. A **new** language may only wrap that
+crate (FFI, wasm-bindgen, UniFFI, flutter_rust_bridge, napi-rs, …).
+Reimplementing indicators in the new language is out of scope.
+
+The full checklist is [docs/languages/adding.rst](docs/languages/adding.rst).
+CI already gates Python, WASM, and Flutter; a new binding needs
+`.github/workflows/ci-<lang>.yml` wired into `CI.yml`.
 
 ---
 

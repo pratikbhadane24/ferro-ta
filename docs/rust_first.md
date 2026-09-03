@@ -1,20 +1,29 @@
-# Rust-First Architecture Policy
+# Core-First Binding Policy
 
-> **Rule:** All non-trivial computation and processing logic MUST be
-> implemented in Rust and exposed to Python via PyO3.  Python is the
-> **interface layer** only.
+> **Rule:** All non-trivial computation lives in `ferro_ta_core`. Every
+> host-language binding is a thin wrapper (FFI, wasm-bindgen,
+> flutter_rust_bridge, …). Reimplementing indicators in a new language is
+> out of scope.
+
+Python is one interface layer — validation, type dispatch, pandas/polars
+wrapping — not *the* interface layer. WASM and Flutter are peer bindings over
+the same crate.
+
+See [docs/languages/adding.rst](languages/adding.rst) for the new-language
+checklist.
 
 ---
 
 ## Rationale
 
-ferro-ta is built on the insight that Python is excellent as a glue layer
-(validation, type dispatch, pandas/polars wrapping) but poor as a compute
-engine (GIL, interpreter overhead, per-call allocation).  Every Python loop
-over data is a performance regression.
+ferro-ta is built on the insight that host languages are excellent as glue
+(validation, type dispatch, dataframe wrapping) but poor as a compute engine
+(GIL, interpreter overhead, per-call allocation, JS↔WASM copies). Every host
+loop over data is a performance regression *and* a second algorithm to keep
+in sync.
 
-This policy formalises what the codebase already does for standard TA-Lib
-indicators and extends it to all new and existing indicators.
+This policy formalises what the codebase already does: algorithms in
+`crates/ferro_ta_core`, marshalling in each binding.
 
 ---
 
@@ -26,28 +35,29 @@ shared with the WASM and Flutter bindings. Implementing maths in `src/` forks it
 away from those bindings.
 
 ```
-Python layer (thin)               PyO3 bindings (thin)        Algorithms (thick)
-────────────────────────────      ─────────────────────       ───────────────────────────────
-ferro_ta/indicators/overlap.py ─▶ src/overlap/*.rs      ────▶ crates/ferro_ta_core/src/overlap.rs
-ferro_ta/indicators/momentum.py ─▶ src/momentum/*.rs    ────▶ crates/ferro_ta_core/src/momentum.rs
-ferro_ta/data/streaming.py     ─▶ src/streaming/mod.rs  ────▶ crates/ferro_ta_core/src/streaming.rs
-ferro_ta/indicators/extended.py ─▶ src/extended/mod.rs  ────▶ crates/ferro_ta_core/src/extended.rs
-ferro_ta/indicators/math_ops.py ─▶ src/math_ops/mod.rs  ────▶ crates/ferro_ta_core/src/math_ops.rs
-ferro_ta/data/batch.py         ─▶ src/batch/mod.rs      ────▶ crates/ferro_ta_core/src/batch.rs
-ferro_ta/indicators/pattern.py ─▶ src/pattern/*.rs      ────▶ crates/ferro_ta_core/src/pattern.rs
-...                            ─▶ ...                   ────▶ ...
+Language bindings (thin)                   ferro_ta_core (thick)
+─────────────────────────────────          ────────────────────────────────
+python/ferro_ta/*.py  + src/*.rs  ────▶   crates/ferro_ta_core/src/*.rs
+wasm/src/lib.rs                   ────▶   same functions, &[f64] API
+flutter/rust/src/api/*.rs         ────▶   generated wrappers, still core
 
-                                  wasm/src/lib.rs       ────▶ (same core)
-                                  flutter/rust/src/...  ────▶ (same core)
+Python wrappers map onto the same core by category, for example:
+ferro_ta/indicators/overlap.py ─▶ src/overlap/*.rs      ────▶ overlap.rs
+ferro_ta/indicators/momentum.py ─▶ src/momentum/*.rs    ────▶ momentum.rs
+ferro_ta/data/streaming.py     ─▶ src/streaming/mod.rs  ────▶ streaming.rs
+ferro_ta/indicators/extended.py ─▶ src/extended/mod.rs  ────▶ extended.rs
+ferro_ta/indicators/math_ops.py ─▶ src/math_ops/mod.rs  ────▶ math_ops.rs
+ferro_ta/data/batch.py         ─▶ src/batch/mod.rs      ────▶ batch.rs
+ferro_ta/indicators/pattern.py ─▶ src/pattern/*.rs      ────▶ pattern.rs
 ```
 
-**Python layer responsibilities (ONLY):**
-- Input validation (`check_equal_length`, `check_timeperiod`)
-- `_to_f64()` conversion (already has fast path for contiguous float64)
-- pandas/polars wrapping (via `pandas_wrap` / `polars_wrap` decorators)
+**Binding responsibilities (ONLY):**
+- Input validation and idiomatic errors
+- Buffer conversion (`_to_f64()`, `Float64Array`, `Vec<f64>`, …)
+- Host-library wrapping (pandas/polars, Dart `Float64List`)
 - Re-exporting and documentation
 
-**Rust layer responsibilities (EVERYTHING ELSE):**
+**Core responsibilities (EVERYTHING ELSE):**
 - All loops over data
 - All rolling window computations
 - All stateful streaming state machines
@@ -58,14 +68,15 @@ ferro_ta/indicators/pattern.py ─▶ src/pattern/*.rs      ────▶ crat
 
 ## Implementation Rules
 
-### Rule 1: New indicators go in Rust first
+### Rule 1: New indicators go in `ferro_ta_core` first
 
 When adding a new indicator:
 
-1. Implement the algorithm in `crates/ferro_ta_core/src/<category>.rs` as a
-   pure function over slices — never in `src/`. Core is shared with the WASM
-   and Flutter bindings, so an algorithm written in the PyO3 layer is invisible
-   to them and will drift.
+1. Implement the algorithm in `crates/ferro_ta_core/src/<category>.rs` (or a
+   new module) as a pure function over slices — never in `src/`. Public API
+   is `&[f64]` / `Vec<f64>` (or tuples), NaN warmup. Core is shared with the
+   WASM and Flutter bindings, so an algorithm written in the PyO3 layer is
+   invisible to them and will drift.
 2. Add a thin PyO3 wrapper in `src/<category>/<name>.rs` that validates inputs
    and delegates to core, then register it in `src/lib.rs` via
    `<category>::register(m)?`.
@@ -76,9 +87,12 @@ When adding a new indicator:
    - Wraps the result for pandas/polars if the output is a `np.ndarray`
 4. Export from `python/ferro_ta/__init__.py` via the usual `__all__` +
    `pandas_wrap` / `polars_wrap` pattern.
+5. Expose the same symbol on WASM (`wasm/src/lib.rs`) and regenerate Flutter
+   (`python3 scripts/build_flutter_bridge.py`) when the indicator is in the
+   shared core set. Refresh `python3 scripts/build_api_manifest.py`.
 
-**Do not write the algorithm in Python first and port it later.**  Porting is
-expensive; getting it right in Rust first is cheaper.
+**Do not write the algorithm in Python (or JS, or Dart) first and port it
+later.** Porting is expensive; getting it right in core first is cheaper.
 
 ### Rule 2: Porting Python algorithms to Rust
 
@@ -90,6 +104,7 @@ Priority order:
 3. Loops inside extended indicators.
 
 When porting:
+- The algorithm lands in `ferro_ta_core`.
 - The Python function becomes a thin wrapper that calls the Rust function.
 - There is no Python fallback; the extension must be built. If the Rust call
   fails, the function is allowed to fail (no silent fallback to Python).
@@ -117,18 +132,20 @@ result = np.cumsum(data)
 tp = (high + low + close) / 3.0
 ```
 
-### Rule 4: Streaming classes are Rust PyO3 classes
+### Rule 4: Streaming classes are Rust types
 
-Streaming (bar-by-bar stateful) classes **must** be `#[pyclass]` types
-implemented in `src/streaming/mod.rs`.  Python should import and re-export
-them — never re-implement them.
+Streaming (bar-by-bar stateful) classes **must** be implemented in
+`ferro_ta_core`. Bindings that expose streaming wrap those types — they do
+not re-implement the state machine. Python uses `#[pyclass]` wrappers in
+`src/streaming/mod.rs`. WASM uses `WasmStreaming*` types. Flutter does not
+ship streaming classes today; they appear as absent (not `excluded`) on the
+coverage table until a wrapper is added.
 
-Template for a new streaming class:
+Template for a new Python streaming class (after the core type exists):
 ```rust
 #[pyclass(module = "ferro_ta._ferro_ta")]
 pub struct StreamingMyIndicator {
-    period: usize,
-    // ... state fields
+    inner: ferro_ta_core::streaming::StreamingMyIndicator,
 }
 
 #[pymethods]
@@ -138,7 +155,7 @@ impl StreamingMyIndicator {
     pub fn update(&mut self, value: f64) -> f64 { ... }
     pub fn reset(&mut self) { ... }
     #[getter]
-    pub fn period(&self) -> usize { self.period }
+    pub fn period(&self) -> usize { self.inner.period() }
 }
 ```
 
@@ -155,8 +172,9 @@ from ferro_ta._ferro_ta import StreamingMyIndicator  # noqa: F401
 ### Rule 5: Batch operations are Rust functions
 
 Batch functions that process multiple time-series at once must be implemented
-in `src/batch/mod.rs`.  They accept 2-D numpy arrays and loop over columns
-entirely in Rust (one GIL release covers all columns).
+in `ferro_ta_core` and wrapped from `src/batch/mod.rs`. They accept 2-D numpy
+arrays and loop over columns entirely in Rust (one GIL release covers all
+columns).
 
 ### Rule 6: Document the Rust location
 
@@ -168,7 +186,7 @@ def MY_INDICATOR(close, timeperiod=14):
     ...
     Notes
     -----
-    Implemented in Rust — see ``src/my_category/my_indicator.rs``.
+    Implemented in Rust — see ``crates/ferro_ta_core/src/my_category.rs``.
     """
 ```
 
@@ -193,8 +211,8 @@ Some things are **intentionally** in Python and should stay there:
 
 | Module | Logic location |
 |---|---|
-| `overlap.py` | ✅ Rust (`src/overlap/`) |
-| `momentum.py` | ✅ Rust (`src/momentum/`) |
+| `overlap.py` | ✅ Rust (`ferro_ta_core` via `src/overlap/`) |
+| `momentum.py` | ✅ Rust (`ferro_ta_core` via `src/momentum/`) |
 | `volatility.py` | ✅ Rust (`src/volatility/`) |
 | `statistic.py` | ✅ Rust (`src/statistic/`) |
 | `volume.py` | ✅ Rust (`src/volume/`) |
@@ -215,11 +233,15 @@ Some things are **intentionally** in Python and should stay there:
 
 ## Checklist for New Indicator PRs
 
-- [ ] Algorithm implemented in `src/<category>/mod.rs`
+- [ ] Algorithm implemented in `crates/ferro_ta_core/src/<category>.rs`
+- [ ] Thin PyO3 wrapper in `src/<category>/` calls core (no second algorithm)
 - [ ] `cargo fmt --check` passes
 - [ ] `cargo clippy --release -- -D warnings` passes
 - [ ] Python wrapper is **thin** (validation + `_to_f64` + Rust call)
 - [ ] No Python loops over data
-- [ ] Docstring notes "Implemented in Rust"
+- [ ] Docstring notes "Implemented in Rust" and points at core
 - [ ] Registered in `src/lib.rs` and exported from `__init__.py`
-- [ ] Tests added in `tests/`
+- [ ] WASM export added (or documented skip) in `wasm/src/lib.rs`
+- [ ] Flutter wrappers regenerated (`python3 scripts/build_flutter_bridge.py`) or skip listed
+- [ ] `python3 scripts/build_api_manifest.py` refreshed
+- [ ] Tests added in `tests/` (and core unit tests)

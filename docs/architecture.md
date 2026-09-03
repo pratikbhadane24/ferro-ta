@@ -1,8 +1,11 @@
 # Architecture
 
-This document describes the internal layout of **ferro-ta** — how the Rust and
-Python layers are organised, how they communicate, and what each component is
-responsible for.
+This document describes the internal layout of **ferro-ta** — how the Rust
+core and language bindings are organised, how they communicate, and what each
+component is responsible for.
+
+**Rule:** `ferro_ta_core` owns algorithms. Python, WASM, and Flutter only
+marshal inputs and call that crate. They do not reimplement indicators.
 
 ---
 
@@ -24,7 +27,7 @@ ferro-ta/
 │
 ├── crates/
 │   └── ferro_ta_core/            # Pure-Rust library (no PyO3 / numpy)
-│       ├── src/                 # Shared by the root crate, fuzz targets, and WASM binding
+│       ├── src/                 # Shared compute for every language binding
 │       └── benches/             # Rust criterion benchmarks
 │
 ├── python/
@@ -48,6 +51,7 @@ ferro-ta/
 │
 ├── fuzz/                        # cargo-fuzz targets (fuzz_sma, fuzz_rsi, …)
 ├── wasm/                        # wasm-pack / wasm-bindgen binding (uses ferro_ta_core)
+├── flutter/                     # flutter_rust_bridge package (uses ferro_ta_core)
 ├── benchmarks/                  # Python pytest-benchmark benchmarks
 ├── docs/                        # Sphinx documentation source
 └── tests/                       # Python pytest test suite
@@ -55,38 +59,42 @@ ferro-ta/
 
 ---
 
-## Two Rust Crates
+## Core vs bindings
 
-ferro-ta has **two** Rust crates that serve different purposes:
+ferro-ta has **two** Rust crates with a one-way dependency: the root PyO3
+crate already depends on `ferro_ta_core` (see the root `Cargo.toml`).
 
-### 1. Root crate (`src/`) — Python extension (`_ferro_ta`)
+```
+ferro_ta_core          algorithms, &[f64] in / Vec<f64> out
+    ├── ferro_ta       PyO3 marshalling (src/) → Python
+    ├── ferro-ta-wasm  wasm-bindgen marshalling (wasm/) → JS
+    └── ferro_ta       flutter_rust_bridge (flutter/rust) → Dart
+                       Flutter web reuses ferro-ta-wasm
+```
+
+### 1. `crates/ferro_ta_core/` — Pure Rust library
+
+| Property       | Value                                                             |
+|----------------|-------------------------------------------------------------------|
+| Crate type     | `lib` (not a language extension)                                  |
+| PyO3 / numpy   | No — pure Rust, no Python dependency                              |
+| Depends on     | `std` plus optional `multiversion` / `serde`                      |
+| Used by        | Python, WASM, Flutter, fuzz targets, and crates.io consumers      |
+
+`ferro_ta_core` is the only place indicator math belongs.
+
+### 2. Root crate (`src/`) — Python extension (`_ferro_ta`)
 
 | Property       | Value                                             |
 |----------------|---------------------------------------------------|
 | Crate type     | `cdylib` (compiled to a `.so` / `.pyd` file)     |
 | PyO3 / numpy   | Yes — depends on `pyo3` and `numpy`               |
-| Depends on     | `ferro_ta_core` (shared algorithms) and the `ta` crate |
+| Depends on     | `ferro_ta_core` (compute) plus PyO3/numpy and the `ta` crate |
 | Used by        | Python extension (`ferro_ta._ferro_ta`)             |
 
 Each category module (`src/overlap/`, `src/momentum/`, …) registers
-`#[pyfunction]`s that accept `numpy` arrays (via `PyReadonlyArray1<f64>`)
-and return `PyArray1<f64>` NumPy arrays.
-
-### 2. `crates/ferro_ta_core/` — Pure Rust library
-
-| Property       | Value                                                             |
-|----------------|-------------------------------------------------------------------|
-| Crate type     | `lib` (not a Python extension)                                    |
-| PyO3 / numpy   | No — pure Rust, no Python dependency                              |
-| Depends on     | Only optional crates: `multiversion` (`simd` feature, default-on) and `serde`/`serde_json` (`serde` feature) |
-| Used by        | Root crate (PyO3 wrappers), `fuzz/` targets, and `wasm/` binding  |
-
-`ferro_ta_core` provides the indicator categories with a `&[f64]` API,
-making it usable from WASM and fuzz targets without pulling in PyO3 or numpy.
-
-> **Note:** The root crate depends on `ferro_ta_core` and wraps its `&[f64]`
-> API with PyO3 `#[pyfunction]`s, so the Python, WASM, and fuzz surfaces all
-> share the same core implementations.
+`#[pyfunction]`s that accept `numpy` arrays (via `PyReadonlyArray1<f64>`),
+call `ferro_ta_core`, and return `PyArray1<f64>` NumPy arrays.
 
 ---
 
@@ -102,7 +110,9 @@ User code
   │                   ├── _utils._to_f64(close)      # convert to float64 ndarray
   │                   └── _ferro_ta.sma(arr, n)        # call Rust extension
   │                             │
-  │                             └── src/overlap/sma.rs  # validates timeperiod, calls ferro_ta_core
+  │                             └── src/overlap/sma.rs  # validates timeperiod, PyO3 marshalling
+  │                                       │
+  │                                       └── ferro_ta_core::overlap::sma
   │
   ├── SMA(pd.Series(...))                # pandas_wrap intercepts first
   │         │
