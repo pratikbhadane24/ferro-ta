@@ -224,7 +224,6 @@ pub fn correl(real0: &[f64], real1: &[f64], timeperiod: usize) -> Vec<f64> {
         .map(|(&a, &b)| a * b)
         .sum();
 
-    #[allow(clippy::needless_range_loop)]
     for end in (timeperiod - 1)..n {
         let denom_x = period * sum_x2 - sum_x * sum_x;
         let denom_y = period * sum_y2 - sum_y * sum_y;
@@ -476,7 +475,7 @@ mod tests {
         let n = a.len();
         let m = b.len();
         assert!(path.len() >= n.max(m));
-        assert!(path.len() <= n + m - 1);
+        assert!(path.len() < n + m);
     }
 
     #[test]

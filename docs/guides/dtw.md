@@ -20,8 +20,8 @@ optimal path, with a single `sqrt()` applied at the end. This matches
 tests assert numerical agreement, not bitwise identity). Example:
 
 ```python
->>> import ferro_ta as fta
->>> fta.DTW_DISTANCE([0.0, 1.0, 2.0], [1.0, 2.0, 3.0])
+>>> from ferro_ta.statistic import DTW_DISTANCE
+>>> DTW_DISTANCE([0.0, 1.0, 2.0], [1.0, 2.0, 3.0])
 1.4142135623730951  # == sqrt(2), same as dtaidistance
 ```
 
@@ -39,10 +39,10 @@ realistic `w`. A narrower band can only *increase* the distance, so
 
 ```python
 # Unconstrained
-fta.DTW_DISTANCE(a, b)
+DTW_DISTANCE(a, b)
 
 # Constrained: warping may shift up to 5 positions
-fta.DTW_DISTANCE(a, b, window=5)
+DTW_DISTANCE(a, b, window=5)
 ```
 
 ## Batch usage
@@ -52,12 +52,12 @@ series, in parallel:
 
 ```python
 import numpy as np
-import ferro_ta as fta
+from ferro_ta.statistic import BATCH_DTW
 
 reference = np.random.random(500)
 candidates = np.random.random((1000, 500))
 
-distances = fta.BATCH_DTW(candidates, reference, window=20)
+distances = BATCH_DTW(candidates, reference, window=20)
 nearest = int(np.argmin(distances))
 ```
 
@@ -68,7 +68,7 @@ DTW beats FastDTW-style approximations.
 
 ## Edge cases
 
-- **Empty input:** raises `FerroTAInputError`.
+- **Empty input:** raises `FerroTAValueError`.
 - **NaN in input:** propagates to the output (matches IEEE 754). Call
   `ferro_ta.core.exceptions.check_finite()` first if you want to fail
   loudly instead.

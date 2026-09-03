@@ -31,11 +31,11 @@ The challenges are:
 
 ## Chunk boundaries and warm-up overlap
 
-The `ferro_ta.chunked` module provides Rust-backed helpers for chunk-based
+The `ferro_ta.data.chunked` module provides Rust-backed helpers for chunk-based
 execution:
 
 ```python
-from ferro_ta.chunked import make_chunk_ranges, trim_overlap, stitch_chunks, chunk_apply
+from ferro_ta.data.chunked import make_chunk_ranges, trim_overlap, stitch_chunks, chunk_apply
 from ferro_ta import SMA
 
 import numpy as np
@@ -46,12 +46,13 @@ overlap = period - 1               # warm-up bars needed
 
 ranges = make_chunk_ranges(len(data), chunk_size=50_000, overlap=overlap)
 chunks_out = []
-for start, end in ranges:
+for i, (start, end) in enumerate(ranges):
     chunk = data[start:end]
     out = SMA(chunk, timeperiod=period)
-    chunks_out.append(out)
+    # first chunk has no warm-up prefix; later chunks discard `overlap` bars
+    chunks_out.append(trim_overlap(out, 0 if i == 0 else overlap))
 
-result = stitch_chunks(chunks_out, overlap=overlap)
+result = stitch_chunks(chunks_out)
 ```
 
 ### Key concepts
@@ -74,10 +75,10 @@ Use `chunk_apply` or `make_chunk_ranges` + manual loop.  Suitable for
 datasets up to ~10 GB that fit on a single machine with streaming reads.
 
 ```python
-from ferro_ta.chunked import chunk_apply
+from ferro_ta.data.chunked import chunk_apply
 from ferro_ta import EMA
 
-result = chunk_apply(data, EMA, chunk_size=100_000, overlap=50, timeperiod=50)
+result = chunk_apply(EMA, data, chunk_size=100_000, overlap=50, timeperiod=50)
 ```
 
 ### Option B: Dask `map_partitions` (distributed)
@@ -164,6 +165,6 @@ special handling:
 
 ## See also
 
-- `ferro_ta.chunked` — API reference for chunk helpers.
+- `ferro_ta.data.chunked` — API reference for chunk helpers.
 - `ferro_ta.streaming` — Stateful streaming classes for live bar-by-bar use.
 - Dask documentation: <https://docs.dask.org/en/stable/>

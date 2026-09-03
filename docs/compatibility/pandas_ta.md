@@ -56,13 +56,13 @@ rsi = ft.RSI(close, timeperiod=14)
 | `ta.mom(length=N)` | `ft.MOM(close, timeperiod=N)` | Exact match |
 | `ta.roc(length=N)` | `ft.ROC(close, timeperiod=N)` | Exact match |
 | `ta.trima(length=N)` | `ft.TRIMA(close, timeperiod=N)` | Exact match |
-| `ta.hma(length=N)` | `ft.HT_MA(close, timeperiod=N)` | Hull MA variant |
+| `ta.hma(length=N)` | `ft.HULL_MA(close, timeperiod=N)` | Hull MA variant |
 | `ta.ichimoku(...)` | `ft.ICHIMOKU(high, low, close)` | Tenkan/Kijun match |
-| `ta.kc(high, low, close, ...)` | `ft.KELTNER(high, low, close, ...)` | Tail convergence |
+| `ta.kc(high, low, close, ...)` | `ft.KELTNER_CHANNELS(high, low, close, ...)` | Tail convergence |
 
 ## Batch Execution
 
-ferro-ta supports running many indicators at once via the batch API:
+ferro-ta supports running an indicator across many series at once via the batch API:
 
 ```python
 import numpy as np
@@ -71,7 +71,7 @@ import ferro_ta as ft
 data = np.random.randn(1000, 50)  # 50 instruments × 1000 bars
 
 # Run SMA(20) across all 50 instruments in one call
-results = ft.batch_compute(data, "SMA", timeperiod=20)
+results = ft.batch_sma(data, timeperiod=20)
 ```
 
 ## Running the Cross-Library Tests

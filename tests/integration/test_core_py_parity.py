@@ -199,8 +199,9 @@ class TestExtendedGoldens:
         _assert_close(senkou_a[4:], np.array([11.25, 12.25, 13.25, 14.25]))
         _assert_nan_prefix(senkou_b, 5)
         _assert_close(senkou_b[5:], np.array([11.5, 12.5, 13.5]))
-        assert chikou[2] == pytest.approx(10.0, abs=TOL)
-        assert chikou[7] == pytest.approx(15.0, abs=TOL)
+        assert chikou[0] == pytest.approx(12.0, abs=TOL)
+        assert chikou[5] == pytest.approx(17.0, abs=TOL)
+        assert np.isnan(chikou[6]) and np.isnan(chikou[7])
         # Senkou at i uses tenkan/kijun at i-d, never the future bar.
         assert tenkan[2] == pytest.approx(11.5, abs=TOL)
         assert kijun[2] == pytest.approx(11.0, abs=TOL)

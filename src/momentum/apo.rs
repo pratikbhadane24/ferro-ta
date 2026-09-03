@@ -20,6 +20,6 @@ pub fn apo<'py>(
         ));
     }
     let prices = close.as_slice()?;
-    let result = ferro_ta_core::momentum::apo(prices, fastperiod, slowperiod);
+    let result = py.allow_threads(|| ferro_ta_core::momentum::apo(prices, fastperiod, slowperiod));
     Ok(result.into_pyarray(py))
 }

@@ -98,7 +98,7 @@ upper, middle, lower = BBANDS(close, timeperiod=5, nbdevup=2.0, nbdevdn=2.0)
 
 ## 📊 TA-Lib compatibility
 
-- `ferro-ta` implements 100% of TA-Lib's function set (`162+` indicators).
+- `ferro-ta` implements 156 of TA-Lib 0.6.4's 161 functions, plus 10 extended indicators and 9 streaming classes that TA-Lib does not provide. Not yet implemented: `ACCBANDS`, `IMI`, `AVGDEV`, `MINMAX`, `MINMAXINDEX`.
 - Most functions are marked `Exact` or `Close`; the remaining notable non-exact categories are the Hilbert cycle indicators plus `MAMA`, `SAR`, and `SAREXT`.
 - The full parity matrix and coverage summary now live in [TA_LIB_COMPATIBILITY.md](TA_LIB_COMPATIBILITY.md).
 

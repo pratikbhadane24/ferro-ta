@@ -276,7 +276,26 @@ All new indicators **must**:
 pytest tests/unit/ tests/integration/ -v
 ```
 
-CI runs on Python 3.10–3.13 across Linux, macOS, and Windows.  Please make sure your change passes on all targets locally before opening a pull request.
+CI runs the Python suite on Python 3.10–3.13 (Linux); release wheels are built for Linux, macOS, and Windows.  Please make sure your change passes locally before opening a pull request.
+
+### Accuracy tests against TA-Lib
+
+`tests/integration/test_vs_talib.py` starts with `pytest.importorskip("talib")`, so
+without the `talib` module it reports **skipped, not failed** — the run stays green
+while none of the parity assertions execute. If you are touching indicator maths,
+install the comparison extra and confirm those tests actually ran:
+
+```bash
+# TA-Lib's C library first, e.g. `brew install ta-lib` or `apt install libta-lib-dev`
+uv pip install -e ".[comparison]"
+pytest tests/integration/test_vs_talib.py -v
+```
+
+Note that `maturin develop` re-syncs the virtualenv against `pyproject.toml` and
+will drop `ta-lib` again, silently returning those tests to "skipped"; re-install
+it after rebuilding the extension. CI covers this in the dedicated
+`Accuracy vs TA-Lib` job, which fails if the import is unavailable rather than
+skipping.
 
 ## Pull Request Checklist
 
@@ -286,7 +305,7 @@ CI runs on Python 3.10–3.13 across Linux, macOS, and Windows.  Please make sur
 - [ ] Python wrapper and `__all__` updated
 - [ ] `__init__.py` re-exports updated
 - [ ] Docstrings present in both Rust and Python
-- [ ] No vulnerable dependencies introduced (CI runs `cargo audit` and `pip-audit`; critical/high should be addressed)
+- [ ] No vulnerable dependencies introduced (CI runs `cargo deny` and `pip-audit`; critical/high should be addressed)
 
 ---
 
@@ -343,7 +362,6 @@ tests/
 │   ├── test_validation.py
 │   ├── test_known_values.py
 │   ├── test_property_based.py
-│   ├── test_stages_*.py
 │   └── test_math_ops_vs_numpy.py
 ├── integration/       # integration and comparison tests (vs TA-Lib, pandas-ta, ta)
 │   ├── test_integration.py
@@ -388,13 +406,13 @@ For a new indicator that does not have a dedicated Rust batch function, use
 
 ```bash
 # Compile benchmarks only (fast, used in CI)
-cargo bench --no-run
+cargo bench -p ferro_ta_core --no-run
 
 # Run benchmarks and get timings
-cargo bench
+cargo bench -p ferro_ta_core
 ```
 
-Benchmarks are in `benches/indicators.rs` using [Criterion](https://github.com/bheisler/criterion.rs).
+Benchmarks are in `crates/ferro_ta_core/benches/indicators.rs` using [Criterion](https://github.com/bheisler/criterion.rs).
 
 ---
 
@@ -407,7 +425,7 @@ cargo install cargo-tarpaulin
 # Collect coverage for the core crate
 cargo tarpaulin -p ferro_ta_core --out Html
 
-# Open htmlcov/index.html
+# Open tarpaulin-report.html
 ```
 
 ---
@@ -447,13 +465,14 @@ Every PR that touches `src/`, `python/`, or `wasm/` **must** add an entry to the
 
 ### Version consistency
 
-`Cargo.toml` and `pyproject.toml` must always carry the same `version` string.
-CI enforces this with the `version-check` job — a PR that changes one but not the
-other will fail CI.
+`Cargo.toml`, `pyproject.toml`, and `flutter/pubspec.yaml` must always carry the
+same `version` string. CI enforces this with the `version-check` job — a PR that
+changes one but not the others will fail CI.
 
 ### Dependency audits
 
-CI runs **cargo audit** (Rust) and **pip-audit** (Python) in the `audit` job. PRs must
+CI runs **cargo deny** advisory checks (Rust) and **pip-audit** (Python) in the
+`cargo-deny` and `pip-audit` jobs; `make audit` runs `cargo audit` + `pip-audit` locally. PRs must
 not introduce critical or high-severity vulnerabilities. If a dependency cannot be
 updated immediately, document the accepted risk in the PR or in SECURITY.md. See
 [SECURITY.md](SECURITY.md) for the full policy.

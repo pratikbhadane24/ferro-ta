@@ -477,7 +477,8 @@ pub fn ichimoku(
     let kijun = midpoint_rolling(kijun_period);
     let raw_b = midpoint_rolling(senkou_b_period);
 
-    // Senkou A: (tenkan + kijun) / 2 displaced forward — value at i uses i - d
+    // Senkou A: (tenkan + kijun) / 2 projected forward `displacement` bars,
+    // so senkou_a[i] only uses data from bar i - displacement (no look-ahead).
     let mut senkou_a = vec![f64::NAN; n];
     if n > displacement {
         for i in displacement..n {
@@ -494,10 +495,11 @@ pub fn ichimoku(
         senkou_b[displacement..].copy_from_slice(&raw_b[..n - displacement]);
     }
 
-    // Chikou: close shifted forward `displacement` bars
+    // Chikou (lagging span): close plotted `displacement` bars back, i.e.
+    // chikou[i] = close[i + displacement] (standard close.shift(-displacement)).
     let mut chikou = vec![f64::NAN; n];
     if n > displacement {
-        chikou[displacement..].copy_from_slice(&close[..n - displacement]);
+        chikou[..n - displacement].copy_from_slice(&close[displacement..]);
     }
 
     (tenkan, kijun, senkou_a, senkou_b, chikou)
@@ -946,10 +948,21 @@ mod tests {
         assert!(kijun[24].is_nan());
         assert!(!kijun[25].is_nan());
 
-        // Chikou: close shifted forward by 26 bars
-        assert!(chikou[25].is_nan());
-        assert!(!chikou[26].is_nan());
-        assert!((chikou[26] - close[0]).abs() < 1e-10);
+        // Chikou (lagging span): close plotted 26 bars back —
+        // chikou[i] == close[i + 26], NaN for the last 26 bars.
+        assert!(!chikou[0].is_nan());
+        assert!((chikou[0] - close[26]).abs() < 1e-10);
+        assert!((chikou[n - 27] - close[n - 1]).abs() < 1e-10);
+        assert!(chikou[n - 26].is_nan());
+        assert!(chikou[n - 1].is_nan());
+
+        // Senkou spans are projected 26 bars forward: leading NaNs, and no
+        // value may depend on a future bar.
+        assert!(senkou_a[25].is_nan());
+        assert!(senkou_b[25].is_nan());
+        // senkou_a[i] == (tenkan[i-26] + kijun[i-26]) / 2
+        assert!(!senkou_a[51].is_nan());
+        assert!((senkou_a[51] - (tenkan[25] + kijun[25]) / 2.0).abs() < 1e-10);
     }
 
     #[test]
@@ -1019,7 +1032,6 @@ mod tests {
                     senkou_b[i].is_nan(),
                     "senkou_b[{i}] must be NaN (no past bar)"
                 );
-                assert!(chikou[i].is_nan());
                 continue;
             }
 
@@ -1060,7 +1072,12 @@ mod tests {
                 );
             }
 
-            assert!((chikou[i] - close[src]).abs() < 1e-10);
+            let chikou_src = i + d;
+            if chikou_src < n {
+                assert!((chikou[i] - close[chikou_src]).abs() < 1e-10);
+            } else {
+                assert!(chikou[i].is_nan());
+            }
         }
 
         // Old mapping wrote senkou_a[i] from tenkan/kijun[i + d] (lookahead).
@@ -1102,8 +1119,11 @@ mod tests {
         assert!((senkou_b[6] - 12.5).abs() < 1e-10);
         assert!((senkou_b[7] - 13.5).abs() < 1e-10);
 
-        assert!((chikou[2] - 10.0).abs() < 1e-10);
-        assert!((chikou[7] - 15.0).abs() < 1e-10);
+        // Chikou is close plotted `d` bars back: chikou[i] = close[i + d].
+        assert!((chikou[0] - 12.0).abs() < 1e-10);
+        assert!((chikou[5] - 17.0).abs() < 1e-10);
+        assert!(chikou[6].is_nan());
+        assert!(chikou[7].is_nan());
     }
 
     /// A spike on the last bar must not leak into earlier Senkou values.

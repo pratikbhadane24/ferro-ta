@@ -18,10 +18,10 @@ For the packaging and release overview, see [PACKAGING.md](PACKAGING.md).
 
 PyPI releases are expected to include:
 
-- Wheels for CPython 3.10, 3.11, 3.12, and 3.13
-- Linux x86_64 (`manylinux_2_17`)
+- One `cp310-abi3` wheel per platform/architecture (each covers CPython 3.10+)
+- Linux x86_64 and aarch64 (`manylinux_2_17` and `musllinux_1_2`)
 - macOS universal2
-- Windows x86_64
+- Windows x64 and arm64
 - One source distribution (`sdist`)
 
 ---
@@ -31,8 +31,8 @@ PyPI releases are expected to include:
 Before starting a release:
 
 - [ ] All CI checks are green on `main`: Rust (fmt, clippy), tests (with coverage gate),
-      lint (ruff), typecheck (mypy, pyright), docs (Sphinx), WASM, audit (cargo-audit,
-      pip-audit), fuzz (no crashes).
+      lint (ruff), typecheck (mypy, pyright), docs (Sphinx), WASM, audit (cargo-deny
+      advisories, pip-audit), fuzz (no crashes).
 - [ ] **Security audit clean:** Run `cargo audit` and `pip-audit` locally and confirm
       no high/critical vulnerabilities. Address any findings before tagging.
       ```bash
@@ -83,11 +83,13 @@ Files covered by the bump script:
 | `crates/ferro_ta_core/Cargo.toml` | Same version for crates.io publish |
 | `crates/ferro_ta_core/README.md` | Installation snippet should show the current crate version |
 | `pyproject.toml` | Root |
+| `wasm/Cargo.toml` | WASM crate version |
 | `wasm/package.json` | Package version |
 | `flutter/pubspec.yaml` | pub.dev package version |
 | `flutter/rust/Cargo.toml` | Flutter bridge crate version |
 | `conda/meta.yaml` | Conda recipe version |
-| `docs/conf.py` | Default Sphinx release must resolve to the same version |
+| `docs/changelog.rst` | Tracked-version note on the docs changelog page |
+| `docs/support_matrix.rst` | Tracked-version note on the support matrix page |
 
 **`Cargo.toml`** (root):
 ```toml
@@ -132,7 +134,10 @@ Also update the docs-facing release surfaces for the same version:
 ## Step 4 — Commit the version bump
 
 ```bash
-git add Cargo.toml crates/ferro_ta_core/Cargo.toml pyproject.toml wasm/package.json CHANGELOG.md
+git add Cargo.toml Cargo.lock pyproject.toml CHANGELOG.md \
+    crates/ferro_ta_core/Cargo.toml crates/ferro_ta_core/README.md \
+    wasm/Cargo.toml wasm/package.json flutter/pubspec.yaml flutter/rust/Cargo.toml \
+    conda/meta.yaml docs/changelog.rst docs/support_matrix.rst
 git commit -m "chore: release v0.2.0"
 git push origin main
 ```
@@ -162,13 +167,13 @@ Pushing the tag immediately starts **two** workflows:
 
 ---
 
-## Step 6 — Create a GitHub Release
+## Step 6 — Verify the GitHub Release
 
-1. Go to **Releases → Draft a new release** in the GitHub UI.
-2. Select the tag `v0.2.0` you just pushed.
-3. Set the release title to `v0.2.0`.
-4. Paste the changelog section for `v0.2.0` into the release notes.
-5. Click **Publish release**.
+The `release.yml` workflow creates and publishes the GitHub Release
+automatically from the tag: it extracts the `[X.Y.Z]` section from
+`CHANGELOG.md` and uses it as the release notes. Verify the release appears
+under **Releases** with the right title (`v0.2.0`) and notes. (Only if the
+workflow failed should you draft the release manually in the GitHub UI.)
 
 Publishing the release triggers the CI wheel build jobs, `build-sdist`, and `publish`
 automatically (the workflow responds to `release: published`). The PyPI upload

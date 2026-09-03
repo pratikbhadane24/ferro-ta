@@ -84,15 +84,23 @@ pub fn aggregate_volume_bars_ticks(price: &[f64], size: &[f64], volume_threshold
     let mut out_close: Vec<f64> = Vec::new();
     let mut out_vol: Vec<f64> = Vec::new();
 
-    let mut bar_open = price[0];
-    let mut bar_high = price[0];
-    let mut bar_low = price[0];
-    let mut bar_close = price[0];
-    let mut bar_vol = size[0];
+    let mut bar_open: f64 = 0.0;
+    let mut bar_high: f64 = 0.0;
+    let mut bar_low: f64 = 0.0;
+    let mut bar_close: f64 = 0.0;
+    let mut bar_vol: f64 = 0.0;
+    let mut in_bar = false;
 
-    for i in 1..n {
-        bar_high = bar_high.max(price[i]);
-        bar_low = bar_low.min(price[i]);
+    for i in 0..n {
+        if in_bar {
+            bar_high = bar_high.max(price[i]);
+            bar_low = bar_low.min(price[i]);
+        } else {
+            bar_open = price[i];
+            bar_high = price[i];
+            bar_low = price[i];
+            in_bar = true;
+        }
         bar_close = price[i];
         bar_vol += size[i];
 
@@ -102,19 +110,14 @@ pub fn aggregate_volume_bars_ticks(price: &[f64], size: &[f64], volume_threshold
             out_low.push(bar_low);
             out_close.push(bar_close);
             out_vol.push(bar_vol);
-            if i + 1 < n {
-                bar_open = price[i + 1];
-                bar_high = price[i + 1];
-                bar_low = price[i + 1];
-                bar_close = price[i + 1];
-                bar_vol = size[i + 1];
-            } else {
-                bar_vol = 0.0;
-            }
+            bar_vol = 0.0;
+            in_bar = false;
         }
     }
-    // Push remaining partial bar
-    if bar_vol > 0.0 {
+    // Push remaining partial bar. `in_bar` alone decides this: a trailing bar
+    // whose ticks all have zero size is still a real bar with OHLC data, and
+    // gating on bar_vol > 0.0 would silently discard it.
+    if in_bar {
         out_open.push(bar_open);
         out_high.push(bar_high);
         out_low.push(bar_low);
@@ -264,7 +267,26 @@ mod tests {
         assert!((v[0] - 70.0).abs() < 1e-10);
         assert!((h[0] - 11.0).abs() < 1e-10);
         assert!((l[0] - 10.0).abs() < 1e-10);
-        assert!(v.len() >= 2);
+        // Second bar: ticks 2+3 (50+20=70 >= 70)
+        assert_eq!(v.len(), 3);
+        assert!((o[1] - 12.0).abs() < 1e-10);
+        assert!((c[1] - 13.0).abs() < 1e-10);
+        assert!((v[1] - 70.0).abs() < 1e-10);
+        // Partial: tick 4
+        assert!((o[2] - 14.0).abs() < 1e-10);
+        assert!((v[2] - 60.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_volume_bars_ticks_first_tick_crosses_threshold() {
+        // Tick 0 alone crosses the threshold: it must be emitted as its own
+        // bar rather than merged with tick 1.
+        let (o, _h, _l, c, v) = aggregate_volume_bars_ticks(&[10.0, 11.0], &[100.0, 5.0], 50.0);
+        assert_eq!(v.len(), 2);
+        assert!((v[0] - 100.0).abs() < 1e-10);
+        assert!((c[0] - 10.0).abs() < 1e-10);
+        assert!((o[1] - 11.0).abs() < 1e-10);
+        assert!((v[1] - 5.0).abs() < 1e-10);
     }
 
     #[test]
@@ -272,6 +294,19 @@ mod tests {
         let (o, _h, _l, _c, v) = aggregate_volume_bars_ticks(&[5.0], &[10.0], 100.0);
         assert_eq!(o.len(), 1);
         assert!((v[0] - 10.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_volume_bars_ticks_keeps_zero_size_trailing_bar() {
+        // Zero-size ticks still carry price information; the trailing bar must
+        // not be dropped just because its volume is 0.
+        let (o, h, l, c, v) = aggregate_volume_bars_ticks(&[10.0, 12.0], &[0.0, 0.0], 50.0);
+        assert_eq!(v.len(), 1);
+        assert!((v[0] - 0.0).abs() < 1e-10);
+        assert!((o[0] - 10.0).abs() < 1e-10);
+        assert!((h[0] - 12.0).abs() < 1e-10);
+        assert!((l[0] - 10.0).abs() < 1e-10);
+        assert!((c[0] - 12.0).abs() < 1e-10);
     }
 
     #[test]

@@ -19,11 +19,13 @@ ferro-ta/
 │   ├── statistic/               # Thin wrappers: STDDEV, VAR, LINEARREG, …
 │   ├── price_transform/         # Thin wrappers: AVGPRICE, MEDPRICE, …
 │   ├── pattern/                 # 61 CDL candlestick pattern heuristics
-│   └── cycle/                   # Hilbert-transform cycle heuristics
+│   ├── cycle/                   # Hilbert-transform cycle heuristics
+│   └── validation.rs            # Shared parameter validation helpers
 │
 ├── crates/
 │   └── ferro_ta_core/            # Single compute engine (pure Rust, no PyO3)
-│       └── src/                 # Indicators, streaming, options, backtest
+│       ├── src/                 # Indicators, streaming, options, backtest
+│       └── benches/             # Rust criterion benchmarks
 │
 ├── python/
 │   └── ferro_ta/                 # Python package
@@ -32,11 +34,12 @@ ferro-ta/
 │       ├── indicators/          # Thin wrappers around _ferro_ta functions
 │       ├── analysis/            # Backtest, portfolio, options, signals
 │       ├── data/                # Streaming, batch, resampling
-│       └── core/                # Config, registry, raw extension access
+│       ├── core/                # Config, registry, raw extension access
+│       ├── tools/               # pipeline, GPU, alerts, DSL, viz, MCP
+│       └── py.typed             # PEP 561 marker
 │
 ├── fuzz/                        # cargo-fuzz targets (fuzz_sma, fuzz_rsi, …)
 ├── wasm/                        # wasm-pack / wasm-bindgen binding (uses ferro_ta_core)
-├── benches/                     # Rust criterion benchmarks
 ├── benchmarks/                  # Python pytest-benchmark benchmarks
 ├── docs/                        # Sphinx documentation source
 └── tests/                       # Python pytest test suite
@@ -82,7 +85,7 @@ an ndarray.
 |----------------|-------------------------------------------------------------------|
 | Crate type     | `lib` (not a Python extension)                                    |
 | PyO3 / numpy   | No — pure Rust, no Python dependency                              |
-| Depends on     | `std` plus optional SIMD (`multiversion`) and `serde`             |
+| Depends on     | Optional `multiversion` (`simd`, default-on) and `serde`/`serde_json` |
 | Used by        | Root PyO3 crate, `fuzz/` targets, `wasm/`, Flutter bridge         |
 
 `ferro_ta_core` is the `&[f64]` API used by every binding. Numerical
@@ -102,7 +105,6 @@ User code
   │         └── python/ferro_ta/indicators/overlap.py::SMA
   │                   │
   │                   ├── _utils._to_f64(close)      # convert to float64 ndarray
-  │                   ├── check_timeperiod(n)         # validate parameters
   │                   └── _ferro_ta.sma(arr, n)        # call Rust extension
   │                             │
   │                             └── src/overlap/sma.rs  # thin PyO3 wrapper
@@ -156,10 +158,11 @@ Rust batch implementation (see `docs/performance.md`).
 
 ## Where Validation Lives
 
-Currently most validation (array length checks, `timeperiod` range checks) is
-done in Python wrappers before the Rust call.  A future improvement is to move
-these checks into the `#[pyfunction]`s so that callers using the raw
-`_ferro_ta` extension directly also get clear errors.
+Parameter validation (`timeperiod` range checks, equal-length checks) is done
+in Rust inside the `#[pyfunction]`s via `src/validation.rs`, so callers using
+the raw `_ferro_ta` extension directly also get clear errors.  The Python
+wrappers handle array conversion (`_to_f64`) and normalise Rust errors into
+`FerroTAError` subclasses.
 
 ---
 

@@ -130,7 +130,9 @@ class TestICHIMOKU:
                 assert np.isclose(senkou_b[i], raw_b[src])
             else:
                 assert np.isnan(senkou_b[i])
-            assert np.isclose(chikou[i], _C[src])
+        for i in range(N - d):
+            assert np.isclose(chikou[i], _C[i + d])
+        assert np.all(np.isnan(chikou[N - d :]))
 
 
 # ---------------------------------------------------------------------------

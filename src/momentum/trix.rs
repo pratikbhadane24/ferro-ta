@@ -12,6 +12,6 @@ pub fn trix<'py>(
 ) -> PyResult<Bound<'py, PyArray1<f64>>> {
     validation::validate_timeperiod(timeperiod, "timeperiod", 1)?;
     let prices = close.as_slice()?;
-    let result = ferro_ta_core::momentum::trix(prices, timeperiod);
+    let result = py.allow_threads(|| ferro_ta_core::momentum::trix(prices, timeperiod));
     Ok(result.into_pyarray(py))
 }

@@ -38,6 +38,7 @@ pub fn mavp<'py>(
     validation::validate_equal_length(&[(prices.len(), "close"), (per.len(), "periods")])?;
     validation::validate_timeperiod(minperiod, "minperiod", 1)?;
     validation::validate_timeperiod(maxperiod, "maxperiod", minperiod)?;
-    let result = ferro_ta_core::overlap::mavp(prices, per, minperiod, maxperiod);
+    let result =
+        py.allow_threads(|| ferro_ta_core::overlap::mavp(prices, per, minperiod, maxperiod));
     Ok(result.into_pyarray(py))
 }

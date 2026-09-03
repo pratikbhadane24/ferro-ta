@@ -33,8 +33,11 @@ Future<void> main() async {
 ## Usage (web)
 
 ```dart
+import 'dart:typed_data';
 import 'package:ferro_ta/ferro_ta_web.dart';
+
 // Reuses the ferro-ta-wasm module exposed on globalThis.ferroTaWasm.
+final close = Float64List.fromList([1, 2, 3, 4, 5, 6, 7]);
 final sma3 = smaWeb(close, 3);
 ```
 
@@ -65,4 +68,4 @@ make flutter-gen   # regenerate api wrappers + flutter_rust_bridge glue
 make flutter       # verify wrappers are fresh and compile against core
 ```
 
-This package is developed in the [ferro-ta monorepo](https://github.com/pratikbhadane/ferro-ta).
+This package is developed in the [ferro-ta monorepo](https://github.com/pratikbhadane24/ferro-ta).

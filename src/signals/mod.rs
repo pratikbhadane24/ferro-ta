@@ -34,13 +34,15 @@ pub fn compose_rank<'py>(
         ));
     }
 
-    let scores = py.allow_threads(|| {
-        let columns: Vec<Vec<f64>> = (0..n_sigs)
-            .map(|sig_idx| arr.column(sig_idx).iter().copied().collect())
-            .collect();
-        let col_refs: Vec<&[f64]> = columns.iter().map(|c| c.as_slice()).collect();
-        ferro_ta_core::signals::compose_rank(&col_refs)
-    });
+    let scores = py
+        .allow_threads(|| {
+            let columns: Vec<Vec<f64>> = (0..n_sigs)
+                .map(|sig_idx| arr.column(sig_idx).iter().copied().collect())
+                .collect();
+            let col_refs: Vec<&[f64]> = columns.iter().map(|c| c.as_slice()).collect();
+            ferro_ta_core::signals::compose_rank(&col_refs)
+        })
+        .map_err(PyValueError::new_err)?;
 
     Ok(scores.into_pyarray(py))
 }

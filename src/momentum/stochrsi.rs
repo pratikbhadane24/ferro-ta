@@ -17,7 +17,8 @@ pub fn stochrsi<'py>(
     validation::validate_timeperiod(fastk_period, "fastk_period", 1)?;
     validation::validate_timeperiod(fastd_period, "fastd_period", 1)?;
     let prices = close.as_slice()?;
-    let (fastk, fastd) =
-        ferro_ta_core::momentum::stochrsi(prices, timeperiod, fastk_period, fastd_period);
+    let (fastk, fastd) = py.allow_threads(|| {
+        ferro_ta_core::momentum::stochrsi(prices, timeperiod, fastk_period, fastd_period)
+    });
     Ok((fastk.into_pyarray(py), fastd.into_pyarray(py)))
 }

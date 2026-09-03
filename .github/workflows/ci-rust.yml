@@ -48,7 +48,10 @@ jobs:
           components: rustfmt, clippy
       - uses: Swatinem/rust-cache@v2
       - run: cargo fmt --all -- --check
-      - run: cargo clippy --release -- -D warnings
+      # --workspace --all-targets: without these, only the root ferro_ta lib is
+      # linted, leaving the whole ferro_ta_core crate (and all tests/benches)
+      # unlinted — real warnings such as unused variables went unnoticed there.
+      - run: cargo clippy --workspace --all-targets --release -- -D warnings
       - name: Verify benchmarks compile
         run: cargo bench -p ferro_ta_core --no-run
 
