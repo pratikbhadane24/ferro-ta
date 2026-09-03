@@ -14,7 +14,7 @@
      - 360
      - 247
      - 293
-     - 134
+     - 143
      - 50
 
 .. list-table:: Cross-language indicator coverage
@@ -122,7 +122,7 @@
      - yes
      - yes
      - yes
-     - —
+     - yes
    * - ``american_price``
      - other
      - —
@@ -146,7 +146,7 @@
      - yes
      - —
      - yes
-     - —
+     - yes
    * - ``APO``
      - momentum
      - yes
@@ -296,7 +296,7 @@
      - yes
      - yes
      - yes
-     - —
+     - yes
    * - ``BBWIDTH``
      - volatility
      - yes
@@ -794,7 +794,7 @@
      - yes
      - —
      - yes
-     - —
+     - yes
    * - ``CHOPPINESS_INDEX``
      - extended
      - yes
@@ -812,7 +812,7 @@
      - yes
      - yes
      - yes
-     - —
+     - yes
    * - ``CMO``
      - momentum
      - yes
@@ -926,7 +926,7 @@
      - yes
      - —
      - yes
-     - —
+     - yes
    * - ``crossunder``
      - utils
      - yes
@@ -1172,7 +1172,7 @@
      - yes
      - —
      - yes
-     - —
+     - yes
    * - ``HISTORICAL_VOLATILITY``
      - volatility
      - yes
@@ -1442,7 +1442,7 @@
      - yes
      - yes
      - yes
-     - —
+     - yes
    * - ``MEDIAN_BANDS``
      - statistic
      - yes
@@ -2312,7 +2312,7 @@
      - yes
      - yes
      - yes
-     - —
+     - yes
    * - ``zscore_series``
      - portfolio
      - yes

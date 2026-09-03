@@ -7844,7 +7844,7 @@
       ]
     },
     "flutter": {
-      "export_count": 134,
+      "export_count": 143,
       "exports": [
         "ad",
         "adosc",
@@ -7853,7 +7853,9 @@
         "adxr",
         "aggregate_tick_bars",
         "aggregate_volume_bars_ticks",
+        "alma",
         "annualized_basis",
+        "ao",
         "apo",
         "aroon",
         "aroonosc",
@@ -7862,6 +7864,7 @@
         "avgprice",
         "back_adjusted_continuous",
         "bbands",
+        "bbpercent",
         "beta_full",
         "beta_rolling",
         "bop",
@@ -7871,10 +7874,13 @@
         "chandelier_exit",
         "check_cross",
         "check_threshold",
+        "cho",
         "choppiness_index",
         "close_to_close_vol",
+        "cmf",
         "cmo",
         "correl",
+        "crossover",
         "curve_slope",
         "dema",
         "detect_breaks_cusum",
@@ -7886,6 +7892,7 @@
         "funding_cumulative_pnl",
         "futures_basis",
         "garman_klass_vol",
+        "highest",
         "ht_dcperiod",
         "ht_dcphase",
         "ht_phasor",
@@ -7914,6 +7921,7 @@
         "math_mult",
         "math_sub",
         "mavp",
+        "median",
         "medprice",
         "mfi",
         "midpoint",
@@ -7979,6 +7987,7 @@
         "willr",
         "wma",
         "yang_zhang_vol",
+        "zlema",
         "zscore_series"
       ],
       "manual_exclude_count": 50,
@@ -8584,10 +8593,10 @@
       "core_count": 360,
       "python_count": 247,
       "wasm_count": 293,
-      "flutter_count": 134,
+      "flutter_count": 143,
       "flutter_excluded_count": 50,
       "common_python_wasm_count": 199,
-      "common_all_four_count": 94
+      "common_all_four_count": 99
     },
     "rows": [
       {
@@ -8807,12 +8816,12 @@
         "core": true,
         "python": true,
         "wasm": true,
-        "flutter": false,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": "ALMA",
         "core_name": "alma",
         "wasm_name": "alma",
-        "flutter_name": null
+        "flutter_name": "alma"
       },
       {
         "key": "americanprice",
@@ -8863,12 +8872,12 @@
         "core": true,
         "python": false,
         "wasm": true,
-        "flutter": false,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": null,
         "core_name": "ao",
         "wasm_name": "ao",
-        "flutter_name": null
+        "flutter_name": "ao"
       },
       {
         "key": "apo",
@@ -9213,12 +9222,12 @@
         "core": true,
         "python": true,
         "wasm": true,
-        "flutter": false,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": "BBPERCENT",
         "core_name": "bbpercent",
         "wasm_name": "bbpercent",
-        "flutter_name": null
+        "flutter_name": "bbpercent"
       },
       {
         "key": "bbwidth",
@@ -10375,12 +10384,12 @@
         "core": true,
         "python": false,
         "wasm": true,
-        "flutter": false,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": null,
         "core_name": "cho",
         "wasm_name": "cho",
-        "flutter_name": null
+        "flutter_name": "cho"
       },
       {
         "key": "choppinessindex",
@@ -10417,12 +10426,12 @@
         "core": true,
         "python": true,
         "wasm": true,
-        "flutter": false,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": "CMF",
         "core_name": "cmf",
         "wasm_name": "cmf",
-        "flutter_name": null
+        "flutter_name": "cmf"
       },
       {
         "key": "cmo",
@@ -10683,12 +10692,12 @@
         "core": true,
         "python": false,
         "wasm": true,
-        "flutter": false,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": null,
         "core_name": "crossover",
         "wasm_name": "crossover",
-        "flutter_name": null
+        "flutter_name": "crossover"
       },
       {
         "key": "crossunder",
@@ -11257,12 +11266,12 @@
         "core": true,
         "python": false,
         "wasm": true,
-        "flutter": false,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": null,
         "core_name": "highest",
         "wasm_name": "highest",
-        "flutter_name": null
+        "flutter_name": "highest"
       },
       {
         "key": "historicalvolatility",
@@ -11887,12 +11896,12 @@
         "core": true,
         "python": true,
         "wasm": true,
-        "flutter": false,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": "MEDIAN",
         "core_name": "median",
         "wasm_name": "median",
-        "flutter_name": null
+        "flutter_name": "median"
       },
       {
         "key": "medianbands",
@@ -13917,12 +13926,12 @@
         "core": true,
         "python": true,
         "wasm": true,
-        "flutter": false,
+        "flutter": true,
         "flutter_excluded": false,
         "python_name": "ZLEMA",
         "core_name": "zlema",
         "wasm_name": "zlema",
-        "flutter_name": null
+        "flutter_name": "zlema"
       },
       {
         "key": "zscoreseries",

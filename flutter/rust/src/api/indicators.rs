@@ -49,9 +49,19 @@ pub fn aggregate_volume_bars_ticks(price: Vec<f64>, size: Vec<f64>, volume_thres
     ferro_ta_core::aggregation::aggregate_volume_bars_ticks(&price, &size, volume_threshold)
 }
 
+/// Arnaud Legoux Moving Average.
+pub fn alma(close: Vec<f64>, timeperiod: usize, offset: f64, sigma: f64) -> Vec<f64> {
+    ferro_ta_core::extended::alma(&close, timeperiod, offset, sigma)
+}
+
 /// Annualized basis.
 pub fn annualized_basis(spot: f64, future: f64, time_to_expiry: f64) -> f64 {
     ferro_ta_core::futures::basis::annualized_basis(spot, future, time_to_expiry)
+}
+
+/// Awesome Oscillator.
+pub fn ao(high: Vec<f64>, low: Vec<f64>, fastperiod: usize, slowperiod: usize) -> Vec<f64> {
+    ferro_ta_core::extended::ao(&high, &low, fastperiod, slowperiod)
 }
 
 /// Absolute Price Oscillator.
@@ -113,6 +123,11 @@ pub fn bbands(close: Vec<f64>, timeperiod: usize, nbdevup: f64, nbdevdn: f64) ->
     ferro_ta_core::overlap::bbands(&close, timeperiod, nbdevup, nbdevdn)
 }
 
+/// Bollinger %B.
+pub fn bbpercent(close: Vec<f64>, timeperiod: usize, nbdevup: f64, nbdevdn: f64) -> Vec<f64> {
+    ferro_ta_core::extended::bbpercent(&close, timeperiod, nbdevup, nbdevdn)
+}
+
 /// Full-sample OLS beta of asset vs benchmark returns.
 pub fn beta_full(asset_returns: Vec<f64>, benchmark_returns: Vec<f64>) -> f64 {
     ferro_ta_core::portfolio::beta_full(&asset_returns, &benchmark_returns)
@@ -162,6 +177,11 @@ pub fn check_threshold(series: Vec<f64>, level: f64, direction: i32) -> Vec<i8> 
     ferro_ta_core::alerts::check_threshold(&series, level, direction)
 }
 
+/// Chaikin Oscillator (same math as ADOSC).
+pub fn cho(high: Vec<f64>, low: Vec<f64>, close: Vec<f64>, volume: Vec<f64>, fastperiod: usize, slowperiod: usize) -> Vec<f64> {
+    ferro_ta_core::extended::cho(&high, &low, &close, &volume, fastperiod, slowperiod)
+}
+
 /// Choppiness Index — measures market choppiness vs trending.
 pub fn choppiness_index(high: Vec<f64>, low: Vec<f64>, close: Vec<f64>, timeperiod: usize) -> Vec<f64> {
     ferro_ta_core::extended::choppiness_index(&high, &low, &close, timeperiod)
@@ -174,6 +194,11 @@ pub fn close_to_close_vol(close: Vec<f64>, window: usize, trading_days: f64) -> 
     ferro_ta_core::options::realized_vol::close_to_close_vol(&close, window, trading_days)
 }
 
+/// Chaikin Money Flow.
+pub fn cmf(high: Vec<f64>, low: Vec<f64>, close: Vec<f64>, volume: Vec<f64>, timeperiod: usize) -> Vec<f64> {
+    ferro_ta_core::extended::cmf(&high, &low, &close, &volume, timeperiod)
+}
+
 /// Chande Momentum Oscillator.
 pub fn cmo(close: Vec<f64>, timeperiod: usize) -> Vec<f64> {
     ferro_ta_core::momentum::cmo(&close, timeperiod)
@@ -182,6 +207,11 @@ pub fn cmo(close: Vec<f64>, timeperiod: usize) -> Vec<f64> {
 /// Rolling Pearson correlation.
 pub fn correl(real0: Vec<f64>, real1: Vec<f64>, timeperiod: usize) -> Vec<f64> {
     ferro_ta_core::statistic::correl(&real0, &real1, timeperiod)
+}
+
+/// 1.0 where series0 crosses strictly above series1.
+pub fn crossover(real0: Vec<f64>, real1: Vec<f64>) -> Vec<f64> {
+    ferro_ta_core::utils::crossover(&real0, &real1)
 }
 
 /// Curve slope (linear regression).
@@ -246,6 +276,11 @@ pub fn futures_basis(spot: f64, future: f64) -> f64 {
 /// Garman-Klass OHLC volatility estimator (rolling).
 pub fn garman_klass_vol(open: Vec<f64>, high: Vec<f64>, low: Vec<f64>, close: Vec<f64>, window: usize, trading_days: f64) -> Vec<f64> {
     ferro_ta_core::options::realized_vol::garman_klass_vol(&open, &high, &low, &close, window, trading_days)
+}
+
+/// Rolling maximum (same math as MAX).
+pub fn highest(real: Vec<f64>, timeperiod: usize) -> Vec<f64> {
+    ferro_ta_core::utils::highest(&real, timeperiod)
 }
 
 pub fn ht_dcperiod(close: Vec<f64>) -> Vec<f64> {
@@ -393,6 +428,11 @@ pub fn math_sub(a: Vec<f64>, b: Vec<f64>) -> Vec<f64> {
 /// Moving Average with Variable Period.
 pub fn mavp(close: Vec<f64>, periods: Vec<f64>, minperiod: usize, maxperiod: usize) -> Vec<f64> {
     ferro_ta_core::overlap::mavp(&close, &periods, minperiod, maxperiod)
+}
+
+/// Rolling median.
+pub fn median(real: Vec<f64>, timeperiod: usize) -> Vec<f64> {
+    ferro_ta_core::extended::median(&real, timeperiod)
 }
 
 /// Median Price: (high + low) / 2.
@@ -769,6 +809,11 @@ pub fn wma(close: Vec<f64>, timeperiod: usize) -> Vec<f64> {
 /// Most efficient estimator — handles overnight gaps.
 pub fn yang_zhang_vol(open: Vec<f64>, high: Vec<f64>, low: Vec<f64>, close: Vec<f64>, window: usize, trading_days: f64) -> Vec<f64> {
     ferro_ta_core::options::realized_vol::yang_zhang_vol(&open, &high, &low, &close, window, trading_days)
+}
+
+/// Zero-lag EMA.
+pub fn zlema(close: Vec<f64>, timeperiod: usize) -> Vec<f64> {
+    ferro_ta_core::extended::zlema(&close, timeperiod)
 }
 
 /// Rolling Z-score of a 1-D series.
