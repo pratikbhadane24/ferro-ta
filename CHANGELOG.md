@@ -9,6 +9,23 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Extended the public catalog with adaptive moving averages and stops (`ALMA`,
+  `ZLEMA`, `FRAMA`, `MCGINLEY`, `VIDYA`, `ALLIGATOR`, `MA_ENVELOPES`,
+  `CHANDE_KROLL_STOP`), momentum and volatility studies (`ELDER_RAY`,
+  `FISHER`, `CRSI`, `CHAIKIN_VOL`, `MASS`, `BBPERCENT`, `BBWIDTH`,
+  `HISTORICAL_VOLATILITY`, `ULCER_INDEX`, `STARC`), volume indicators
+  (`OBV_SMOOTHED`, `CMF`, `EMV`, `FORCE_INDEX`, `NVI`, `NVI_WITH_EMA`, `PVI`,
+  `PVI_WITH_SIGNAL`, `VOLOSC`, `VROC`, `KVO`, `PVT`, `RVOL`), oscillators
+  (`AO`, `AC`, `PO`, `DPO`, `RVI`, `CHO`, `KST`, `TSI`, `VORTEX`, `STC`,
+  `GATOR`, `COPPOCK`), statistic/hybrid helpers (`MEDIAN`, `MEDIAN_BANDS`,
+  `MODE`, `DMI`, `WILLIAMS_FRACTALS`, `RWI`), and signal utilities
+  (`CROSSOVER`, `CROSSUNDER`, `CROSS`, `HIGHEST`, `LOWEST`, `CHANGE`,
+  `RISING`, `FALLING`, `EXREM`, `FLIP`, `VALUEWHEN`).
+- Internal speed-bench harness for overlapping catalog names (JSON artifacts
+  under `benchmarks/artifacts/latest/`).
+
 ### Fixed
 
 - Pinned the optional `mcp` extra to `>=1.0,<2`. Unpinned `pip install mcp`

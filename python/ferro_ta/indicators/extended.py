@@ -19,6 +19,8 @@ HULL_MA            — Hull Moving Average (WMA-based)
 CHANDELIER_EXIT    — ATR-based stop-loss / exit levels
 VWMA               — Volume Weighted Moving Average
 CHOPPINESS_INDEX   — Market choppiness / trending strength index
+WILLIAMS_FRACTALS  — Williams swing high / swing low fractals
+RWI                — Random Walk Index (high and low)
 
 Rust backend
 ------------
@@ -57,6 +59,9 @@ from ferro_ta._ferro_ta import (
     pivot_points as _rust_pivot_points,
 )
 from ferro_ta._ferro_ta import (
+    rwi as _rust_rwi,
+)
+from ferro_ta._ferro_ta import (
     supertrend as _rust_supertrend,
 )
 from ferro_ta._ferro_ta import (
@@ -64,6 +69,9 @@ from ferro_ta._ferro_ta import (
 )
 from ferro_ta._ferro_ta import (
     vwma as _rust_vwma,
+)
+from ferro_ta._ferro_ta import (
+    williams_fractals as _rust_williams_fractals,
 )
 from ferro_ta._utils import _to_f64
 from ferro_ta.core.exceptions import FerroTAValueError, _normalize_rust_error
@@ -484,6 +492,77 @@ def CHOPPINESS_INDEX(
         _normalize_rust_error(e)
 
 
+def WILLIAMS_FRACTALS(
+    high: ArrayLike,
+    low: ArrayLike,
+    timeperiod: int = 2,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Williams Fractals — confirmed swing highs and swing lows.
+
+    A bar is an up-fractal when its high is strictly greater than the
+    ``timeperiod`` highs on both sides, and a down-fractal when its low is
+    strictly lower than the neighbouring lows. The first and last
+    ``timeperiod`` bars stay ``NaN`` until the pivot is confirmed.
+
+    Parameters
+    ----------
+    high, low : array-like
+        Price series of equal length.
+    timeperiod : int, optional
+        Bars on each side of the pivot (default 2).
+
+    Returns
+    -------
+    up, down : numpy.ndarray
+        ``high[i]`` / ``low[i]`` at confirmed pivots, ``NaN`` elsewhere.
+    """
+    h = _to_f64(high)
+    lo = _to_f64(low)
+    try:
+        up, down = _rust_williams_fractals(h, lo, timeperiod)
+    except ValueError as e:
+        _normalize_rust_error(e)
+    return np.asarray(up), np.asarray(down)
+
+
+def RWI(
+    high: ArrayLike,
+    low: ArrayLike,
+    close: ArrayLike,
+    timeperiod: int = 14,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Random Walk Index — how far price has travelled versus a random walk.
+
+    For each lookback ``n`` from 2 through ``timeperiod``:
+
+    * ``RWI High = (high[i] - low[i-n]) / (SMA(TR, n) * sqrt(n))``
+    * ``RWI Low  = (high[i-n] - low[i]) / (SMA(TR, n) * sqrt(n))``
+
+    The output is the maximum of those lookbacks. Values above 1 suggest a
+    trend stronger than a random walk. The first ``timeperiod`` bars are
+    ``NaN``.
+
+    Parameters
+    ----------
+    high, low, close : array-like
+        Price series of equal length.
+    timeperiod : int, optional
+        Longest lookback (default 14, minimum 2).
+
+    Returns
+    -------
+    rwi_high, rwi_low : numpy.ndarray
+    """
+    h = _to_f64(high)
+    lo = _to_f64(low)
+    c = _to_f64(close)
+    try:
+        rwi_high, rwi_low = _rust_rwi(h, lo, c, timeperiod)
+    except ValueError as e:
+        _normalize_rust_error(e)
+    return np.asarray(rwi_high), np.asarray(rwi_low)
+
+
 __all__ = [
     "VWAP",
     "SUPERTREND",
@@ -495,4 +574,6 @@ __all__ = [
     "CHANDELIER_EXIT",
     "VWMA",
     "CHOPPINESS_INDEX",
+    "WILLIAMS_FRACTALS",
+    "RWI",
 ]

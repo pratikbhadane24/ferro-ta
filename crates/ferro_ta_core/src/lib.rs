@@ -61,5 +61,6 @@ pub mod signals;
 pub(crate) mod simd;
 pub mod statistic;
 pub mod streaming;
+pub mod utils;
 pub mod volatility;
 pub mod volume;

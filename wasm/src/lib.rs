@@ -924,6 +924,97 @@ pub fn pivot_points(
     out
 }
 
+/// Arnaud Legoux Moving Average.
+#[wasm_bindgen]
+pub fn alma(close: &Float64Array, timeperiod: usize, offset: f64, sigma: f64) -> Float64Array {
+    let c = to_vec(close);
+    from_vec(ferro_ta_core::extended::alma(&c, timeperiod, offset, sigma))
+}
+
+/// Zero-lag EMA.
+#[wasm_bindgen]
+pub fn zlema(close: &Float64Array, timeperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::extended::zlema(&to_vec(close), timeperiod))
+}
+
+/// Chaikin Money Flow.
+#[wasm_bindgen]
+pub fn cmf(
+    high: &Float64Array,
+    low: &Float64Array,
+    close: &Float64Array,
+    volume: &Float64Array,
+    timeperiod: usize,
+) -> Float64Array {
+    from_vec(ferro_ta_core::extended::cmf(
+        &to_vec(high),
+        &to_vec(low),
+        &to_vec(close),
+        &to_vec(volume),
+        timeperiod,
+    ))
+}
+
+/// Awesome Oscillator.
+#[wasm_bindgen]
+pub fn ao(high: &Float64Array, low: &Float64Array, fastperiod: usize, slowperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::extended::ao(
+        &to_vec(high),
+        &to_vec(low),
+        fastperiod,
+        slowperiod,
+    ))
+}
+
+/// Chaikin Oscillator (same math as ADOSC).
+#[wasm_bindgen]
+pub fn cho(
+    high: &Float64Array,
+    low: &Float64Array,
+    close: &Float64Array,
+    volume: &Float64Array,
+    fastperiod: usize,
+    slowperiod: usize,
+) -> Float64Array {
+    from_vec(ferro_ta_core::extended::cho(
+        &to_vec(high),
+        &to_vec(low),
+        &to_vec(close),
+        &to_vec(volume),
+        fastperiod,
+        slowperiod,
+    ))
+}
+
+/// Bollinger %B.
+#[wasm_bindgen]
+pub fn bbpercent(close: &Float64Array, timeperiod: usize, nbdevup: f64, nbdevdn: f64) -> Float64Array {
+    from_vec(ferro_ta_core::extended::bbpercent(
+        &to_vec(close),
+        timeperiod,
+        nbdevup,
+        nbdevdn,
+    ))
+}
+
+/// 1.0 where series0 crosses strictly above series1.
+#[wasm_bindgen]
+pub fn crossover(real0: &Float64Array, real1: &Float64Array) -> Float64Array {
+    from_vec(ferro_ta_core::utils::crossover(&to_vec(real0), &to_vec(real1)))
+}
+
+/// Rolling maximum (same math as MAX).
+#[wasm_bindgen]
+pub fn highest(real: &Float64Array, timeperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::utils::highest(&to_vec(real), timeperiod))
+}
+
+/// Rolling median.
+#[wasm_bindgen]
+pub fn median(real: &Float64Array, timeperiod: usize) -> Float64Array {
+    from_vec(ferro_ta_core::extended::median(&to_vec(real), timeperiod))
+}
+
 // ===========================================================================
 // Portfolio Analytics (Sprint 2)
 // ===========================================================================

@@ -174,7 +174,11 @@ from ferro_ta.indicators.momentum import (  # noqa: F401
     BOP,
     CCI,
     CMO,
+    CRSI,
+    DMI,
     DX,
+    ELDER_RAY,
+    FISHER,
     MFI,
     MINUS_DI,
     MINUS_DM,
@@ -197,19 +201,43 @@ from ferro_ta.indicators.momentum import (  # noqa: F401
 )
 
 # ---------------------------------------------------------------------------
+# Volume Indicators
+# ---------------------------------------------------------------------------
+from ferro_ta.indicators.oscillators import (  # noqa: F401
+    AC,
+    AO,
+    CHO,
+    COPPOCK,
+    DPO,
+    GATOR,
+    KST,
+    PO,
+    RVI,
+    STC,
+    TSI,
+    VORTEX,
+)
+
+# ---------------------------------------------------------------------------
 # Overlap Studies
 # ---------------------------------------------------------------------------
 from ferro_ta.indicators.overlap import (  # noqa: F401
+    ALLIGATOR,
+    ALMA,
     BBANDS,
+    CHANDE_KROLL_STOP,
     DEMA,
     EMA,
+    FRAMA,
     KAMA,
     MA,
+    MA_ENVELOPES,
     MACD,
     MACDEXT,
     MACDFIX,
     MAMA,
     MAVP,
+    MCGINLEY,
     MIDPOINT,
     MIDPRICE,
     SAR,
@@ -218,7 +246,9 @@ from ferro_ta.indicators.overlap import (  # noqa: F401
     T3,
     TEMA,
     TRIMA,
+    VIDYA,
     WMA,
+    ZLEMA,
 )
 
 # ---------------------------------------------------------------------------
@@ -308,9 +338,29 @@ from ferro_ta.indicators.statistic import (  # noqa: F401
     LINEARREG_ANGLE,
     LINEARREG_INTERCEPT,
     LINEARREG_SLOPE,
+    MEDIAN,
+    MEDIAN_BANDS,
+    MODE,
     STDDEV,
     TSF,
     VAR,
+)
+
+# ---------------------------------------------------------------------------
+# Signal utilities
+# ---------------------------------------------------------------------------
+from ferro_ta.indicators.utils import (  # noqa: F401
+    CHANGE,
+    CROSS,
+    CROSSOVER,
+    CROSSUNDER,
+    EXREM,
+    FALLING,
+    FLIP,
+    HIGHEST,
+    LOWEST,
+    RISING,
+    VALUEWHEN,
 )
 
 # ---------------------------------------------------------------------------
@@ -318,16 +368,32 @@ from ferro_ta.indicators.statistic import (  # noqa: F401
 # ---------------------------------------------------------------------------
 from ferro_ta.indicators.volatility import (  # noqa: F401
     ATR,
+    BBPERCENT,
+    BBWIDTH,
+    CHAIKIN_VOL,
+    HISTORICAL_VOLATILITY,
+    MASS,
     NATR,
+    STARC,
+    ULCER_INDEX,
 )
-
-# ---------------------------------------------------------------------------
-# Volume Indicators
-# ---------------------------------------------------------------------------
 from ferro_ta.indicators.volume import (  # noqa: F401
     AD,
     ADOSC,
+    CMF,
+    EMV,
+    FORCE_INDEX,
+    KVO,
+    NVI,
+    NVI_WITH_EMA,
     OBV,
+    OBV_SMOOTHED,
+    PVI,
+    PVI_WITH_SIGNAL,
+    PVT,
+    RVOL,
+    VOLOSC,
+    VROC,
 )
 
 __all__ = [
@@ -352,6 +418,14 @@ __all__ = [
     "MAMA",
     "MIDPOINT",
     "MIDPRICE",
+    "ALMA",
+    "ZLEMA",
+    "FRAMA",
+    "MCGINLEY",
+    "VIDYA",
+    "ALLIGATOR",
+    "MA_ENVELOPES",
+    "CHANDE_KROLL_STOP",
     # Momentum
     "RSI",
     "MOM",
@@ -377,17 +451,54 @@ __all__ = [
     "MINUS_DI",
     "DX",
     "ADX",
+    "DMI",
     "ADXR",
     "TRIX",
     "ULTOSC",
     "TRANGE",
+    "ELDER_RAY",
+    "FISHER",
+    "CRSI",
     # Volume
     "AD",
     "ADOSC",
     "OBV",
+    "OBV_SMOOTHED",
+    "CMF",
+    "EMV",
+    "FORCE_INDEX",
+    "NVI",
+    "NVI_WITH_EMA",
+    "PVI",
+    "PVI_WITH_SIGNAL",
+    "VOLOSC",
+    "VROC",
+    "KVO",
+    "PVT",
+    "RVOL",
+    # Oscillators
+    "AO",
+    "AC",
+    "PO",
+    "DPO",
+    "RVI",
+    "CHO",
+    "KST",
+    "TSI",
+    "VORTEX",
+    "STC",
+    "GATOR",
+    "COPPOCK",
     # Volatility
     "ATR",
     "NATR",
+    "CHAIKIN_VOL",
+    "MASS",
+    "BBPERCENT",
+    "BBWIDTH",
+    "HISTORICAL_VOLATILITY",
+    "ULCER_INDEX",
+    "STARC",
     # Statistics
     "STDDEV",
     "VAR",
@@ -398,6 +509,9 @@ __all__ = [
     "TSF",
     "BETA",
     "CORREL",
+    "MEDIAN",
+    "MEDIAN_BANDS",
+    "MODE",
     # Price transforms
     "AVGPRICE",
     "MEDPRICE",
@@ -509,6 +623,20 @@ __all__ = [
     "CHANDELIER_EXIT",
     "VWMA",
     "CHOPPINESS_INDEX",
+    "WILLIAMS_FRACTALS",
+    "RWI",
+    # Signal utilities
+    "CROSSOVER",
+    "CROSSUNDER",
+    "CROSS",
+    "HIGHEST",
+    "LOWEST",
+    "CHANGE",
+    "RISING",
+    "FALLING",
+    "EXREM",
+    "FLIP",
+    "VALUEWHEN",
     # API discovery
     "about",
     "indicators",
@@ -608,6 +736,7 @@ from ferro_ta.indicators import cycle as cycle  # noqa: F401, E402
 from ferro_ta.indicators import extended as extended  # noqa: F401, E402
 from ferro_ta.indicators import math_ops as math_ops  # noqa: F401, E402
 from ferro_ta.indicators import momentum as momentum  # noqa: F401, E402
+from ferro_ta.indicators import oscillators as oscillators  # noqa: F401, E402
 from ferro_ta.indicators import overlap as overlap  # noqa: F401, E402
 from ferro_ta.indicators import pattern as pattern  # noqa: F401, E402
 from ferro_ta.indicators import price_transform as price_transform  # noqa: F401, E402
@@ -622,9 +751,11 @@ from ferro_ta.indicators.extended import (  # noqa: F401, E402
     ICHIMOKU,
     KELTNER_CHANNELS,
     PIVOT_POINTS,
+    RWI,
     SUPERTREND,
     VWAP,
     VWMA,
+    WILLIAMS_FRACTALS,
 )
 
 # ---------------------------------------------------------------------------
@@ -655,6 +786,7 @@ _ALIASED_SUBMODULES = {
     "price_transform": price_transform,
     "statistic": statistic,
     "streaming": streaming,
+    "oscillators": oscillators,
     "volatility": volatility,
     "volume": volume,
 }

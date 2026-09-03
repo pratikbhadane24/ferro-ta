@@ -109,16 +109,16 @@ generated :doc:`languages/coverage` table and must be refreshed with
      - Notes
    * - Python (PyO3)
      - PyPI ``ferro-ta``
-     - 210 names on the coverage spine
+     - 247 names on the coverage spine
      - TA-Lib-style API; abi3 wheels for CPython 3.10+.
    * - Rust
      - crates.io ``ferro_ta_core``
-     - 300 core symbols (functions + streaming types)
+     - 360 core symbols (functions + streaming types)
      - Direct ``&[f64]`` API; docs.rs ``ferro_ta_core``.
    * - WASM / Node
      - npm ``ferro-ta-wasm``
-     - 284 exports
-     - Node.js and browsers; 194 names shared with Python after normalization.
+     - 293 exports
+     - Node.js and browsers; 199 names shared with Python after normalization.
    * - Flutter / Dart
      - pub.dev ``ferro_ta``
      - 134 generated wrappers; 50 ``MANUAL_EXCLUDE`` gaps

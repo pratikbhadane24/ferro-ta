@@ -10,10 +10,10 @@
      - WASM
      - Flutter
      - Flutter excluded
-   * - 322
-     - 300
-     - 210
-     - 284
+   * - 382
+     - 360
+     - 247
+     - 293
      - 134
      - 50
 
@@ -27,6 +27,12 @@
      - Python
      - WASM
      - Flutter
+   * - ``ac``
+     - extended
+     - yes
+     - —
+     - —
+     - —
    * - ``ACOS``
      - math_ops
      - yes
@@ -105,6 +111,18 @@
      - yes
      - —
      - —
+   * - ``ALLIGATOR``
+     - overlap
+     - yes
+     - yes
+     - —
+     - —
+   * - ``ALMA``
+     - overlap
+     - yes
+     - yes
+     - yes
+     - —
    * - ``american_price``
      - other
      - —
@@ -123,6 +141,12 @@
      - —
      - yes
      - yes
+   * - ``ao``
+     - extended
+     - yes
+     - —
+     - yes
+     - —
    * - ``APO``
      - momentum
      - yes
@@ -267,6 +291,18 @@
      - yes
      - yes
      - yes
+   * - ``BBPERCENT``
+     - volatility
+     - yes
+     - yes
+     - yes
+     - —
+   * - ``BBWIDTH``
+     - volatility
+     - yes
+     - yes
+     - —
+     - —
    * - ``BETA``
      - portfolio
      - yes
@@ -717,12 +753,30 @@
      - yes
      - yes
      - —
+   * - ``CHAIKIN_VOL``
+     - volatility
+     - yes
+     - yes
+     - —
+     - —
+   * - ``CHANDE_KROLL_STOP``
+     - overlap
+     - yes
+     - yes
+     - —
+     - —
    * - ``CHANDELIER_EXIT``
      - extended
      - yes
      - yes
      - yes
      - yes
+   * - ``change``
+     - utils
+     - yes
+     - —
+     - —
+     - —
    * - ``check_cross``
      - alerts
      - yes
@@ -735,6 +789,12 @@
      - yes
      - yes
      - yes
+   * - ``cho``
+     - extended
+     - yes
+     - —
+     - yes
+     - —
    * - ``CHOPPINESS_INDEX``
      - extended
      - yes
@@ -747,6 +807,12 @@
      - —
      - yes
      - yes
+   * - ``CMF``
+     - volume
+     - yes
+     - yes
+     - yes
+     - —
    * - ``CMO``
      - momentum
      - yes
@@ -819,6 +885,12 @@
      - yes
      - yes
      - excluded
+   * - ``coppock``
+     - extended
+     - yes
+     - —
+     - —
+     - —
    * - ``CORREL``
      - statistic
      - yes
@@ -842,6 +914,30 @@
      - yes
      - yes
      - yes
+     - —
+   * - ``cross``
+     - utils
+     - yes
+     - —
+     - —
+     - —
+   * - ``crossover``
+     - utils
+     - yes
+     - —
+     - yes
+     - —
+   * - ``crossunder``
+     - utils
+     - yes
+     - —
+     - —
+     - —
+   * - ``CRSI``
+     - momentum
+     - yes
+     - yes
+     - —
      - —
    * - ``curve_slope``
      - futures
@@ -885,12 +981,24 @@
      - yes
      - yes
      - yes
+   * - ``DMI``
+     - momentum
+     - yes
+     - yes
+     - —
+     - —
    * - ``DONCHIAN``
      - extended
      - yes
      - yes
      - yes
      - yes
+   * - ``dpo``
+     - extended
+     - yes
+     - —
+     - —
+     - —
    * - ``drawdown``
      - portfolio
      - yes
@@ -927,12 +1035,24 @@
      - —
      - yes
      - excluded
+   * - ``ELDER_RAY``
+     - momentum
+     - yes
+     - yes
+     - —
+     - —
    * - ``EMA``
      - overlap
      - yes
      - yes
      - yes
      - yes
+   * - ``EMV``
+     - volume
+     - yes
+     - yes
+     - —
+     - —
    * - ``EXP``
      - math_ops
      - yes
@@ -945,6 +1065,12 @@
      - —
      - yes
      - excluded
+   * - ``exrem``
+     - utils
+     - yes
+     - —
+     - —
+     - —
    * - ``extended_greeks``
      - other
      - —
@@ -963,10 +1089,28 @@
      - —
      - —
      - —
+   * - ``falling``
+     - utils
+     - yes
+     - —
+     - —
+     - —
    * - ``feature_matrix``
      - features
      - —
      - yes
+     - —
+     - —
+   * - ``FISHER``
+     - momentum
+     - yes
+     - yes
+     - —
+     - —
+   * - ``flip``
+     - utils
+     - yes
+     - —
      - —
      - —
    * - ``FLOOR``
@@ -975,12 +1119,24 @@
      - yes
      - yes
      - —
+   * - ``FORCE_INDEX``
+     - volume
+     - yes
+     - yes
+     - —
+     - —
    * - ``forward_fill_nan``
      - chunked
      - yes
      - —
      - yes
      - yes
+   * - ``FRAMA``
+     - overlap
+     - yes
+     - yes
+     - —
+     - —
    * - ``funding_pnl``
      - crypto
      - yes
@@ -999,12 +1155,30 @@
      - —
      - yes
      - yes
+   * - ``gator``
+     - extended
+     - yes
+     - —
+     - —
+     - —
    * - ``half_kelly_fraction``
      - backtest
      - yes
      - —
      - yes
      - excluded
+   * - ``highest``
+     - utils
+     - yes
+     - —
+     - yes
+     - —
+   * - ``HISTORICAL_VOLATILITY``
+     - volatility
+     - yes
+     - yes
+     - —
+     - —
    * - ``HT_DCPERIOD``
      - cycle
      - yes
@@ -1107,6 +1281,18 @@
      - yes
      - yes
      - yes
+   * - ``kst``
+     - extended
+     - yes
+     - —
+     - —
+     - —
+   * - ``KVO``
+     - volume
+     - yes
+     - yes
+     - —
+     - —
    * - ``label_moneyness``
      - options
      - yes
@@ -1167,6 +1353,12 @@
      - yes
      - yes
      - —
+   * - ``lowest``
+     - utils
+     - yes
+     - —
+     - —
+     - —
    * - ``MA``
      - overlap
      - yes
@@ -1197,6 +1389,12 @@
      - yes
      - yes
      - yes
+   * - ``MA_ENVELOPES``
+     - overlap
+     - yes
+     - yes
+     - —
+     - —
    * - ``make_chunk_ranges``
      - chunked
      - yes
@@ -1209,6 +1407,12 @@
      - yes
      - yes
      - yes
+   * - ``MASS``
+     - volatility
+     - yes
+     - yes
+     - —
+     - —
    * - ``MAVP``
      - overlap
      - yes
@@ -1227,6 +1431,24 @@
      - yes
      - yes
      - excluded
+   * - ``MCGINLEY``
+     - overlap
+     - yes
+     - yes
+     - —
+     - —
+   * - ``MEDIAN``
+     - statistic
+     - yes
+     - yes
+     - yes
+     - —
+   * - ``MEDIAN_BANDS``
+     - statistic
+     - yes
+     - yes
+     - —
+     - —
    * - ``MEDPRICE``
      - price_transform
      - yes
@@ -1275,6 +1497,12 @@
      - yes
      - yes
      - yes
+   * - ``MODE``
+     - statistic
+     - yes
+     - yes
+     - —
+     - —
    * - ``model_extended_greeks``
      - options
      - yes
@@ -1341,12 +1569,30 @@
      - yes
      - yes
      - yes
+   * - ``NVI``
+     - volume
+     - yes
+     - yes
+     - —
+     - —
+   * - ``NVI_WITH_EMA``
+     - volume
+     - yes
+     - yes
+     - —
+     - —
    * - ``OBV``
      - volume
      - yes
      - yes
      - yes
      - yes
+   * - ``OBV_SMOOTHED``
+     - volume
+     - yes
+     - yes
+     - —
+     - —
    * - ``ohlcv_agg``
      - resampling
      - yes
@@ -1389,6 +1635,12 @@
      - yes
      - yes
      - yes
+   * - ``po``
+     - extended
+     - yes
+     - —
+     - —
+     - —
    * - ``portfolio_volatility``
      - portfolio
      - yes
@@ -1419,6 +1671,24 @@
      - —
      - yes
      - yes
+   * - ``PVI``
+     - volume
+     - yes
+     - yes
+     - —
+     - —
+   * - ``PVI_WITH_SIGNAL``
+     - volume
+     - yes
+     - yes
+     - —
+     - —
+   * - ``PVT``
+     - volume
+     - yes
+     - yes
+     - —
+     - —
    * - ``rank_series``
      - other
      - —
@@ -1487,6 +1757,12 @@
      - —
    * - ``resolve_commission_model``
      - backtest
+     - yes
+     - —
+     - —
+     - —
+   * - ``rising``
+     - utils
      - yes
      - —
      - —
@@ -1561,6 +1837,24 @@
      - batch
      - yes
      - —
+     - —
+     - —
+   * - ``rvi``
+     - extended
+     - yes
+     - —
+     - —
+     - —
+   * - ``RVOL``
+     - volume
+     - yes
+     - yes
+     - —
+     - —
+   * - ``RWI``
+     - extended
+     - yes
+     - yes
      - —
      - —
    * - ``SAR``
@@ -1652,6 +1946,18 @@
      - yes
      - yes
      - yes
+     - —
+   * - ``STARC``
+     - volatility
+     - yes
+     - yes
+     - —
+     - —
+   * - ``stc``
+     - extended
+     - yes
+     - —
+     - —
      - —
    * - ``STDDEV``
      - statistic
@@ -1869,12 +2175,24 @@
      - yes
      - yes
      - yes
+   * - ``tsi``
+     - extended
+     - yes
+     - —
+     - —
+     - —
    * - ``TYPPRICE``
      - price_transform
      - yes
      - yes
      - yes
      - yes
+   * - ``ULCER_INDEX``
+     - volatility
+     - yes
+     - yes
+     - —
+     - —
    * - ``ULTOSC``
      - momentum
      - yes
@@ -1887,24 +2205,54 @@
      - —
      - —
      - —
+   * - ``valuewhen``
+     - utils
+     - yes
+     - —
+     - —
+     - —
    * - ``VAR``
      - statistic
      - yes
      - yes
      - yes
      - yes
+   * - ``VIDYA``
+     - overlap
+     - yes
+     - yes
+     - —
+     - —
    * - ``vol_cone``
      - options
      - yes
      - —
      - yes
      - excluded
+   * - ``VOLOSC``
+     - volume
+     - yes
+     - yes
+     - —
+     - —
    * - ``volume_bars``
      - resampling
      - yes
      - yes
      - yes
      - yes
+   * - ``vortex``
+     - extended
+     - yes
+     - —
+     - —
+     - —
+   * - ``VROC``
+     - volume
+     - yes
+     - yes
+     - —
+     - —
    * - ``VWAP``
      - extended
      - yes
@@ -1935,6 +2283,12 @@
      - —
      - yes
      - yes
+   * - ``WILLIAMS_FRACTALS``
+     - extended
+     - yes
+     - yes
+     - —
+     - —
    * - ``WILLR``
      - momentum
      - yes
@@ -1953,6 +2307,12 @@
      - —
      - yes
      - yes
+   * - ``ZLEMA``
+     - overlap
+     - yes
+     - yes
+     - yes
+     - —
    * - ``zscore_series``
      - portfolio
      - yes

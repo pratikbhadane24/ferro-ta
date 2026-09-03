@@ -20,6 +20,7 @@ pub mod resampling;
 pub mod signals;
 pub mod statistic;
 pub mod streaming;
+pub mod utils;
 pub mod validation;
 pub mod volatility;
 pub mod volume;
@@ -58,6 +59,7 @@ fn _ferro_ta(m: &Bound<'_, PyModule>) -> PyResult<()> {
     cycle::register(m)?;
     batch::register(m)?;
     streaming::register(m)?;
+    utils::register(m)?;
     extended::register(m)?;
     math_ops::register(m)?;
     options::register(m)?;

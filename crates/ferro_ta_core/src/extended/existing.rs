@@ -1,8 +1,6 @@
-//! Extended indicators — pure Rust implementations (no PyO3, no numpy).
+//! Current extended catalog (VWAP, Supertrend, Ichimoku, and related).
 //!
-//! These indicators are not part of TA-Lib and provide additional technical
-//! analysis capabilities. All functions operate on `&[f64]` slices and return
-//! `Vec<f64>` (or tuples thereof).
+//! New kernels belong in the sibling category modules, not here.
 
 #![allow(clippy::too_many_arguments)]
 

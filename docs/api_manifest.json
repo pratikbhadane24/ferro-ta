@@ -1,8 +1,8 @@
 {
   "surfaces": {
     "python": {
-      "indicator_count": 211,
-      "method_count": 467,
+      "indicator_count": 248,
+      "method_count": 564,
       "categories": [
         "aggregation",
         "alerts",
@@ -65,6 +65,20 @@
           "name": "ADXR",
           "category": "momentum",
           "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ALLIGATOR",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ALMA",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
           "doc": "",
           "params": []
         },
@@ -142,6 +156,20 @@
           "name": "BBANDS",
           "category": "overlap",
           "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "BBPERCENT",
+          "category": "volatility",
+          "module": "ferro_ta.indicators.volatility",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "BBWIDTH",
+          "category": "volatility",
+          "module": "ferro_ta.indicators.volatility",
           "doc": "",
           "params": []
         },
@@ -601,6 +629,13 @@
           "params": []
         },
         {
+          "name": "CHAIKIN_VOL",
+          "category": "volatility",
+          "module": "ferro_ta.indicators.volatility",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "CHANDELIER_EXIT",
           "category": "extended",
           "module": "ferro_ta.indicators.extended",
@@ -608,9 +643,23 @@
           "params": []
         },
         {
+          "name": "CHANDE_KROLL_STOP",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "CHOPPINESS_INDEX",
           "category": "extended",
           "module": "ferro_ta.indicators.extended",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CMF",
+          "category": "volume",
+          "module": "ferro_ta.indicators.volume",
           "doc": "",
           "params": []
         },
@@ -643,6 +692,13 @@
           "params": []
         },
         {
+          "name": "CRSI",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "DEMA",
           "category": "overlap",
           "module": "ferro_ta.indicators.overlap",
@@ -653,6 +709,13 @@
           "name": "DIV",
           "category": "math_ops",
           "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "DMI",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
           "doc": "",
           "params": []
         },
@@ -685,9 +748,23 @@
           "params": []
         },
         {
+          "name": "ELDER_RAY",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "EMA",
           "category": "overlap",
           "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "EMV",
+          "category": "volume",
+          "module": "ferro_ta.indicators.volume",
           "doc": "",
           "params": []
         },
@@ -699,9 +776,37 @@
           "params": []
         },
         {
+          "name": "FISHER",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "FLOOR",
           "category": "math_ops",
           "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "FORCE_INDEX",
+          "category": "volume",
+          "module": "ferro_ta.indicators.volume",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "FRAMA",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "HISTORICAL_VOLATILITY",
+          "category": "volatility",
+          "module": "ferro_ta.indicators.volatility",
           "doc": "",
           "params": []
         },
@@ -772,6 +877,13 @@
           "name": "KELTNER_CHANNELS",
           "category": "extended",
           "module": "ferro_ta.indicators.extended",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "KVO",
+          "category": "volume",
+          "module": "ferro_ta.indicators.volume",
           "doc": "",
           "params": []
         },
@@ -853,6 +965,13 @@
           "params": []
         },
         {
+          "name": "MASS",
+          "category": "volatility",
+          "module": "ferro_ta.indicators.volatility",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "MAVP",
           "category": "overlap",
           "module": "ferro_ta.indicators.overlap",
@@ -870,6 +989,34 @@
           "name": "MAXINDEX",
           "category": "math_ops",
           "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MA_ENVELOPES",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MCGINLEY",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MEDIAN",
+          "category": "statistic",
+          "module": "ferro_ta.indicators.statistic",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MEDIAN_BANDS",
+          "category": "statistic",
+          "module": "ferro_ta.indicators.statistic",
           "doc": "",
           "params": []
         },
@@ -930,6 +1077,13 @@
           "params": []
         },
         {
+          "name": "MODE",
+          "category": "statistic",
+          "module": "ferro_ta.indicators.statistic",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "MOM",
           "category": "momentum",
           "module": "ferro_ta.indicators.momentum",
@@ -951,7 +1105,28 @@
           "params": []
         },
         {
+          "name": "NVI",
+          "category": "volume",
+          "module": "ferro_ta.indicators.volume",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "NVI_WITH_EMA",
+          "category": "volume",
+          "module": "ferro_ta.indicators.volume",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "OBV",
+          "category": "volume",
+          "module": "ferro_ta.indicators.volume",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "OBV_SMOOTHED",
           "category": "volume",
           "module": "ferro_ta.indicators.volume",
           "doc": "",
@@ -982,6 +1157,27 @@
           "name": "PPO",
           "category": "momentum",
           "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "PVI",
+          "category": "volume",
+          "module": "ferro_ta.indicators.volume",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "PVI_WITH_SIGNAL",
+          "category": "volume",
+          "module": "ferro_ta.indicators.volume",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "PVT",
+          "category": "volume",
+          "module": "ferro_ta.indicators.volume",
           "doc": "",
           "params": []
         },
@@ -1017,6 +1213,20 @@
           "name": "RSI",
           "category": "momentum",
           "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "RVOL",
+          "category": "volume",
+          "module": "ferro_ta.indicators.volume",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "RWI",
+          "category": "extended",
+          "module": "ferro_ta.indicators.extended",
           "doc": "",
           "params": []
         },
@@ -1059,6 +1269,13 @@
           "name": "SQRT",
           "category": "math_ops",
           "module": "ferro_ta.indicators.math_ops",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "STARC",
+          "category": "volatility",
+          "module": "ferro_ta.indicators.volatility",
           "doc": "",
           "params": []
         },
@@ -1245,6 +1462,13 @@
           "params": []
         },
         {
+          "name": "ULCER_INDEX",
+          "category": "volatility",
+          "module": "ferro_ta.indicators.volatility",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "ULTOSC",
           "category": "momentum",
           "module": "ferro_ta.indicators.momentum",
@@ -1255,6 +1479,27 @@
           "name": "VAR",
           "category": "statistic",
           "module": "ferro_ta.indicators.statistic",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "VIDYA",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "VOLOSC",
+          "category": "volume",
+          "module": "ferro_ta.indicators.volume",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "VROC",
+          "category": "volume",
+          "module": "ferro_ta.indicators.volume",
           "doc": "",
           "params": []
         },
@@ -1280,6 +1525,13 @@
           "params": []
         },
         {
+          "name": "WILLIAMS_FRACTALS",
+          "category": "extended",
+          "module": "ferro_ta.indicators.extended",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "WILLR",
           "category": "momentum",
           "module": "ferro_ta.indicators.momentum",
@@ -1288,6 +1540,13 @@
         },
         {
           "name": "WMA",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ZLEMA",
           "category": "overlap",
           "module": "ferro_ta.indicators.overlap",
           "doc": "",
@@ -1828,6 +2087,13 @@
           "params": []
         },
         {
+          "name": "RWI",
+          "category": "extended",
+          "module": "ferro_ta.indicators.extended",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "SUPERTREND",
           "category": "extended",
           "module": "ferro_ta.indicators.extended",
@@ -1843,6 +2109,13 @@
         },
         {
           "name": "VWMA",
+          "category": "extended",
+          "module": "ferro_ta.indicators.extended",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "WILLIAMS_FRACTALS",
           "category": "extended",
           "module": "ferro_ta.indicators.extended",
           "doc": "",
@@ -2185,7 +2458,35 @@
           "params": []
         },
         {
+          "name": "CRSI",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "DMI",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "DX",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ELDER_RAY",
+          "category": "momentum",
+          "module": "ferro_ta.indicators.momentum",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "FISHER",
           "category": "momentum",
           "module": "ferro_ta.indicators.momentum",
           "doc": "",
@@ -2605,7 +2906,28 @@
           "params": []
         },
         {
+          "name": "ALLIGATOR",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ALMA",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "BBANDS",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CHANDE_KROLL_STOP",
           "category": "overlap",
           "module": "ferro_ta.indicators.overlap",
           "doc": "",
@@ -2620,6 +2942,13 @@
         },
         {
           "name": "EMA",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "FRAMA",
           "category": "overlap",
           "module": "ferro_ta.indicators.overlap",
           "doc": "",
@@ -2669,6 +2998,20 @@
         },
         {
           "name": "MAVP",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MA_ENVELOPES",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MCGINLEY",
           "category": "overlap",
           "module": "ferro_ta.indicators.overlap",
           "doc": "",
@@ -2731,7 +3074,21 @@
           "params": []
         },
         {
+          "name": "VIDYA",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "WMA",
+          "category": "overlap",
+          "module": "ferro_ta.indicators.overlap",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ZLEMA",
           "category": "overlap",
           "module": "ferro_ta.indicators.overlap",
           "doc": "",
@@ -3368,6 +3725,27 @@
           "params": []
         },
         {
+          "name": "MEDIAN",
+          "category": "statistic",
+          "module": "ferro_ta.indicators.statistic",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MEDIAN_BANDS",
+          "category": "statistic",
+          "module": "ferro_ta.indicators.statistic",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MODE",
+          "category": "statistic",
+          "module": "ferro_ta.indicators.statistic",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "STDDEV",
           "category": "statistic",
           "module": "ferro_ta.indicators.statistic",
@@ -3480,6 +3858,13 @@
           "params": []
         },
         {
+          "name": "AC",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "ACOS",
           "category": "top_level",
           "module": "ferro_ta",
@@ -3516,6 +3901,27 @@
         },
         {
           "name": "ADXR",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ALLIGATOR",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ALMA",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "AO",
           "category": "top_level",
           "module": "ferro_ta",
           "doc": "",
@@ -3572,6 +3978,20 @@
         },
         {
           "name": "BBANDS",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "BBPERCENT",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "BBWIDTH",
           "category": "top_level",
           "module": "ferro_ta",
           "doc": "",
@@ -4033,7 +4453,35 @@
           "params": []
         },
         {
+          "name": "CHAIKIN_VOL",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "CHANDELIER_EXIT",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CHANDE_KROLL_STOP",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CHANGE",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CHO",
           "category": "top_level",
           "module": "ferro_ta",
           "doc": "",
@@ -4047,7 +4495,21 @@
           "params": []
         },
         {
+          "name": "CMF",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "CMO",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "COPPOCK",
           "category": "top_level",
           "module": "ferro_ta",
           "doc": "",
@@ -4075,6 +4537,34 @@
           "params": []
         },
         {
+          "name": "CROSS",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CROSSOVER",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CROSSUNDER",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CRSI",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "DEMA",
           "category": "top_level",
           "module": "ferro_ta",
@@ -4089,7 +4579,21 @@
           "params": []
         },
         {
+          "name": "DMI",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "DONCHIAN",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "DPO",
           "category": "top_level",
           "module": "ferro_ta",
           "doc": "",
@@ -4103,7 +4607,21 @@
           "params": []
         },
         {
+          "name": "ELDER_RAY",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "EMA",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "EMV",
           "category": "top_level",
           "module": "ferro_ta",
           "doc": "",
@@ -4117,7 +4635,70 @@
           "params": []
         },
         {
+          "name": "EXREM",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "FALLING",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "FISHER",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "FLIP",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "FLOOR",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "FORCE_INDEX",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "FRAMA",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "GATOR",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "HIGHEST",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "HISTORICAL_VOLATILITY",
           "category": "top_level",
           "module": "ferro_ta",
           "doc": "",
@@ -4194,6 +4775,20 @@
           "params": []
         },
         {
+          "name": "KST",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "KVO",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "LINEARREG",
           "category": "top_level",
           "module": "ferro_ta",
@@ -4236,6 +4831,13 @@
           "params": []
         },
         {
+          "name": "LOWEST",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "MA",
           "category": "top_level",
           "module": "ferro_ta",
@@ -4271,6 +4873,13 @@
           "params": []
         },
         {
+          "name": "MASS",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "MAVP",
           "category": "top_level",
           "module": "ferro_ta",
@@ -4286,6 +4895,34 @@
         },
         {
           "name": "MAXINDEX",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MA_ENVELOPES",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MCGINLEY",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MEDIAN",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MEDIAN_BANDS",
           "category": "top_level",
           "module": "ferro_ta",
           "doc": "",
@@ -4348,6 +4985,13 @@
           "params": []
         },
         {
+          "name": "MODE",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "MOM",
           "category": "top_level",
           "module": "ferro_ta",
@@ -4369,7 +5013,28 @@
           "params": []
         },
         {
+          "name": "NVI",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "NVI_WITH_EMA",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "OBV",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "OBV_SMOOTHED",
           "category": "top_level",
           "module": "ferro_ta",
           "doc": "",
@@ -4397,7 +5062,42 @@
           "params": []
         },
         {
+          "name": "PO",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "PPO",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "PVI",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "PVI_WITH_SIGNAL",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "PVT",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "RISING",
           "category": "top_level",
           "module": "ferro_ta",
           "doc": "",
@@ -4433,6 +5133,27 @@
         },
         {
           "name": "RSI",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "RVI",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "RVOL",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "RWI",
           "category": "top_level",
           "module": "ferro_ta",
           "doc": "",
@@ -4475,6 +5196,20 @@
         },
         {
           "name": "SQRT",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "STARC",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "STC",
           "category": "top_level",
           "module": "ferro_ta",
           "doc": "",
@@ -4586,7 +5321,21 @@
           "params": []
         },
         {
+          "name": "TSI",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "TYPPRICE",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ULCER_INDEX",
           "category": "top_level",
           "module": "ferro_ta",
           "doc": "",
@@ -4600,7 +5349,42 @@
           "params": []
         },
         {
+          "name": "VALUEWHEN",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "VAR",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "VIDYA",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "VOLOSC",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "VORTEX",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "VROC",
           "category": "top_level",
           "module": "ferro_ta",
           "doc": "",
@@ -4628,6 +5412,13 @@
           "params": []
         },
         {
+          "name": "WILLIAMS_FRACTALS",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "WILLR",
           "category": "top_level",
           "module": "ferro_ta",
@@ -4636,6 +5427,13 @@
         },
         {
           "name": "WMA",
+          "category": "top_level",
+          "module": "ferro_ta",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ZLEMA",
           "category": "top_level",
           "module": "ferro_ta",
           "doc": "",
@@ -4740,6 +5538,41 @@
           "params": []
         },
         {
+          "name": "BBPERCENT",
+          "category": "volatility",
+          "module": "ferro_ta.indicators.volatility",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "BBWIDTH",
+          "category": "volatility",
+          "module": "ferro_ta.indicators.volatility",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "CHAIKIN_VOL",
+          "category": "volatility",
+          "module": "ferro_ta.indicators.volatility",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "HISTORICAL_VOLATILITY",
+          "category": "volatility",
+          "module": "ferro_ta.indicators.volatility",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "MASS",
+          "category": "volatility",
+          "module": "ferro_ta.indicators.volatility",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "NATR",
           "category": "volatility",
           "module": "ferro_ta.indicators.volatility",
@@ -4747,7 +5580,21 @@
           "params": []
         },
         {
+          "name": "STARC",
+          "category": "volatility",
+          "module": "ferro_ta.indicators.volatility",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "TRANGE",
+          "category": "volatility",
+          "module": "ferro_ta.indicators.volatility",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "ULCER_INDEX",
           "category": "volatility",
           "module": "ferro_ta.indicators.volatility",
           "doc": "",
@@ -4768,7 +5615,98 @@
           "params": []
         },
         {
+          "name": "CMF",
+          "category": "volume",
+          "module": "ferro_ta.indicators.volume",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "EMV",
+          "category": "volume",
+          "module": "ferro_ta.indicators.volume",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "FORCE_INDEX",
+          "category": "volume",
+          "module": "ferro_ta.indicators.volume",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "KVO",
+          "category": "volume",
+          "module": "ferro_ta.indicators.volume",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "NVI",
+          "category": "volume",
+          "module": "ferro_ta.indicators.volume",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "NVI_WITH_EMA",
+          "category": "volume",
+          "module": "ferro_ta.indicators.volume",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "OBV",
+          "category": "volume",
+          "module": "ferro_ta.indicators.volume",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "OBV_SMOOTHED",
+          "category": "volume",
+          "module": "ferro_ta.indicators.volume",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "PVI",
+          "category": "volume",
+          "module": "ferro_ta.indicators.volume",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "PVI_WITH_SIGNAL",
+          "category": "volume",
+          "module": "ferro_ta.indicators.volume",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "PVT",
+          "category": "volume",
+          "module": "ferro_ta.indicators.volume",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "RVOL",
+          "category": "volume",
+          "module": "ferro_ta.indicators.volume",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "VOLOSC",
+          "category": "volume",
+          "module": "ferro_ta.indicators.volume",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "VROC",
           "category": "volume",
           "module": "ferro_ta.indicators.volume",
           "doc": "",
@@ -4777,7 +5715,7 @@
       ]
     },
     "rust_core": {
-      "public_function_count": 303,
+      "public_function_count": 363,
       "functions": [
         {
           "module": "aggregation",
@@ -5040,54 +5978,299 @@
           "file": "cycle.rs"
         },
         {
-          "module": "extended",
+          "module": "extended.existing",
           "function": "chandelier_exit",
-          "file": "extended.rs"
+          "file": "extended/existing.rs"
         },
         {
-          "module": "extended",
+          "module": "extended.existing",
           "function": "choppiness_index",
-          "file": "extended.rs"
+          "file": "extended/existing.rs"
         },
         {
-          "module": "extended",
+          "module": "extended.existing",
           "function": "donchian",
-          "file": "extended.rs"
+          "file": "extended/existing.rs"
         },
         {
-          "module": "extended",
+          "module": "extended.existing",
           "function": "hull_ma",
-          "file": "extended.rs"
+          "file": "extended/existing.rs"
         },
         {
-          "module": "extended",
+          "module": "extended.existing",
           "function": "ichimoku",
-          "file": "extended.rs"
+          "file": "extended/existing.rs"
         },
         {
-          "module": "extended",
+          "module": "extended.existing",
           "function": "keltner_channels",
-          "file": "extended.rs"
+          "file": "extended/existing.rs"
         },
         {
-          "module": "extended",
+          "module": "extended.existing",
           "function": "pivot_points",
-          "file": "extended.rs"
+          "file": "extended/existing.rs"
         },
         {
-          "module": "extended",
+          "module": "extended.existing",
           "function": "supertrend",
-          "file": "extended.rs"
+          "file": "extended/existing.rs"
         },
         {
-          "module": "extended",
+          "module": "extended.existing",
           "function": "vwap",
-          "file": "extended.rs"
+          "file": "extended/existing.rs"
         },
         {
-          "module": "extended",
+          "module": "extended.existing",
           "function": "vwma",
-          "file": "extended.rs"
+          "file": "extended/existing.rs"
+        },
+        {
+          "module": "extended.hybrid",
+          "function": "dmi",
+          "file": "extended/hybrid.rs"
+        },
+        {
+          "module": "extended.hybrid",
+          "function": "rwi",
+          "file": "extended/hybrid.rs"
+        },
+        {
+          "module": "extended.hybrid",
+          "function": "williams_fractals",
+          "file": "extended/hybrid.rs"
+        },
+        {
+          "module": "extended.momentum",
+          "function": "crsi",
+          "file": "extended/momentum.rs"
+        },
+        {
+          "module": "extended.momentum",
+          "function": "elder_ray",
+          "file": "extended/momentum.rs"
+        },
+        {
+          "module": "extended.momentum",
+          "function": "fisher",
+          "file": "extended/momentum.rs"
+        },
+        {
+          "module": "extended.oscillators",
+          "function": "ac",
+          "file": "extended/oscillators.rs"
+        },
+        {
+          "module": "extended.oscillators",
+          "function": "ao",
+          "file": "extended/oscillators.rs"
+        },
+        {
+          "module": "extended.oscillators",
+          "function": "cho",
+          "file": "extended/oscillators.rs"
+        },
+        {
+          "module": "extended.oscillators",
+          "function": "coppock",
+          "file": "extended/oscillators.rs"
+        },
+        {
+          "module": "extended.oscillators",
+          "function": "dpo",
+          "file": "extended/oscillators.rs"
+        },
+        {
+          "module": "extended.oscillators",
+          "function": "gator",
+          "file": "extended/oscillators.rs"
+        },
+        {
+          "module": "extended.oscillators",
+          "function": "kst",
+          "file": "extended/oscillators.rs"
+        },
+        {
+          "module": "extended.oscillators",
+          "function": "po",
+          "file": "extended/oscillators.rs"
+        },
+        {
+          "module": "extended.oscillators",
+          "function": "rvi",
+          "file": "extended/oscillators.rs"
+        },
+        {
+          "module": "extended.oscillators",
+          "function": "stc",
+          "file": "extended/oscillators.rs"
+        },
+        {
+          "module": "extended.oscillators",
+          "function": "tsi",
+          "file": "extended/oscillators.rs"
+        },
+        {
+          "module": "extended.oscillators",
+          "function": "vortex",
+          "file": "extended/oscillators.rs"
+        },
+        {
+          "module": "extended.stat",
+          "function": "median",
+          "file": "extended/stat.rs"
+        },
+        {
+          "module": "extended.stat",
+          "function": "median_bands",
+          "file": "extended/stat.rs"
+        },
+        {
+          "module": "extended.stat",
+          "function": "mode",
+          "file": "extended/stat.rs"
+        },
+        {
+          "module": "extended.trend",
+          "function": "alligator",
+          "file": "extended/trend.rs"
+        },
+        {
+          "module": "extended.trend",
+          "function": "alma",
+          "file": "extended/trend.rs"
+        },
+        {
+          "module": "extended.trend",
+          "function": "chande_kroll_stop",
+          "file": "extended/trend.rs"
+        },
+        {
+          "module": "extended.trend",
+          "function": "frama",
+          "file": "extended/trend.rs"
+        },
+        {
+          "module": "extended.trend",
+          "function": "ma_envelopes",
+          "file": "extended/trend.rs"
+        },
+        {
+          "module": "extended.trend",
+          "function": "mcginley",
+          "file": "extended/trend.rs"
+        },
+        {
+          "module": "extended.trend",
+          "function": "vidya",
+          "file": "extended/trend.rs"
+        },
+        {
+          "module": "extended.trend",
+          "function": "zlema",
+          "file": "extended/trend.rs"
+        },
+        {
+          "module": "extended.volatility",
+          "function": "bbpercent",
+          "file": "extended/volatility.rs"
+        },
+        {
+          "module": "extended.volatility",
+          "function": "bbwidth",
+          "file": "extended/volatility.rs"
+        },
+        {
+          "module": "extended.volatility",
+          "function": "chaikin_vol",
+          "file": "extended/volatility.rs"
+        },
+        {
+          "module": "extended.volatility",
+          "function": "historical_volatility",
+          "file": "extended/volatility.rs"
+        },
+        {
+          "module": "extended.volatility",
+          "function": "mass",
+          "file": "extended/volatility.rs"
+        },
+        {
+          "module": "extended.volatility",
+          "function": "starc",
+          "file": "extended/volatility.rs"
+        },
+        {
+          "module": "extended.volatility",
+          "function": "ulcer_index",
+          "file": "extended/volatility.rs"
+        },
+        {
+          "module": "extended.volume",
+          "function": "cmf",
+          "file": "extended/volume.rs"
+        },
+        {
+          "module": "extended.volume",
+          "function": "emv",
+          "file": "extended/volume.rs"
+        },
+        {
+          "module": "extended.volume",
+          "function": "force_index",
+          "file": "extended/volume.rs"
+        },
+        {
+          "module": "extended.volume",
+          "function": "kvo",
+          "file": "extended/volume.rs"
+        },
+        {
+          "module": "extended.volume",
+          "function": "nvi",
+          "file": "extended/volume.rs"
+        },
+        {
+          "module": "extended.volume",
+          "function": "nvi_with_ema",
+          "file": "extended/volume.rs"
+        },
+        {
+          "module": "extended.volume",
+          "function": "obv_smoothed",
+          "file": "extended/volume.rs"
+        },
+        {
+          "module": "extended.volume",
+          "function": "pvi",
+          "file": "extended/volume.rs"
+        },
+        {
+          "module": "extended.volume",
+          "function": "pvi_with_signal",
+          "file": "extended/volume.rs"
+        },
+        {
+          "module": "extended.volume",
+          "function": "pvt",
+          "file": "extended/volume.rs"
+        },
+        {
+          "module": "extended.volume",
+          "function": "rvol",
+          "file": "extended/volume.rs"
+        },
+        {
+          "module": "extended.volume",
+          "function": "volosc",
+          "file": "extended/volume.rs"
+        },
+        {
+          "module": "extended.volume",
+          "function": "vroc",
+          "file": "extended/volume.rs"
         },
         {
           "module": "futures.basis",
@@ -6260,6 +7443,61 @@
           "file": "statistic.rs"
         },
         {
+          "module": "utils",
+          "function": "change",
+          "file": "utils.rs"
+        },
+        {
+          "module": "utils",
+          "function": "cross",
+          "file": "utils.rs"
+        },
+        {
+          "module": "utils",
+          "function": "crossover",
+          "file": "utils.rs"
+        },
+        {
+          "module": "utils",
+          "function": "crossunder",
+          "file": "utils.rs"
+        },
+        {
+          "module": "utils",
+          "function": "exrem",
+          "file": "utils.rs"
+        },
+        {
+          "module": "utils",
+          "function": "falling",
+          "file": "utils.rs"
+        },
+        {
+          "module": "utils",
+          "function": "flip",
+          "file": "utils.rs"
+        },
+        {
+          "module": "utils",
+          "function": "highest",
+          "file": "utils.rs"
+        },
+        {
+          "module": "utils",
+          "function": "lowest",
+          "file": "utils.rs"
+        },
+        {
+          "module": "utils",
+          "function": "rising",
+          "file": "utils.rs"
+        },
+        {
+          "module": "utils",
+          "function": "valuewhen",
+          "file": "utils.rs"
+        },
+        {
           "module": "volatility",
           "function": "atr",
           "file": "volatility.rs"
@@ -6308,7 +7546,7 @@
       ]
     },
     "wasm_node": {
-      "export_count": 284,
+      "export_count": 293,
       "exports": [
         "CommissionModel",
         "WasmStreamingATR",
@@ -6329,8 +7567,10 @@
         "aggregate_tick_bars",
         "aggregate_time_bars",
         "aggregate_volume_bars_ticks",
+        "alma",
         "american_price",
         "annualized_basis",
+        "ao",
         "apo",
         "aroon",
         "aroonosc",
@@ -6348,6 +7588,7 @@
         "batch_sma",
         "batch_stoch",
         "bbands",
+        "bbpercent",
         "beta_full",
         "beta_rolling",
         "black_76_greeks",
@@ -6423,8 +7664,10 @@
         "chandelier_exit",
         "check_cross",
         "check_threshold",
+        "cho",
         "choppiness_index",
         "close_to_close_vol",
+        "cmf",
         "cmo",
         "collect_alert_bars",
         "compose_rank",
@@ -6433,6 +7676,7 @@
         "continuous_bar_labels",
         "correl",
         "correlation_matrix",
+        "crossover",
         "curve_slope",
         "curve_summary",
         "dema",
@@ -6453,6 +7697,7 @@
         "futures_basis",
         "garman_klass_vol",
         "half_kelly_fraction",
+        "highest",
         "ht_dcperiod",
         "ht_dcphase",
         "ht_phasor",
@@ -6488,6 +7733,7 @@
         "math_mult",
         "math_sub",
         "mavp",
+        "median",
         "medprice",
         "mfi",
         "midpoint",
@@ -6593,6 +7839,7 @@
         "willr",
         "wma",
         "yang_zhang_vol",
+        "zlema",
         "zscore_series"
       ]
     },
@@ -6790,14 +8037,15 @@
     }
   },
   "parity_summary": {
-    "python_indicator_count": 210,
-    "wasm_export_count": 284,
-    "common_python_wasm_count": 155,
+    "python_indicator_count": 247,
+    "wasm_export_count": 293,
+    "common_python_wasm_count": 160,
     "common_python_wasm": [
       "ad",
       "adosc",
       "adx",
       "adxr",
+      "alma",
       "apo",
       "aroon",
       "aroonosc",
@@ -6807,6 +8055,7 @@
       "batch_rsi",
       "batch_sma",
       "bbands",
+      "bbpercent",
       "bop",
       "cci",
       "cdl2crows",
@@ -6874,6 +8123,7 @@
       "check_cross",
       "check_threshold",
       "choppiness_index",
+      "cmf",
       "cmo",
       "collect_alert_bars",
       "continuous_bar_labels",
@@ -6905,6 +8155,7 @@
       "macdfix",
       "mama",
       "mavp",
+      "median",
       "medprice",
       "mfi",
       "midpoint",
@@ -6948,7 +8199,8 @@
       "vwma",
       "wclprice",
       "willr",
-      "wma"
+      "wma",
+      "zlema"
     ],
     "python_only_vs_wasm": [
       "acos",
@@ -6956,40 +8208,67 @@
       "aggregate_ticks",
       "alertevent",
       "alertmanager",
+      "alligator",
       "asin",
       "atan",
       "batch_apply",
       "batch_dtw",
+      "bbwidth",
       "beta",
       "ceil",
+      "chaikin_vol",
+      "chande_kroll_stop",
       "compose",
       "compute_many",
       "cos",
       "cosh",
+      "crsi",
       "div",
+      "dmi",
       "drawdown",
       "dtw",
+      "elder_ray",
+      "emv",
       "exp",
       "feature_matrix",
+      "fisher",
       "floor",
+      "force_index",
+      "frama",
       "funding_pnl",
+      "historical_volatility",
+      "kvo",
       "ln",
       "log10",
+      "ma_envelopes",
+      "mass",
       "max",
       "maxindex",
+      "mcginley",
+      "median_bands",
       "min",
       "minindex",
+      "mode",
       "mult",
       "multi_timeframe",
+      "nvi",
+      "nvi_with_ema",
+      "obv_smoothed",
+      "pvi",
+      "pvi_with_signal",
+      "pvt",
       "rank_signals",
       "regime",
       "resample",
       "resample_continuous",
+      "rvol",
+      "rwi",
       "screen",
       "session_boundaries",
       "sin",
       "sinh",
       "sqrt",
+      "starc",
       "streamingatr",
       "streamingbbands",
       "streamingema",
@@ -7005,7 +8284,12 @@
       "tan",
       "tanh",
       "tickaggregator",
-      "trix"
+      "trix",
+      "ulcer_index",
+      "vidya",
+      "volosc",
+      "vroc",
+      "williams_fractals"
     ],
     "wasm_only_vs_python": [
       "adx_all",
@@ -7015,6 +8299,7 @@
       "aggregate_volume_bars_ticks",
       "american_price",
       "annualized_basis",
+      "ao",
       "atm_index",
       "atm_iv",
       "back_adjusted_continuous",
@@ -7032,11 +8317,13 @@
       "bottom_n_indices",
       "calendar_spreads",
       "carry_spread",
+      "cho",
       "close_to_close_vol",
       "commissionmodel",
       "compose_rank",
       "compose_weighted",
       "compute_performance_metrics",
+      "crossover",
       "curve_slope",
       "curve_summary",
       "digital_greeks",
@@ -7051,6 +8338,7 @@
       "futures_basis",
       "garman_klass_vol",
       "half_kelly_fraction",
+      "highest",
       "implied_carry_rate",
       "implied_volatility",
       "iv_percentile",
@@ -7140,26 +8428,58 @@
     ]
   },
   "normalized_parity": {
-    "python_indicator_count": 210,
-    "wasm_export_count": 284,
-    "common_python_wasm_count": 194,
+    "python_indicator_count": 247,
+    "wasm_export_count": 293,
+    "common_python_wasm_count": 199,
     "python_only_vs_wasm": [
       "alertevent",
       "alertmanager",
+      "alligator",
       "batchapply",
       "batchdtw",
+      "bbwidth",
+      "chaikinvol",
+      "chandekrollstop",
       "compose",
       "computemany",
+      "crsi",
+      "dmi",
       "dtw",
+      "elderray",
+      "emv",
       "featurematrix",
+      "fisher",
+      "forceindex",
+      "frama",
+      "historicalvolatility",
+      "kvo",
+      "maenvelopes",
+      "mass",
+      "mcginley",
+      "medianbands",
+      "mode",
       "multitimeframe",
+      "nvi",
+      "nviwithema",
+      "obvsmoothed",
+      "pvi",
+      "pviwithsignal",
+      "pvt",
       "ranksignals",
       "regime",
       "resample",
       "resamplecontinuous",
+      "rvol",
+      "rwi",
       "screen",
+      "starc",
       "structuralbreaks",
-      "tickaggregator"
+      "tickaggregator",
+      "ulcerindex",
+      "vidya",
+      "volosc",
+      "vroc",
+      "williamsfractals"
     ],
     "wasm_only_vs_python": [
       "adxall",
@@ -7168,6 +8488,7 @@
       "aggregatevolumebarsticks",
       "americanprice",
       "annualizedbasis",
+      "ao",
       "atmindex",
       "atmiv",
       "backadjustedcontinuous",
@@ -7184,11 +8505,13 @@
       "bottomnindices",
       "calendarspreads",
       "carryspread",
+      "cho",
       "closetoclosevol",
       "commissionmodel",
       "composerank",
       "composeweighted",
       "computeperformancemetrics",
+      "crossover",
       "curveslope",
       "curvesummary",
       "digitalgreeks",
@@ -7201,6 +8524,7 @@
       "futuresbasis",
       "garmanklassvol",
       "halfkellyfraction",
+      "highest",
       "impliedcarryrate",
       "impliedvolatility",
       "ivpercentile",
@@ -7256,16 +8580,30 @@
   },
   "coverage": {
     "counts": {
-      "row_count": 322,
-      "core_count": 300,
-      "python_count": 210,
-      "wasm_count": 284,
+      "row_count": 382,
+      "core_count": 360,
+      "python_count": 247,
+      "wasm_count": 293,
       "flutter_count": 134,
       "flutter_excluded_count": 50,
-      "common_python_wasm_count": 194,
+      "common_python_wasm_count": 199,
       "common_all_four_count": 94
     },
     "rows": [
+      {
+        "key": "ac",
+        "name": "ac",
+        "category": "extended",
+        "core": true,
+        "python": false,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": null,
+        "core_name": "ac",
+        "wasm_name": null,
+        "flutter_name": null
+      },
       {
         "key": "acos",
         "name": "ACOS",
@@ -7449,6 +8787,34 @@
         "flutter_name": null
       },
       {
+        "key": "alligator",
+        "name": "ALLIGATOR",
+        "category": "overlap",
+        "core": true,
+        "python": true,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": "ALLIGATOR",
+        "core_name": "alligator",
+        "wasm_name": null,
+        "flutter_name": null
+      },
+      {
+        "key": "alma",
+        "name": "ALMA",
+        "category": "overlap",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": "ALMA",
+        "core_name": "alma",
+        "wasm_name": "alma",
+        "flutter_name": null
+      },
+      {
         "key": "americanprice",
         "name": "american_price",
         "category": "other",
@@ -7489,6 +8855,20 @@
         "core_name": "annualized_basis",
         "wasm_name": "annualized_basis",
         "flutter_name": "annualized_basis"
+      },
+      {
+        "key": "ao",
+        "name": "ao",
+        "category": "extended",
+        "core": true,
+        "python": false,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": null,
+        "core_name": "ao",
+        "wasm_name": "ao",
+        "flutter_name": null
       },
       {
         "key": "apo",
@@ -7825,6 +9205,34 @@
         "core_name": "bbands",
         "wasm_name": "bbands",
         "flutter_name": "bbands"
+      },
+      {
+        "key": "bbpercent",
+        "name": "BBPERCENT",
+        "category": "volatility",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": "BBPERCENT",
+        "core_name": "bbpercent",
+        "wasm_name": "bbpercent",
+        "flutter_name": null
+      },
+      {
+        "key": "bbwidth",
+        "name": "BBWIDTH",
+        "category": "volatility",
+        "core": true,
+        "python": true,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": "BBWIDTH",
+        "core_name": "bbwidth",
+        "wasm_name": null,
+        "flutter_name": null
       },
       {
         "key": "beta",
@@ -8877,6 +10285,34 @@
         "flutter_name": null
       },
       {
+        "key": "chaikinvol",
+        "name": "CHAIKIN_VOL",
+        "category": "volatility",
+        "core": true,
+        "python": true,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": "CHAIKIN_VOL",
+        "core_name": "chaikin_vol",
+        "wasm_name": null,
+        "flutter_name": null
+      },
+      {
+        "key": "chandekrollstop",
+        "name": "CHANDE_KROLL_STOP",
+        "category": "overlap",
+        "core": true,
+        "python": true,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": "CHANDE_KROLL_STOP",
+        "core_name": "chande_kroll_stop",
+        "wasm_name": null,
+        "flutter_name": null
+      },
+      {
         "key": "chandelierexit",
         "name": "CHANDELIER_EXIT",
         "category": "extended",
@@ -8889,6 +10325,20 @@
         "core_name": "chandelier_exit",
         "wasm_name": "chandelier_exit",
         "flutter_name": "chandelier_exit"
+      },
+      {
+        "key": "change",
+        "name": "change",
+        "category": "utils",
+        "core": true,
+        "python": false,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": null,
+        "core_name": "change",
+        "wasm_name": null,
+        "flutter_name": null
       },
       {
         "key": "checkcross",
@@ -8919,6 +10369,20 @@
         "flutter_name": "check_threshold"
       },
       {
+        "key": "cho",
+        "name": "cho",
+        "category": "extended",
+        "core": true,
+        "python": false,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": null,
+        "core_name": "cho",
+        "wasm_name": "cho",
+        "flutter_name": null
+      },
+      {
         "key": "choppinessindex",
         "name": "CHOPPINESS_INDEX",
         "category": "extended",
@@ -8945,6 +10409,20 @@
         "core_name": "close_to_close_vol",
         "wasm_name": "close_to_close_vol",
         "flutter_name": "close_to_close_vol"
+      },
+      {
+        "key": "cmf",
+        "name": "CMF",
+        "category": "volume",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": "CMF",
+        "core_name": "cmf",
+        "wasm_name": "cmf",
+        "flutter_name": null
       },
       {
         "key": "cmo",
@@ -9115,6 +10593,20 @@
         "flutter_name": null
       },
       {
+        "key": "coppock",
+        "name": "coppock",
+        "category": "extended",
+        "core": true,
+        "python": false,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": null,
+        "core_name": "coppock",
+        "wasm_name": null,
+        "flutter_name": null
+      },
+      {
         "key": "correl",
         "name": "CORREL",
         "category": "statistic",
@@ -9168,6 +10660,62 @@
         "python_name": "COSH",
         "core_name": "math_cosh",
         "wasm_name": "transform_cosh",
+        "flutter_name": null
+      },
+      {
+        "key": "cross",
+        "name": "cross",
+        "category": "utils",
+        "core": true,
+        "python": false,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": null,
+        "core_name": "cross",
+        "wasm_name": null,
+        "flutter_name": null
+      },
+      {
+        "key": "crossover",
+        "name": "crossover",
+        "category": "utils",
+        "core": true,
+        "python": false,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": null,
+        "core_name": "crossover",
+        "wasm_name": "crossover",
+        "flutter_name": null
+      },
+      {
+        "key": "crossunder",
+        "name": "crossunder",
+        "category": "utils",
+        "core": true,
+        "python": false,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": null,
+        "core_name": "crossunder",
+        "wasm_name": null,
+        "flutter_name": null
+      },
+      {
+        "key": "crsi",
+        "name": "CRSI",
+        "category": "momentum",
+        "core": true,
+        "python": true,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": "CRSI",
+        "core_name": "crsi",
+        "wasm_name": null,
         "flutter_name": null
       },
       {
@@ -9269,6 +10817,20 @@
         "flutter_name": "math_div"
       },
       {
+        "key": "dmi",
+        "name": "DMI",
+        "category": "momentum",
+        "core": true,
+        "python": true,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": "DMI",
+        "core_name": "dmi",
+        "wasm_name": null,
+        "flutter_name": null
+      },
+      {
         "key": "donchian",
         "name": "DONCHIAN",
         "category": "extended",
@@ -9281,6 +10843,20 @@
         "core_name": "donchian",
         "wasm_name": "donchian",
         "flutter_name": "donchian"
+      },
+      {
+        "key": "dpo",
+        "name": "dpo",
+        "category": "extended",
+        "core": true,
+        "python": false,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": null,
+        "core_name": "dpo",
+        "wasm_name": null,
+        "flutter_name": null
       },
       {
         "key": "drawdown",
@@ -9367,6 +10943,20 @@
         "flutter_name": null
       },
       {
+        "key": "elderray",
+        "name": "ELDER_RAY",
+        "category": "momentum",
+        "core": true,
+        "python": true,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": "ELDER_RAY",
+        "core_name": "elder_ray",
+        "wasm_name": null,
+        "flutter_name": null
+      },
+      {
         "key": "ema",
         "name": "EMA",
         "category": "overlap",
@@ -9379,6 +10969,20 @@
         "core_name": "ema",
         "wasm_name": "ema",
         "flutter_name": "ema"
+      },
+      {
+        "key": "emv",
+        "name": "EMV",
+        "category": "volume",
+        "core": true,
+        "python": true,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": "EMV",
+        "core_name": "emv",
+        "wasm_name": null,
+        "flutter_name": null
       },
       {
         "key": "exp",
@@ -9406,6 +11010,20 @@
         "python_name": null,
         "core_name": "expected_move",
         "wasm_name": "expected_move",
+        "flutter_name": null
+      },
+      {
+        "key": "exrem",
+        "name": "exrem",
+        "category": "utils",
+        "core": true,
+        "python": false,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": null,
+        "core_name": "exrem",
+        "wasm_name": null,
         "flutter_name": null
       },
       {
@@ -9451,6 +11069,20 @@
         "flutter_name": null
       },
       {
+        "key": "falling",
+        "name": "falling",
+        "category": "utils",
+        "core": true,
+        "python": false,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": null,
+        "core_name": "falling",
+        "wasm_name": null,
+        "flutter_name": null
+      },
+      {
         "key": "featurematrix",
         "name": "feature_matrix",
         "category": "features",
@@ -9461,6 +11093,34 @@
         "flutter_excluded": false,
         "python_name": "feature_matrix",
         "core_name": null,
+        "wasm_name": null,
+        "flutter_name": null
+      },
+      {
+        "key": "fisher",
+        "name": "FISHER",
+        "category": "momentum",
+        "core": true,
+        "python": true,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": "FISHER",
+        "core_name": "fisher",
+        "wasm_name": null,
+        "flutter_name": null
+      },
+      {
+        "key": "flip",
+        "name": "flip",
+        "category": "utils",
+        "core": true,
+        "python": false,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": null,
+        "core_name": "flip",
         "wasm_name": null,
         "flutter_name": null
       },
@@ -9479,6 +11139,20 @@
         "flutter_name": null
       },
       {
+        "key": "forceindex",
+        "name": "FORCE_INDEX",
+        "category": "volume",
+        "core": true,
+        "python": true,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": "FORCE_INDEX",
+        "core_name": "force_index",
+        "wasm_name": null,
+        "flutter_name": null
+      },
+      {
         "key": "forwardfillnan",
         "name": "forward_fill_nan",
         "category": "chunked",
@@ -9491,6 +11165,20 @@
         "core_name": "forward_fill_nan",
         "wasm_name": "forward_fill_nan",
         "flutter_name": "forward_fill_nan"
+      },
+      {
+        "key": "frama",
+        "name": "FRAMA",
+        "category": "overlap",
+        "core": true,
+        "python": true,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": "FRAMA",
+        "core_name": "frama",
+        "wasm_name": null,
+        "flutter_name": null
       },
       {
         "key": "fundingpnl",
@@ -9535,6 +11223,20 @@
         "flutter_name": "garman_klass_vol"
       },
       {
+        "key": "gator",
+        "name": "gator",
+        "category": "extended",
+        "core": true,
+        "python": false,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": null,
+        "core_name": "gator",
+        "wasm_name": null,
+        "flutter_name": null
+      },
+      {
         "key": "halfkellyfraction",
         "name": "half_kelly_fraction",
         "category": "backtest",
@@ -9546,6 +11248,34 @@
         "python_name": null,
         "core_name": "half_kelly_fraction",
         "wasm_name": "half_kelly_fraction",
+        "flutter_name": null
+      },
+      {
+        "key": "highest",
+        "name": "highest",
+        "category": "utils",
+        "core": true,
+        "python": false,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": null,
+        "core_name": "highest",
+        "wasm_name": "highest",
+        "flutter_name": null
+      },
+      {
+        "key": "historicalvolatility",
+        "name": "HISTORICAL_VOLATILITY",
+        "category": "volatility",
+        "core": true,
+        "python": true,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": "HISTORICAL_VOLATILITY",
+        "core_name": "historical_volatility",
+        "wasm_name": null,
         "flutter_name": null
       },
       {
@@ -9787,6 +11517,34 @@
         "flutter_name": "keltner_channels"
       },
       {
+        "key": "kst",
+        "name": "kst",
+        "category": "extended",
+        "core": true,
+        "python": false,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": null,
+        "core_name": "kst",
+        "wasm_name": null,
+        "flutter_name": null
+      },
+      {
+        "key": "kvo",
+        "name": "KVO",
+        "category": "volume",
+        "core": true,
+        "python": true,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": "KVO",
+        "core_name": "kvo",
+        "wasm_name": null,
+        "flutter_name": null
+      },
+      {
         "key": "labelmoneyness",
         "name": "label_moneyness",
         "category": "options",
@@ -9927,6 +11685,20 @@
         "flutter_name": null
       },
       {
+        "key": "lowest",
+        "name": "lowest",
+        "category": "utils",
+        "core": true,
+        "python": false,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": null,
+        "core_name": "lowest",
+        "wasm_name": null,
+        "flutter_name": null
+      },
+      {
         "key": "ma",
         "name": "MA",
         "category": "overlap",
@@ -9997,6 +11769,20 @@
         "flutter_name": "macdfix"
       },
       {
+        "key": "maenvelopes",
+        "name": "MA_ENVELOPES",
+        "category": "overlap",
+        "core": true,
+        "python": true,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": "MA_ENVELOPES",
+        "core_name": "ma_envelopes",
+        "wasm_name": null,
+        "flutter_name": null
+      },
+      {
         "key": "makechunkranges",
         "name": "make_chunk_ranges",
         "category": "chunked",
@@ -10023,6 +11809,20 @@
         "core_name": "mama",
         "wasm_name": "mama",
         "flutter_name": "mama"
+      },
+      {
+        "key": "mass",
+        "name": "MASS",
+        "category": "volatility",
+        "core": true,
+        "python": true,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": "MASS",
+        "core_name": "mass",
+        "wasm_name": null,
+        "flutter_name": null
       },
       {
         "key": "mavp",
@@ -10064,6 +11864,48 @@
         "python_name": "MAXINDEX",
         "core_name": "rolling_maxindex",
         "wasm_name": "rolling_maxindex",
+        "flutter_name": null
+      },
+      {
+        "key": "mcginley",
+        "name": "MCGINLEY",
+        "category": "overlap",
+        "core": true,
+        "python": true,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": "MCGINLEY",
+        "core_name": "mcginley",
+        "wasm_name": null,
+        "flutter_name": null
+      },
+      {
+        "key": "median",
+        "name": "MEDIAN",
+        "category": "statistic",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": "MEDIAN",
+        "core_name": "median",
+        "wasm_name": "median",
+        "flutter_name": null
+      },
+      {
+        "key": "medianbands",
+        "name": "MEDIAN_BANDS",
+        "category": "statistic",
+        "core": true,
+        "python": true,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": "MEDIAN_BANDS",
+        "core_name": "median_bands",
+        "wasm_name": null,
         "flutter_name": null
       },
       {
@@ -10177,6 +12019,20 @@
         "core_name": "minus_dm",
         "wasm_name": "minus_dm",
         "flutter_name": "minus_dm"
+      },
+      {
+        "key": "mode",
+        "name": "MODE",
+        "category": "statistic",
+        "core": true,
+        "python": true,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": "MODE",
+        "core_name": "mode",
+        "wasm_name": null,
+        "flutter_name": null
       },
       {
         "key": "modelextendedgreeks",
@@ -10333,6 +12189,34 @@
         "flutter_name": "natr"
       },
       {
+        "key": "nvi",
+        "name": "NVI",
+        "category": "volume",
+        "core": true,
+        "python": true,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": "NVI",
+        "core_name": "nvi",
+        "wasm_name": null,
+        "flutter_name": null
+      },
+      {
+        "key": "nviwithema",
+        "name": "NVI_WITH_EMA",
+        "category": "volume",
+        "core": true,
+        "python": true,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": "NVI_WITH_EMA",
+        "core_name": "nvi_with_ema",
+        "wasm_name": null,
+        "flutter_name": null
+      },
+      {
         "key": "obv",
         "name": "OBV",
         "category": "volume",
@@ -10345,6 +12229,20 @@
         "core_name": "obv",
         "wasm_name": "obv",
         "flutter_name": "obv"
+      },
+      {
+        "key": "obvsmoothed",
+        "name": "OBV_SMOOTHED",
+        "category": "volume",
+        "core": true,
+        "python": true,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": "OBV_SMOOTHED",
+        "core_name": "obv_smoothed",
+        "wasm_name": null,
+        "flutter_name": null
       },
       {
         "key": "ohlcvagg",
@@ -10445,6 +12343,20 @@
         "flutter_name": "plus_dm"
       },
       {
+        "key": "po",
+        "name": "po",
+        "category": "extended",
+        "core": true,
+        "python": false,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": null,
+        "core_name": "po",
+        "wasm_name": null,
+        "flutter_name": null
+      },
+      {
         "key": "portfoliovolatility",
         "name": "portfolio_volatility",
         "category": "portfolio",
@@ -10513,6 +12425,48 @@
         "core_name": "put_call_parity_deviation",
         "wasm_name": "put_call_parity_deviation",
         "flutter_name": "put_call_parity_deviation"
+      },
+      {
+        "key": "pvi",
+        "name": "PVI",
+        "category": "volume",
+        "core": true,
+        "python": true,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": "PVI",
+        "core_name": "pvi",
+        "wasm_name": null,
+        "flutter_name": null
+      },
+      {
+        "key": "pviwithsignal",
+        "name": "PVI_WITH_SIGNAL",
+        "category": "volume",
+        "core": true,
+        "python": true,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": "PVI_WITH_SIGNAL",
+        "core_name": "pvi_with_signal",
+        "wasm_name": null,
+        "flutter_name": null
+      },
+      {
+        "key": "pvt",
+        "name": "PVT",
+        "category": "volume",
+        "core": true,
+        "python": true,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": "PVT",
+        "core_name": "pvt",
+        "wasm_name": null,
+        "flutter_name": null
       },
       {
         "key": "rankseries",
@@ -10683,6 +12637,20 @@
         "flutter_name": null
       },
       {
+        "key": "rising",
+        "name": "rising",
+        "category": "utils",
+        "core": true,
+        "python": false,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": null,
+        "core_name": "rising",
+        "wasm_name": null,
+        "flutter_name": null
+      },
+      {
         "key": "roc",
         "name": "ROC",
         "category": "momentum",
@@ -10847,6 +12815,48 @@
         "flutter_excluded": false,
         "python_name": null,
         "core_name": "run_hlc_indicators",
+        "wasm_name": null,
+        "flutter_name": null
+      },
+      {
+        "key": "rvi",
+        "name": "rvi",
+        "category": "extended",
+        "core": true,
+        "python": false,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": null,
+        "core_name": "rvi",
+        "wasm_name": null,
+        "flutter_name": null
+      },
+      {
+        "key": "rvol",
+        "name": "RVOL",
+        "category": "volume",
+        "core": true,
+        "python": true,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": "RVOL",
+        "core_name": "rvol",
+        "wasm_name": null,
+        "flutter_name": null
+      },
+      {
+        "key": "rwi",
+        "name": "RWI",
+        "category": "extended",
+        "core": true,
+        "python": true,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": "RWI",
+        "core_name": "rwi",
         "wasm_name": null,
         "flutter_name": null
       },
@@ -11058,6 +13068,34 @@
         "python_name": "SQRT",
         "core_name": "math_sqrt",
         "wasm_name": "transform_sqrt",
+        "flutter_name": null
+      },
+      {
+        "key": "starc",
+        "name": "STARC",
+        "category": "volatility",
+        "core": true,
+        "python": true,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": "STARC",
+        "core_name": "starc",
+        "wasm_name": null,
+        "flutter_name": null
+      },
+      {
+        "key": "stc",
+        "name": "stc",
+        "category": "extended",
+        "core": true,
+        "python": false,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": null,
+        "core_name": "stc",
+        "wasm_name": null,
         "flutter_name": null
       },
       {
@@ -11565,6 +13603,20 @@
         "flutter_name": "tsf"
       },
       {
+        "key": "tsi",
+        "name": "tsi",
+        "category": "extended",
+        "core": true,
+        "python": false,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": null,
+        "core_name": "tsi",
+        "wasm_name": null,
+        "flutter_name": null
+      },
+      {
         "key": "typprice",
         "name": "TYPPRICE",
         "category": "price_transform",
@@ -11577,6 +13629,20 @@
         "core_name": "typprice",
         "wasm_name": "typprice",
         "flutter_name": "typprice"
+      },
+      {
+        "key": "ulcerindex",
+        "name": "ULCER_INDEX",
+        "category": "volatility",
+        "core": true,
+        "python": true,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": "ULCER_INDEX",
+        "core_name": "ulcer_index",
+        "wasm_name": null,
+        "flutter_name": null
       },
       {
         "key": "ultosc",
@@ -11607,6 +13673,20 @@
         "flutter_name": null
       },
       {
+        "key": "valuewhen",
+        "name": "valuewhen",
+        "category": "utils",
+        "core": true,
+        "python": false,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": null,
+        "core_name": "valuewhen",
+        "wasm_name": null,
+        "flutter_name": null
+      },
+      {
         "key": "var",
         "name": "VAR",
         "category": "statistic",
@@ -11619,6 +13699,20 @@
         "core_name": "var",
         "wasm_name": "var",
         "flutter_name": "var"
+      },
+      {
+        "key": "vidya",
+        "name": "VIDYA",
+        "category": "overlap",
+        "core": true,
+        "python": true,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": "VIDYA",
+        "core_name": "vidya",
+        "wasm_name": null,
+        "flutter_name": null
       },
       {
         "key": "volcone",
@@ -11635,6 +13729,20 @@
         "flutter_name": null
       },
       {
+        "key": "volosc",
+        "name": "VOLOSC",
+        "category": "volume",
+        "core": true,
+        "python": true,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": "VOLOSC",
+        "core_name": "volosc",
+        "wasm_name": null,
+        "flutter_name": null
+      },
+      {
         "key": "volumebars",
         "name": "volume_bars",
         "category": "resampling",
@@ -11647,6 +13755,34 @@
         "core_name": "volume_bars",
         "wasm_name": "volume_bars",
         "flutter_name": "volume_bars"
+      },
+      {
+        "key": "vortex",
+        "name": "vortex",
+        "category": "extended",
+        "core": true,
+        "python": false,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": null,
+        "core_name": "vortex",
+        "wasm_name": null,
+        "flutter_name": null
+      },
+      {
+        "key": "vroc",
+        "name": "VROC",
+        "category": "volume",
+        "core": true,
+        "python": true,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": "VROC",
+        "core_name": "vroc",
+        "wasm_name": null,
+        "flutter_name": null
       },
       {
         "key": "vwap",
@@ -11719,6 +13855,20 @@
         "flutter_name": "weighted_continuous"
       },
       {
+        "key": "williamsfractals",
+        "name": "WILLIAMS_FRACTALS",
+        "category": "extended",
+        "core": true,
+        "python": true,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": "WILLIAMS_FRACTALS",
+        "core_name": "williams_fractals",
+        "wasm_name": null,
+        "flutter_name": null
+      },
+      {
         "key": "willr",
         "name": "WILLR",
         "category": "momentum",
@@ -11759,6 +13909,20 @@
         "core_name": "yang_zhang_vol",
         "wasm_name": "yang_zhang_vol",
         "flutter_name": "yang_zhang_vol"
+      },
+      {
+        "key": "zlema",
+        "name": "ZLEMA",
+        "category": "overlap",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": "ZLEMA",
+        "core_name": "zlema",
+        "wasm_name": "zlema",
+        "flutter_name": null
       },
       {
         "key": "zscoreseries",

@@ -23,9 +23,13 @@ from benchmarks.wrapper_registry import (
 )
 
 # Reference = ferro_ta; compare against each library that has a non-empty result.
+# openalgo is registered for speed benches only (formula conventions differ).
 REFERENCE_LIB = "ferro_ta"
+_SPEED_ONLY_LIBS = frozenset({"openalgo"})
 COMPARISON_LIBS = [
-    library for library in available_libraries() if library != REFERENCE_LIB
+    library
+    for library in available_libraries()
+    if library != REFERENCE_LIB and library not in _SPEED_ONLY_LIBS
 ]
 
 # Per-indicator tolerances  (rtol, atol)

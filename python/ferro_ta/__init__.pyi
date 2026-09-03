@@ -94,6 +94,44 @@ def MIDPRICE(
     low: ArrayLike,
     timeperiod: int = 14,
 ) -> NDArray[np.float64]: ...
+def ALMA(
+    close: ArrayLike,
+    timeperiod: int = 21,
+    offset: float = 0.85,
+    sigma: float = 6.0,
+) -> NDArray[np.float64]: ...
+def ZLEMA(close: ArrayLike, timeperiod: int = 14) -> NDArray[np.float64]: ...
+def FRAMA(close: ArrayLike, timeperiod: int = 16) -> NDArray[np.float64]: ...
+def MCGINLEY(close: ArrayLike, timeperiod: int = 14) -> NDArray[np.float64]: ...
+def VIDYA(
+    close: ArrayLike,
+    timeperiod: int = 14,
+    cmo_period: int = 9,
+) -> NDArray[np.float64]: ...
+def ALLIGATOR(
+    high: ArrayLike,
+    low: ArrayLike,
+    jaw_period: int = 13,
+    jaw_shift: int = 8,
+    teeth_period: int = 8,
+    teeth_shift: int = 5,
+    lips_period: int = 5,
+    lips_shift: int = 3,
+) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]: ...
+def MA_ENVELOPES(
+    close: ArrayLike,
+    timeperiod: int = 20,
+    percent: float = 2.5,
+    matype: int = 0,
+) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]: ...
+def CHANDE_KROLL_STOP(
+    high: ArrayLike,
+    low: ArrayLike,
+    close: ArrayLike,
+    timeperiod: int = 10,
+    multiplier: float = 1.0,
+    stop_period: int = 9,
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]: ...
 
 # ---------------------------------------------------------------------------
 # Momentum Indicators
@@ -212,6 +250,12 @@ def ADX(
     close: ArrayLike,
     timeperiod: int = 14,
 ) -> NDArray[np.float64]: ...
+def DMI(
+    high: ArrayLike,
+    low: ArrayLike,
+    close: ArrayLike,
+    timeperiod: int = 14,
+) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]: ...
 def ADXR(
     high: ArrayLike,
     low: ArrayLike,
@@ -231,6 +275,23 @@ def TRANGE(
     high: ArrayLike,
     low: ArrayLike,
     close: ArrayLike,
+) -> NDArray[np.float64]: ...
+def ELDER_RAY(
+    high: ArrayLike,
+    low: ArrayLike,
+    close: ArrayLike,
+    timeperiod: int = 13,
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]: ...
+def FISHER(
+    high: ArrayLike,
+    low: ArrayLike,
+    timeperiod: int = 9,
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]: ...
+def CRSI(
+    real: ArrayLike,
+    timeperiod: int = 3,
+    streakperiod: int = 2,
+    rankperiod: int = 100,
 ) -> NDArray[np.float64]: ...
 
 # ---------------------------------------------------------------------------
@@ -255,6 +316,148 @@ def OBV(
     real: ArrayLike,
     volume: ArrayLike,
 ) -> NDArray[np.float64]: ...
+def OBV_SMOOTHED(
+    close: ArrayLike,
+    volume: ArrayLike,
+    timeperiod: int = 20,
+    matype: int = 1,
+) -> NDArray[np.float64]: ...
+def CMF(
+    high: ArrayLike,
+    low: ArrayLike,
+    close: ArrayLike,
+    volume: ArrayLike,
+    timeperiod: int = 20,
+) -> NDArray[np.float64]: ...
+def EMV(
+    high: ArrayLike,
+    low: ArrayLike,
+    volume: ArrayLike,
+    timeperiod: int = 14,
+    divisor: float = 10000.0,
+) -> NDArray[np.float64]: ...
+def FORCE_INDEX(
+    close: ArrayLike,
+    volume: ArrayLike,
+    timeperiod: int = 13,
+) -> NDArray[np.float64]: ...
+def NVI(close: ArrayLike, volume: ArrayLike) -> NDArray[np.float64]: ...
+def NVI_WITH_EMA(
+    close: ArrayLike,
+    volume: ArrayLike,
+    timeperiod: int = 255,
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]: ...
+def PVI(close: ArrayLike, volume: ArrayLike) -> NDArray[np.float64]: ...
+def PVI_WITH_SIGNAL(
+    close: ArrayLike,
+    volume: ArrayLike,
+    timeperiod: int = 255,
+    matype: int = 1,
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]: ...
+def VOLOSC(
+    volume: ArrayLike,
+    fastperiod: int = 5,
+    slowperiod: int = 10,
+) -> NDArray[np.float64]: ...
+def VROC(volume: ArrayLike, timeperiod: int = 25) -> NDArray[np.float64]: ...
+def KVO(
+    high: ArrayLike,
+    low: ArrayLike,
+    close: ArrayLike,
+    volume: ArrayLike,
+    fastperiod: int = 34,
+    slowperiod: int = 55,
+    signalperiod: int = 13,
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]: ...
+def PVT(close: ArrayLike, volume: ArrayLike) -> NDArray[np.float64]: ...
+def RVOL(volume: ArrayLike, timeperiod: int = 20) -> NDArray[np.float64]: ...
+
+# ---------------------------------------------------------------------------
+# Oscillators
+# ---------------------------------------------------------------------------
+
+def AO(
+    high: ArrayLike,
+    low: ArrayLike,
+    fastperiod: int = 5,
+    slowperiod: int = 34,
+) -> NDArray[np.float64]: ...
+def AC(
+    high: ArrayLike,
+    low: ArrayLike,
+    fastperiod: int = 5,
+    slowperiod: int = 34,
+    smoothperiod: int = 5,
+) -> NDArray[np.float64]: ...
+def PO(
+    close: ArrayLike,
+    fastperiod: int = 10,
+    slowperiod: int = 21,
+) -> NDArray[np.float64]: ...
+def DPO(close: ArrayLike, timeperiod: int = 20) -> NDArray[np.float64]: ...
+def RVI(
+    open: ArrayLike,
+    high: ArrayLike,
+    low: ArrayLike,
+    close: ArrayLike,
+    timeperiod: int = 10,
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]: ...
+def CHO(
+    high: ArrayLike,
+    low: ArrayLike,
+    close: ArrayLike,
+    volume: ArrayLike,
+    fastperiod: int = 3,
+    slowperiod: int = 10,
+) -> NDArray[np.float64]: ...
+def KST(
+    close: ArrayLike,
+    roc1: int = 10,
+    roc2: int = 15,
+    roc3: int = 20,
+    roc4: int = 30,
+    sma1: int = 10,
+    sma2: int = 10,
+    sma3: int = 10,
+    sma4: int = 15,
+    signalperiod: int = 9,
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]: ...
+def TSI(
+    close: ArrayLike,
+    longperiod: int = 25,
+    shortperiod: int = 13,
+    signalperiod: int = 13,
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]: ...
+def VORTEX(
+    high: ArrayLike,
+    low: ArrayLike,
+    close: ArrayLike,
+    timeperiod: int = 14,
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]: ...
+def STC(
+    close: ArrayLike,
+    fastperiod: int = 23,
+    slowperiod: int = 50,
+    cycleperiod: int = 10,
+    d1: int = 3,
+    d2: int = 3,
+) -> NDArray[np.float64]: ...
+def GATOR(
+    high: ArrayLike,
+    low: ArrayLike,
+    jaw_period: int = 13,
+    jaw_shift: int = 8,
+    teeth_period: int = 8,
+    teeth_shift: int = 5,
+    lips_period: int = 5,
+    lips_shift: int = 3,
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]: ...
+def COPPOCK(
+    close: ArrayLike,
+    wma_period: int = 10,
+    roc1_period: int = 14,
+    roc2_period: int = 11,
+) -> NDArray[np.float64]: ...
 
 # ---------------------------------------------------------------------------
 # Volatility Indicators
@@ -272,6 +475,44 @@ def NATR(
     close: ArrayLike,
     timeperiod: int = 14,
 ) -> NDArray[np.float64]: ...
+def CHAIKIN_VOL(
+    high: ArrayLike,
+    low: ArrayLike,
+    timeperiod: int = 10,
+    rocperiod: int = 10,
+) -> NDArray[np.float64]: ...
+def MASS(
+    high: ArrayLike,
+    low: ArrayLike,
+    timeperiod: int = 9,
+    sumperiod: int = 25,
+) -> NDArray[np.float64]: ...
+def BBPERCENT(
+    real: ArrayLike,
+    timeperiod: int = 5,
+    nbdevup: float = 2.0,
+    nbdevdn: float = 2.0,
+) -> NDArray[np.float64]: ...
+def BBWIDTH(
+    real: ArrayLike,
+    timeperiod: int = 5,
+    nbdevup: float = 2.0,
+    nbdevdn: float = 2.0,
+) -> NDArray[np.float64]: ...
+def HISTORICAL_VOLATILITY(
+    real: ArrayLike,
+    timeperiod: int = 20,
+    annual: float = 252.0,
+) -> NDArray[np.float64]: ...
+def ULCER_INDEX(real: ArrayLike, timeperiod: int = 14) -> NDArray[np.float64]: ...
+def STARC(
+    high: ArrayLike,
+    low: ArrayLike,
+    close: ArrayLike,
+    timeperiod: int = 15,
+    atr_period: int = 15,
+    multiplier: float = 2.0,
+) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]: ...
 
 # ---------------------------------------------------------------------------
 # Statistic Functions
@@ -303,6 +544,23 @@ def CORREL(
     real0: ArrayLike,
     real1: ArrayLike,
     timeperiod: int = 30,
+) -> NDArray[np.float64]: ...
+def MEDIAN(real: ArrayLike, timeperiod: int = 3) -> NDArray[np.float64]: ...
+def MEDIAN_BANDS(
+    high: ArrayLike,
+    low: ArrayLike,
+    close: ArrayLike,
+    timeperiod: int = 3,
+    atr_period: int = 14,
+    multiplier: float = 2.0,
+) -> tuple[
+    NDArray[np.float64],
+    NDArray[np.float64],
+    NDArray[np.float64],
+    NDArray[np.float64],
+]: ...
+def MODE(
+    real: ArrayLike, timeperiod: int = 20, bins: int = 10
 ) -> NDArray[np.float64]: ...
 
 # ---------------------------------------------------------------------------
@@ -444,6 +702,35 @@ def CHOPPINESS_INDEX(
     low: ArrayLike,
     close: ArrayLike,
     timeperiod: int = 14,
+) -> NDArray[np.float64]: ...
+def WILLIAMS_FRACTALS(
+    high: ArrayLike,
+    low: ArrayLike,
+    timeperiod: int = 2,
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]: ...
+def RWI(
+    high: ArrayLike,
+    low: ArrayLike,
+    close: ArrayLike,
+    timeperiod: int = 14,
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]: ...
+
+# ---------------------------------------------------------------------------
+# Signal utilities
+# ---------------------------------------------------------------------------
+
+def CROSSOVER(real0: ArrayLike, real1: ArrayLike) -> NDArray[np.float64]: ...
+def CROSSUNDER(real0: ArrayLike, real1: ArrayLike) -> NDArray[np.float64]: ...
+def CROSS(real0: ArrayLike, real1: ArrayLike) -> NDArray[np.float64]: ...
+def HIGHEST(real: ArrayLike, timeperiod: int = 30) -> NDArray[np.float64]: ...
+def LOWEST(real: ArrayLike, timeperiod: int = 30) -> NDArray[np.float64]: ...
+def CHANGE(real: ArrayLike, timeperiod: int = 1) -> NDArray[np.float64]: ...
+def RISING(real: ArrayLike, timeperiod: int = 1) -> NDArray[np.float64]: ...
+def FALLING(real: ArrayLike, timeperiod: int = 1) -> NDArray[np.float64]: ...
+def EXREM(primary: ArrayLike, secondary: ArrayLike) -> NDArray[np.float64]: ...
+def FLIP(primary: ArrayLike, secondary: ArrayLike) -> NDArray[np.float64]: ...
+def VALUEWHEN(
+    condition: ArrayLike, real: ArrayLike, occurrence: int = 1
 ) -> NDArray[np.float64]: ...
 
 # ---------------------------------------------------------------------------

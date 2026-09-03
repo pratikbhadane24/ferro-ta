@@ -2,7 +2,19 @@
 
 import numpy as np
 
-from ferro_ta.indicators.volatility import ATR, NATR, TRANGE
+from ferro_ta.indicators.overlap import BBANDS
+from ferro_ta.indicators.volatility import (
+    ATR,
+    BBPERCENT,
+    BBWIDTH,
+    CHAIKIN_VOL,
+    HISTORICAL_VOLATILITY,
+    MASS,
+    NATR,
+    STARC,
+    TRANGE,
+    ULCER_INDEX,
+)
 
 # ---------------------------------------------------------------------------
 # Shared fixtures
@@ -124,3 +136,116 @@ class TestNATR:
         valid = ~np.isnan(atr) & ~np.isnan(natr)
         expected = atr[valid] / _CLOSE[valid] * 100
         np.testing.assert_allclose(natr[valid], expected, rtol=1e-5)
+
+
+# ---------------------------------------------------------------------------
+# CHAIKIN_VOL
+# ---------------------------------------------------------------------------
+
+
+class TestCHAIKIN_VOL:
+    def test_length(self):
+        assert len(CHAIKIN_VOL(_HIGH, _LOW, timeperiod=10, rocperiod=10)) == N
+
+    def test_constant_range_is_zero(self):
+        result = CHAIKIN_VOL(SMALL_H, SMALL_L, timeperiod=2, rocperiod=2)
+        valid = result[~np.isnan(result)]
+        assert len(valid) > 0
+        np.testing.assert_allclose(valid, 0.0, atol=1e-10)
+
+
+# ---------------------------------------------------------------------------
+# MASS
+# ---------------------------------------------------------------------------
+
+
+class TestMASS:
+    def test_length(self):
+        assert len(MASS(_HIGH, _LOW, timeperiod=9, sumperiod=25)) == N
+
+    def test_constant_range_equals_sumperiod(self):
+        h = np.arange(1.0, 21.0) + 1.0
+        l = np.arange(1.0, 21.0) - 1.0
+        result = MASS(h, l, timeperiod=3, sumperiod=3)
+        valid = result[~np.isnan(result)]
+        assert len(valid) > 0
+        np.testing.assert_allclose(valid, 3.0, atol=1e-10)
+
+
+# ---------------------------------------------------------------------------
+# BBPERCENT / BBWIDTH
+# ---------------------------------------------------------------------------
+
+
+class TestBBPERCENT:
+    def test_matches_bbands(self):
+        upper, middle, lower = BBANDS(_CLOSE, timeperiod=5, nbdevup=2.0, nbdevdn=2.0)
+        pct = BBPERCENT(_CLOSE, timeperiod=5, nbdevup=2.0, nbdevdn=2.0)
+        width = BBWIDTH(_CLOSE, timeperiod=5, nbdevup=2.0, nbdevdn=2.0)
+        valid = ~np.isnan(upper) & (upper != lower) & (middle != 0.0)
+        np.testing.assert_allclose(
+            pct[valid],
+            (_CLOSE[valid] - lower[valid]) / (upper[valid] - lower[valid]),
+            atol=1e-12,
+        )
+        np.testing.assert_allclose(
+            width[valid], (upper[valid] - lower[valid]) / middle[valid], atol=1e-12
+        )
+
+    def test_warmup(self):
+        pct = BBPERCENT(_CLOSE, timeperiod=5)
+        assert np.all(np.isnan(pct[:4]))
+
+
+# ---------------------------------------------------------------------------
+# HISTORICAL_VOLATILITY
+# ---------------------------------------------------------------------------
+
+
+class TestHISTORICAL_VOLATILITY:
+    def test_length(self):
+        assert len(HISTORICAL_VOLATILITY(_CLOSE, timeperiod=10)) == N
+
+    def test_constant_return_is_zero(self):
+        close = 2.0 ** np.arange(8, dtype=np.float64)
+        result = HISTORICAL_VOLATILITY(close, timeperiod=3, annual=252.0)
+        assert np.all(np.isnan(result[:3]))
+        np.testing.assert_allclose(result[3:], 0.0, atol=1e-10)
+
+
+# ---------------------------------------------------------------------------
+# ULCER_INDEX
+# ---------------------------------------------------------------------------
+
+
+class TestULCER_INDEX:
+    def test_length(self):
+        assert len(ULCER_INDEX(_CLOSE, timeperiod=14)) == N
+
+    def test_rising_series_is_zero(self):
+        result = ULCER_INDEX(np.arange(1.0, 21.0), timeperiod=4)
+        valid = result[~np.isnan(result)]
+        assert len(valid) > 0
+        np.testing.assert_allclose(valid, 0.0, atol=1e-12)
+
+
+# ---------------------------------------------------------------------------
+# STARC
+# ---------------------------------------------------------------------------
+
+
+class TestSTARC:
+    def test_returns_three_arrays(self):
+        upper, middle, lower = STARC(_HIGH, _LOW, _CLOSE, timeperiod=15)
+        assert len(upper) == len(middle) == len(lower) == N
+
+    def test_linear_identity(self):
+        close = np.arange(1.0, 11.0)
+        high = close + 1.0
+        low = close - 1.0
+        upper, middle, lower = STARC(
+            high, low, close, timeperiod=3, atr_period=3, multiplier=1.0
+        )
+        np.testing.assert_allclose(middle[3:], np.arange(3.0, 10.0), atol=1e-10)
+        np.testing.assert_allclose(upper[3:], middle[3:] + 2.0, atol=1e-10)
+        np.testing.assert_allclose(lower[3:], middle[3:] - 2.0, atol=1e-10)

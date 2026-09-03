@@ -28,9 +28,13 @@ MINUS_DI  — Minus Directional Indicator
 DX        — Directional Movement Index
 ADX       — Average Directional Movement Index
 ADXR      — Average Directional Movement Index Rating
+DMI       — Directional Movement Index (+DI, -DI, ADX)
 TRIX      — 1-day Rate-Of-Change of Triple Smooth EMA
 ULTOSC    — Ultimate Oscillator
 TRANGE    — True Range (also in volatility)
+ELDER_RAY — Elder Ray bull / bear power
+FISHER    — Ehlers Fisher Transform
+CRSI      — Connors RSI
 """
 
 from __future__ import annotations
@@ -63,7 +67,19 @@ from ferro_ta._ferro_ta import (
     cmo as _cmo,
 )
 from ferro_ta._ferro_ta import (
+    crsi as _crsi,
+)
+from ferro_ta._ferro_ta import (
+    dmi as _dmi,
+)
+from ferro_ta._ferro_ta import (
     dx as _dx,
+)
+from ferro_ta._ferro_ta import (
+    elder_ray as _elder_ray,
+)
+from ferro_ta._ferro_ta import (
+    fisher as _fisher,
 )
 from ferro_ta._ferro_ta import (
     mfi as _mfi,
@@ -782,6 +798,37 @@ def ADX(
         _normalize_rust_error(e)
 
 
+def DMI(
+    high: ArrayLike,
+    low: ArrayLike,
+    close: ArrayLike,
+    timeperiod: int = 14,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Directional Movement Index — ``(PLUS_DI, MINUS_DI, ADX)`` in one pass.
+
+    Parameters
+    ----------
+    high : array-like
+        Sequence of high prices.
+    low : array-like
+        Sequence of low prices.
+    close : array-like
+        Sequence of closing prices.
+    timeperiod : int, optional
+        Wilder smoothing period (default 14).
+
+    Returns
+    -------
+    plus_di, minus_di, adx : numpy.ndarray
+        The three ADX-family series, identical to calling ``PLUS_DI``,
+        ``MINUS_DI``, and ``ADX`` separately.
+    """
+    try:
+        return _dmi(_to_f64(high), _to_f64(low), _to_f64(close), timeperiod)
+    except ValueError as e:
+        _normalize_rust_error(e)
+
+
 def ADXR(
     high: ArrayLike,
     low: ArrayLike,
@@ -876,6 +923,95 @@ def ULTOSC(
         _normalize_rust_error(e)
 
 
+def ELDER_RAY(
+    high: ArrayLike,
+    low: ArrayLike,
+    close: ArrayLike,
+    timeperiod: int = 13,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Elder Ray Index — bull power and bear power versus EMA(close).
+
+    Parameters
+    ----------
+    high : array-like
+        Sequence of high prices.
+    low : array-like
+        Sequence of low prices.
+    close : array-like
+        Sequence of closing prices.
+    timeperiod : int, optional
+        EMA period (default 13).
+
+    Returns
+    -------
+    tuple[numpy.ndarray, numpy.ndarray]
+        ``(bull_power, bear_power)``. Leading ``timeperiod - 1`` entries
+        are ``NaN``.
+    """
+    try:
+        return _elder_ray(_to_f64(high), _to_f64(low), _to_f64(close), timeperiod)
+    except ValueError as e:
+        _normalize_rust_error(e)
+
+
+def FISHER(
+    high: ArrayLike,
+    low: ArrayLike,
+    timeperiod: int = 9,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Ehlers Fisher Transform of median price.
+
+    Parameters
+    ----------
+    high : array-like
+        Sequence of high prices.
+    low : array-like
+        Sequence of low prices.
+    timeperiod : int, optional
+        Highest / lowest lookback (default 9).
+
+    Returns
+    -------
+    tuple[numpy.ndarray, numpy.ndarray]
+        ``(fisher, signal)`` where ``signal`` is the previous Fisher value.
+        Leading ``timeperiod - 1`` Fisher entries are ``NaN``.
+    """
+    try:
+        return _fisher(_to_f64(high), _to_f64(low), timeperiod)
+    except ValueError as e:
+        _normalize_rust_error(e)
+
+
+def CRSI(
+    close: ArrayLike,
+    timeperiod: int = 3,
+    streakperiod: int = 2,
+    rankperiod: int = 100,
+) -> np.ndarray:
+    """Connors RSI — average of price RSI, streak RSI, and ROC percent rank.
+
+    Parameters
+    ----------
+    close : array-like
+        Sequence of closing prices.
+    timeperiod : int, optional
+        RSI period of close (default 3).
+    streakperiod : int, optional
+        RSI period of the up/down streak (default 2).
+    rankperiod : int, optional
+        Percent-rank lookback of 1-bar ROC (default 100).
+
+    Returns
+    -------
+    numpy.ndarray
+        Array of Connors RSI values (0–100).
+    """
+    try:
+        return _crsi(_to_f64(close), timeperiod, streakperiod, rankperiod)
+    except ValueError as e:
+        _normalize_rust_error(e)
+
+
 __all__ = [
     "RSI",
     "MOM",
@@ -901,8 +1037,12 @@ __all__ = [
     "MINUS_DI",
     "DX",
     "ADX",
+    "DMI",
     "ADXR",
     "TRIX",
     "ULTOSC",
     "TRANGE",
+    "ELDER_RAY",
+    "FISHER",
+    "CRSI",
 ]

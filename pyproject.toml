@@ -47,6 +47,7 @@ comparison = [
     "backtrader>=1.9",
     "backtesting>=0.6",
     "quantstats>=0.0.81",
+    "openalgo>=2.0; python_version >= '3.12'",
 ]
 gpu = ["torch>=2.0"]
 options = []

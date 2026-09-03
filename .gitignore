@@ -48,6 +48,9 @@ env/
 # Issue tracker
 /myissues/
 
+# Isolated git worktrees
+.worktrees/
+
 # WASM build output
 wasm/pkg/
 wasm/pkg-web/
