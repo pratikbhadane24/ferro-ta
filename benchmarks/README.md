@@ -53,10 +53,20 @@ from benchmarks.data_generator import SMALL, MEDIUM, LARGE
 The checked-in `benchmarks/artifacts/latest/benchmark_vs_talib.json` artifact
 uses contiguous `float64` arrays at 10k and 100k bars on an Apple M3 Max,
 CPython 3.13.5, and Rust 1.91.1 with the default release profile
-(`lto = true`, `codegen-units = 1`).
+(`lto = true`, `codegen-units = 1`) — the toolchain string in that artifact's
+`metadata.build.rustc` is `rustc 1.91.1 (ed61e7d7e 2025-11-07) (Homebrew)`.
+Note that the artifacts under `perf-contract/` were built with a *different*
+toolchain (`rustc 1.93.1`), so do not read one artifact's build metadata as
+applying to another.
 
-- ferro-ta is ahead outside the tie band on 6 of 12 rows at 10k bars and 6 of 12 rows at 100k bars.
-- TA-Lib still wins in the current artifact on `STOCH` and `ADX`, and remains close on `EMA`, `RSI`, `ATR`, and `OBV` depending on size.
+Counts below are transcribed from the artifact's own `summary` block, using its
+tie band of 0.95–1.05:
+
+- **10k bars:** 5 wins, 4 ties, 3 losses over 12 rows; median speedup `1.0383x`.
+- **100k bars:** 7 wins, 3 ties, 2 losses over 12 rows; median speedup `1.1748x`.
+- TA-Lib wins in the current artifact on `STOCH` and `ADX` at both sizes, and on
+  `OBV` at 10k bars; `EMA`, `RSI`, `ATR`, `OBV` and `MFI` land inside the tie
+  band depending on size.
 - The public claim should therefore be read as "often faster on selected indicators," not "faster everywhere."
 - When publishing performance statements, point readers to the raw JSON artifact, not just the summary table.
 - The artifact now includes per-run samples, variance stats, and Python-tracked allocation snapshots for each compared indicator.
@@ -68,8 +78,18 @@ artifacts for single-series latency, batch throughput, streaming throughput,
 and hotspot attribution in one directory:
 
 ```bash
-uv run python benchmarks/run_perf_contract.py --output-dir benchmarks/artifacts/latest --skip-talib
+uv run python benchmarks/run_perf_contract.py \
+    --output-dir benchmarks/artifacts/latest --skip-simd --skip-talib
 ```
+
+> ⚠️ **Pass `--skip-simd`.** Without it, `run_perf_contract.py` calls
+> `run_simd_benchmark` (`benchmarks/bench_simd.py`), which runs
+> `maturin develop --release` **twice** — once with `--no-default-features` and
+> once with the default features — so it rebuilds and reinstalls your extension
+> and leaves you with whichever build ran last. Only omit `--skip-simd` when you
+> actually want the portable-vs-SIMD comparison and are happy to rebuild
+> afterwards. `--skip-talib` skips the TA-Lib suite, which needs `ta-lib`
+> installed.
 
 That command writes:
 
@@ -84,6 +104,84 @@ For CI or local guardrails, validate the hotspot report with:
 ```bash
 uv run python benchmarks/check_hotspot_regression.py --input benchmarks/artifacts/latest/runtime_hotspots.json
 ```
+
+### What CI actually gates (read this before trusting `perf-contract/*.json`)
+
+**The committed `perf-contract/*.json` files are not the enforced gate.** The
+`perf-smoke` job in `.github/workflows/ci-python.yml` (lines 186–214)
+*regenerates* the whole directory on GitHub-hosted `ubuntu-latest` hardware:
+
+```yaml
+python benchmarks/run_perf_contract.py   --output-dir perf-contract   --skip-talib   --skip-simd   --batch-samples 20000 --batch-series 32   --streaming-bars 20000 --price-bars 20000 --iv-bars 50000
+python benchmarks/check_hotspot_regression.py --input perf-contract/runtime_hotspots.json
+```
+
+The checker therefore reads CI's fresh output, never the committed copy, and
+nothing in CI diffs the two. Consequences worth knowing:
+
+- The committed files are a **stale local snapshot from a different machine**
+  (Apple M3 Max, CPython 3.13.5, `rustc 1.93.1`, generated 2026-03-24). Treat
+  them as an example of the format and of one machine's result — not as the
+  numbers CI is asserting.
+- `check_hotspot_regression.py` **fails against the committed artifact** and
+  passes in CI, for exactly this reason. Run it yourself:
+
+  ```bash
+  python benchmarks/check_hotspot_regression.py --input perf-contract/runtime_hotspots.json
+  # FAILED hotspot regression policy:
+  #  - compute_many_close speedup 0.7675 < floor 0.8500
+  ```
+
+  A local failure on the committed file is expected, not a regression signal.
+  Regenerate on your own machine before drawing any conclusion.
+- The hashes in the committed `perf-contract/manifest.json` **still do not
+  verify** against its committed siblings — same underlying story, one more
+  reason the committed files are not authoritative. All four entries are one
+  byte short on `size_bytes`, and each `sha256` matches only after stripping the
+  trailing newline:
+
+  ```text
+  indicator_latency  on disk 4042  recorded 4041   sha matches only when stripped
+  batch              on disk 2508  recorded 2507   sha matches only when stripped
+  streaming          on disk 2767  recorded 2766   sha matches only when stripped
+  runtime_hotspots   on disk 3198  recorded 3197   sha matches only when stripped
+  ```
+
+  **This is fixed in the generator, but not in the snapshot.** The cause was
+  that `run_perf_contract.py`'s `_write_json` emitted no trailing newline while
+  the repo's `end-of-file-fixer` pre-commit hook
+  (`.pre-commit-config.yaml`) appended one *after* the hashes were computed.
+  `_write_json` now writes the newline itself, and `_ensure_trailing_newline`
+  normalizes every artifact — including ones written by other scripts, such as
+  `bench_vs_talib.py`'s `benchmark_vs_talib.json` — before hashing. A manifest
+  regenerated today verifies on both `size_bytes` and `sha256`.
+
+  The committed `perf-contract/` snapshot simply predates that fix and will keep
+  mismatching until someone regenerates and recommits it. As with the hotspot
+  check above, verify a manifest against output you just generated, not against
+  the committed copy.
+
+### Why `simd.json` is absent from `perf-contract/manifest.json`
+
+This is **not a bug in the manifest.** `run_perf_contract.py` adds the `simd`
+entry only inside `if not args.skip_simd:` (lines 170–180), and CI runs the
+generator with `--skip-simd`, so a CI-written manifest correctly lists only
+`indicator_latency`, `batch`, `streaming` and `runtime_hotspots`. The manifest
+is an accurate record of what that invocation produced. For contrast,
+`benchmarks/artifacts/latest/manifest.json` — generated *without* `--skip-simd`
+— does list `simd`.
+
+The genuine asymmetry is the file beside it: `perf-contract/simd.json` is a
+leftover from a **separate, earlier run** (generated 2026-03-23 on CPython
+3.12.11 from branch `feat/performace-1.0.2`, versus 2026-03-24 / CPython 3.13.5
+/ `main` for the other four). It is not covered by the manifest, is not
+regenerated by CI, and no checker script reads it — nothing in the repository
+consumes `simd.json` at all. So although `PERFORMANCE_ROADMAP.md` describes the
+SIMD result as "gated by `perf-contract/simd.json`", there is no gate: the
+nightly workflow runs `benchmarks/bench_simd.py` and writes
+`benchmarks/artifacts/nightly_simd.json`, but no threshold is asserted against
+either file. Read `simd.json` as a recorded observation, not as an enforced
+contract.
 
 ---
 
@@ -204,8 +302,9 @@ uv run python benchmarks/profile_runtime_hotspots.py --json runtime_hotspots.jso
 # Portable vs SIMD-enabled build comparison
 uv run python benchmarks/bench_simd.py --json simd_benchmark.json
 
-# One-shot perf artifact bundle
-uv run python benchmarks/run_perf_contract.py --output-dir benchmarks/artifacts/latest
+# One-shot perf artifact bundle (see the rebuild warning above before dropping --skip-simd)
+uv run python benchmarks/run_perf_contract.py \
+    --output-dir benchmarks/artifacts/latest --skip-simd --skip-talib
 ```
 
 Without `uv`: use `pytest` and `python` from the same environment where `ferro_ta` and optional libs (e.g. `talib`, `pandas_ta`, `ta`, `tulipy`, `finta`) are installed.

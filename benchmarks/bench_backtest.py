@@ -2,8 +2,8 @@
 ferro_ta backtesting engine speed benchmark.
 
 Measures throughput for single-asset, multi-asset, and analytics functions
-across multiple bar sizes. Optional competitor comparison (vectorbt, backtrader)
-is guarded behind try/except.
+across multiple bar sizes. An optional vectorbt comparison is guarded behind
+try/except and is skipped when vectorbt is not installed.
 
 Usage:
     python benchmarks/bench_backtest.py
@@ -14,9 +14,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import json
 import time
-from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -33,11 +31,14 @@ from ferro_ta._ferro_ta import (
 from ferro_ta.analysis.backtest import BacktestEngine
 
 try:
-    from benchmarks.metadata import benchmark_metadata
+    from benchmarks.metadata import benchmark_metadata, write_json_artifact
 except ModuleNotFoundError:  # pragma: no cover
-    from metadata import benchmark_metadata  # type: ignore[no-redef]
+    from metadata import (  # type: ignore[no-redef]
+        benchmark_metadata,
+        write_json_artifact,
+    )
 
-# Optional competitors -------------------------------------------------------
+# Optional competitor -------------------------------------------------------
 try:
     import vectorbt as vbt  # type: ignore[import]
 
@@ -45,14 +46,6 @@ try:
 except ImportError:
     VECTORBT_AVAILABLE = False
     vbt = None  # type: ignore[assignment]
-
-try:
-    import backtrader as bt  # type: ignore[import]
-
-    BACKTRADER_AVAILABLE = True
-except ImportError:
-    BACKTRADER_AVAILABLE = False
-    bt = None  # type: ignore[assignment]
 
 # ---------------------------------------------------------------------------
 N_WARMUP = 1
@@ -86,11 +79,25 @@ def _time_fn(
 
 
 def _make_ohlcv(n: int, seed: int = 0) -> tuple[np.ndarray, ...]:
+    """Synthetic OHLC bars that stay realistic at every benchmark size.
+
+    Close is a zero-drift *geometric* walk (cumulative sum of log returns), so the
+    series stays strictly positive and per-bar percentage returns stay ~1% whether
+    n is 10k or 1M. Open/high/low are proportional to close rather than absolute
+    offsets, which guarantees ``low <= min(open, close) <= max(open, close) <= high``.
+
+    The previous version used ``cumprod(1 + 0.01 * z)``, whose -sigma^2/2 drift walked
+    the price down toward zero while high/low kept adding fixed 0.1-1.5 absolute
+    offsets -- producing bars where close sat far below low and the backtest
+    compounded a systematic per-bar gain into a float64 overflow.
+    """
     rng = np.random.default_rng(seed)
-    close = np.cumprod(1 + rng.standard_normal(n) * 0.01) * 100.0
-    high = close + rng.uniform(0.1, 1.5, n)
-    low = close - rng.uniform(0.1, 1.5, n)
-    open_ = close + rng.standard_normal(n) * 0.3
+    log_returns = rng.standard_normal(n) * 0.01
+    close = 100.0 * np.exp(np.cumsum(log_returns))
+    open_ = close * (1.0 + rng.standard_normal(n) * 0.003)
+    bar_span = rng.uniform(0.001, 0.015, n)
+    high = np.maximum(open_, close) * (1.0 + bar_span)
+    low = np.minimum(open_, close) * (1.0 - bar_span)
     return open_, high, low, close
 
 
@@ -243,8 +250,9 @@ def bench_monte_carlo(n: int, n_sims: int = N_SIMS) -> dict[str, Any]:
 
 
 def bench_engine_pipeline(n: int) -> dict[str, Any]:
-    _, high, low, open_ = _make_ohlcv(n)
-    _, _, _, close = _make_ohlcv(n, seed=10)
+    # One consistent set of bars: mixing high/low from one random walk with a
+    # close from another made close < low on ~82% of bars.
+    open_, high, low, close = _make_ohlcv(n)
 
     engine = (
         BacktestEngine()
@@ -413,9 +421,7 @@ def main() -> int:
     )
 
     if args.json_path:
-        json_path = Path(args.json_path)
-        json_path.parent.mkdir(parents=True, exist_ok=True)
-        json_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        json_path = write_json_artifact(args.json_path, payload)
         print(f"\nWrote JSON results to {json_path}")
 
     return 0

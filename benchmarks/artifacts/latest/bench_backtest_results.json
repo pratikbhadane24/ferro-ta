@@ -2,13 +2,13 @@
   "metadata": {
     "suite": "backtest",
     "runtime": {
-      "generated_at_utc": "2026-03-27T16:31:53.866252+00:00",
+      "generated_at_utc": "2026-09-03T12:01:41.254807+00:00",
       "python_version": "3.13.5",
       "python_implementation": "CPython",
-      "python_executable": "/Users/pratikbhadane/Work/Projects/ferro-ta/.venv/bin/python3",
-      "platform": "macOS-26.3.1-arm64-arm-64bit-Mach-O",
+      "python_executable": "/Users/pratikbhadane/Work/Projects/ferro-ta/.worktrees/extended-indicators/.venv/bin/python3",
+      "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
       "system": "Darwin",
-      "release": "25.3.0",
+      "release": "25.6.0",
       "machine": "arm64",
       "processor": "arm",
       "cpu_model": "Apple M3 Max",
@@ -16,9 +16,9 @@
       "total_memory_bytes": 38654705664
     },
     "git": {
-      "commit": "2d776b6f908fd1a4f30a696972b7df5e5fe2ca00",
+      "commit": "7798e5fcf6b371e08bdd3bd80ec9041c209bd8b2",
       "dirty": true,
-      "branch": "main"
+      "branch": "feat/extended-indicators"
     },
     "build": {
       "rustc": "rustc 1.93.1 (01f6ddf75 2026-02-11)\nbinary: rustc\ncommit-hash: 01f6ddf7588f42ae2d7eb0a2f21d44e8e96674cf\ncommit-date: 2026-02-11\nhost: aarch64-apple-darwin\nrelease: 1.93.1\nLLVM version: 21.1.8",
@@ -33,51 +33,64 @@
     },
     "packages": {
       "numpy": "2.2.6",
-      "ferro-ta": "1.0.6"
+      "ferro-ta": "1.2.0"
     }
   },
   "results": {
     "backtest_core_single": [
       {
         "n_bars": 10000,
-        "ferro_ta_ms": 0.024,
-        "ferro_ta_mbars_s": 415.9388,
-        "vectorbt_ms": 1.2843,
-        "speedup_vs_vectorbt": 53.4187
+        "ferro_ta_ms": 0.0377,
+        "ferro_ta_mbars_s": 265.1957
       },
       {
         "n_bars": 100000,
-        "ferro_ta_ms": 0.1964,
-        "ferro_ta_mbars_s": 509.1209,
-        "vectorbt_ms": 3.047,
-        "speedup_vs_vectorbt": 15.5129
+        "ferro_ta_ms": 0.4773,
+        "ferro_ta_mbars_s": 209.5153
+      },
+      {
+        "n_bars": 1000000,
+        "ferro_ta_ms": 5.2703,
+        "ferro_ta_mbars_s": 189.7413
       }
     ],
     "backtest_ohlcv_core": [
       {
         "n_bars": 10000,
-        "ferro_ta_ms": 0.0573,
-        "ferro_ta_mbars_s": 174.4166
+        "ferro_ta_ms": 0.2338,
+        "ferro_ta_mbars_s": 42.7656
       },
       {
         "n_bars": 100000,
-        "ferro_ta_ms": 0.7068,
-        "ferro_ta_mbars_s": 141.4927
+        "ferro_ta_ms": 2.3205,
+        "ferro_ta_mbars_s": 43.0949
+      },
+      {
+        "n_bars": 1000000,
+        "ferro_ta_ms": 22.1116,
+        "ferro_ta_mbars_s": 45.2252
       }
     ],
     "performance_metrics": [
       {
         "n_bars": 10000,
-        "ferro_ta_ms": 0.2182,
-        "numpy_partial_ms": 0.0496,
-        "speedup_vs_numpy": 0.2272,
+        "ferro_ta_ms": 0.1293,
+        "numpy_partial_ms": 0.0509,
+        "speedup_vs_numpy": 0.3934,
         "note": "numpy_partial only computes sharpe+max_dd (2/23 metrics)"
       },
       {
         "n_bars": 100000,
-        "ferro_ta_ms": 3.0303,
-        "numpy_partial_ms": 0.351,
-        "speedup_vs_numpy": 0.1158,
+        "ferro_ta_ms": 1.2353,
+        "numpy_partial_ms": 0.4011,
+        "speedup_vs_numpy": 0.3247,
+        "note": "numpy_partial only computes sharpe+max_dd (2/23 metrics)"
+      },
+      {
+        "n_bars": 1000000,
+        "ferro_ta_ms": 13.8768,
+        "numpy_partial_ms": 3.9603,
+        "speedup_vs_numpy": 0.2854,
         "note": "numpy_partial only computes sharpe+max_dd (2/23 metrics)"
       }
     ],
@@ -85,47 +98,68 @@
       {
         "n_bars": 10000,
         "n_assets": 50,
-        "parallel_ms": 2.4245,
-        "serial_ms": 4.1751,
-        "loop_ms": 2.0349,
-        "parallel_speedup_vs_loop": 0.8393,
-        "parallel_speedup_vs_serial": 1.722
+        "parallel_ms": 2.1729,
+        "serial_ms": 2.8683,
+        "loop_ms": 2.1995,
+        "parallel_speedup_vs_loop": 1.0123,
+        "parallel_speedup_vs_serial": 1.3201
       },
       {
         "n_bars": 100000,
         "n_assets": 50,
-        "parallel_ms": 24.0349,
-        "serial_ms": 47.9311,
-        "loop_ms": 24.7476,
-        "parallel_speedup_vs_loop": 1.0297,
-        "parallel_speedup_vs_serial": 1.9942
+        "parallel_ms": 47.5189,
+        "serial_ms": 56.9839,
+        "loop_ms": 26.3227,
+        "parallel_speedup_vs_loop": 0.5539,
+        "parallel_speedup_vs_serial": 1.1992
+      },
+      {
+        "n_bars": 1000000,
+        "n_assets": 50,
+        "parallel_ms": 894.6791,
+        "serial_ms": 1001.8166,
+        "loop_ms": 602.9175,
+        "parallel_speedup_vs_loop": 0.6739,
+        "parallel_speedup_vs_serial": 1.1197
       }
     ],
     "monte_carlo": [
       {
         "n_bars": 10000,
         "n_sims": 500,
-        "ferro_ta_ms": 3.862,
-        "numpy_loop_ms": 51.1589,
-        "speedup_vs_numpy": 13.2469
+        "ferro_ta_ms": 1.5301,
+        "numpy_loop_ms": 53.5838,
+        "speedup_vs_numpy": 35.0192
       },
       {
         "n_bars": 100000,
         "n_sims": 500,
-        "ferro_ta_ms": 26.0019,
-        "numpy_loop_ms": 310.582,
-        "speedup_vs_numpy": 11.9446
+        "ferro_ta_ms": 12.3971,
+        "numpy_loop_ms": 388.0691,
+        "speedup_vs_numpy": 31.3033
+      },
+      {
+        "n_bars": 1000000,
+        "n_sims": 500,
+        "ferro_ta_ms": 135.3873,
+        "numpy_loop_ms": 2646.1951,
+        "speedup_vs_numpy": 19.5454
       }
     ],
     "engine_full_pipeline": [
       {
         "n_bars": 10000,
-        "ferro_ta_ms": 0.4402,
+        "ferro_ta_ms": 0.5496,
         "description": "Full pipeline: signals + OHLCV fill + 23 metrics + trades + drawdown"
       },
       {
         "n_bars": 100000,
-        "ferro_ta_ms": 4.445,
+        "ferro_ta_ms": 4.1668,
+        "description": "Full pipeline: signals + OHLCV fill + 23 metrics + trades + drawdown"
+      },
+      {
+        "n_bars": 1000000,
+        "ferro_ta_ms": 43.2776,
         "description": "Full pipeline: signals + OHLCV fill + 23 metrics + trades + drawdown"
       }
     ],
@@ -134,19 +168,25 @@
         "n_bars": 10000,
         "train_bars": 2000,
         "test_bars": 500,
-        "ferro_ta_us": 0.333
+        "ferro_ta_us": 0.458
       },
       {
         "n_bars": 100000,
         "train_bars": 20000,
         "test_bars": 5000,
+        "ferro_ta_us": 0.375
+      },
+      {
+        "n_bars": 1000000,
+        "train_bars": 200000,
+        "test_bars": 50000,
         "ferro_ta_us": 0.292
       }
     ],
     "kelly_fraction": [
       {
         "n_calls": 1000,
-        "ferro_ta_us": 86.458
+        "ferro_ta_us": 82.0
       }
     ]
   }

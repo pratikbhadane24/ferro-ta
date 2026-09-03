@@ -8,7 +8,6 @@ Skips the whole run when the optional comparison extra is not installed.
 from __future__ import annotations
 
 import argparse
-import json
 import math
 import sys
 import time
@@ -19,7 +18,11 @@ from typing import Any
 import numpy as np
 
 try:
-    from benchmarks.metadata import benchmark_metadata, package_versions
+    from benchmarks.metadata import (
+        benchmark_metadata,
+        package_versions,
+        write_json_artifact,
+    )
     from benchmarks.wrapper_registry import (
         INDICATOR_DEFAULTS,
         REGISTRY,
@@ -27,7 +30,11 @@ try:
         openalgo_overlap_names,
     )
 except ModuleNotFoundError:  # pragma: no cover - script execution fallback
-    from metadata import benchmark_metadata, package_versions
+    from metadata import (  # type: ignore[no-redef]
+        benchmark_metadata,
+        package_versions,
+        write_json_artifact,
+    )
     from wrapper_registry import (
         INDICATOR_DEFAULTS,
         REGISTRY,
@@ -341,8 +348,7 @@ def run_comparison(sizes: list[int], json_path: str | None) -> list[dict[str, An
             },
             "results": results,
         }
-        with out_path.open("w", encoding="utf-8") as handle:
-            json.dump(payload, handle, indent=2)
+        write_json_artifact(out_path, payload)
         print(f"Results written to {out_path}")
 
     return results

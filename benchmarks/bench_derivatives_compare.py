@@ -21,14 +21,12 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
-import json
 import math
 import sys
 import time
 import tracemalloc
 from collections.abc import Callable
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -47,9 +45,17 @@ from ferro_ta.analysis.options import (
 )
 
 try:
-    from benchmarks.metadata import benchmark_metadata, package_versions
+    from benchmarks.metadata import (
+        benchmark_metadata,
+        package_versions,
+        write_json_artifact,
+    )
 except ModuleNotFoundError:  # pragma: no cover - script execution fallback
-    from metadata import benchmark_metadata, package_versions
+    from metadata import (  # type: ignore[no-redef]
+        benchmark_metadata,
+        package_versions,
+        write_json_artifact,
+    )
 
 
 N_WARMUP = 1
@@ -1188,9 +1194,7 @@ def run_benchmark(
     }
 
     if json_path:
-        output_path = Path(json_path)
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        output_path.write_text(json.dumps(result, indent=2), encoding="utf-8")
+        output_path = write_json_artifact(json_path, result)
         print(f"Results written to {output_path}")
 
     return result

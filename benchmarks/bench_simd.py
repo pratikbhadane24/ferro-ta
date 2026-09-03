@@ -9,9 +9,12 @@ from pathlib import Path
 from typing import Any
 
 try:
-    from benchmarks.metadata import benchmark_metadata
+    from benchmarks.metadata import benchmark_metadata, write_json_artifact
 except ModuleNotFoundError:  # pragma: no cover - script execution fallback
-    from metadata import benchmark_metadata
+    from metadata import (  # type: ignore[no-redef]
+        benchmark_metadata,
+        write_json_artifact,
+    )
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -146,8 +149,7 @@ def main() -> int:
         )
 
     if args.json_path:
-        path = Path(args.json_path)
-        path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        path = write_json_artifact(args.json_path, payload)
         print(f"\nWrote JSON results to {path}")
 
     return 0

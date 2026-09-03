@@ -54,7 +54,13 @@ def get_pandas_ohlcv(data: dict[str, np.ndarray]) -> pd.DataFrame:
     pandas-ta and finta both require a datetime-indexed DataFrame with
     lowercase column names (open/high/low/close/volume).
     """
-    idx = pd.date_range("2015-01-01", periods=len(data["close"]), freq="D")
+    # Hourly, not daily. The consumers only require *a* DatetimeIndex, and at
+    # ``freq="D"`` the 100_000-row LARGE dataset runs to the year 2289 --- past
+    # the datetime64[ns] ceiling of 2262 --- so ``pd.date_range`` raises
+    # ``OutOfBoundsDatetime``. Because ``LARGE_DF`` is built at module import,
+    # that made this module (and every test importing it) fail to even collect.
+    # Hourly bars span ~584 years of ns range, so overflow needs ~5.1M rows.
+    idx = pd.date_range("2015-01-01", periods=len(data["close"]), freq="h")
     return pd.DataFrame(data, index=idx)
 
 

@@ -17,7 +17,6 @@ indicators, not universally faster.
 from __future__ import annotations
 
 import argparse
-import json
 import math
 import sys
 import time
@@ -37,9 +36,17 @@ except ImportError:
 import ferro_ta
 
 try:
-    from benchmarks.metadata import benchmark_metadata, package_versions
+    from benchmarks.metadata import (
+        benchmark_metadata,
+        package_versions,
+        write_json_artifact,
+    )
 except ModuleNotFoundError:  # pragma: no cover - script execution fallback
-    from metadata import benchmark_metadata, package_versions
+    from metadata import (  # type: ignore[no-redef]
+        benchmark_metadata,
+        package_versions,
+        write_json_artifact,
+    )
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -455,8 +462,7 @@ def run_comparison(sizes: list[int], json_path: str | None) -> list[dict[str, An
         }
         if not TALIB_AVAILABLE:
             out["note"] = "ferro_ta only; ta-lib not installed"
-        with open(json_path, "w", encoding="utf-8") as handle:
-            json.dump(out, handle, indent=2)
+        write_json_artifact(json_path, out)
         print(f"Results written to {json_path}")
 
     return results

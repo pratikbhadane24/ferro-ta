@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import time
 from pathlib import Path
 from typing import Any
@@ -13,7 +12,11 @@ try:
     from benchmarks.bench_simd import run_simd_benchmark
     from benchmarks.bench_streaming import run_streaming_benchmark
     from benchmarks.bench_vs_talib import run_comparison
-    from benchmarks.metadata import benchmark_metadata, file_info
+    from benchmarks.metadata import (
+        benchmark_metadata,
+        file_info,
+        write_json_artifact,
+    )
     from benchmarks.profile_runtime_hotspots import build_hotspot_report
     from benchmarks.test_benchmark_suite import (
         FIXTURE_PATH,
@@ -25,7 +28,11 @@ except ModuleNotFoundError:  # pragma: no cover - script execution fallback
     from bench_simd import run_simd_benchmark
     from bench_streaming import run_streaming_benchmark
     from bench_vs_talib import run_comparison
-    from metadata import benchmark_metadata, file_info
+    from metadata import (  # type: ignore[no-redef]
+        benchmark_metadata,
+        file_info,
+        write_json_artifact,
+    )
     from profile_runtime_hotspots import build_hotspot_report
     from test_benchmark_suite import FIXTURE_PATH, INDICATOR_SUITE, _run_indicator
 
@@ -81,9 +88,26 @@ def build_indicator_latency_report(*, rounds: int = 5) -> dict[str, Any]:
     }
 
 
-def _write_json(path: Path, payload: dict[str, Any]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+def _ensure_trailing_newline(path: Path) -> None:
+    """Normalize an artifact to end in exactly one newline, as the hook would.
+
+    Every artifact this script *writes* now goes through
+    :func:`metadata.write_json_artifact`, which already emits the newline. This
+    remains for the one artifact it only ever *adopts*: ``wasm.json`` is produced
+    by the WASM job's ``bench.js --json`` and dropped into the output directory,
+    so its bytes are outside this script's control yet it is hashed into the
+    manifest. Idempotent, so it is safe to apply to the whole artifact set.
+
+    Prints when it actually had to patch something. The original failure mode was
+    silent -- a manifest hash quietly disagreeing with the file on disk by one
+    byte -- so any artifact still arriving without a newline is worth seeing. For
+    anything written by this repo it now means a writer bypassed
+    :func:`metadata.write_json_artifact`.
+    """
+    data = path.read_bytes()
+    if not data.endswith(b"\n"):
+        path.write_bytes(data + b"\n")
+        print(f"NOTE: appended missing trailing newline to {path} before hashing")
 
 
 def main() -> int:
@@ -129,14 +153,14 @@ def main() -> int:
     artifacts: dict[str, str] = {}
 
     indicator_path = output_dir / "indicator_latency.json"
-    _write_json(
+    write_json_artifact(
         indicator_path,
         build_indicator_latency_report(rounds=args.indicator_rounds),
     )
     artifacts["indicator_latency"] = str(indicator_path)
 
     batch_path = output_dir / "batch.json"
-    _write_json(
+    write_json_artifact(
         batch_path,
         run_batch_benchmark(
             n_samples=args.batch_samples,
@@ -147,7 +171,7 @@ def main() -> int:
     artifacts["batch"] = str(batch_path)
 
     streaming_path = output_dir / "streaming.json"
-    _write_json(
+    write_json_artifact(
         streaming_path,
         run_streaming_benchmark(
             n_bars=args.streaming_bars,
@@ -157,7 +181,7 @@ def main() -> int:
     artifacts["streaming"] = str(streaming_path)
 
     hotspot_path = output_dir / "runtime_hotspots.json"
-    _write_json(
+    write_json_artifact(
         hotspot_path,
         build_hotspot_report(
             price_bars=args.price_bars,
@@ -169,7 +193,7 @@ def main() -> int:
 
     if not args.skip_simd:
         simd_path = output_dir / "simd.json"
-        _write_json(
+        write_json_artifact(
             simd_path,
             run_simd_benchmark(
                 price_bars=args.price_bars,
@@ -188,6 +212,12 @@ def main() -> int:
     if wasm_path.exists():
         artifacts["wasm"] = str(wasm_path)
 
+    # Hash only after every artifact's final bytes are on disk, so the recorded
+    # size/sha256 describe what a reader will actually find in the repo. The
+    # manifest deliberately does not hash itself.
+    for path in artifacts.values():
+        _ensure_trailing_newline(Path(path))
+
     manifest = {
         "metadata": benchmark_metadata(
             "perf_contract",
@@ -197,7 +227,7 @@ def main() -> int:
         "artifacts": {name: file_info(path) for name, path in artifacts.items()},
     }
     manifest_path = output_dir / "manifest.json"
-    _write_json(manifest_path, manifest)
+    write_json_artifact(manifest_path, manifest)
 
     print(f"Generated performance contract artifacts in {output_dir}")
     for name, path in artifacts.items():

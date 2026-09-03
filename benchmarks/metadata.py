@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import os
 import platform
 import re
@@ -160,6 +161,27 @@ def package_versions(*names: str) -> dict[str, str | None]:
         except importlib_metadata.PackageNotFoundError:
             versions[name] = None
     return versions
+
+
+def write_json_artifact(path: str | Path, payload: Any) -> Path:
+    """Write a benchmark artifact as JSON, with a trailing newline.
+
+    Every benchmark script must go through this. The repo's ``end-of-file-fixer``
+    pre-commit hook appends a newline to every committed file, so a script that
+    emits ``json.dumps(...)`` alone produces bytes that differ by one byte from
+    the bytes that land in git. That is silent: nothing errors, and
+    :func:`file_info` -- which runs *before* the hook -- records a ``size_bytes``
+    one short and a ``sha256`` of content that no longer exists on disk. That is
+    exactly how the committed ``perf-contract/manifest.json`` hashes came to be
+    unverifiable.
+
+    Returns the :class:`~pathlib.Path` written, so callers can hash or log it.
+    """
+    file_path = Path(path)
+    if file_path.parent != Path():
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+    file_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    return file_path
 
 
 def file_info(path: str | Path) -> dict[str, Any]:
