@@ -15,21 +15,12 @@ pub fn bop<'py>(
     let highs = high.as_slice()?;
     let lows = low.as_slice()?;
     let closes = close.as_slice()?;
-    let n = opens.len();
     validation::validate_equal_length(&[
-        (n, "open"),
+        (opens.len(), "open"),
         (highs.len(), "high"),
         (lows.len(), "low"),
         (closes.len(), "close"),
     ])?;
-    let mut result = vec![f64::NAN; n];
-    for i in 0..n {
-        let range = highs[i] - lows[i];
-        if range != 0.0 {
-            result[i] = (closes[i] - opens[i]) / range;
-        } else {
-            result[i] = 0.0;
-        }
-    }
+    let result = ferro_ta_core::momentum::bop(opens, highs, lows, closes);
     Ok(result.into_pyarray(py))
 }

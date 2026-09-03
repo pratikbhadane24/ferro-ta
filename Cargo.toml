@@ -25,7 +25,6 @@ crate-type = ["cdylib"]
 # abi3-py310: build a single stable-ABI wheel that runs on CPython 3.10+
 # (including future 3.14+), instead of one wheel per minor version.
 pyo3 = { version = "0.25", features = ["extension-module", "abi3-py310"] }
-ta = "0.5.0"
 numpy = "0.25"
 # Must be < 0.17 while numpy 0.25 is used (numpy's IntoPyArray is for its own ndarray only).
 ndarray = "0.16"

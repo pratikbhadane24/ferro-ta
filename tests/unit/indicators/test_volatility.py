@@ -28,17 +28,18 @@ SMALL_C = np.array([11.0, 12.0, 13.0, 14.0, 15.0])
 class TestTRANGE:
     def test_known_values_constant_range(self):
         result = TRANGE(SMALL_H, SMALL_L, SMALL_C)
-        # First bar: only high-low = 3 (no prior close)
-        np.testing.assert_allclose(result[0], 3.0, rtol=1e-10)
+        # Bar 0 is NaN (TA-Lib: no prior close). Subsequent bars are H-L = 3.
+        assert np.isnan(result[0])
         np.testing.assert_allclose(result[1], 3.0, rtol=1e-10)
 
-    def test_no_nan(self):
+    def test_bar0_is_nan(self):
         result = TRANGE(SMALL_H, SMALL_L, SMALL_C)
-        assert np.all(np.isfinite(result))
+        assert np.isnan(result[0])
+        assert np.all(np.isfinite(result[1:]))
 
     def test_always_positive(self):
         result = TRANGE(_HIGH, _LOW, _CLOSE)
-        assert np.all(result > 0)
+        assert np.all(result[1:] > 0)
 
     def test_length(self):
         assert len(TRANGE(_HIGH, _LOW, _CLOSE)) == N
@@ -48,8 +49,8 @@ class TestTRANGE:
         l = np.array([10.0, 11.0, 12.0])
         c = np.array([13.0, 14.0, 15.0])
         result = TRANGE(h, l, c)
-        # bar 0: TRANGE = h[0] - l[0] = 5
-        np.testing.assert_allclose(result[0], 5.0, rtol=1e-10)
+        # bar 0: NaN (TA-Lib; no previous close)
+        assert np.isnan(result[0])
         # bar 1: max(h[1]-l[1], |h[1]-c[0]|, |l[1]-c[0]|)
         #      = max(5, |16-13|, |11-13|) = max(5, 3, 2) = 5
         np.testing.assert_allclose(result[1], 5.0, rtol=1e-10)

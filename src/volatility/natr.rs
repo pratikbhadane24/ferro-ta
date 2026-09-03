@@ -16,19 +16,11 @@ pub fn natr<'py>(
     let highs = high.as_slice()?;
     let lows = low.as_slice()?;
     let closes = close.as_slice()?;
-    let n = highs.len();
     validation::validate_equal_length(&[
-        (n, "high"),
+        (highs.len(), "high"),
         (lows.len(), "low"),
         (closes.len(), "close"),
     ])?;
-    // Reuse the ATR core; divide by close to get NATR (saves duplicate TR computation).
-    let atr_vals = ferro_ta_core::volatility::atr(highs, lows, closes, timeperiod);
-    let mut result = vec![f64::NAN; n];
-    for i in timeperiod..n {
-        if !atr_vals[i].is_nan() && closes[i] != 0.0 {
-            result[i] = (atr_vals[i] / closes[i]) * 100.0;
-        }
-    }
+    let result = ferro_ta_core::volatility::natr(highs, lows, closes, timeperiod);
     Ok(result.into_pyarray(py))
 }

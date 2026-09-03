@@ -215,4 +215,49 @@ mod tests {
         assert!((call - 7.730_148).abs() < 1e-3);
         assert!((put - 7.730_148).abs() < 1e-3);
     }
+
+    #[test]
+    fn bsm_d1_d2_lock_in_price() {
+        use super::put_call_parity_deviation;
+        use crate::options::normal::cdf;
+        let spot = 100.0_f64;
+        let strike = 105.0_f64;
+        let rate = 0.05_f64;
+        let q = 0.02_f64;
+        let t = 1.25_f64;
+        let vol = 0.22_f64;
+        let sigma_sqrt_t = vol * t.sqrt();
+        let d1 = ((spot / strike).ln() + (rate - q + 0.5 * vol * vol) * t) / sigma_sqrt_t;
+        let d2 = d1 - sigma_sqrt_t;
+        assert!((d2 - (d1 - sigma_sqrt_t)).abs() < 1e-15);
+        let discount = (-rate * t).exp();
+        let carry_discount = (-q * t).exp();
+        let expected_call = spot * carry_discount * cdf(d1) - strike * discount * cdf(d2);
+        let expected_put = strike * discount * cdf(-d2) - spot * carry_discount * cdf(-d1);
+        let call = black_scholes_price(spot, strike, rate, q, t, vol, OptionKind::Call);
+        let put = black_scholes_price(spot, strike, rate, q, t, vol, OptionKind::Put);
+        assert!((call - expected_call).abs() < 1e-12);
+        assert!((put - expected_put).abs() < 1e-12);
+        let parity = put_call_parity_deviation(call, put, spot, strike, rate, q, t);
+        assert!(parity.abs() < 1e-12, "put-call parity residual {parity}");
+        let fwd = spot * carry_discount - strike * discount;
+        assert!(((call - put) - fwd).abs() < 1e-12);
+    }
+
+    #[test]
+    fn black_76_d1_d2_lock_in_price() {
+        use crate::options::normal::cdf;
+        let forward = 100.0_f64;
+        let strike = 95.0_f64;
+        let rate = 0.03_f64;
+        let t = 0.75_f64;
+        let vol = 0.18_f64;
+        let sigma_sqrt_t = vol * t.sqrt();
+        let d1 = ((forward / strike).ln() + 0.5 * vol * vol * t) / sigma_sqrt_t;
+        let d2 = d1 - sigma_sqrt_t;
+        let discount = (-rate * t).exp();
+        let expected = discount * (forward * cdf(d1) - strike * cdf(d2));
+        let call = black_76_price(forward, strike, rate, t, vol, OptionKind::Call);
+        assert!((call - expected).abs() < 1e-12);
+    }
 }

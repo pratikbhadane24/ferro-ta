@@ -19,6 +19,20 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- **Numerical breaks** (single-engine unification onto `ferro_ta_core`; the
+  `ta` crate is gone). Values can change at warmup edges and in a few
+  definitions:
+  - Ichimoku Senkou is no-lookahead (`senkou[i]` uses tenkan/kijun/raw_b at
+    `i - displacement`).
+  - CMO uses Wilder gain/loss (same seed as RSI), not a plain rolling sum.
+  - Backtest Sharpe / Sortino use mean excess return; alpha uses
+    `mean(r) − β · mean(r_b)`; information ratio uses `mean(r − r_b) / TE`.
+  - Supertrend / Keltner / Chandelier use the public TA-Lib ATR helper
+    (skip `TR[0]`; first value at `timeperiod`).
+  - `TRANGE[0]` is NaN (no previous close).
+  - `OBV[0]` is `volume[0]`.
+  - KAMA first output is at index `timeperiod` (internal seed is not emitted).
+  - Streaming BBands uses population standard deviation (`m2/n`), matching batch.
 - Repositioned project docs and package descriptions as a **Rust-core**
   technical analysis library with first-class Python, Rust, JavaScript (WASM),
   and Flutter bindings. New languages may only wrap `ferro_ta_core`. See
@@ -26,6 +40,10 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **Python-vs-core parity suite** (`tests/integration/test_core_py_parity.py`)
+  locks DEMA, TEMA, T3, PPO, STOCHF, CMO, KAMA, ATR, TRANGE, OBV, Ichimoku
+  Senkou, HMA, BBANDS, MACD, and RSI against cargo-tested goldens, and
+  streaming vs batch at `1e-10` for ATR / BBands / MACD / STOCH / Supertrend.
 - **Flutter binding** (`flutter/`) — a new `ferro_ta` package for pub.dev that
   exposes the pure-Rust core to Flutter apps via
   [flutter_rust_bridge](https://github.com/fzyzcjy/flutter_rust_bridge).

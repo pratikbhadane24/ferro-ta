@@ -94,7 +94,47 @@ pub fn ema(close: &[f64], timeperiod: usize) -> Vec<f64> {
     let seed: f64 = close[start..start + timeperiod].iter().sum::<f64>() / timeperiod as f64;
     result[start + timeperiod - 1] = seed;
     for i in start + timeperiod..n {
-        result[i] = (result[i - 1] * (1.0 - k)).mul_add(1.0, close[i] * k);
+        result[i] = result[i - 1].mul_add(1.0 - k, close[i] * k);
+    }
+    result
+}
+
+/// EMA seeded from the first window of `timeperiod` consecutive finite inputs.
+///
+/// Output is aligned to the original index: the seed is written at the last
+/// bar of that window, and the recurrence continues from there. Used by
+/// composed-EMA indicators (DEMA, TEMA, TRIX, T3, PPO signal) so leading NaNs
+/// from an inner EMA do not poison the outer seed.
+pub(crate) fn ema_from_first_finite(input: &[f64], timeperiod: usize) -> Vec<f64> {
+    let n = input.len();
+    let mut result = vec![f64::NAN; n];
+    if timeperiod < 1 || n < timeperiod {
+        return result;
+    }
+
+    let mut run = 0usize;
+    let mut seed_end = None;
+    for (i, &v) in input.iter().enumerate() {
+        if v.is_finite() {
+            run += 1;
+            if run == timeperiod {
+                seed_end = Some(i + 1);
+                break;
+            }
+        } else {
+            run = 0;
+        }
+    }
+    let Some(seed_end) = seed_end else {
+        return result;
+    };
+    let start = seed_end - timeperiod;
+
+    let k = 2.0 / (timeperiod as f64 + 1.0);
+    let seed: f64 = input[start..seed_end].iter().sum::<f64>() / timeperiod as f64;
+    result[seed_end - 1] = seed;
+    for i in seed_end..n {
+        result[i] = result[i - 1].mul_add(1.0 - k, input[i] * k);
     }
     result
 }
@@ -415,8 +455,8 @@ pub fn dema(close: &[f64], timeperiod: usize) -> Vec<f64> {
         return result;
     }
     let warmup = 2 * (timeperiod - 1);
-    let ema1 = ema(close, timeperiod);
-    let ema2 = ema(&ema1, timeperiod);
+    let ema1 = ema_from_first_finite(close, timeperiod);
+    let ema2 = ema_from_first_finite(&ema1, timeperiod);
     for i in warmup..n {
         if !ema1[i].is_nan() && !ema2[i].is_nan() {
             result[i] = 2.0 * ema1[i] - ema2[i];
@@ -437,9 +477,9 @@ pub fn tema(close: &[f64], timeperiod: usize) -> Vec<f64> {
         return result;
     }
     let warmup = 3 * (timeperiod - 1);
-    let ema1 = ema(close, timeperiod);
-    let ema2 = ema(&ema1, timeperiod);
-    let ema3 = ema(&ema2, timeperiod);
+    let ema1 = ema_from_first_finite(close, timeperiod);
+    let ema2 = ema_from_first_finite(&ema1, timeperiod);
+    let ema3 = ema_from_first_finite(&ema2, timeperiod);
     for i in warmup..n {
         if !ema1[i].is_nan() && !ema2[i].is_nan() && !ema3[i].is_nan() {
             result[i] = 3.0 * ema1[i] - 3.0 * ema2[i] + ema3[i];
@@ -480,17 +520,20 @@ pub fn trima(close: &[f64], timeperiod: usize) -> Vec<f64> {
 // KAMA — Kaufman Adaptive Moving Average
 // ---------------------------------------------------------------------------
 
-/// Kaufman Adaptive Moving Average.
+/// Kaufman Adaptive Moving Average (TA-Lib).
+///
+/// Seeds internally from `close[timeperiod - 1]` but does not emit that
+/// seed — the first output is the first ER/SC update at index `timeperiod`.
+/// Fast SC = 2/3, slow SC = 2/31.
 pub fn kama(close: &[f64], timeperiod: usize) -> Vec<f64> {
     let n = close.len();
     let mut result = vec![f64::NAN; n];
-    if timeperiod == 0 || n < timeperiod {
+    if timeperiod == 0 || n <= timeperiod {
         return result;
     }
     let fast_sc = 2.0 / 3.0_f64;
     let slow_sc = 2.0 / 31.0_f64;
     let mut kama_val = close[timeperiod - 1];
-    result[timeperiod - 1] = kama_val;
     for i in timeperiod..n {
         let direction = (close[i] - close[i - timeperiod]).abs();
         let mut volatility = 0.0_f64;
@@ -515,34 +558,32 @@ pub fn kama(close: &[f64], timeperiod: usize) -> Vec<f64> {
 // T3 — Tillson T3
 // ---------------------------------------------------------------------------
 
-/// Tillson T3: 6x smoothed EMA with volume factor.
+/// Tillson T3: 6 cascaded SMA-seeded EMAs with volume factor.
+///
+/// Each stage seeds from the first window of finite inputs of the prior
+/// stage (`ema_from_first_finite`), matching TA-Lib. The first
+/// `6 * (timeperiod - 1)` values are `NaN`.
 pub fn t3(close: &[f64], timeperiod: usize, vfactor: f64) -> Vec<f64> {
     let n = close.len();
     let mut result = vec![f64::NAN; n];
     if timeperiod == 0 {
         return result;
     }
-    let k = 2.0 / (timeperiod as f64 + 1.0);
     let v = vfactor;
     let c1 = -(v * v * v);
     let c2 = 3.0 * v * v + 3.0 * v * v * v;
     let c3 = -6.0 * v * v - 3.0 * v - 3.0 * v * v * v;
     let c4 = 1.0 + 3.0 * v + v * v * v + 3.0 * v * v;
     let warmup = 6 * (timeperiod - 1);
-    let mut e = [0.0_f64; 6];
-    for (i, &price) in close.iter().enumerate() {
-        if i == 0 {
-            for ej in e.iter_mut() {
-                *ej = price;
-            }
-        } else {
-            e[0] += k * (price - e[0]);
-            for j in 1..6 {
-                e[j] += k * (e[j - 1] - e[j]);
-            }
-        }
-        if i >= warmup {
-            result[i] = c1 * e[5] + c2 * e[4] + c3 * e[3] + c4 * e[2];
+    let e1 = ema_from_first_finite(close, timeperiod);
+    let e2 = ema_from_first_finite(&e1, timeperiod);
+    let e3 = ema_from_first_finite(&e2, timeperiod);
+    let e4 = ema_from_first_finite(&e3, timeperiod);
+    let e5 = ema_from_first_finite(&e4, timeperiod);
+    let e6 = ema_from_first_finite(&e5, timeperiod);
+    for i in warmup..n {
+        if e3[i].is_finite() && e4[i].is_finite() && e5[i].is_finite() && e6[i].is_finite() {
+            result[i] = c1 * e6[i] + c2 * e5[i] + c3 * e4[i] + c4 * e3[i];
         }
     }
     result
@@ -1075,5 +1116,129 @@ mod tests {
         assert!(m.iter().all(|v| v.is_nan()));
         assert!(s.iter().all(|v| v.is_nan()));
         assert!(h.iter().all(|v| v.is_nan()));
+    }
+
+    #[test]
+    fn dema_golden_period3() {
+        // Hand-computed DEMA(3) on 1..=10.
+        // k = 2/(3+1) = 0.5
+        // EMA1 seed SMA(1,2,3)=2; then 3,4,5,6,7,8,9
+        // EMA2 seeds from the first 3 finite EMA1 values: SMA(2,3,4)=3 at index 4
+        // DEMA = 2*EMA1 - EMA2 => 5,6,7,8,9,10 after warmup 2*(3-1)=4
+        let prices: Vec<f64> = (1..=10).map(|i| i as f64).collect();
+        let period = 3;
+        let result = dema(&prices, period);
+        let warmup = 2 * (period - 1);
+        for (i, &v) in result.iter().enumerate().take(warmup) {
+            assert!(v.is_nan(), "expected NaN warmup at {i}, got {v}");
+        }
+        let expected = [5.0, 6.0, 7.0, 8.0, 9.0, 10.0];
+        for (offset, &exp) in expected.iter().enumerate() {
+            let i = warmup + offset;
+            assert!(
+                result[i].is_finite(),
+                "expected finite DEMA at {i}, got {}",
+                result[i]
+            );
+            assert!(
+                (result[i] - exp).abs() < 1e-10,
+                "DEMA[{i}]: got {} expected {exp}",
+                result[i]
+            );
+        }
+    }
+
+    #[test]
+    fn tema_golden_period3() {
+        // Hand-computed TEMA(3) on 1..=10.
+        // EMA1/EMA2 as in dema_golden_period3; EMA3 seeds SMA(3,4,5)=4 at index 6
+        // TEMA = 3*EMA1 - 3*EMA2 + EMA3 => 7,8,9,10 after warmup 3*(3-1)=6
+        let prices: Vec<f64> = (1..=10).map(|i| i as f64).collect();
+        let period = 3;
+        let result = tema(&prices, period);
+        let warmup = 3 * (period - 1);
+        for (i, &v) in result.iter().enumerate().take(warmup) {
+            assert!(v.is_nan(), "expected NaN warmup at {i}, got {v}");
+        }
+        let expected = [7.0, 8.0, 9.0, 10.0];
+        for (offset, &exp) in expected.iter().enumerate() {
+            let i = warmup + offset;
+            assert!(
+                result[i].is_finite(),
+                "expected finite TEMA at {i}, got {}",
+                result[i]
+            );
+            assert!(
+                (result[i] - exp).abs() < 1e-10,
+                "TEMA[{i}]: got {} expected {exp}",
+                result[i]
+            );
+        }
+    }
+
+    #[test]
+    fn t3_golden_sma_seeded_period3() {
+        // Hand-computed T3(3, v=0.7) on 1..=16.
+        // Six cascaded SMA-seeded EMAs with k=0.5 on a linear series:
+        //   e1[i]=i (i>=2), e2=i-1 (i>=4), e3=i-2 (i>=6),
+        //   e4=i-3 (i>=8), e5=i-4 (i>=10), e6=i-5 (i>=12)
+        // T3 = c1*e6 + c2*e5 + c3*e4 + c4*e3 = i + 0.1 after warmup 6*(3-1)=12
+        // First-price seeding (the old bug) does not produce these values.
+        let prices: Vec<f64> = (1..=16).map(|i| i as f64).collect();
+        let period = 3;
+        let result = t3(&prices, period, 0.7);
+        let warmup = 6 * (period - 1);
+        for (i, &v) in result.iter().enumerate().take(warmup) {
+            assert!(v.is_nan(), "expected NaN warmup at {i}, got {v}");
+        }
+        for i in warmup..prices.len() {
+            let exp = i as f64 + 0.1;
+            assert!(
+                result[i].is_finite(),
+                "expected finite T3 at {i}, got {}",
+                result[i]
+            );
+            assert!(
+                (result[i] - exp).abs() < 1e-10,
+                "T3[{i}]: got {} expected {exp}",
+                result[i]
+            );
+        }
+    }
+
+    #[test]
+    fn kama_first_output_at_timeperiod() {
+        // TA-Lib KAMA: seed is close[timeperiod-1] but is not emitted;
+        // first output is the first ER/SC update at index `timeperiod`.
+        // period=3, close=1..=8
+        //   fast_sc=2/3, slow_sc=2/31
+        //   i=3: ER=1, SC=4/9, KAMA=3+(4/9)*(4-3)=31/9
+        //   i=4: ER=1, SC=4/9, KAMA=31/9+(4/9)*(5-31/9)=335/81
+        let prices: Vec<f64> = (1..=8).map(|i| i as f64).collect();
+        let period = 3;
+        let result = kama(&prices, period);
+        for (i, &v) in result.iter().enumerate().take(period) {
+            assert!(
+                v.is_nan(),
+                "expected NaN at {i} (first output is at timeperiod), got {v}"
+            );
+        }
+        assert!(
+            (result[3] - 31.0 / 9.0).abs() < 1e-10,
+            "KAMA[3]: got {} expected 31/9",
+            result[3]
+        );
+        assert!(
+            (result[4] - 335.0 / 81.0).abs() < 1e-10,
+            "KAMA[4]: got {} expected 335/81",
+            result[4]
+        );
+        for i in period..prices.len() {
+            assert!(
+                result[i].is_finite(),
+                "expected finite KAMA at {i}, got {}",
+                result[i]
+            );
+        }
     }
 }

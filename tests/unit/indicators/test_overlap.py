@@ -198,16 +198,17 @@ class TestTRIMA:
 class TestKAMA:
     def test_nan_warmup(self):
         result = KAMA(_CLOSE, timeperiod=10)
-        assert np.all(np.isnan(result[:9]))
+        # TA-Lib: first output at index timeperiod (seed bar is NaN)
+        assert np.all(np.isnan(result[:10]))
 
     def test_length(self):
         assert len(KAMA(_CLOSE, 10)) == N
 
-    def test_seed_equals_close(self):
+    def test_first_output_at_timeperiod(self):
         arr = np.arange(1.0, 21.0)
         result = KAMA(arr, timeperiod=10)
-        # First valid KAMA value equals close at warmup index
-        np.testing.assert_allclose(result[9], arr[9], rtol=1e-10)
+        assert np.isnan(result[9])
+        assert np.isfinite(result[10])
 
     def test_finite_after_warmup(self):
         result = KAMA(_CLOSE, timeperiod=10)

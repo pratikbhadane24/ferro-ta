@@ -198,12 +198,10 @@ pub fn american_price_baw(
         };
     }
 
-    // At zero vol: deterministic — exercise if ITM
+    // σ=0 is deterministic: same discounted forward intrinsic as European BSM
+    // (max(S e^{-qT} − K e^{-rT}, 0) / put twin), not the spot intrinsic.
     if volatility == 0.0 {
-        return match kind {
-            OptionKind::Call => (spot - strike).max(0.0),
-            OptionKind::Put => (strike - spot).max(0.0),
-        };
+        return black_scholes_price(spot, strike, rate, carry, time_to_expiry, 0.0, kind);
     }
 
     let european = black_scholes_price(spot, strike, rate, carry, time_to_expiry, volatility, kind);
@@ -254,11 +252,9 @@ pub fn american_price_baw(
         }
 
         OptionKind::Put => {
-            // No early exercise when rate == 0 (no time value of money)
-            if rate <= 0.0 {
-                return european;
-            }
-
+            // r == 0 is a true BAW degeneracy (h = 1 − e^{0} = 0) and is
+            // handled below. Negative rates are not that degeneracy — still
+            // run the quadratic branch.
             let sigma2 = volatility * volatility;
             let m = 2.0 * rate / sigma2;
             let n = 2.0 * (rate - carry) / sigma2;
@@ -518,5 +514,98 @@ mod tests {
         let put = american_price_baw(100.0, 100.0, 0.05, 0.02, 1.0, 0.25, OptionKind::Put);
         assert!(call.is_finite());
         assert!(put.is_finite());
+    }
+
+    #[test]
+    fn american_zero_vol_matches_bsm_discounted_forward_intrinsic() {
+        // σ=0 is deterministic: same discounted forward intrinsic as European BSM,
+        // not the undiscounted spot intrinsic max(S−K, 0).
+        let spot = 110.0;
+        let strike = 100.0;
+        let rate = 0.05;
+        let carry = 0.0;
+        let t = 1.0;
+        let european_call = crate::options::pricing::black_scholes_price(
+            spot,
+            strike,
+            rate,
+            carry,
+            t,
+            0.0,
+            OptionKind::Call,
+        );
+        let american_call = american_price_baw(spot, strike, rate, carry, t, 0.0, OptionKind::Call);
+        assert!(
+            (american_call - european_call).abs() < 1e-12,
+            "zero-vol American call {american_call} != BSM {european_call}"
+        );
+        // Spot intrinsic would be 10; discounted forward intrinsic is larger.
+        assert!((european_call - 10.0).abs() > 1.0);
+
+        let put_spot = 90.0;
+        let european_put = crate::options::pricing::black_scholes_price(
+            put_spot,
+            strike,
+            rate,
+            carry,
+            t,
+            0.0,
+            OptionKind::Put,
+        );
+        let american_put =
+            american_price_baw(put_spot, strike, rate, carry, t, 0.0, OptionKind::Put);
+        assert!(
+            (american_put - european_put).abs() < 1e-12,
+            "zero-vol American put {american_put} != BSM {european_put}"
+        );
+    }
+
+    #[test]
+    fn american_put_negative_rate_is_not_zero_rate_shortcut() {
+        // r == 0 is a true BAW degeneracy (h=0) and must fall back to European.
+        let european_r0 = crate::options::pricing::black_scholes_price(
+            100.0,
+            100.0,
+            0.0,
+            0.0,
+            1.0,
+            0.2,
+            OptionKind::Put,
+        );
+        let american_r0 = american_price_baw(100.0, 100.0, 0.0, 0.0, 1.0, 0.2, OptionKind::Put);
+        assert!((american_r0 - european_r0).abs() < 1e-10);
+
+        // r < 0 is not that degeneracy. With negative rate and negative carry the
+        // European put can trade below intrinsic; BAW must still run and lift
+        // the American price to at least intrinsic.
+        let spot = 80.0;
+        let strike = 100.0;
+        let rate = -0.02;
+        let carry = -0.10;
+        let european = crate::options::pricing::black_scholes_price(
+            spot,
+            strike,
+            rate,
+            carry,
+            1.0,
+            0.2,
+            OptionKind::Put,
+        );
+        let american = american_price_baw(spot, strike, rate, carry, 1.0, 0.2, OptionKind::Put);
+        let intrinsic = strike - spot;
+        assert!(american.is_finite());
+        assert!(
+            american >= intrinsic - 1e-10,
+            "American put {american} below intrinsic {intrinsic} at r<0"
+        );
+        assert!(american >= european - 1e-10);
+        assert!(
+            european < intrinsic - 1e-6,
+            "precondition: European must be below intrinsic so the r<=0 shortcut is observable"
+        );
+        assert!(
+            american > european + 1e-8,
+            "negative-rate put must run BAW, not return the European fallback ({american} vs {european})"
+        );
     }
 }

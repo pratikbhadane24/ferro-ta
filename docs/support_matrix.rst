@@ -113,7 +113,7 @@ generated :doc:`languages/coverage` table and must be refreshed with
      - TA-Lib-style API; abi3 wheels for CPython 3.10+.
    * - Rust
      - crates.io ``ferro_ta_core``
-     - 298 core symbols (functions + streaming types)
+     - 300 core symbols (functions + streaming types)
      - Direct ``&[f64]`` API; docs.rs ``ferro_ta_core``.
    * - WASM / Node
      - npm ``ferro-ta-wasm``

@@ -8,42 +8,7 @@
 
 use crate::math;
 use crate::overlap;
-// Note: we use a local compute_atr helper (seeds from bar 0) rather than
-// crate::volatility::atr (which seeds from bar 1, TA-Lib style).
-
-// ---------------------------------------------------------------------------
-// Internal helpers
-// ---------------------------------------------------------------------------
-
-/// Compute ATR array using Wilder smoothing (same algorithm as in the PyO3
-/// extended module — seeds from bar 0, not bar 1 like TA-Lib's `volatility::atr`).
-fn compute_atr(high: &[f64], low: &[f64], close: &[f64], timeperiod: usize) -> Vec<f64> {
-    let n = high.len();
-    let mut result = vec![f64::NAN; n];
-    if n <= timeperiod {
-        return result;
-    }
-    // Seed: SMA of first `timeperiod` true range values
-    let mut seed_sum = high[0] - low[0]; // first TR has no prev_close
-    for i in 1..timeperiod {
-        let hl = high[i] - low[i];
-        let hc = (high[i] - close[i - 1]).abs();
-        let lc = (low[i] - close[i - 1]).abs();
-        seed_sum += hl.max(hc).max(lc);
-    }
-    let mut atr = seed_sum / timeperiod as f64;
-    result[timeperiod - 1] = atr;
-    let pf = (timeperiod - 1) as f64;
-    for i in timeperiod..n {
-        let hl = high[i] - low[i];
-        let hc = (high[i] - close[i - 1]).abs();
-        let lc = (low[i] - close[i - 1]).abs();
-        let tr = hl.max(hc).max(lc);
-        atr = (atr * pf + tr) / timeperiod as f64;
-        result[i] = atr;
-    }
-    result
-}
+use crate::volatility;
 
 // ---------------------------------------------------------------------------
 // VWAP
@@ -187,21 +152,31 @@ pub fn supertrend(
         return (supertrend_out, direction);
     }
 
-    let atr = compute_atr(high, low, close, timeperiod);
+    let atr = volatility::atr(high, low, close, timeperiod);
 
     let mut upper_band = vec![f64::NAN; n];
     let mut lower_band = vec![f64::NAN; n];
 
-    let first_valid = timeperiod - 1;
+    // TA-Lib ATR first value is at `timeperiod`. Initialize and emit there.
+    let first_valid = timeperiod;
     if first_valid >= n || atr[first_valid].is_nan() {
         return (supertrend_out, direction);
     }
 
-    // Initialize band state at first valid ATR bar (compute basic bands inline)
     {
         let hl2 = (high[first_valid] + low[first_valid]) / 2.0;
         upper_band[first_valid] = hl2 + multiplier * atr[first_valid];
         lower_band[first_valid] = hl2 - multiplier * atr[first_valid];
+        direction[first_valid] = if close[first_valid] > upper_band[first_valid] {
+            1
+        } else {
+            -1
+        };
+        supertrend_out[first_valid] = if direction[first_valid] == 1 {
+            lower_band[first_valid]
+        } else {
+            upper_band[first_valid]
+        };
     }
 
     for i in (first_valid + 1)..n {
@@ -209,45 +184,39 @@ pub fn supertrend(
             continue;
         }
 
-        // Compute basic bands as scalars — no Vec allocation needed
         let hl2 = (high[i] + low[i]) / 2.0;
         let upper_basic = hl2 + multiplier * atr[i];
         let lower_basic = hl2 - multiplier * atr[i];
 
-        // Adjust lower band
         lower_band[i] = if lower_basic > lower_band[i - 1] || close[i - 1] < lower_band[i - 1] {
             lower_basic
         } else {
             lower_band[i - 1]
         };
 
-        // Adjust upper band
         upper_band[i] = if upper_basic < upper_band[i - 1] || close[i - 1] > upper_band[i - 1] {
             upper_basic
         } else {
             upper_band[i - 1]
         };
 
-        // Direction and output only from index timeperiod (warmup = 0, NaN)
-        if i >= timeperiod {
-            let prev_dir = direction[i - 1];
-            direction[i] = if prev_dir == 0 || prev_dir == -1 {
-                if close[i] > upper_band[i] {
-                    1
-                } else {
-                    -1
-                }
-            } else if close[i] < lower_band[i] {
-                -1
-            } else {
+        let prev_dir = direction[i - 1];
+        direction[i] = if prev_dir == 0 || prev_dir == -1 {
+            if close[i] > upper_band[i] {
                 1
-            };
-            supertrend_out[i] = if direction[i] == 1 {
-                lower_band[i]
             } else {
-                upper_band[i]
-            };
-        }
+                -1
+            }
+        } else if close[i] < lower_band[i] {
+            -1
+        } else {
+            1
+        };
+        supertrend_out[i] = if direction[i] == 1 {
+            lower_band[i]
+        } else {
+            upper_band[i]
+        };
     }
 
     (supertrend_out, direction)
@@ -357,7 +326,7 @@ pub fn keltner_channels(
     }
 
     let middle = overlap::ema(close, timeperiod);
-    let atr = compute_atr(high, low, close, atr_period);
+    let atr = volatility::atr(high, low, close, atr_period);
 
     let mut upper = vec![f64::NAN; n];
     let mut lower = vec![f64::NAN; n];
@@ -386,12 +355,12 @@ pub fn hull_ma(close: &[f64], timeperiod: usize) -> Vec<f64> {
     }
 
     let half = (timeperiod / 2).max(1);
-    let sqrt_p = ((timeperiod as f64).sqrt().round() as usize).max(1);
+    let sqrt_p = ((timeperiod as f64).sqrt() as usize).max(1);
 
     let wma_full = overlap::wma(close, timeperiod);
     let wma_half = overlap::wma(close, half);
 
-    // raw = 2 * wma_half - wma_full
+    // raw = 2 * wma_half - wma_full (full-length; leading entries stay NaN)
     let mut raw = vec![f64::NAN; n];
     for i in 0..n {
         if !wma_full[i].is_nan() && !wma_half[i].is_nan() {
@@ -399,18 +368,34 @@ pub fn hull_ma(close: &[f64], timeperiod: usize) -> Vec<f64> {
         }
     }
 
-    // Find first valid index in raw
-    let first_valid = raw.iter().position(|x| !x.is_nan()).unwrap_or(n);
-    let mut hull = vec![f64::NAN; n];
-    if first_valid < n {
-        let raw_valid = &raw[first_valid..];
-        let hma_slice = overlap::wma(raw_valid, sqrt_p);
-        for (k, &v) in hma_slice.iter().enumerate() {
-            hull[first_valid + k] = v;
-        }
-    }
+    // Final WMA on the full-length raw series (windows aligned to original
+    // indices). `overlap::wma` is not NaN-aware, so windows that still contain
+    // leading raw NaNs stay NaN.
+    wma_full_length(&raw, sqrt_p)
+}
 
-    hull
+/// WMA with windows aligned to the original series. A window that contains
+/// any NaN yields NaN (so leading raw NaNs do not get compacted away).
+fn wma_full_length(series: &[f64], period: usize) -> Vec<f64> {
+    let n = series.len();
+    let mut out = vec![f64::NAN; n];
+    if period < 1 || n < period {
+        return out;
+    }
+    let denom = (period * (period + 1) / 2) as f64;
+    for i in (period - 1)..n {
+        let start = i + 1 - period;
+        let window = &series[start..=i];
+        if window.iter().any(|v| v.is_nan()) {
+            continue;
+        }
+        let mut weighted = 0.0;
+        for (k, &v) in window.iter().enumerate() {
+            weighted += (k + 1) as f64 * v;
+        }
+        out[i] = weighted / denom;
+    }
+    out
 }
 
 // ---------------------------------------------------------------------------
@@ -433,7 +418,7 @@ pub fn chandelier_exit(
         return (vec![f64::NAN; n], vec![f64::NAN; n]);
     }
 
-    let atr = compute_atr(high, low, close, timeperiod);
+    let atr = volatility::atr(high, low, close, timeperiod);
 
     let highest_high = math::sliding_max(high, timeperiod);
     let lowest_low = math::sliding_min(low, timeperiod);
@@ -496,14 +481,15 @@ pub fn ichimoku(
     // so senkou_a[i] only uses data from bar i - displacement (no look-ahead).
     let mut senkou_a = vec![f64::NAN; n];
     if n > displacement {
-        for i in 0..n - displacement {
-            if !tenkan[i].is_nan() && !kijun[i].is_nan() {
-                senkou_a[i + displacement] = (tenkan[i] + kijun[i]) / 2.0;
+        for i in displacement..n {
+            let src = i - displacement;
+            if tenkan[src].is_finite() && kijun[src].is_finite() {
+                senkou_a[i] = (tenkan[src] + kijun[src]) / 2.0;
             }
         }
     }
 
-    // Senkou B: raw_b projected forward `displacement` bars
+    // Senkou B: raw_b displaced forward — value at i uses raw_b[i - d]
     let mut senkou_b = vec![f64::NAN; n];
     if n > displacement {
         senkou_b[displacement..].copy_from_slice(&raw_b[..n - displacement]);
@@ -808,6 +794,94 @@ mod tests {
     }
 
     #[test]
+    fn hull_ma_uses_floor_sqrt_and_full_length_wma() {
+        // period=8 → floor(sqrt(8))=2, round(sqrt(8))=3. Distinguishes the old
+        // `.round()` period and a WMA run on a truncated raw sub-slice.
+        let close: Vec<f64> = (1..=12).map(|i| i as f64).collect();
+        let result = hull_ma(&close, 8);
+
+        // raw first finite at index 7; floor-sqrt WMA period 2 → first HMA at 8.
+        // (round(sqrt(8))=3 would leave HMA[8] NaN.)
+        for v in result.iter().take(8) {
+            assert!(v.is_nan(), "expected NaN warmup, got {v}");
+        }
+        // WMA8[7]=204/36, WMA4[7]=7 → raw[7]=25/3
+        // WMA8[8]=240/36, WMA4[8]=8 → raw[8]=28/3
+        // WMA2[8]=(25/3 + 2*28/3)/3 = 9
+        assert!(
+            (result[8] - 9.0).abs() < 1e-12,
+            "HMA[8] should be 9.0 with floor(sqrt(8))=2, got {}",
+            result[8]
+        );
+        // raw[9]=31/3 → WMA2(28/3, 31/3) = 10
+        assert!((result[9] - 10.0).abs() < 1e-12);
+    }
+
+    #[test]
+    fn keltner_uses_talib_atr() {
+        let (h, l, c, _) = sample_ohlcv();
+        let atr_period = 3;
+        let (upper, middle, lower) = keltner_channels(&h, &l, &c, 3, atr_period, 1.5);
+        let atr = crate::volatility::atr(&h, &l, &c, atr_period);
+        // TA-Lib ATR first value is at `atr_period`, not `atr_period - 1`.
+        assert!(atr[atr_period - 1].is_nan());
+        assert!(upper[atr_period - 1].is_nan());
+        assert!(!atr[atr_period].is_nan());
+        assert!(!upper[atr_period].is_nan());
+        for i in 0..h.len() {
+            if !atr[i].is_nan() && !middle[i].is_nan() {
+                assert!((upper[i] - (middle[i] + 1.5 * atr[i])).abs() < 1e-12);
+                assert!((lower[i] - (middle[i] - 1.5 * atr[i])).abs() < 1e-12);
+            }
+        }
+    }
+
+    #[test]
+    fn chandelier_uses_talib_atr() {
+        let (h, l, c, _) = sample_ohlcv();
+        let period = 3;
+        let (long_exit, short_exit) = chandelier_exit(&h, &l, &c, period, 2.0);
+        let atr = crate::volatility::atr(&h, &l, &c, period);
+        assert!(atr[period - 1].is_nan());
+        assert!(long_exit[period - 1].is_nan());
+        assert!(!long_exit[period].is_nan());
+        assert!(!short_exit[period].is_nan());
+        let hh = crate::math::sliding_max(&h, period);
+        let ll = crate::math::sliding_min(&l, period);
+        assert!((long_exit[period] - (hh[period] - 2.0 * atr[period])).abs() < 1e-12);
+        assert!((short_exit[period] - (ll[period] + 2.0 * atr[period])).abs() < 1e-12);
+    }
+
+    #[test]
+    fn supertrend_uses_talib_atr_and_starts_at_period() {
+        // Wide first bar so bar-0 ATR seeding would shift the first Supertrend value.
+        let h = vec![20.0, 12.0, 13.0, 14.0, 15.0, 14.5, 15.5, 16.0];
+        let l = vec![5.0, 10.0, 11.0, 12.0, 13.0, 12.5, 13.5, 14.0];
+        let c = vec![10.0, 11.0, 12.0, 13.0, 14.0, 13.5, 14.5, 15.0];
+        let period = 3;
+        let (st, dir) = supertrend(&h, &l, &c, period, 2.0);
+        let atr = crate::volatility::atr(&h, &l, &c, period);
+        for i in 0..period {
+            assert!(st[i].is_nan());
+            assert_eq!(dir[i], 0);
+        }
+        assert!(!atr[period].is_nan());
+        assert!(!st[period].is_nan());
+        assert!(dir[period] == 1 || dir[period] == -1);
+        // First emitted line uses unadjusted bands from TA-Lib ATR at `period`.
+        let hl2 = (h[period] + l[period]) / 2.0;
+        let upper = hl2 + 2.0 * atr[period];
+        let lower = hl2 - 2.0 * atr[period];
+        let expected = if c[period] > upper { lower } else { upper };
+        assert!(
+            (st[period] - expected).abs() < 1e-12,
+            "supertrend[{period}]={} expected {}",
+            st[period],
+            expected
+        );
+    }
+
+    #[test]
     fn hull_ma_empty_input() {
         let result = hull_ma(&[], 4);
         assert!(result.is_empty());
@@ -899,6 +973,188 @@ mod tests {
         assert!(sa.is_empty());
         assert!(sb.is_empty());
         assert!(ch.is_empty());
+    }
+
+    fn rolling_hl_midpoint(high: &[f64], low: &[f64], period: usize) -> Vec<f64> {
+        let n = high.len();
+        let mut out = vec![f64::NAN; n];
+        if period < 1 || n < period {
+            return out;
+        }
+        for i in (period - 1)..n {
+            let start = i + 1 - period;
+            let hh = high[start..=i]
+                .iter()
+                .copied()
+                .fold(f64::NEG_INFINITY, f64::max);
+            let ll = low[start..=i].iter().copied().fold(f64::INFINITY, f64::min);
+            out[i] = (hh + ll) / 2.0;
+        }
+        out
+    }
+
+    /// Senkou at index `i` must use tenkan/kijun/raw_b at `i - d`, never `> i`.
+    #[test]
+    fn ichimoku_senkou_no_lookahead() {
+        let n = 20;
+        let high: Vec<f64> = (0..n).map(|i| 100.0 + i as f64 + 2.0).collect();
+        let low: Vec<f64> = (0..n).map(|i| 100.0 + i as f64 - 2.0).collect();
+        let close: Vec<f64> = (0..n).map(|i| 100.0 + i as f64).collect();
+
+        let tenkan_p = 3usize;
+        let kijun_p = 4usize;
+        let senkou_b_p = 5usize;
+        let d = 2usize;
+
+        let (tenkan, kijun, senkou_a, senkou_b, chikou) =
+            ichimoku(&high, &low, &close, tenkan_p, kijun_p, senkou_b_p, d);
+
+        let expected_tenkan = rolling_hl_midpoint(&high, &low, tenkan_p);
+        let expected_kijun = rolling_hl_midpoint(&high, &low, kijun_p);
+        let expected_raw_b = rolling_hl_midpoint(&high, &low, senkou_b_p);
+
+        for i in 0..n {
+            assert!(
+                (tenkan[i] - expected_tenkan[i]).abs() < 1e-10
+                    || (tenkan[i].is_nan() && expected_tenkan[i].is_nan())
+            );
+            assert!(
+                (kijun[i] - expected_kijun[i]).abs() < 1e-10
+                    || (kijun[i].is_nan() && expected_kijun[i].is_nan())
+            );
+
+            if i < d {
+                assert!(
+                    senkou_a[i].is_nan(),
+                    "senkou_a[{i}] must be NaN (no past bar)"
+                );
+                assert!(
+                    senkou_b[i].is_nan(),
+                    "senkou_b[{i}] must be NaN (no past bar)"
+                );
+                continue;
+            }
+
+            let src = i - d;
+            assert!(
+                src <= i,
+                "Senkou source index {src} must not be ahead of {i}"
+            );
+
+            let exp_a = if expected_tenkan[src].is_finite() && expected_kijun[src].is_finite() {
+                (expected_tenkan[src] + expected_kijun[src]) / 2.0
+            } else {
+                f64::NAN
+            };
+            if exp_a.is_nan() {
+                assert!(
+                    senkou_a[i].is_nan(),
+                    "senkou_a[{i}] should be NaN (tenkan/kijun[{src}] not both finite)"
+                );
+            } else {
+                assert!(
+                    (senkou_a[i] - exp_a).abs() < 1e-10,
+                    "senkou_a[{i}] = {} expected {} from tenkan/kijun[{src}]",
+                    senkou_a[i],
+                    exp_a
+                );
+            }
+
+            let exp_b = expected_raw_b[src];
+            if exp_b.is_nan() {
+                assert!(senkou_b[i].is_nan(), "senkou_b[{i}] should be NaN");
+            } else {
+                assert!(
+                    (senkou_b[i] - exp_b).abs() < 1e-10,
+                    "senkou_b[{i}] = {} expected raw_b[{src}] = {}",
+                    senkou_b[i],
+                    exp_b
+                );
+            }
+
+            let chikou_src = i + d;
+            if chikou_src < n {
+                assert!((chikou[i] - close[chikou_src]).abs() < 1e-10);
+            } else {
+                assert!(chikou[i].is_nan());
+            }
+        }
+
+        // Old mapping wrote senkou_a[i] from tenkan/kijun[i + d] (lookahead).
+        let future = d;
+        let lookahead = (expected_tenkan[future] + expected_kijun[future]) / 2.0;
+        assert!(
+            senkou_a[0].is_nan() || (senkou_a[0] - lookahead).abs() > 1e-10,
+            "senkou_a[0] must not equal the lookahead value from tenkan/kijun[{future}]"
+        );
+    }
+
+    /// Hand-computed Senkou values: span at i equals the midpoint from i - d.
+    #[test]
+    fn ichimoku_senkou_golden_displaced_past() {
+        let high = vec![11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0];
+        let low = vec![9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0];
+        let close = vec![10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0];
+        let d = 2usize;
+
+        let (_, _, senkou_a, senkou_b, chikou) = ichimoku(&high, &low, &close, 2, 3, 4, d);
+
+        // tenkan p=2: [NaN, 10.5, 11.5, 12.5, 13.5, 14.5, 15.5, 16.5]
+        // kijun  p=3: [NaN, NaN,  11.0, 12.0, 13.0, 14.0, 15.0, 16.0]
+        // raw_b  p=4: [NaN, NaN,  NaN,  11.5, 12.5, 13.5, 14.5, 15.5]
+        // senkou_a[i] = (tenkan[i-2] + kijun[i-2]) / 2
+        for i in 0..4 {
+            assert!(senkou_a[i].is_nan(), "senkou_a[{i}] warmup");
+        }
+        assert!((senkou_a[4] - 11.25).abs() < 1e-10); // (11.5 + 11.0) / 2
+        assert!((senkou_a[5] - 12.25).abs() < 1e-10);
+        assert!((senkou_a[6] - 13.25).abs() < 1e-10);
+        assert!((senkou_a[7] - 14.25).abs() < 1e-10);
+
+        // senkou_b[i] = raw_b[i-2]
+        for i in 0..5 {
+            assert!(senkou_b[i].is_nan(), "senkou_b[{i}] warmup");
+        }
+        assert!((senkou_b[5] - 11.5).abs() < 1e-10);
+        assert!((senkou_b[6] - 12.5).abs() < 1e-10);
+        assert!((senkou_b[7] - 13.5).abs() < 1e-10);
+
+        // Chikou is close plotted `d` bars back: chikou[i] = close[i + d].
+        assert!((chikou[0] - 12.0).abs() < 1e-10);
+        assert!((chikou[5] - 17.0).abs() < 1e-10);
+        assert!(chikou[6].is_nan());
+        assert!(chikou[7].is_nan());
+    }
+
+    /// A spike on the last bar must not leak into earlier Senkou values.
+    #[test]
+    fn ichimoku_senkou_ignores_future_spike() {
+        let n = 12;
+        let mut high: Vec<f64> = (0..n).map(|i| 10.0 + i as f64).collect();
+        let mut low: Vec<f64> = (0..n).map(|i| 8.0 + i as f64).collect();
+        let close: Vec<f64> = (0..n).map(|i| 9.0 + i as f64).collect();
+        high[n - 1] = 1000.0;
+        low[n - 1] = 999.0;
+
+        let d = 3usize;
+        let (_, _, senkou_a, senkou_b, _) = ichimoku(&high, &low, &close, 2, 2, 2, d);
+
+        for i in 0..n {
+            if senkou_a[i].is_finite() {
+                assert!(
+                    senkou_a[i] < 100.0,
+                    "senkou_a[{i}] = {} leaked a future spike (lookahead)",
+                    senkou_a[i]
+                );
+            }
+            if senkou_b[i].is_finite() {
+                assert!(
+                    senkou_b[i] < 100.0,
+                    "senkou_b[{i}] = {} leaked a future spike (lookahead)",
+                    senkou_b[i]
+                );
+            }
+        }
     }
 
     // -----------------------------------------------------------------------

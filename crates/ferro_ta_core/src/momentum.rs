@@ -166,6 +166,22 @@ pub fn stoch(
     (slowk, slowd)
 }
 
+/// Fast Stochastic. Returns `(fastk, fastd)`.
+///
+/// Fast %K is the raw stochastic; %D is SMA(fast %K, `fastd_period`)
+/// (TA-Lib default `fastd_matype=0`). Both outputs are `NaN`-padded until
+/// %D is valid.
+pub fn stochf(
+    high: &[f64],
+    low: &[f64],
+    close: &[f64],
+    fastk_period: usize,
+    fastd_period: usize,
+) -> (Vec<f64>, Vec<f64>) {
+    // slowk_period=1 leaves Fast %K unsmoothed; slowd_period applies SMA %D.
+    stoch(high, low, close, fastk_period, 1, fastd_period)
+}
+
 // ---------------------------------------------------------------------------
 // ADX family
 // ---------------------------------------------------------------------------
@@ -779,8 +795,9 @@ pub fn ppo(
         }
     }
 
-    // Signal line = EMA of PPO line (only over valid values)
-    let signal = crate::overlap::ema(&ppo_line, signalperiod);
+    // Signal line = EMA of PPO line, seeded from the first finite PPO window
+    // so leading NaNs do not poison the recurrence.
+    let signal = crate::overlap::ema_from_first_finite(&ppo_line, signalperiod);
     let mut signal_line = vec![f64::NAN; n];
     let mut hist = vec![f64::NAN; n];
     let sig_warmup = warmup + signalperiod - 1;
@@ -856,10 +873,10 @@ pub fn trix(close: &[f64], timeperiod: usize) -> Vec<f64> {
     }
     let warmup = 3 * (timeperiod - 1);
 
-    // Triple EMA: EMA(EMA(EMA(close)))
-    let ema1 = crate::overlap::ema(close, timeperiod);
-    let ema2 = crate::overlap::ema(&ema1, timeperiod);
-    let ema3 = crate::overlap::ema(&ema2, timeperiod);
+    // Triple EMA: each stage seeds from the first finite window of the prior.
+    let ema1 = crate::overlap::ema_from_first_finite(close, timeperiod);
+    let ema2 = crate::overlap::ema_from_first_finite(&ema1, timeperiod);
+    let ema3 = crate::overlap::ema_from_first_finite(&ema2, timeperiod);
 
     for i in (warmup + 1)..n {
         let prev = ema3[i - 1];
@@ -989,6 +1006,54 @@ mod tests {
     }
 
     #[test]
+    fn stochf_golden_sma_d() {
+        // Hand-computed STOCHF(fastk=3, fastd=2) — TA-Lib fastd_matype=0 (SMA).
+        // Both outputs are NaN-padded until %D is valid (lookback = 3-1+2-1 = 3).
+        //
+        // Fast %K:
+        //   i=2: HH=12, LL=8, K=100*(10-8)/4 = 50
+        //   i=3: HH=13, LL=8, K=100*(12-8)/5 = 80
+        //   i=4: HH=14, LL=8, K=100*(13-8)/6 = 250/3
+        //   i=5: HH=15, LL=10, K=100*(14-10)/5 = 80
+        // SMA %D period 2:
+        //   i=3: (50+80)/2 = 65
+        //   i=4: (80+250/3)/2 = 245/3
+        //   i=5: (250/3+80)/2 = 245/3
+        let high = [10.0, 12.0, 11.0, 13.0, 14.0, 15.0];
+        let low = [8.0, 9.0, 8.0, 10.0, 11.0, 12.0];
+        let close = [9.0, 11.0, 10.0, 12.0, 13.0, 14.0];
+        let (fastk, fastd) = stochf(&high, &low, &close, 3, 2);
+        let first_valid = 3; // fastk_period-1 + fastd_period-1
+        for i in 0..first_valid {
+            assert!(
+                fastk[i].is_nan(),
+                "expected NaN fastk at {i}, got {}",
+                fastk[i]
+            );
+            assert!(
+                fastd[i].is_nan(),
+                "expected NaN fastd at {i}, got {}",
+                fastd[i]
+            );
+        }
+        let expected_k = [80.0, 250.0 / 3.0, 80.0];
+        let expected_d = [65.0, 245.0 / 3.0, 245.0 / 3.0];
+        for (offset, (&exp_k, &exp_d)) in expected_k.iter().zip(expected_d.iter()).enumerate() {
+            let i = first_valid + offset;
+            assert!(
+                (fastk[i] - exp_k).abs() < 1e-10,
+                "fastk[{i}]: got {} expected {exp_k}",
+                fastk[i]
+            );
+            assert!(
+                (fastd[i] - exp_d).abs() < 1e-10,
+                "fastd[{i}]: got {} expected {exp_d} (must be SMA, not EMA)",
+                fastd[i]
+            );
+        }
+    }
+
+    #[test]
     fn adx_nonnegative() {
         let h: Vec<f64> = (1..=50).map(|i| i as f64 + 1.0).collect();
         let l: Vec<f64> = (1..=50).map(|i| i as f64).collect();
@@ -996,6 +1061,109 @@ mod tests {
         let result = adx(&h, &l, &c, 14);
         for v in result.iter().filter(|v| !v.is_nan()) {
             assert!(*v >= 0.0);
+        }
+    }
+
+    #[test]
+    fn trix_golden_period3() {
+        // Hand-computed TRIX(3) on 1..=10.
+        // Triple EMA as in tema_golden_period3: EMA3 = [NaN×6, 4, 5, 6, 7]
+        // TRIX[i] = (EMA3[i] - EMA3[i-1]) / EMA3[i-1] * 100
+        // First value after 3*(3-1)+1 = 7: 25, 20, 100/6
+        let prices: Vec<f64> = (1..=10).map(|i| i as f64).collect();
+        let period = 3;
+        let result = trix(&prices, period);
+        let first_valid = 3 * (period - 1) + 1;
+        for (i, &v) in result.iter().enumerate().take(first_valid) {
+            assert!(v.is_nan(), "expected NaN warmup at {i}, got {v}");
+        }
+        let expected = [25.0, 20.0, 100.0 / 6.0];
+        for (offset, &exp) in expected.iter().enumerate() {
+            let i = first_valid + offset;
+            assert!(
+                result[i].is_finite(),
+                "expected finite TRIX at {i}, got {}",
+                result[i]
+            );
+            assert!(
+                (result[i] - exp).abs() < 1e-10,
+                "TRIX[{i}]: got {} expected {exp}",
+                result[i]
+            );
+        }
+    }
+
+    #[test]
+    fn ppo_signal_from_first_finite() {
+        // PPO(2,3,2) on 1..=10. Fast/slow EMAs are SMA-seeded on raw prices
+        // (no leading NaN), so the PPO line is already finite after slow-1.
+        // The signal must seed from that first finite PPO window, not from
+        // leading NaNs (which would poison the entire signal line).
+        let prices: Vec<f64> = (1..=10).map(|i| i as f64).collect();
+        let (ppo_line, signal, hist) = ppo(&prices, 2, 3, 2);
+        let line_start = 3 - 1;
+        let sig_start = line_start + 2 - 1;
+        for (i, &v) in ppo_line.iter().enumerate().take(line_start) {
+            assert!(v.is_nan(), "expected NaN PPO line at {i}, got {v}");
+        }
+        for (i, &v) in signal.iter().enumerate().take(sig_start) {
+            assert!(v.is_nan(), "expected NaN PPO signal at {i}, got {v}");
+        }
+        // PPO[2] = (2.5 - 2) / 2 * 100 = 25
+        // PPO[3] = (3.5 - 3) / 3 * 100 = 50/3
+        // signal seed = SMA(25, 50/3) = 125/6 at index 3
+        assert!((ppo_line[2] - 25.0).abs() < 1e-10);
+        assert!((ppo_line[3] - 50.0 / 3.0).abs() < 1e-10);
+        assert!(
+            signal[sig_start].is_finite(),
+            "expected finite PPO signal at {sig_start}, got {}",
+            signal[sig_start]
+        );
+        assert!((signal[3] - 125.0 / 6.0).abs() < 1e-10);
+        assert!((hist[3] - (ppo_line[3] - signal[3])).abs() < 1e-10);
+        for i in sig_start..prices.len() {
+            assert!(signal[i].is_finite(), "PPO signal NaN at {i}");
+            assert!((hist[i] - (ppo_line[i] - signal[i])).abs() < 1e-10);
+        }
+    }
+
+    #[test]
+    fn cmo_wilder_golden_period3() {
+        // Hand-computed CMO(3) with Wilder gain/loss (same seed as RSI).
+        // close = [1, 2, 3, 2, 4, 3, 5]
+        // changes: +1, +1, -1, +2, -1, +2
+        //
+        // Seed (first 3 changes): avg_gain=2/3, avg_loss=1/3
+        // CMO[3] = 100*(2/3-1/3)/(2/3+1/3) = 100/3
+        // i=4: g=10/9, l=2/9 → 200/3
+        // i=5: g=20/27, l=13/27 → 700/33
+        // i=6: g=94/81, l=26/81 → 170/3
+        //
+        // A plain rolling sum (the old bug) also yields 100/3 at index 3,
+        // but 50.0 at index 4 — so 200/3 is the Wilder lock-in.
+        let close = [1.0, 2.0, 3.0, 2.0, 4.0, 3.0, 5.0];
+        let result = cmo(&close, 3);
+        for (i, &v) in result.iter().enumerate().take(3) {
+            assert!(v.is_nan(), "expected NaN warmup at {i}, got {v}");
+        }
+        let expected = [100.0 / 3.0, 200.0 / 3.0, 700.0 / 33.0, 170.0 / 3.0];
+        for (offset, &exp) in expected.iter().enumerate() {
+            let i = 3 + offset;
+            assert!(
+                result[i].is_finite(),
+                "expected finite CMO at {i}, got {}",
+                result[i]
+            );
+            assert!(
+                (result[i] - exp).abs() < 1e-10,
+                "CMO[{i}]: got {} expected {exp} (must be Wilder, not rolling sum)",
+                result[i]
+            );
+        }
+        // Same seed as RSI: CMO = 2*RSI - 100 on this non-flat series.
+        let rsi_vals = rsi(&close, 3);
+        for i in 3..close.len() {
+            assert!((result[i] - (2.0 * rsi_vals[i] - 100.0)).abs() < 1e-10);
         }
     }
 }

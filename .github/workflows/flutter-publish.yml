@@ -48,7 +48,7 @@ jobs:
     name: Build Android + Linux
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           # These workflows never push; don't leave the token in
           # .git/config where later third-party steps could read it.
@@ -78,7 +78,7 @@ jobs:
              "$GITHUB_WORKSPACE/stage/linux/lib/"
       - name: Show staged tree
         run: find stage -type f | sort
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: native-android-linux
           path: stage
@@ -88,7 +88,7 @@ jobs:
     name: Build iOS + macOS
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           # These workflows never push; don't leave the token in
           # .git/config where later third-party steps could read it.
@@ -132,7 +132,7 @@ jobs:
             -output "$GITHUB_WORKSPACE/stage/ios/${LIB}.xcframework"
       - name: Show staged tree
         run: find stage -type f | sort
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: native-apple
           path: stage
@@ -142,7 +142,7 @@ jobs:
     name: Build Windows
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           # These workflows never push; don't leave the token in
           # .git/config where later third-party steps could read it.
@@ -167,7 +167,7 @@ jobs:
           Copy-Item "target/x86_64-pc-windows-msvc/release/$env:LIB.dll" $dest
       - name: Show staged tree
         run: Get-ChildItem -Recurse -File stage | Select-Object -ExpandProperty FullName
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: native-windows
           path: stage
@@ -187,7 +187,7 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           # These workflows never push; don't leave the token in
           # .git/config where later third-party steps could read it.
@@ -202,7 +202,7 @@ jobs:
           cd flutter && flutter pub get && flutter_rust_bridge_codegen generate
 
       - name: Download all native artifacts into the plugin tree
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: flutter-artifacts
 

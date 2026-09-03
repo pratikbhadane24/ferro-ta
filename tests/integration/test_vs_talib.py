@@ -123,15 +123,11 @@ class TestSMA:
 
 
 class TestEMA:
-    """EMA — shape matches; values differ slightly in the warmup region.
+    """EMA — SMA-seeded (TA-Lib compatible).
 
-    ferro_ta seeds the EMA from the very first data point using the standard
-    recursive formula, while TA-Lib seeds the first EMA value with the SMA
-    of the initial ``timeperiod`` bars.  After enough bars the two series
-    converge.  We verify:
-
-    * Same NaN count (warmup length is identical).
-    * After the series converge (last 30 % of the output) values agree.
+    Both ferro-ta and TA-Lib seed the first EMA value with the SMA of the
+    initial ``timeperiod`` bars, then apply ``k = 2 / (timeperiod + 1)``.
+    We verify matching warmup length and that the series stay close.
     """
 
     def test_nan_count_match(self):
@@ -230,19 +226,17 @@ class TestTRIMA:
 
 
 class TestKAMA:
-    """KAMA — values match after the first bar.
+    """KAMA — exact match. First output at index ``timeperiod`` (TA-Lib)."""
 
-    TA-Lib marks index ``timeperiod - 1`` as NaN (the last element of the
-    seed window), while ferro_ta emits a value there.  All subsequent values
-    are identical.
-    """
-
-    def test_values_match_after_seed(self):
+    def test_values_match(self):
         ft = ferro_ta.KAMA(CLOSE, timeperiod=10)
         ta = talib.KAMA(CLOSE, timeperiod=10)
-        # Skip the one bar where TA-Lib is still NaN
-        start = max(_nan_count(ft), _nan_count(ta)) + 1
-        assert np.allclose(ft[start:], ta[start:], atol=1e-8)
+        assert _allclose(ft, ta)
+
+    def test_nan_count_match(self):
+        ft = ferro_ta.KAMA(CLOSE, timeperiod=10)
+        ta = talib.KAMA(CLOSE, timeperiod=10)
+        assert _nan_count(ft) == _nan_count(ta)
 
     def test_output_length_match(self):
         ft = ferro_ta.KAMA(CLOSE, timeperiod=10)
@@ -715,12 +709,10 @@ class TestMFI:
 
 
 class TestSTOCHF:
-    """STOCHF — fast %K values match exactly.
+    """STOCHF — fast %K and SMA %D match TA-Lib (fastd_matype=0).
 
-    Note: ferro_ta uses ``fastk_period - 1`` NaNs while TA-Lib uses
-    ``fastk_period + fastd_period - 2`` NaNs (i.e., it waits for both %K
-    and %D to be valid before emitting anything).  The overlapping valid
-    region is identical.
+    Both series are NaN-padded until %D is valid
+    (``fastk_period + fastd_period - 2`` leading NaNs).
     """
 
     def test_fastk_values_match(self):
@@ -729,6 +721,13 @@ class TestSTOCHF:
             HIGH, LOW, CLOSE, fastk_period=5, fastd_period=3, fastd_matype=0
         )
         assert _allclose(ft_k, ta_k)
+
+    def test_fastd_values_match(self):
+        ft_k, ft_d = ferro_ta.STOCHF(HIGH, LOW, CLOSE, fastk_period=5, fastd_period=3)
+        ta_k, ta_d = talib.STOCHF(
+            HIGH, LOW, CLOSE, fastk_period=5, fastd_period=3, fastd_matype=0
+        )
+        assert _allclose(ft_d, ta_d)
 
     def test_output_length_match(self):
         ft_k, _ = ferro_ta.STOCHF(HIGH, LOW, CLOSE, fastk_period=5, fastd_period=3)
@@ -841,14 +840,14 @@ class TestPPO:
         corr = np.corrcoef(ppo[mask], ta[mask])[0, 1]
         assert corr > 0.85
 
-    """CMO — same NaN count and shape; values may differ slightly.
 
-    Both libraries compute the Chande Momentum Oscillator as
-    (sum_up - sum_dn) / (sum_up + sum_dn) × 100, but use different rolling
-    window implementations (TA-Lib uses Wilder's smoothing for the gains/
-    losses; ferro_ta uses a plain rolling sum).  Values are strongly
-    correlated but not numerically identical.
-    """
+class TestCMO:
+    """CMO — exact match (Wilder-smoothed gains/losses, same seed as RSI)."""
+
+    def test_values_match(self):
+        ft = ferro_ta.CMO(CLOSE, timeperiod=14)
+        ta = talib.CMO(CLOSE, timeperiod=14)
+        assert _allclose(ft, ta)
 
     def test_nan_count_match(self):
         ft = ferro_ta.CMO(CLOSE, timeperiod=14)
@@ -864,13 +863,6 @@ class TestPPO:
         ft = ferro_ta.CMO(CLOSE, timeperiod=14)
         finite = ft[~np.isnan(ft)]
         assert all(-100.0 <= v <= 100.0 for v in finite)
-
-    def test_values_strongly_correlated(self):
-        ft = ferro_ta.CMO(CLOSE, timeperiod=14)
-        ta = talib.CMO(CLOSE, timeperiod=14)
-        mask = _valid_mask(ft, ta)
-        corr = np.corrcoef(ft[mask], ta[mask])[0, 1]
-        assert corr > 0.85
 
 
 class TestTRIX:
@@ -1090,26 +1082,17 @@ class TestADOSC:
 
 
 class TestOBV:
-    """OBV — values match after the first bar.
+    """OBV — exact match. Bar 0 equals ``volume[0]`` (TA-Lib)."""
 
-    TA-Lib starts OBV accumulation at the *first* bar (OBV[0] = volume[0] if
-    price rose, else -volume[0]).  ferro_ta initialises OBV[0] = 0 and applies
-    the direction rule from bar 1 onward.  All increments are identical; the
-    two series differ only by a constant offset equal to the first OBV value.
-    """
+    def test_values_match(self):
+        ft = ferro_ta.OBV(CLOSE, VOLUME)
+        ta = talib.OBV(CLOSE, VOLUME)
+        assert _allclose(ft, ta)
 
     def test_output_length_match(self):
         ft = ferro_ta.OBV(CLOSE, VOLUME)
         ta = talib.OBV(CLOSE, VOLUME)
         assert len(ft) == len(ta)
-
-    def test_increments_match(self):
-        """Day-over-day OBV changes must be identical."""
-        ft = ferro_ta.OBV(CLOSE, VOLUME)
-        ta = talib.OBV(CLOSE, VOLUME)
-        ft_diff = np.diff(ft)
-        ta_diff = np.diff(ta)
-        assert np.allclose(ft_diff, ta_diff, atol=1e-8)
 
     def test_no_nans(self):
         ft = ferro_ta.OBV(CLOSE, VOLUME)
@@ -1180,25 +1163,21 @@ class TestNATR:
 
 
 class TestTRANGE:
-    """TRANGE — values match.
-
-    TA-Lib emits NaN at index 0 (no previous close to compute true range).
-    ferro_ta emits TRANGE[0] = high[0] − low[0] (high-low only, no prior
-    close).  From index 1 onward the values are identical.
-    """
+    """TRANGE — values match, including NaN at bar 0 (no previous close)."""
 
     def test_output_length_match(self):
         ft = ferro_ta.TRANGE(HIGH, LOW, CLOSE)
         ta = talib.TRANGE(HIGH, LOW, CLOSE)
         assert len(ft) == len(ta)
 
-    def test_values_match_after_first(self):
+    def test_values_match(self):
         ft = ferro_ta.TRANGE(HIGH, LOW, CLOSE)
         ta = talib.TRANGE(HIGH, LOW, CLOSE)
-        assert np.allclose(ft[1:], ta[1:], atol=1e-8)
+        assert _allclose(ft, ta)
 
     def test_values_positive(self):
         ft = ferro_ta.TRANGE(HIGH, LOW, CLOSE)
+        assert np.isnan(ft[0])
         assert all(v > 0 for v in ft[1:])
 
 

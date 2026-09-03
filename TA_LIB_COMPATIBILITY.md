@@ -32,9 +32,9 @@ See also:
 | TA-Lib Function | ferro-ta | Accuracy | Notes                                                 |
 | --------------- | -------- | -------- | ----------------------------------------------------- |
 | `BBANDS`        | ✅        | ✅ Exact  | Bollinger Bands                                       |
-| `DEMA`          | ✅        | ✅ Close  | Double EMA; converges after ~20 bars                  |
-| `EMA`           | ✅        | ✅ Close  | Exponential Moving Average; converges after ~20 bars  |
-| `KAMA`          | ✅        | ✅ Exact  | Kaufman Adaptive MA (values match after seed bar)     |
+| `DEMA`          | ✅        | ✅ Close  | SMA-seeded composed EMA (`2*EMA − EMA(EMA)`)          |
+| `EMA`           | ✅        | ✅ Exact  | SMA-seeded (`k = 2/(n+1)`); same warmup as TA-Lib     |
+| `KAMA`          | ✅        | ✅ Exact  | First output at index `timeperiod` (seed not emitted) |
 | `MA`            | ✅        | ✅ Exact  | Moving average (generic, type-selectable)             |
 | `MAMA`          | ✅        | ⚠️ Corr  | MESA Adaptive MA                                      |
 | `MAVP`          | ✅        | ✅ Exact  | MA with variable period                               |
@@ -43,8 +43,8 @@ See also:
 | `SAR`           | ✅        | ⚠️ Shape | Parabolic SAR (same shape; reversal history diverges) |
 | `SAREXT`        | ✅        | ⚠️ Shape | Parabolic SAR Extended                                |
 | `SMA`           | ✅        | ✅ Exact  | Simple Moving Average                                 |
-| `T3`            | ✅        | ✅ Close  | Triple Exponential MA (T3); converges after ~50 bars  |
-| `TEMA`          | ✅        | ✅ Close  | Triple EMA; converges after ~20 bars                  |
+| `T3`            | ✅        | ✅ Close  | Six SMA-seeded EMAs (TA-Lib cascade); long warmup     |
+| `TEMA`          | ✅        | ✅ Close  | SMA-seeded composed EMA (`3*E1 − 3*E2 + E3`)          |
 | `TRIMA`         | ✅        | ✅ Exact  | Triangular Moving Average                             |
 | `WMA`           | ✅        | ✅ Exact  | Weighted Moving Average                               |
 
@@ -61,7 +61,7 @@ See also:
 | `AROONOSC`      | ✅        | ✅ Exact  | Aroon Oscillator                                                             |
 | `BOP`           | ✅        | ✅ Exact  | Balance Of Power                                                             |
 | `CCI`           | ✅        | ✅ Exact  | Commodity Channel Index (TA-Lib-compatible MAD formula)                      |
-| `CMO`           | ✅        | ✅ Exact  | Chande Momentum Oscillator (Wilder smoothing, as TA-Lib)                     |
+| `CMO`           | ✅        | ✅ Exact  | Chande Momentum Oscillator (Wilder smoothing, same seed as RSI)              |
 | `DX`            | ✅        | ✅ Close  | Directional Movement Index (TA-Lib Wilder sum-seeding)                       |
 | `MACD`          | ✅        | ✅ Close  | MACD (EMA-based; converges after ~30 bars)                                   |
 | `MACDEXT`       | ✅        | ✅ Close  | MACD with controllable MA type (EMA-based; converges)                        |
@@ -79,7 +79,7 @@ See also:
 | `ROCR100`       | ✅        | ✅ Exact  | Rate of Change Ratio × 100                                                   |
 | `RSI`           | ✅        | ✅ Close  | Relative Strength Index (TA-Lib Wilder seeding; converges after ~1 seed bar) |
 | `STOCH`         | ✅        | ✅ Close  | Stochastic (TA-Lib-compatible SMA smoothing for slowk and slowd)             |
-| `STOCHF`        | ✅        | ✅ Exact  | Stochastic Fast (%D is the SMA of %K, as TA-Lib)                             |
+| `STOCHF`        | ✅        | ✅ Exact  | Fast Stochastic; %D is SMA (`fastd_matype=0`); both NaN until %D is valid    |
 | `STOCHRSI`      | ✅        | ✅ Exact  | Stochastic RSI (SMA fastd, Wilder-seeded RSI)                                |
 | `TRIX`          | ✅        | ✅ Close  | 1-day ROC of Triple EMA (EMA-based; converges)                               |
 | `ULTOSC`        | ✅        | ✅ Exact  | Ultimate Oscillator                                                          |
@@ -93,7 +93,7 @@ See also:
 | --------------- | -------- | -------- | ------------------------------------------------------------------ |
 | `AD`            | ✅        | ✅ Exact  | Chaikin A/D Line                                                   |
 | `ADOSC`         | ✅        | ✅ Exact  | Chaikin A/D Oscillator                                             |
-| `OBV`           | ✅        | ✅ Exact  | On Balance Volume (increments identical; constant offset at bar 0) |
+| `OBV`           | ✅        | ✅ Exact  | On Balance Volume; bar 0 is `volume[0]` (TA-Lib)                   |
 
 
 ## Volatility Indicators
@@ -103,7 +103,7 @@ See also:
 | --------------- | -------- | -------- | ----------------------------------------------------------------------- |
 | `ATR`           | ✅        | ✅ Close  | Average True Range (TA-Lib Wilder seeding; matches from bar timeperiod) |
 | `NATR`          | ✅        | ✅ Close  | Normalized ATR (TA-Lib Wilder seeding)                                  |
-| `TRANGE`        | ✅        | ✅ Exact  | True Range (bar 0 differs; all others identical)                        |
+| `TRANGE`        | ✅        | ✅ Exact  | True Range; bar 0 is NaN (TA-Lib: no previous close)                    |
 
 
 ## Cycle Indicators

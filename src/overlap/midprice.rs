@@ -1,8 +1,6 @@
 use crate::validation;
 use numpy::{IntoPyArray, PyArray1, PyReadonlyArray1};
 use pyo3::prelude::*;
-use ta::indicators::{Maximum, Minimum};
-use ta::Next;
 
 /// MidPrice: (highest high + lowest low) / 2 over the rolling window.
 #[pyfunction]
@@ -18,17 +16,6 @@ pub fn midprice<'py>(
     let lows = low.as_slice()?;
     let n = highs.len();
     validation::validate_equal_length(&[(n, "high"), (lows.len(), "low")])?;
-    let mut max_ind = Maximum::new(timeperiod)
-        .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-    let mut min_ind = Minimum::new(timeperiod)
-        .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-    let mut result = vec![f64::NAN; n];
-    for (i, (&h, &l)) in highs.iter().zip(lows.iter()).enumerate() {
-        let mx = max_ind.next(h);
-        let mn = min_ind.next(l);
-        if i + 1 >= timeperiod {
-            result[i] = (mx + mn) / 2.0;
-        }
-    }
+    let result = ferro_ta_core::overlap::midprice(highs, lows, timeperiod);
     Ok(result.into_pyarray(py))
 }

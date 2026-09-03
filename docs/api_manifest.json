@@ -4777,7 +4777,7 @@
       ]
     },
     "rust_core": {
-      "public_function_count": 301,
+      "public_function_count": 303,
       "functions": [
         {
           "module": "aggregation",
@@ -4852,6 +4852,11 @@
         {
           "module": "backtest",
           "function": "compute_performance_metrics",
+          "file": "backtest.rs"
+        },
+        {
+          "module": "backtest",
+          "function": "compute_performance_metrics_with_positions",
           "file": "backtest.rs"
         },
         {
@@ -5407,6 +5412,11 @@
         {
           "module": "momentum",
           "function": "stoch",
+          "file": "momentum.rs"
+        },
+        {
+          "module": "momentum",
+          "function": "stochf",
           "file": "momentum.rs"
         },
         {
@@ -7246,8 +7256,8 @@
   },
   "coverage": {
     "counts": {
-      "row_count": 321,
-      "core_count": 298,
+      "row_count": 322,
+      "core_count": 300,
       "python_count": 210,
       "wasm_count": 284,
       "flutter_count": 134,
@@ -9074,6 +9084,20 @@
         "python_name": null,
         "core_name": "compute_performance_metrics",
         "wasm_name": "compute_performance_metrics",
+        "flutter_name": null
+      },
+      {
+        "key": "computeperformancemetricswithpositions",
+        "name": "compute_performance_metrics_with_positions",
+        "category": "backtest",
+        "core": true,
+        "python": false,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "python_name": null,
+        "core_name": "compute_performance_metrics_with_positions",
+        "wasm_name": null,
         "flutter_name": null
       },
       {
@@ -11082,13 +11106,13 @@
         "key": "stochf",
         "name": "STOCHF",
         "category": "momentum",
-        "core": false,
+        "core": true,
         "python": true,
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
         "python_name": "STOCHF",
-        "core_name": null,
+        "core_name": "stochf",
         "wasm_name": "stochf",
         "flutter_name": null
       },

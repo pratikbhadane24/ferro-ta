@@ -28,27 +28,27 @@ SMALL_V = np.array([1000.0, 2000.0, 3000.0, 4000.0, 5000.0])
 
 class TestOBV:
     def test_known_values_rising(self):
-        # Rising close: OBV accumulates all volume
+        # Rising close: seed volume[0], then accumulate
         c = np.array([10.0, 11.0, 12.0, 13.0, 14.0])
         v = np.array([1000.0, 1000.0, 1000.0, 1000.0, 1000.0])
         result = OBV(c, v)
-        np.testing.assert_allclose(result[0], 0.0, atol=1e-10)
-        np.testing.assert_allclose(result[1], 1000.0, atol=1e-10)
-        np.testing.assert_allclose(result[4], 4000.0, atol=1e-10)
+        np.testing.assert_allclose(result[0], 1000.0, atol=1e-10)
+        np.testing.assert_allclose(result[1], 2000.0, atol=1e-10)
+        np.testing.assert_allclose(result[4], 5000.0, atol=1e-10)
 
     def test_known_values_falling(self):
         c = np.array([14.0, 13.0, 12.0, 11.0, 10.0])
         v = np.array([1000.0, 1000.0, 1000.0, 1000.0, 1000.0])
         result = OBV(c, v)
-        np.testing.assert_allclose(result[0], 0.0, atol=1e-10)
-        np.testing.assert_allclose(result[1], -1000.0, atol=1e-10)
-        np.testing.assert_allclose(result[4], -4000.0, atol=1e-10)
+        np.testing.assert_allclose(result[0], 1000.0, atol=1e-10)
+        np.testing.assert_allclose(result[1], 0.0, atol=1e-10)
+        np.testing.assert_allclose(result[4], -3000.0, atol=1e-10)
 
     def test_unchanged_price_no_change(self):
         c = np.array([10.0, 10.0, 10.0])
         v = np.array([500.0, 500.0, 500.0])
         result = OBV(c, v)
-        np.testing.assert_allclose(result, [0.0, 0.0, 0.0], atol=1e-10)
+        np.testing.assert_allclose(result, [500.0, 500.0, 500.0], atol=1e-10)
 
     def test_no_nan(self):
         result = OBV(SMALL_C, SMALL_V)
@@ -57,9 +57,9 @@ class TestOBV:
     def test_length(self):
         assert len(OBV(_CLOSE, _VOL)) == N
 
-    def test_starts_zero(self):
+    def test_starts_at_first_volume(self):
         result = OBV(_CLOSE, _VOL)
-        np.testing.assert_allclose(result[0], 0.0, atol=1e-10)
+        np.testing.assert_allclose(result[0], _VOL[0], atol=1e-10)
 
 
 # ---------------------------------------------------------------------------

@@ -26,11 +26,8 @@ pub fn stochf<'py>(
         (lows.len(), "low"),
         (closes.len(), "close"),
     ])?;
-
-    // STOCHF(fastk, fastd) == STOCH(fastk, slowk_period = 1, slowd_period = fastd),
-    // which reuses core's TA-Lib-compatible SMA smoothing and NaN padding.
     let (fastk, fastd) = py.allow_threads(|| {
-        ferro_ta_core::momentum::stoch(highs, lows, closes, fastk_period, 1, fastd_period)
+        ferro_ta_core::momentum::stochf(highs, lows, closes, fastk_period, fastd_period)
     });
     Ok((fastk.into_pyarray(py), fastd.into_pyarray(py)))
 }

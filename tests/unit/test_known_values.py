@@ -287,11 +287,11 @@ class TestATRKnownValues:
         # For period=1, ATR still has warmup. Use TRANGE to check TR values directly
         tr = ferro_ta.TRANGE(high, low, close)
 
-        # TR[0] = H-L = 11-9 = 2
+        # TR[0] is NaN (TA-Lib: no previous close)
         # TR[1] = max(13-10, |13-10|, |10-10|) = max(3, 3, 0) = 3
         # TR[2] = max(14-11, |14-12|, |11-12|) = max(3, 2, 1) = 3
 
-        assert np.abs(tr[0] - 2.0) < 1e-10
+        assert np.isnan(tr[0])
         assert np.abs(tr[1] - 3.0) < 1e-10
         assert np.abs(tr[2] - 3.0) < 1e-10
 

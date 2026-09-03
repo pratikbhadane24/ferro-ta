@@ -3,7 +3,7 @@ use numpy::{IntoPyArray, PyArray1, PyReadonlyArray1};
 use pyo3::prelude::*;
 
 /// Chande Momentum Oscillator: 100 * (gains - losses) / (gains + losses),
-/// using TA-Lib's Wilder smoothing.
+/// using TA-Lib's Wilder smoothing. Returns NaN for the first `timeperiod` bars.
 #[pyfunction]
 #[pyo3(signature = (close, timeperiod = 14))]
 pub fn cmo<'py>(

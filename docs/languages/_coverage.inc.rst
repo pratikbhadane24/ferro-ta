@@ -10,8 +10,8 @@
      - WASM
      - Flutter
      - Flutter excluded
-   * - 321
-     - 298
+   * - 322
+     - 300
      - 210
      - 284
      - 134
@@ -807,6 +807,12 @@
      - —
      - yes
      - excluded
+   * - ``compute_performance_metrics_with_positions``
+     - backtest
+     - yes
+     - —
+     - —
+     - —
    * - ``continuous_bar_labels``
      - crypto
      - yes
@@ -1667,7 +1673,7 @@
      - yes
    * - ``STOCHF``
      - momentum
-     - —
+     - yes
      - yes
      - yes
      - excluded

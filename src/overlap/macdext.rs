@@ -44,7 +44,6 @@ pub fn macdext<'py>(
         ));
     }
     let prices = close.as_slice()?;
-
     let (macd_line, signal_line, histogram) = py.allow_threads(|| {
         ferro_ta_core::overlap::macdext(
             prices,
