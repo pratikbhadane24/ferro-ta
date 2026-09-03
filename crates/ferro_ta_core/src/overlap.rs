@@ -94,7 +94,7 @@ pub fn ema(close: &[f64], timeperiod: usize) -> Vec<f64> {
     let seed: f64 = close[start..start + timeperiod].iter().sum::<f64>() / timeperiod as f64;
     result[start + timeperiod - 1] = seed;
     for i in start + timeperiod..n {
-        result[i] = (result[i - 1] * (1.0 - k)).mul_add(1.0, close[i] * k);
+        result[i] = result[i - 1].mul_add(1.0 - k, close[i] * k);
     }
     result
 }
@@ -134,7 +134,7 @@ pub(crate) fn ema_from_first_finite(input: &[f64], timeperiod: usize) -> Vec<f64
     let seed: f64 = input[start..seed_end].iter().sum::<f64>() / timeperiod as f64;
     result[seed_end - 1] = seed;
     for i in seed_end..n {
-        result[i] = (result[i - 1] * (1.0 - k)).mul_add(1.0, input[i] * k);
+        result[i] = result[i - 1].mul_add(1.0 - k, input[i] * k);
     }
     result
 }
