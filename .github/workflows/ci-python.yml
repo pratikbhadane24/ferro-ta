@@ -97,7 +97,7 @@ jobs:
       - name: Install wheel + test deps
         run: |
           pip install dist/*.whl
-          pip install pytest pytest-cov pandas polars hypothesis pyyaml mcp scipy
+          pip install pytest pytest-cov pandas polars hypothesis pyyaml "mcp>=1.0,<2" scipy
       - name: Run tests with coverage
         run: pytest tests/unit/ tests/integration/ -v --cov=ferro_ta --cov-report=xml --cov-report=term-missing --cov-fail-under=65
       - name: Check API manifest is current

@@ -9,6 +9,12 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- Pinned the optional `mcp` extra to `>=1.0,<2`. Unpinned `pip install mcp`
+  now resolves MCP Python SDK 2.x, which removed `mcp.server.fastmcp` and
+  broke the MCP server import on CI.
+
 ### Changed
 
 - Repositioned project docs and package descriptions as a **Rust-core**

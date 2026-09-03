@@ -50,7 +50,7 @@ comparison = [
 ]
 gpu = ["torch>=2.0"]
 options = []
-mcp = ["mcp>=1.0"]
+mcp = ["mcp>=1.0,<2"]
 all = ["pandas>=1.0", "polars>=0.19", "pytest>=7.0", "pytest-benchmark>=4.0"]
 dev = [
     "pytest>=7.0",
