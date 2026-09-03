@@ -1,8 +1,10 @@
 Support Matrix
 ==============
 
-The primary product is the Python technical analysis library: TA-Lib-style
-indicator calls backed by a Rust implementation.
+ferro-ta is a Rust-core technical analysis library. Python, Rust, JavaScript
+(WASM), and Flutter are first-class bindings over ``ferro_ta_core``. Python
+keeps TA-Lib-style names and the richest ergonomic surface; it is not the
+only supported product.
 
 Indicator compatibility
 -----------------------
@@ -84,36 +86,46 @@ Module status
    * - ``ferro_ta.analysis.live``
      - Supported (v1.1.0)
      - ``PaperTrader`` — event-driven paper trading bridge matching backtest logic exactly.
-   * - MCP, WASM, GPU, plugin, and agent-oriented tooling
+   * - MCP, GPU, plugin, and agent-oriented tooling
      - Experimental or adjacent
      - Evaluate these independently from the core indicator library.
+       WASM and Flutter are first-class language bindings, not adjacent
+       tooling — see the table below.
 
 Language bindings
 -----------------
 
-All bindings are thin wrappers over the same pure-Rust ``ferro_ta_core`` crate.
+All four bindings are first-class thin wrappers over ``ferro_ta_core``. Counts
+come from the generated :doc:`languages/coverage` table (refresh with
+``python3 scripts/build_api_manifest.py``).
 
 .. list-table::
    :header-rows: 1
 
    * - Binding
      - Channel
+     - Coverage
      - Notes
    * - Python (PyO3)
      - PyPI ``ferro-ta``
-     - The primary product; abi3 wheels for CPython 3.10+.
+     - 210 names on the coverage spine
+     - TA-Lib-style API; abi3 wheels for CPython 3.10+.
    * - Rust
      - crates.io ``ferro_ta_core``
-     - The pure core library, usable from any Rust project.
+     - 322 core symbols (functions + streaming types)
+     - Direct ``&[f64]`` API; docs.rs ``ferro_ta_core``.
    * - WASM / Node
      - npm ``ferro-ta-wasm``
-     - 200+ exports for Node.js and browsers.
+     - 284 exports
+     - Node.js and browsers; 194 names shared with Python after normalization.
    * - Flutter / Dart
      - pub.dev ``ferro_ta``
-     - 130+ indicators via flutter_rust_bridge, with prebuilt native libraries
-       bundled for Android, iOS, macOS, Windows, and Linux. Flutter web reuses
-       the ``ferro-ta-wasm`` package. Options greeks/pricing, backtest engines,
-       and batch array-of-array ops are not yet exposed.
+     - 134 generated wrappers; 50 ``MANUAL_EXCLUDE`` gaps
+     - flutter_rust_bridge over core; prebuilt natives for Android, iOS,
+       macOS, Windows, and Linux. Flutter web reuses ``ferro-ta-wasm``.
+       94 names are present on all four surfaces.
+
+Do not claim full parity from this page — use :doc:`languages/coverage`.
 
 Backtesting engine features
 ---------------------------

@@ -9,6 +9,13 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- Repositioned project docs and package descriptions as a **Rust-core**
+  technical analysis library with first-class Python, Rust, JavaScript (WASM),
+  and Flutter bindings. New languages may only wrap `ferro_ta_core`. See
+  `docs/languages/` and `docs/languages/adding.rst`.
+
 ### Added
 
 - **Flutter binding** (`flutter/`) — a new `ferro_ta` package for pub.dev that

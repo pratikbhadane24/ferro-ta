@@ -2,7 +2,9 @@ Adjacent Tooling
 ================
 
 These modules are useful, but they are secondary to ferro-ta's core identity as
-a Python technical analysis library.
+a Rust-core technical analysis library. Language bindings (Python, Rust,
+JavaScript/WASM, Flutter) are first-class products — they are documented under
+:doc:`languages/index`, not here.
 
 .. list-table::
    :header-rows: 1
@@ -28,10 +30,6 @@ a Python technical analysis library.
      - FastMCP-based server exposing selected ferro-ta capabilities to
        MCP-compatible clients. See
        `docs/mcp.md <https://github.com/pratikbhadane24/ferro-ta/blob/main/docs/mcp.md>`_.
-   * - WASM package
-     - Experimental
-     - Browser and Node.js package with a smaller indicator subset. See
-       `wasm/README.md <https://github.com/pratikbhadane24/ferro-ta/blob/main/wasm/README.md>`_.
    * - GPU backend
      - Experimental
      - Optional PyTorch-backed acceleration for a limited subset of indicators.
@@ -114,7 +112,8 @@ How to read the project
 
 When evaluating ferro-ta:
 
-- Start with the core library docs, migration guide, support matrix, and benchmarks.
+- Start with the :doc:`languages/index` hub, the Python migration guide, the
+  support matrix, and benchmarks.
 - Treat adjacent tooling as opt-in layers, not as proof that the core indicator
   library is broader or more stable than it is.
 - Check the release notes and stability policy before depending on experimental

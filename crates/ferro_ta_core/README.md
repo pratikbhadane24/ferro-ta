@@ -20,7 +20,7 @@ ferro_ta_core = "1.2.0"
 
 - Pure functions over Rust slices
 - No Python or NumPy dependency
-- Shared core for the Python package and WASM bindings
+- Shared core for the Python, WASM, and Flutter bindings
 - Output shape matches TA-Lib-style full-length series with `NaN` warm-up values where applicable
 
 ## Modules
@@ -68,7 +68,7 @@ fn main() {
 
 ## Relationship To `ferro-ta`
 
-The published Python package (`ferro-ta` on PyPI) wraps this crate with PyO3 bindings and adds NumPy conversion, pandas/polars wrappers, and higher-level Python tooling. The WASM package (`ferro-ta-wasm` on npm) also wraps this crate with full feature parity.
+The published Python package (`ferro-ta` on PyPI) wraps this crate with PyO3 bindings and adds NumPy conversion, pandas/polars wrappers, and higher-level Python tooling. The WASM package (`ferro-ta-wasm` on npm) and the Flutter package (`ferro_ta` on pub.dev) also wrap this crate. New languages may only wrap `ferro_ta_core` — they must not reimplement indicators.
 
 If you only need Rust indicator functions, use `ferro_ta_core` directly.
 

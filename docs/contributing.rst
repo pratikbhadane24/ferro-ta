@@ -51,24 +51,34 @@ You can scope it to selected checks while iterating:
 Adding a new indicator
 -----------------------
 
-1. **Rust** — implement the function in the appropriate ``src/<module>/``
-   directory (e.g. ``src/overlap/mod.rs`` and ``src/overlap/sma.rs``).  Follow
-   the existing patterns: slice inputs, ``Vec<f64>`` output, leading NaN for
-   warm-up bars, a ``#[pyfunction]`` decorator, and registration in the
-   module's ``register(m)`` function.
+1. **Core** — implement the algorithm in ``crates/ferro_ta_core/src/<module>.rs``
+   with a unit test. Slice inputs, ``Vec<f64>`` output, leading NaN warmup.
 
-2. **Python** — add a thin wrapper in the matching ``python/ferro_ta/*.py``
-   module using the ``_to_f64`` helper.  Export it in ``__all__``.
+2. **Python wrapper** — thin PyO3 function in ``src/<module>/`` that calls
+   core, plus a ``python/ferro_ta/*.py`` wrapper using ``_to_f64``. Export it
+   in ``__all__``.
 
 3. **Re-export** — add the function to ``python/ferro_ta/__init__.py``'s
    ``__all__`` list and import block.
 
 4. **Type stub** — add a type annotation to ``python/ferro_ta/__init__.pyi``.
 
-5. **Tests** — add at least one test class in ``tests/test_ferro_ta.py``
+5. **Other bindings** — add the WASM export and regenerate Flutter when the
+   indicator is in the shared core set. Refresh
+   ``python3 scripts/build_api_manifest.py``.
+
+6. **Tests** — add at least one test class in ``tests/test_ferro_ta.py``
    covering output length, NaN count, and a known-value check.
 
-6. **README** — add a row to the appropriate accuracy table.
+7. **README** — add a row to the appropriate accuracy table.
+
+Language bindings
+-----------------
+
+Python, Rust, JavaScript (WASM), and Flutter are peer bindings over
+``ferro_ta_core``. New languages may only wrap that crate. See
+:doc:`languages/adding` and
+`CONTRIBUTING.md <https://github.com/pratikbhadane24/ferro-ta/blob/main/CONTRIBUTING.md>`_.
 
 
 Code style

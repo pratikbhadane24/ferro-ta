@@ -2,6 +2,18 @@
 
 **ferro-ta** uses [Semantic Versioning 2.0.0](https://semver.org/).
 
+A release is one version string shared by every published artifact:
+
+| Artifact | Registry |
+|---|---|
+| Python bindings | PyPI `ferro-ta` (and the conda recipe) |
+| Rust core | crates.io `ferro_ta_core` |
+| JavaScript / WASM | npm `ferro-ta-wasm` |
+| Flutter / Dart | pub.dev `ferro_ta` |
+
+See [RELEASE.md](RELEASE.md) for the publish matrix. Breaking changes in any
+first-class binding's public indicator API are **MAJOR**.
+
 ## Version numbers: `MAJOR.MINOR.PATCH`
 
 | Component | Increment when… |

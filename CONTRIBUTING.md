@@ -246,12 +246,37 @@ pytest tests/unit/test_ferro_ta.py -v -k mypattern
 
 ## Adding Other Indicators
 
+Indicator algorithms land in **`crates/ferro_ta_core` first**. Language
+wrappers are marshalling only — see [docs/rust_first.md](docs/rust_first.md)
+and [docs/languages/adding.rst](docs/languages/adding.rst).
+
+1. Implement and unit-test the function in `crates/ferro_ta_core/src/<module>.rs`.
+2. Add a thin PyO3 wrapper in `src/<module>/` that calls core.
+3. Add the Python wrapper in `python/ferro_ta/indicators/<module>.py`.
+4. Expose the same symbol on WASM (`wasm/src/lib.rs`) and regenerate Flutter
+   (`python3 scripts/build_flutter_bridge.py`) when the indicator is in the
+   shared core set.
+5. Refresh `python3 scripts/build_api_manifest.py`.
+
+Category paths (Python + PyO3 wrappers):
+
 - **Overlap Studies** (MAs, bands): `src/overlap/` (e.g. `mod.rs`, `sma.rs`) + `python/ferro_ta/indicators/overlap.py`
 - **Momentum Indicators**: `src/momentum/` + `python/ferro_ta/indicators/momentum.py`
 - **Cycle Indicators**: `src/cycle/` + `python/ferro_ta/indicators/cycle.py`
 - **Volatility / Volume / Statistics**: corresponding `src/*/` directories + `python/ferro_ta/indicators/*.py` files
 
-Each module has a `pub fn register(m: &Bound<'_, PyModule>) -> PyResult<()>` at the bottom — add your `wrap_pyfunction!` call there.
+Each PyO3 module has a `pub fn register(m: &Bound<'_, PyModule>) -> PyResult<()>` at the bottom — add your `wrap_pyfunction!` call there.
+
+## Language bindings
+
+Python, Rust, JavaScript (WASM), and Flutter are peer bindings over
+`ferro_ta_core`. A **new** language may only wrap that crate (FFI,
+wasm-bindgen, UniFFI, flutter_rust_bridge, napi-rs, …). Reimplementing
+indicators in the new language is out of scope.
+
+The full checklist is [docs/languages/adding.rst](docs/languages/adding.rst).
+CI already gates Python, WASM, and Flutter; a new binding needs
+`.github/workflows/ci-<lang>.yml` wired into `CI.yml`.
 
 ---
 

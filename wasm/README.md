@@ -1,6 +1,6 @@
 # ferro-ta WASM
 
-WebAssembly bindings for the [ferro-ta](https://github.com/pratikbhadane24/ferro-ta) technical analysis library. Full feature parity with the Python and Rust core packages.
+JavaScript/WASM bindings for [ferro-ta](https://github.com/pratikbhadane24/ferro-ta), a Rust-core technical analysis library. The package wraps `ferro_ta_core` with wasm-bindgen for Node.js and browsers.
 
 ## Install from npm
 
@@ -116,7 +116,7 @@ wasm-pack test --node
 
 ## Limitations
 
-- Large arrays (> 10M bars) may be slow due to JS-WASM memory copies. For high-throughput use cases prefer the Python (PyO3) binding.
+- Large arrays (> 10M bars) may be slow due to JS-WASM memory copies. For high-throughput batch work, the Rust crate or the Python binding avoid that extra copy.
 - WASM does not support multi-threading natively in browsers (SharedArrayBuffer requires COOP/COEP headers).
 - The npm package ships both Node.js (`require`) and browser/web worker (`import`) builds. Conditional exports in `package.json` select the right one automatically.
 
