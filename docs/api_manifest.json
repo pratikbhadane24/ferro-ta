@@ -4777,7 +4777,7 @@
       ]
     },
     "rust_core": {
-      "public_function_count": 327,
+      "public_function_count": 301,
       "functions": [
         {
           "module": "aggregation",
@@ -4846,11 +4846,6 @@
         },
         {
           "module": "backtest",
-          "function": "close_position",
-          "file": "backtest.rs"
-        },
-        {
-          "module": "backtest",
           "function": "commission_fraction",
           "file": "backtest.rs"
         },
@@ -4906,21 +4901,6 @@
         },
         {
           "module": "backtest",
-          "function": "new",
-          "file": "backtest.rs"
-        },
-        {
-          "module": "backtest",
-          "function": "on_bar",
-          "file": "backtest.rs"
-        },
-        {
-          "module": "backtest",
-          "function": "reset",
-          "file": "backtest.rs"
-        },
-        {
-          "module": "backtest",
           "function": "resolve_commission_model",
           "file": "backtest.rs"
         },
@@ -4937,11 +4917,6 @@
         {
           "module": "backtest",
           "function": "sma_crossover_signals",
-          "file": "backtest.rs"
-        },
-        {
-          "module": "backtest",
-          "function": "summary",
           "file": "backtest.rs"
         },
         {
@@ -5010,61 +4985,6 @@
           "file": "chunked.rs"
         },
         {
-          "module": "commission",
-          "function": "cost_fraction",
-          "file": "commission.rs"
-        },
-        {
-          "module": "commission",
-          "function": "equity_delivery_india",
-          "file": "commission.rs"
-        },
-        {
-          "module": "commission",
-          "function": "equity_intraday_india",
-          "file": "commission.rs"
-        },
-        {
-          "module": "commission",
-          "function": "from_json",
-          "file": "commission.rs"
-        },
-        {
-          "module": "commission",
-          "function": "futures_india",
-          "file": "commission.rs"
-        },
-        {
-          "module": "commission",
-          "function": "options_india",
-          "file": "commission.rs"
-        },
-        {
-          "module": "commission",
-          "function": "proportional",
-          "file": "commission.rs"
-        },
-        {
-          "module": "commission",
-          "function": "short_borrow_cost",
-          "file": "commission.rs"
-        },
-        {
-          "module": "commission",
-          "function": "to_json",
-          "file": "commission.rs"
-        },
-        {
-          "module": "commission",
-          "function": "total_cost",
-          "file": "commission.rs"
-        },
-        {
-          "module": "commission",
-          "function": "zero",
-          "file": "commission.rs"
-        },
-        {
           "module": "crypto",
           "function": "continuous_bar_labels",
           "file": "crypto.rs"
@@ -5078,16 +4998,6 @@
           "module": "crypto",
           "function": "mark_session_boundaries",
           "file": "crypto.rs"
-        },
-        {
-          "module": "currency",
-          "function": "format",
-          "file": "currency.rs"
-        },
-        {
-          "module": "currency",
-          "function": "from_code",
-          "file": "currency.rs"
         },
         {
           "module": "cycle",
@@ -5608,11 +5518,6 @@
           "module": "options.iv",
           "function": "iv_zscore",
           "file": "options/iv.rs"
-        },
-        {
-          "module": "options.mod",
-          "function": "sign",
-          "file": "options/mod.rs"
         },
         {
           "module": "options.normal",
@@ -6343,41 +6248,6 @@
           "module": "statistic",
           "function": "var",
           "file": "statistic.rs"
-        },
-        {
-          "module": "streaming",
-          "function": "fast_period",
-          "file": "streaming.rs"
-        },
-        {
-          "module": "streaming",
-          "function": "new",
-          "file": "streaming.rs"
-        },
-        {
-          "module": "streaming",
-          "function": "period",
-          "file": "streaming.rs"
-        },
-        {
-          "module": "streaming",
-          "function": "reset",
-          "file": "streaming.rs"
-        },
-        {
-          "module": "streaming",
-          "function": "signal_period",
-          "file": "streaming.rs"
-        },
-        {
-          "module": "streaming",
-          "function": "slow_period",
-          "file": "streaming.rs"
-        },
-        {
-          "module": "streaming",
-          "function": "update",
-          "file": "streaming.rs"
         },
         {
           "module": "volatility",
@@ -7376,8 +7246,8 @@
   },
   "coverage": {
     "counts": {
-      "row_count": 345,
-      "core_count": 322,
+      "row_count": 321,
+      "core_count": 298,
       "python_count": 210,
       "wasm_count": 284,
       "flutter_count": 134,
@@ -9053,20 +8923,6 @@
         "flutter_name": "choppiness_index"
       },
       {
-        "key": "closeposition",
-        "name": "close_position",
-        "category": "backtest",
-        "core": true,
-        "python": false,
-        "wasm": false,
-        "flutter": false,
-        "flutter_excluded": false,
-        "python_name": null,
-        "core_name": "close_position",
-        "wasm_name": null,
-        "flutter_name": null
-      },
-      {
         "key": "closetoclosevol",
         "name": "close_to_close_vol",
         "category": "options",
@@ -9291,20 +9147,6 @@
         "flutter_name": null
       },
       {
-        "key": "costfraction",
-        "name": "cost_fraction",
-        "category": "commission",
-        "core": true,
-        "python": false,
-        "wasm": false,
-        "flutter": false,
-        "flutter_excluded": false,
-        "python_name": null,
-        "core_name": "cost_fraction",
-        "wasm_name": null,
-        "flutter_name": null
-      },
-      {
         "key": "curveslope",
         "name": "curve_slope",
         "category": "futures",
@@ -9515,34 +9357,6 @@
         "flutter_name": "ema"
       },
       {
-        "key": "equitydeliveryindia",
-        "name": "equity_delivery_india",
-        "category": "commission",
-        "core": true,
-        "python": false,
-        "wasm": false,
-        "flutter": false,
-        "flutter_excluded": false,
-        "python_name": null,
-        "core_name": "equity_delivery_india",
-        "wasm_name": null,
-        "flutter_name": null
-      },
-      {
-        "key": "equityintradayindia",
-        "name": "equity_intraday_india",
-        "category": "commission",
-        "core": true,
-        "python": false,
-        "wasm": false,
-        "flutter": false,
-        "flutter_excluded": false,
-        "python_name": null,
-        "core_name": "equity_intraday_india",
-        "wasm_name": null,
-        "flutter_name": null
-      },
-      {
         "key": "exp",
         "name": "EXP",
         "category": "math_ops",
@@ -9613,20 +9427,6 @@
         "flutter_name": null
       },
       {
-        "key": "fastperiod",
-        "name": "fast_period",
-        "category": "streaming",
-        "core": true,
-        "python": false,
-        "wasm": false,
-        "flutter": false,
-        "flutter_excluded": false,
-        "python_name": null,
-        "core_name": "fast_period",
-        "wasm_name": null,
-        "flutter_name": null
-      },
-      {
         "key": "featurematrix",
         "name": "feature_matrix",
         "category": "features",
@@ -9655,20 +9455,6 @@
         "flutter_name": null
       },
       {
-        "key": "format",
-        "name": "format",
-        "category": "currency",
-        "core": true,
-        "python": false,
-        "wasm": false,
-        "flutter": false,
-        "flutter_excluded": false,
-        "python_name": null,
-        "core_name": "format",
-        "wasm_name": null,
-        "flutter_name": null
-      },
-      {
         "key": "forwardfillnan",
         "name": "forward_fill_nan",
         "category": "chunked",
@@ -9681,34 +9467,6 @@
         "core_name": "forward_fill_nan",
         "wasm_name": "forward_fill_nan",
         "flutter_name": "forward_fill_nan"
-      },
-      {
-        "key": "fromcode",
-        "name": "from_code",
-        "category": "currency",
-        "core": true,
-        "python": false,
-        "wasm": false,
-        "flutter": false,
-        "flutter_excluded": false,
-        "python_name": null,
-        "core_name": "from_code",
-        "wasm_name": null,
-        "flutter_name": null
-      },
-      {
-        "key": "fromjson",
-        "name": "from_json",
-        "category": "commission",
-        "core": true,
-        "python": false,
-        "wasm": false,
-        "flutter": false,
-        "flutter_excluded": false,
-        "python_name": null,
-        "core_name": "from_json",
-        "wasm_name": null,
-        "flutter_name": null
       },
       {
         "key": "fundingpnl",
@@ -9737,20 +9495,6 @@
         "core_name": null,
         "wasm_name": "futures_basis",
         "flutter_name": "futures_basis"
-      },
-      {
-        "key": "futuresindia",
-        "name": "futures_india",
-        "category": "commission",
-        "core": true,
-        "python": false,
-        "wasm": false,
-        "flutter": false,
-        "flutter_excluded": false,
-        "python_name": null,
-        "core_name": "futures_india",
-        "wasm_name": null,
-        "flutter_name": null
       },
       {
         "key": "garmanklassvol",
@@ -10565,20 +10309,6 @@
         "flutter_name": "natr"
       },
       {
-        "key": "new",
-        "name": "new",
-        "category": "backtest",
-        "core": true,
-        "python": false,
-        "wasm": false,
-        "flutter": false,
-        "flutter_excluded": false,
-        "python_name": null,
-        "core_name": "new",
-        "wasm_name": null,
-        "flutter_name": null
-      },
-      {
         "key": "obv",
         "name": "OBV",
         "category": "volume",
@@ -10604,34 +10334,6 @@
         "python_name": null,
         "core_name": "ohlcv_agg",
         "wasm_name": "ohlcv_agg",
-        "flutter_name": null
-      },
-      {
-        "key": "onbar",
-        "name": "on_bar",
-        "category": "backtest",
-        "core": true,
-        "python": false,
-        "wasm": false,
-        "flutter": false,
-        "flutter_excluded": false,
-        "python_name": null,
-        "core_name": "on_bar",
-        "wasm_name": null,
-        "flutter_name": null
-      },
-      {
-        "key": "optionsindia",
-        "name": "options_india",
-        "category": "commission",
-        "core": true,
-        "python": false,
-        "wasm": false,
-        "flutter": false,
-        "flutter_excluded": false,
-        "python_name": null,
-        "core_name": "options_india",
-        "wasm_name": null,
         "flutter_name": null
       },
       {
@@ -10673,20 +10375,6 @@
         "flutter_excluded": false,
         "python_name": null,
         "core_name": "pdf",
-        "wasm_name": null,
-        "flutter_name": null
-      },
-      {
-        "key": "period",
-        "name": "period",
-        "category": "streaming",
-        "core": true,
-        "python": false,
-        "wasm": false,
-        "flutter": false,
-        "flutter_excluded": false,
-        "python_name": null,
-        "core_name": "period",
         "wasm_name": null,
         "flutter_name": null
       },
@@ -10786,20 +10474,6 @@
         "python_name": null,
         "core_name": "price_upper_bound",
         "wasm_name": "price_upper_bound",
-        "flutter_name": null
-      },
-      {
-        "key": "proportional",
-        "name": "proportional",
-        "category": "commission",
-        "core": true,
-        "python": false,
-        "wasm": false,
-        "flutter": false,
-        "flutter_excluded": false,
-        "python_name": null,
-        "core_name": "proportional",
-        "wasm_name": null,
         "flutter_name": null
       },
       {
@@ -10967,20 +10641,6 @@
         "flutter_excluded": false,
         "python_name": "resample_continuous",
         "core_name": null,
-        "wasm_name": null,
-        "flutter_name": null
-      },
-      {
-        "key": "reset",
-        "name": "reset",
-        "category": "backtest",
-        "core": true,
-        "python": false,
-        "wasm": false,
-        "flutter": false,
-        "flutter_excluded": false,
-        "python_name": null,
-        "core_name": "reset",
         "wasm_name": null,
         "flutter_name": null
       },
@@ -11251,34 +10911,6 @@
         "flutter_name": null
       },
       {
-        "key": "shortborrowcost",
-        "name": "short_borrow_cost",
-        "category": "commission",
-        "core": true,
-        "python": false,
-        "wasm": false,
-        "flutter": false,
-        "flutter_excluded": false,
-        "python_name": null,
-        "core_name": "short_borrow_cost",
-        "wasm_name": null,
-        "flutter_name": null
-      },
-      {
-        "key": "sign",
-        "name": "sign",
-        "category": "options",
-        "core": true,
-        "python": false,
-        "wasm": false,
-        "flutter": false,
-        "flutter_excluded": false,
-        "python_name": null,
-        "core_name": "sign",
-        "wasm_name": null,
-        "flutter_name": null
-      },
-      {
         "key": "signalattribution",
         "name": "signal_attribution",
         "category": "attribution",
@@ -11290,20 +10922,6 @@
         "python_name": null,
         "core_name": "signal_attribution",
         "wasm_name": "signal_attribution",
-        "flutter_name": null
-      },
-      {
-        "key": "signalperiod",
-        "name": "signal_period",
-        "category": "streaming",
-        "core": true,
-        "python": false,
-        "wasm": false,
-        "flutter": false,
-        "flutter_excluded": false,
-        "python_name": null,
-        "core_name": "signal_period",
-        "wasm_name": null,
         "flutter_name": null
       },
       {
@@ -11346,20 +10964,6 @@
         "python_name": "SINH",
         "core_name": "math_sinh",
         "wasm_name": "transform_sinh",
-        "flutter_name": null
-      },
-      {
-        "key": "slowperiod",
-        "name": "slow_period",
-        "category": "streaming",
-        "core": true,
-        "python": false,
-        "wasm": false,
-        "flutter": false,
-        "flutter_excluded": false,
-        "python_name": null,
-        "core_name": "slow_period",
-        "wasm_name": null,
         "flutter_name": null
       },
       {
@@ -11713,20 +11317,6 @@
         "flutter_name": "rolling_sum"
       },
       {
-        "key": "summary",
-        "name": "summary",
-        "category": "backtest",
-        "core": true,
-        "python": false,
-        "wasm": false,
-        "flutter": false,
-        "flutter_excluded": false,
-        "python_name": null,
-        "core_name": "summary",
-        "wasm_name": null,
-        "flutter_name": null
-      },
-      {
         "key": "supertrend",
         "name": "SUPERTREND",
         "category": "extended",
@@ -11853,20 +11443,6 @@
         "flutter_name": null
       },
       {
-        "key": "tojson",
-        "name": "to_json",
-        "category": "commission",
-        "core": true,
-        "python": false,
-        "wasm": false,
-        "flutter": false,
-        "flutter_excluded": false,
-        "python_name": null,
-        "core_name": "to_json",
-        "wasm_name": null,
-        "flutter_name": null
-      },
-      {
         "key": "topnindices",
         "name": "top_n_indices",
         "category": "signals",
@@ -11878,20 +11454,6 @@
         "python_name": null,
         "core_name": "top_n_indices",
         "wasm_name": "top_n_indices",
-        "flutter_name": null
-      },
-      {
-        "key": "totalcost",
-        "name": "total_cost",
-        "category": "commission",
-        "core": true,
-        "python": false,
-        "wasm": false,
-        "flutter": false,
-        "flutter_excluded": false,
-        "python_name": null,
-        "core_name": "total_cost",
-        "wasm_name": null,
         "flutter_name": null
       },
       {
@@ -12005,20 +11567,6 @@
         "core_name": "ultosc",
         "wasm_name": "ultosc",
         "flutter_name": "ultosc"
-      },
-      {
-        "key": "update",
-        "name": "update",
-        "category": "streaming",
-        "core": true,
-        "python": false,
-        "wasm": false,
-        "flutter": false,
-        "flutter_excluded": false,
-        "python_name": null,
-        "core_name": "update",
-        "wasm_name": null,
-        "flutter_name": null
       },
       {
         "key": "validateohlc",
@@ -12187,20 +11735,6 @@
         "core_name": "yang_zhang_vol",
         "wasm_name": "yang_zhang_vol",
         "flutter_name": "yang_zhang_vol"
-      },
-      {
-        "key": "zero",
-        "name": "zero",
-        "category": "commission",
-        "core": true,
-        "python": false,
-        "wasm": false,
-        "flutter": false,
-        "flutter_excluded": false,
-        "python_name": null,
-        "core_name": "zero",
-        "wasm_name": null,
-        "flutter_name": null
       },
       {
         "key": "zscoreseries",

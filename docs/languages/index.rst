@@ -2,7 +2,8 @@ Languages
 =========
 
 ferro-ta is one library: ``ferro_ta_core`` holds every indicator algorithm.
-Python, Rust, JavaScript (WASM), and Flutter are peer bindings over that crate.
+Rust exposes that crate directly; Python, JavaScript (WASM), and Flutter wrap
+it.
 
 .. list-table::
    :header-rows: 1

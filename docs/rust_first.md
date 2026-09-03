@@ -1,8 +1,9 @@
 # Core-First Binding Policy
 
 > **Rule:** All non-trivial computation lives in `ferro_ta_core`. Every
-> language is a thin wrapper (FFI, wasm-bindgen, flutter_rust_bridge, …).
-> Reimplementing indicators in a new language is out of scope.
+> host-language binding is a thin wrapper (FFI, wasm-bindgen,
+> flutter_rust_bridge, …). Reimplementing indicators in a new language is
+> out of scope.
 
 Python is one interface layer — validation, type dispatch, pandas/polars
 wrapping — not *the* interface layer. WASM and Flutter are peer bindings over
@@ -134,9 +135,11 @@ tp = (high + low + close) / 3.0
 ### Rule 4: Streaming classes are Rust types
 
 Streaming (bar-by-bar stateful) classes **must** be implemented in
-`ferro_ta_core` and exposed through each binding. Python uses `#[pyclass]`
-wrappers in `src/streaming/mod.rs`. WASM uses `WasmStreaming*` types. Do not
-re-implement the state machine in the host language.
+`ferro_ta_core`. Bindings that expose streaming wrap those types — they do
+not re-implement the state machine. Python uses `#[pyclass]` wrappers in
+`src/streaming/mod.rs`. WASM uses `WasmStreaming*` types. Flutter does not
+ship streaming classes today; they appear as absent (not `excluded`) on the
+coverage table until a wrapper is added.
 
 Template for a new Python streaming class (after the core type exists):
 ```rust
@@ -152,7 +155,7 @@ impl StreamingMyIndicator {
     pub fn update(&mut self, value: f64) -> f64 { ... }
     pub fn reset(&mut self) { ... }
     #[getter]
-    pub fn period(&self) -> usize { self.period }
+    pub fn period(&self) -> usize { self.inner.period() }
 }
 ```
 

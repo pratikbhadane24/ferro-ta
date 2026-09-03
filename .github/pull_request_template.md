@@ -34,7 +34,7 @@ wrap `ferro_ta_core` — reimplementation is out of scope. See
 - [ ] Binding style documented (direct FFI / WASM interop / generated wrappers)
 - [ ] Repo layout, README, license, and package manifest
 - [ ] API shape documented (names, buffers, NaN warmup, multi-output, errors)
-- [ ] Coverage plan vs `docs/languages/coverage` (`MANUAL_EXCLUDE`-style skips listed)
+- [ ] Coverage plan vs `docs/languages/coverage.rst` (`MANUAL_EXCLUDE`-style skips listed)
 - [ ] Numeric tests: SMA, EMA, RSI, MACD, BBANDS, ATR, one CDL
 - [ ] `ci-<lang>.yml` wired into `CI.yml`; generated wrappers `--check` if applicable
 - [ ] Publish row in `RELEASE.md` + version carrier in `scripts/bump_version.py`

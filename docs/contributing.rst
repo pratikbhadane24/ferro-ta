@@ -75,9 +75,9 @@ Adding a new indicator
 Language bindings
 -----------------
 
-Python, Rust, JavaScript (WASM), and Flutter are peer bindings over
-``ferro_ta_core``. New languages may only wrap that crate. See
-:doc:`languages/adding` and
+Rust exposes ``ferro_ta_core`` directly. Python, JavaScript (WASM), and
+Flutter are peer wrappers over that crate. New languages may only wrap the
+core. See :doc:`languages/adding` and
 `CONTRIBUTING.md <https://github.com/pratikbhadane24/ferro-ta/blob/main/CONTRIBUTING.md>`_.
 
 

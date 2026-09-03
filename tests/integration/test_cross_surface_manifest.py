@@ -16,6 +16,7 @@ from build_api_manifest import (
     build_manifest,
     canonical_key,
     render_coverage_rst,
+    support_matrix_count_snippets,
 )
 
 
@@ -72,3 +73,14 @@ def test_normalized_coverage_includes_shared_indicators() -> None:
     assert "flutter" in manifest["surfaces"]
     assert manifest["surfaces"]["flutter"]["manual_exclude"]
     assert any(row["flutter_excluded"] for row in manifest["coverage"]["rows"])
+
+    names = {row["name"] for row in manifest["coverage"]["rows"]}
+    for method in ("new", "period", "reset", "update"):
+        assert method not in names, f"{method} is an impl method, not a core export"
+    assert canonical_key("StreamingSMA") in {
+        row["key"] for row in manifest["coverage"]["rows"]
+    }
+
+    support_matrix = (ROOT / "docs" / "support_matrix.rst").read_text(encoding="utf-8")
+    for snippet in support_matrix_count_snippets(counts):
+        assert snippet in support_matrix, snippet

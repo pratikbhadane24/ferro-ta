@@ -86,6 +86,8 @@ hand-written bridge wrappers and are listed in ``MANUAL_EXCLUDE``.
      - ``MANUAL_EXCLUDE``
    * - Candlestick ``cdl*`` (``Int32`` series)
      - Not in the current generated module; see :doc:`coverage`
+   * - Streaming classes (``StreamingSMA``, …)
+     - Not generated; absent on :doc:`coverage` (not ``MANUAL_EXCLUDE``)
 
 The checked-in coverage table marks Flutter gaps as ``excluded`` when they
 appear in ``MANUAL_EXCLUDE``. Do not claim parity the table does not show.

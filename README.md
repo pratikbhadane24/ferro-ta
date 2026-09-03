@@ -2,7 +2,7 @@
 
 # ⚡ ferro-ta
 
-### Rust-core technical analysis with first-class language bindings
+## Rust-core technical analysis with first-class language bindings
 
 **ferro-ta is a Rust-core technical analysis library with first-class bindings for Python, Rust, JavaScript (WASM), and Flutter.**
 
@@ -16,7 +16,7 @@
 
 > ferro-ta is a Rust-core technical analysis library with first-class bindings for Python, Rust, JavaScript (WASM), and Flutter.
 
-Every language wraps [`ferro_ta_core`](crates/ferro_ta_core). New languages may only wrap that crate — reimplementing indicators is out of scope. See [Adding a language](docs/languages/adding.rst).
+Python, JavaScript (WASM), and Flutter wrap [`ferro_ta_core`](crates/ferro_ta_core); Rust uses that crate directly. New languages may only wrap the core — reimplementing indicators is out of scope. See [Adding a language](docs/languages/adding.rst).
 
 Python is the most complete *ergonomic* surface (TA-Lib names, pandas/polars, Sphinx autodoc). It is not the only product.
 

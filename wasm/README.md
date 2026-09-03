@@ -116,7 +116,7 @@ wasm-pack test --node
 
 ## Limitations
 
-- Large arrays (> 10M bars) may be slow due to JS-WASM memory copies. For high-throughput batch work, the Rust crate or the Python binding avoid that extra copy.
+- Large arrays (> 10M bars) may be slow due to JS-WASM memory copies. For high-throughput batch work, use the Rust crate or the Python binding to avoid that extra copy.
 - WASM does not support multi-threading natively in browsers (SharedArrayBuffer requires COOP/COEP headers).
 - The npm package ships both Node.js (`require`) and browser/web worker (`import`) builds. Conditional exports in `package.json` select the right one automatically.
 

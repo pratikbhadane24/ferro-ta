@@ -1,7 +1,7 @@
 # Supported Platforms and Packages
 
 ferro-ta publishes first-class packages for Python, Rust, JavaScript (WASM),
-and Flutter. All of them wrap [`ferro_ta_core`](crates/ferro_ta_core).
+and Flutter. `ferro_ta_core` is the Rust core; the other packages wrap it.
 
 ## Published packages
 

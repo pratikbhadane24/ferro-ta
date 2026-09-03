@@ -10,8 +10,8 @@
      - WASM
      - Flutter
      - Flutter excluded
-   * - 345
-     - 322
+   * - 321
+     - 298
      - 210
      - 284
      - 134
@@ -741,12 +741,6 @@
      - yes
      - yes
      - yes
-   * - ``close_position``
-     - backtest
-     - yes
-     - —
-     - —
-     - —
    * - ``close_to_close_vol``
      - options
      - yes
@@ -843,12 +837,6 @@
      - yes
      - yes
      - —
-   * - ``cost_fraction``
-     - commission
-     - yes
-     - —
-     - —
-     - —
    * - ``curve_slope``
      - futures
      - yes
@@ -939,18 +927,6 @@
      - yes
      - yes
      - yes
-   * - ``equity_delivery_india``
-     - commission
-     - yes
-     - —
-     - —
-     - —
-   * - ``equity_intraday_india``
-     - commission
-     - yes
-     - —
-     - —
-     - —
    * - ``EXP``
      - math_ops
      - yes
@@ -981,12 +957,6 @@
      - —
      - —
      - —
-   * - ``fast_period``
-     - streaming
-     - yes
-     - —
-     - —
-     - —
    * - ``feature_matrix``
      - features
      - —
@@ -999,30 +969,12 @@
      - yes
      - yes
      - —
-   * - ``format``
-     - currency
-     - yes
-     - —
-     - —
-     - —
    * - ``forward_fill_nan``
      - chunked
      - yes
      - —
      - yes
      - yes
-   * - ``from_code``
-     - currency
-     - yes
-     - —
-     - —
-     - —
-   * - ``from_json``
-     - commission
-     - yes
-     - —
-     - —
-     - —
    * - ``funding_pnl``
      - crypto
      - yes
@@ -1035,12 +987,6 @@
      - —
      - yes
      - yes
-   * - ``futures_india``
-     - commission
-     - yes
-     - —
-     - —
-     - —
    * - ``garman_klass_vol``
      - options
      - yes
@@ -1389,12 +1335,6 @@
      - yes
      - yes
      - yes
-   * - ``new``
-     - backtest
-     - yes
-     - —
-     - —
-     - —
    * - ``OBV``
      - volume
      - yes
@@ -1407,18 +1347,6 @@
      - —
      - yes
      - excluded
-   * - ``on_bar``
-     - backtest
-     - yes
-     - —
-     - —
-     - —
-   * - ``options_india``
-     - commission
-     - yes
-     - —
-     - —
-     - —
    * - ``parity_gap``
      - futures
      - yes
@@ -1433,12 +1361,6 @@
      - yes
    * - ``pdf``
      - options
-     - yes
-     - —
-     - —
-     - —
-   * - ``period``
-     - streaming
      - yes
      - —
      - —
@@ -1485,12 +1407,6 @@
      - —
      - yes
      - excluded
-   * - ``proportional``
-     - commission
-     - yes
-     - —
-     - —
-     - —
    * - ``put_call_parity_deviation``
      - options
      - yes
@@ -1561,12 +1477,6 @@
      - crypto
      - —
      - yes
-     - —
-     - —
-   * - ``reset``
-     - backtest
-     - yes
-     - —
      - —
      - —
    * - ``resolve_commission_model``
@@ -1683,30 +1593,12 @@
      - yes
      - yes
      - excluded
-   * - ``short_borrow_cost``
-     - commission
-     - yes
-     - —
-     - —
-     - —
-   * - ``sign``
-     - options
-     - yes
-     - —
-     - —
-     - —
    * - ``signal_attribution``
      - attribution
      - yes
      - —
      - yes
      - excluded
-   * - ``signal_period``
-     - streaming
-     - yes
-     - —
-     - —
-     - —
    * - ``SIN``
      - math_ops
      - yes
@@ -1724,12 +1616,6 @@
      - yes
      - yes
      - yes
-     - —
-   * - ``slow_period``
-     - streaming
-     - yes
-     - —
-     - —
      - —
    * - ``SMA``
      - overlap
@@ -1881,12 +1767,6 @@
      - yes
      - yes
      - yes
-   * - ``summary``
-     - backtest
-     - yes
-     - —
-     - —
-     - —
    * - ``SUPERTREND``
      - extended
      - yes
@@ -1941,24 +1821,12 @@
      - yes
      - —
      - —
-   * - ``to_json``
-     - commission
-     - yes
-     - —
-     - —
-     - —
    * - ``top_n_indices``
      - signals
      - yes
      - —
      - yes
      - excluded
-   * - ``total_cost``
-     - commission
-     - yes
-     - —
-     - —
-     - —
    * - ``trade_stats``
      - attribution
      - yes
@@ -2007,12 +1875,6 @@
      - yes
      - yes
      - yes
-   * - ``update``
-     - streaming
-     - yes
-     - —
-     - —
-     - —
    * - ``validate_ohlc``
      - pattern
      - yes
@@ -2085,12 +1947,6 @@
      - —
      - yes
      - yes
-   * - ``zero``
-     - commission
-     - yes
-     - —
-     - —
-     - —
    * - ``zscore_series``
      - portfolio
      - yes

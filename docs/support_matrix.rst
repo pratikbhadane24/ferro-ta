@@ -95,9 +95,10 @@ Module status
 Language bindings
 -----------------
 
-All four bindings are first-class thin wrappers over ``ferro_ta_core``. Counts
-come from the generated :doc:`languages/coverage` table (refresh with
-``python3 scripts/build_api_manifest.py``).
+``ferro_ta_core`` is the Rust core API. Python, JavaScript/WASM, and Flutter
+are first-class wrappers over it. The counts below are a snapshot of the
+generated :doc:`languages/coverage` table and must be refreshed with
+``python3 scripts/build_api_manifest.py``.
 
 .. list-table::
    :header-rows: 1
@@ -112,7 +113,7 @@ come from the generated :doc:`languages/coverage` table (refresh with
      - TA-Lib-style API; abi3 wheels for CPython 3.10+.
    * - Rust
      - crates.io ``ferro_ta_core``
-     - 322 core symbols (functions + streaming types)
+     - 298 core symbols (functions + streaming types)
      - Direct ``&[f64]`` API; docs.rs ``ferro_ta_core``.
    * - WASM / Node
      - npm ``ferro-ta-wasm``

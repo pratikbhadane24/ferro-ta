@@ -12,38 +12,34 @@ Installation
    pip install ferro-ta
 
    # For Pandas support:
-   pip install ferro-ta pandas
+   pip install "ferro-ta[pandas]"
 
    # For benchmarks:
-   pip install ferro-ta pytest-benchmark
+   pip install "ferro-ta[benchmark]"
 
 Basic Usage
 -----------
 
-All functions accept NumPy arrays and return NumPy arrays. SMA, RSI, MACD, and
-BBANDS are the shared examples used on every language page.
+Vectorized indicator functions accept NumPy arrays and return NumPy arrays.
+SMA, RSI, MACD, and BBANDS are the shared examples used on every language page.
 
 .. code-block:: python
 
    import numpy as np
-   from ferro_ta import SMA, EMA, RSI, MACD, BBANDS, ATR
+   from ferro_ta import SMA, RSI, MACD, BBANDS
 
    close = np.linspace(44.0, 48.0, 40)
-   high  = close + 0.5
-   low   = close - 0.5
 
-   sma  = SMA(close, timeperiod=5)
-   ema  = EMA(close, timeperiod=5)
-   rsi  = RSI(close, timeperiod=14)
-   atr  = ATR(high, low, close, timeperiod=5)
-
-   upper, middle, lower = BBANDS(close, timeperiod=5)
+   sma = SMA(close, timeperiod=5)
+   rsi = RSI(close, timeperiod=14)
    macd_line, signal, histogram = MACD(close)
+   upper, middle, lower = BBANDS(close, timeperiod=5)
 
 Pandas Integration
 ------------------
 
-All functions transparently accept ``pandas.Series`` and preserve the index:
+Vectorized indicator functions transparently accept ``pandas.Series`` and
+preserve the index:
 
 .. code-block:: python
 
@@ -59,6 +55,7 @@ All functions transparently accept ``pandas.Series`` and preserve the index:
 Streaming / Live Trading
 ------------------------
 
+Streaming classes take scalar bar fields and return scalars, not arrays.
 Use the :mod:`ferro_ta.streaming` module for bar-by-bar processing:
 
 .. code-block:: python
@@ -97,6 +94,9 @@ Extended Indicators
 
 Derivatives Analytics
 ---------------------
+
+Analytics helpers take scalar arguments and return scalars or small result
+objects, not NumPy arrays.
 
 .. code-block:: python
 

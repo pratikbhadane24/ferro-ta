@@ -263,10 +263,7 @@ def _extract_core_exports(root: Path) -> list[dict[str, str]]:
         rel = rs_file.relative_to(core_src).as_posix()
         module = rel[:-3].replace("/", ".")
         text = rs_file.read_text(encoding="utf-8")
-        names = [
-            match.group(1)
-            for match in re.finditer(r"(?m)^\s*pub\s+fn\s+([A-Za-z0-9_]+)\s*\(", text)
-        ]
+        names = [match.group(1) for match in _TOPLEVEL_PUB_FN_RE.finditer(text)]
         names.extend(_UNARY_TRANSFORM_RE.findall(text))
         for name in names:
             key = (module, name)
@@ -486,6 +483,19 @@ def _coverage_counts(rows: list[dict[str, Any]]) -> dict[str, int]:
     }
 
 
+def support_matrix_count_snippets(counts: dict[str, int]) -> list[str]:
+    """Phrases that docs/support_matrix.rst must keep in sync with coverage.counts."""
+    return [
+        f"{counts['python_count']} names on the coverage spine",
+        f"{counts['core_count']} core symbols",
+        f"{counts['wasm_count']} exports",
+        f"{counts['flutter_count']} generated wrappers",
+        f"{counts['flutter_excluded_count']} ``MANUAL_EXCLUDE``",
+        f"{counts['common_python_wasm_count']} names shared with Python",
+        f"{counts['common_all_four_count']} names are present on all four",
+    ]
+
+
 def _cell(present: bool, excluded: bool = False) -> str:
     if present:
         return "yes"
@@ -615,7 +625,7 @@ def build_manifest(
     }
 
     if include_runtime_metadata:
-        manifest["generated_at_utc"] = _dt.datetime.now(tz=_dt.UTC).isoformat()
+        manifest["generated_at_utc"] = _dt.datetime.now(tz=_dt.timezone.utc).isoformat()
         manifest["git_head"] = _safe_git_head(root)
 
     return manifest

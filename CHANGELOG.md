@@ -14,6 +14,8 @@ and the project uses [Semantic Versioning](https://semver.org/).
 - Pinned the optional `mcp` extra to `>=1.0,<2`. Unpinned `pip install mcp`
   now resolves MCP Python SDK 2.x, which removed `mcp.server.fastmcp` and
   broke the MCP server import on CI.
+- Coverage extraction no longer counts Rust `impl` methods (`new`, `period`,
+  `reset`, `update`, …) as standalone cross-language APIs.
 
 ### Changed
 
