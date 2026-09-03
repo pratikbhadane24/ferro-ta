@@ -48,7 +48,7 @@ jobs:
     name: Build Android + Linux
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           # These workflows never push; don't leave the token in
           # .git/config where later third-party steps could read it.
@@ -88,7 +88,7 @@ jobs:
     name: Build iOS + macOS
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           # These workflows never push; don't leave the token in
           # .git/config where later third-party steps could read it.
@@ -142,7 +142,7 @@ jobs:
     name: Build Windows
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           # These workflows never push; don't leave the token in
           # .git/config where later third-party steps could read it.
@@ -187,7 +187,7 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           # These workflows never push; don't leave the token in
           # .git/config where later third-party steps could read it.
