@@ -13,7 +13,7 @@ Common build and runtime issues and how to fix them.
 5. [tests fail with 'ferro_ta not installed'](#tests-fail-with-ferro_ta-not-installed)
 6. [mypy / pyright type errors after install](#mypy--pyright-type-errors-after-install)
 7. [WASM build fails](#wasm-build-fails)
-8. [GPU / CuPy errors](#gpu--cupy-errors)
+8. [GPU / PyTorch errors](#gpu--pytorch-errors)
 9. [Coverage below threshold](#coverage-below-threshold)
 10. [Common Rust compilation errors](#common-rust-compilation-errors)
 
@@ -49,7 +49,7 @@ Common build and runtime issues and how to fix them.
 ```toml
 # Cargo.toml
 [dependencies]
-pyo3 = { version = "0.22", features = ["extension-module", "abi3-py310"] }
+pyo3 = { version = "0.25", features = ["extension-module", "abi3-py310"] }
 ```
 Run `cargo update -p pyo3` to pull the latest compatible version.
 
@@ -105,9 +105,9 @@ pytest tests/
 
 ## mypy / pyright type errors after install
 
-**Symptom:** mypy or pyright reports errors for optional dependencies (cupy, polars, etc.).
+**Symptom:** mypy or pyright reports errors for optional dependencies (torch, polars, etc.).
 
-**Fix:** ferro-ta ships a `pyrightconfig.json` that sets `reportMissingImports = false` for optional deps.  For mypy, pass `--ignore-missing-imports`:
+**Fix:** ferro-ta configures pyright in `pyproject.toml` (`[tool.pyright]`) with `reportMissingImports = false` for optional deps.  For mypy, pass `--ignore-missing-imports`:
 ```bash
 mypy python/ferro_ta --ignore-missing-imports
 ```
@@ -135,13 +135,13 @@ The CI uses this flag by default.
 
 ---
 
-## GPU / CuPy errors
+## GPU / PyTorch errors
 
-**Symptom:** `ImportError: No module named 'cupy'` or CUDA errors in `ferro_ta.gpu`.
+**Symptom:** `ImportError: No module named 'torch'` or CUDA errors in the GPU helpers (`ferro_ta.tools.gpu`).
 
-**Fix:** The GPU module is **optional**.  Install CuPy matching your CUDA version:
+**Fix:** The GPU module is **optional**.  Install PyTorch:
 ```bash
-pip install cupy-cuda12x   # for CUDA 12.x
+pip install torch          # or: pip install "ferro-ta[gpu]"
 ```
 If no GPU is available, all ferro_ta functions fall back silently to CPU (NumPy) computation.
 

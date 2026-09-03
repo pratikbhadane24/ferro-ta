@@ -24,9 +24,10 @@ fn d1_fn(s: f64, strike: f64, rate: f64, carry: f64, time_to_expiry: f64, volati
 
 /// Find the critical spot price S* for American call early exercise using Newton-Raphson.
 ///
-/// S* satisfies: C(S*) - (S* - K) = (S*/q2) * (1 - e^{-q*T} * N(d1(S*)))
+/// Value matching at S* (Barone-Adesi-Whaley / Haug):
+///   S* - K = C(S*) + (S*/q2) * (1 - e^{-q*T} * N(d1(S*)))
 /// Rearranged as F(S*) = 0:
-/// F(x) = C(x) - (x - K) - (x/q2) * (1 - carry_discount * N(d1(x))) = 0
+///   F(x) = C(x) - (x - K) + (x/q2) * (1 - carry_discount * N(d1(x))) = 0
 fn find_critical_call(
     strike: f64,
     rate: f64,
@@ -61,22 +62,19 @@ fn find_critical_call(
         );
         let d1 = d1_fn(s, strike, rate, carry, time_to_expiry, volatility);
         let nd1 = cdf(d1);
-        let lhs = c - (s - strike);
-        let rhs = (s / q2) * (1.0 - carry_discount * nd1);
-        let f = lhs - rhs;
+        let premium = (s / q2) * (1.0 - carry_discount * nd1);
+        let f = c - (s - strike) + premium;
 
         // Derivative of F with respect to s:
-        // dC/ds = e^{-q*T} * N(d1) (BSM delta for call)
-        // d(s - K)/ds = 1
-        // d(rhs)/ds = (1/q2) * (1 - carry_discount * N(d1))
-        //            + (s/q2) * (-carry_discount * phi(d1) / (s * vol * sqrt(T)))
-        //           = (1/q2) * (1 - carry_discount * N(d1)) - carry_discount * phi(d1) / (q2 * vol * sqrt(T))
+        // dC/ds = e^{-q*T} * N(d1) (BSM delta for call); d(s - K)/ds = 1
+        // d(premium)/ds = (1/q2) * (1 - carry_discount * N(d1))
+        //               - carry_discount * phi(d1) / (q2 * vol * sqrt(T))
         let sigma_sqrt_t = volatility * time_to_expiry.sqrt();
         let phi_d1 = super::normal::pdf(d1);
-        let d_lhs_ds = carry_discount * nd1 - 1.0;
-        let d_rhs_ds = (1.0 / q2) * (1.0 - carry_discount * nd1)
+        let d_intrinsic_ds = carry_discount * nd1 - 1.0;
+        let d_premium_ds = (1.0 / q2) * (1.0 - carry_discount * nd1)
             - carry_discount * phi_d1 / (q2 * sigma_sqrt_t);
-        let df = d_lhs_ds - d_rhs_ds;
+        let df = d_intrinsic_ds + d_premium_ds;
 
         if df.abs() < 1e-14 {
             break;
@@ -96,8 +94,10 @@ fn find_critical_call(
 
 /// Find the critical spot price S** for American put early exercise using Newton-Raphson.
 ///
-/// S** satisfies: P(S**) - (K - S**) = -(S**/q1) * (1 - e^{-q*T} * N(-d1(S**)))
-/// F(x) = P(x) - (K - x) + (x/q1) * (1 - carry_discount * N(-d1(x))) = 0
+/// Value matching at S** (Barone-Adesi-Whaley / Haug):
+///   K - S** = P(S**) - (S**/q1) * (1 - e^{-q*T} * N(-d1(S**)))
+/// Rearranged as F(S**) = 0:
+///   F(x) = P(x) - (K - x) - (x/q1) * (1 - carry_discount * N(-d1(x))) = 0
 fn find_critical_put(
     strike: f64,
     rate: f64,
@@ -131,24 +131,20 @@ fn find_critical_put(
         );
         let d1 = d1_fn(s, strike, rate, carry, time_to_expiry, volatility);
         let n_neg_d1 = cdf(-d1);
-        let lhs = p - (strike - s);
-        // rhs = -(s/q1) * (1 - carry_discount * N(-d1))
-        let rhs = -(s / q1) * (1.0 - carry_discount * n_neg_d1);
-        let f = lhs - rhs;
+        let premium = (s / q1) * (1.0 - carry_discount * n_neg_d1);
+        let f = p - (strike - s) - premium;
 
         // Derivative:
-        // dP/ds = -e^{-q*T} * N(-d1)  (BSM delta for put = e^{-q*T}*(N(d1)-1))
-        // d(K - s)/ds = -1  so  d(lhs)/ds = dP/ds - (-1) = dP/ds + 1
-        // d(rhs)/ds = -(1/q1)*(1 - carry_discount*N(-d1))
-        //           + -(s/q1)*carry_discount*phi(d1)/(s*vol*sqrt(T))   [since d(N(-d1))/ds = -phi(d1)*dd1/ds]
-        //           = -(1/q1)*(1 - carry_discount*N(-d1))
-        //           - carry_discount*phi(d1)/(q1*vol*sqrt(T))
+        // dP/ds = -e^{-q*T} * N(-d1); d(K - s)/ds = -1
+        // d(N(-d1))/ds = -phi(d1)/(s*vol*sqrt(T)), so
+        // d(premium)/ds = (1/q1)*(1 - carry_discount*N(-d1))
+        //               + carry_discount*phi(d1)/(q1*vol*sqrt(T))
         let sigma_sqrt_t = volatility * time_to_expiry.sqrt();
         let phi_d1 = super::normal::pdf(d1);
-        let d_lhs_ds = -carry_discount * n_neg_d1 + 1.0;
-        let d_rhs_ds = -(1.0 / q1) * (1.0 - carry_discount * n_neg_d1)
-            - carry_discount * phi_d1 / (q1 * sigma_sqrt_t);
-        let df = d_lhs_ds - d_rhs_ds;
+        let d_intrinsic_ds = -carry_discount * n_neg_d1 + 1.0;
+        let d_premium_ds = (1.0 / q1) * (1.0 - carry_discount * n_neg_d1)
+            + carry_discount * phi_d1 / (q1 * sigma_sqrt_t);
+        let df = d_intrinsic_ds - d_premium_ds;
 
         if df.abs() < 1e-14 {
             break;
@@ -326,6 +322,122 @@ pub fn early_exercise_premium(
 mod tests {
     use super::*;
     use crate::options::OptionKind;
+
+    /// Independent Cox-Ross-Rubinstein binomial reference for American options.
+    /// Deliberately shares no code with the BAW implementation under test.
+    #[allow(clippy::too_many_arguments)] // mirrors the pricing API it validates
+    fn binomial_american(
+        spot: f64,
+        strike: f64,
+        rate: f64,
+        carry: f64,
+        time_to_expiry: f64,
+        volatility: f64,
+        kind: OptionKind,
+        steps: usize,
+    ) -> f64 {
+        let dt = time_to_expiry / steps as f64;
+        let u = (volatility * dt.sqrt()).exp();
+        let d = 1.0 / u;
+        let disc = (-rate * dt).exp();
+        let p = (((rate - carry) * dt).exp() - d) / (u - d);
+        let intrinsic = |st: f64| match kind {
+            OptionKind::Call => (st - strike).max(0.0),
+            OptionKind::Put => (strike - st).max(0.0),
+        };
+        let mut vals: Vec<f64> = (0..=steps)
+            .map(|i| intrinsic(spot * u.powi(i as i32) * d.powi((steps - i) as i32)))
+            .collect();
+        for step in (0..steps).rev() {
+            for i in 0..=step {
+                let st = spot * u.powi(i as i32) * d.powi((step - i) as i32);
+                let cont = disc * (p * vals[i + 1] + (1.0 - p) * vals[i]);
+                vals[i] = cont.max(intrinsic(st));
+            }
+        }
+        vals[0]
+    }
+
+    /// BAW must track a binomial reference. This pins the value-matching
+    /// equation's sign: flipping the early-exercise premium term roughly
+    /// doubles the ATM put and pushes calls below their European bound,
+    /// which the `>= european` assertions below cannot detect.
+    #[test]
+    fn baw_matches_binomial_reference() {
+        // (spot, strike, rate, carry, T, vol, kind, label)
+        let cases = [
+            (
+                100.0,
+                100.0,
+                0.08,
+                0.0,
+                0.25,
+                0.2,
+                OptionKind::Put,
+                "put ATM",
+            ),
+            (90.0, 100.0, 0.10, 0.0, 1.0, 0.2, OptionKind::Put, "put ITM"),
+            (
+                105.0,
+                100.0,
+                0.03,
+                0.0,
+                2.0,
+                0.4,
+                OptionKind::Put,
+                "put OTM long T",
+            ),
+            (
+                110.0,
+                100.0,
+                0.05,
+                0.07,
+                0.5,
+                0.25,
+                OptionKind::Call,
+                "call q>r",
+            ),
+            (
+                100.0,
+                100.0,
+                0.05,
+                0.05,
+                1.0,
+                0.3,
+                OptionKind::Call,
+                "call q=r",
+            ),
+            (
+                95.0,
+                100.0,
+                0.06,
+                0.04,
+                0.5,
+                0.2,
+                OptionKind::Call,
+                "call OTM",
+            ),
+        ];
+        for (spot, strike, rate, carry, t, vol, kind, label) in cases {
+            let baw = american_price_baw(spot, strike, rate, carry, t, vol, kind);
+            let reference = binomial_american(spot, strike, rate, carry, t, vol, kind, 500);
+            let european = crate::options::pricing::black_scholes_price(
+                spot, strike, rate, carry, t, vol, kind,
+            );
+            // BAW is an approximation; 1.5% of the reference is well inside its
+            // documented accuracy but far tighter than the ~87% error a sign
+            // flip produces.
+            let tol = (reference * 0.015).max(0.02);
+            assert!(
+                (baw - reference).abs() < tol,
+                "{label}: baw={baw:.4} binomial={reference:.4} tol={tol:.4}"
+            );
+            assert!(
+                baw >= european - 1e-9,
+                "{label}: american {baw:.4} below european {european:.4}"
+            );
+        }
+    }
 
     #[test]
     fn american_call_gte_european_call() {

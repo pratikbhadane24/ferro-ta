@@ -8,20 +8,37 @@
 
 use std::collections::VecDeque;
 
-/// Rolling sum over `timeperiod` bars using a prefix-sum array.
+/// Rolling sum over `timeperiod` bars using an O(n) sliding window.
 /// Leading `timeperiod - 1` values are NaN.
+///
+/// A NaN input only invalidates the windows that actually contain it; once it
+/// slides out, sums resume (matching `rolling_max` / `rolling_min`). A
+/// prefix-sum formulation would instead poison every later window.
 pub fn rolling_sum(real: &[f64], timeperiod: usize) -> Vec<f64> {
     let n = real.len();
     let mut result = vec![f64::NAN; n];
     if timeperiod == 0 || n < timeperiod {
         return result;
     }
-    let mut cs = vec![0.0f64; n + 1];
+    let mut sum = 0.0_f64;
+    let mut nan_count: usize = 0;
     for i in 0..n {
-        cs[i + 1] = cs[i] + real[i];
-    }
-    for i in (timeperiod - 1)..n {
-        result[i] = cs[i + 1] - cs[i + 1 - timeperiod];
+        if real[i].is_nan() {
+            nan_count += 1;
+        } else {
+            sum += real[i];
+        }
+        if i >= timeperiod {
+            let old = real[i - timeperiod];
+            if old.is_nan() {
+                nan_count -= 1;
+            } else {
+                sum -= old;
+            }
+        }
+        if i + 1 >= timeperiod {
+            result[i] = if nan_count > 0 { f64::NAN } else { sum };
+        }
     }
     result
 }
@@ -99,6 +116,18 @@ mod tests {
         assert!((result[2] - 6.0).abs() < 1e-10); // 1+2+3
         assert!((result[3] - 9.0).abs() < 1e-10); // 2+3+4
         assert!((result[4] - 12.0).abs() < 1e-10); // 3+4+5
+    }
+
+    #[test]
+    fn test_rolling_sum_recovers_after_nan_leaves_window() {
+        let data = vec![1.0, f64::NAN, 2.0, 3.0, 4.0];
+        let result = rolling_sum(&data, 2);
+        assert!(result[0].is_nan()); // warmup
+        assert!(result[1].is_nan()); // window [1, NaN]
+        assert!(result[2].is_nan()); // window [NaN, 2]
+                                     // NaN has slid out — these windows are clean.
+        assert!((result[3] - 5.0).abs() < 1e-10); // 2+3
+        assert!((result[4] - 7.0).abs() < 1e-10); // 3+4
     }
 
     #[test]

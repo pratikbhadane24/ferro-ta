@@ -46,13 +46,7 @@ pub fn mavp<'py>(
     validation::validate_equal_length(&[(n, "close"), (per.len(), "periods")])?;
     validation::validate_timeperiod(minperiod, "minperiod", 1)?;
     validation::validate_timeperiod(maxperiod, "maxperiod", minperiod)?;
-    let mut result = vec![f64::NAN; n];
-    for i in 0..n {
-        let p = (per[i].round() as usize).clamp(minperiod, maxperiod);
-        if i + 1 >= p {
-            let sum: f64 = prices[(i + 1 - p)..=i].iter().sum();
-            result[i] = sum / p as f64;
-        }
-    }
+    let result =
+        py.allow_threads(|| ferro_ta_core::overlap::mavp(prices, per, minperiod, maxperiod));
     Ok(result.into_pyarray(py))
 }

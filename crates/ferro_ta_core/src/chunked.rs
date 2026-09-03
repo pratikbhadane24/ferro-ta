@@ -33,7 +33,12 @@ pub fn make_chunk_ranges(n: usize, chunk_size: usize, overlap: usize) -> Vec<i64
     let mut ranges: Vec<i64> = Vec::new();
     let mut start: usize = 0;
     loop {
-        let end = (start + chunk_size + overlap).min(n);
+        // saturating_add: a huge `overlap` would otherwise wrap in release
+        // builds, yielding end < n and a `start` that never advances.
+        let end = start
+            .saturating_add(chunk_size)
+            .saturating_add(overlap)
+            .min(n);
         ranges.push(start as i64);
         ranges.push(end as i64);
         if end >= n {

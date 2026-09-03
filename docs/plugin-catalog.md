@@ -40,7 +40,7 @@ for the full guide.
 
 ```python
 # Minimal plugin example
-from ferro_ta.registry import register
+from ferro_ta.core.registry import register
 from ferro_ta import RSI, SMA
 
 def SMOOTH_RSI(close, timeperiod=14, smooth=3):
