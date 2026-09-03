@@ -452,6 +452,7 @@ def STOCHF(
     close: ArrayLike,
     fastk_period: int = 5,
     fastd_period: int = 3,
+    fastd_matype: int = 0,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Stochastic Fast.
 
@@ -467,6 +468,22 @@ def STOCHF(
         %K period (default 5).
     fastd_period : int, optional
         %D smoothing period (default 3).
+    fastd_matype : int, optional
+        Moving average type applied to the %D leg (default 0):
+
+        * 0 = SMA (Simple)
+        * 1 = EMA (Exponential)
+        * 2 = WMA (Weighted)
+        * 3 = DEMA (Double EMA)
+        * 4 = TEMA (Triple EMA)
+        * 5 = TRIMA (Triangular)
+        * 6 = KAMA (Kaufman Adaptive)
+        * 7 = T3 (Tillson)
+        * 8 = T3 (Tillson; exact alias of 7)
+
+        Values ``0``-``6`` and ``8`` match TA-Lib's numbering, but ``7`` is T3
+        here where TA-Lib's ``7`` is MAMA.  MAMA is not reachable through any
+        ``matype`` value -- call :func:`ferro_ta.MAMA` directly.
 
     Returns
     -------
@@ -475,7 +492,12 @@ def STOCHF(
     """
     try:
         return _stochf(
-            _to_f64(high), _to_f64(low), _to_f64(close), fastk_period, fastd_period
+            _to_f64(high),
+            _to_f64(low),
+            _to_f64(close),
+            fastk_period,
+            fastd_period,
+            fastd_matype,
         )
     except ValueError as e:
         _normalize_rust_error(e)
@@ -487,9 +509,15 @@ def STOCH(
     close: ArrayLike,
     fastk_period: int = 5,
     slowk_period: int = 3,
+    slowk_matype: int = 0,
     slowd_period: int = 3,
+    slowd_matype: int = 0,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Stochastic.
+
+    Parameters follow TA-Lib's *interleaved* order: each ``*_matype`` comes
+    immediately after the period it types, so a mis-ordered positional call
+    fails the type checker instead of returning a wrong answer.
 
     Parameters
     ----------
@@ -503,8 +531,40 @@ def STOCH(
         Fast %K period (default 5).
     slowk_period : int, optional
         Slow %K smoothing period (default 3).
+    slowk_matype : int, optional
+        Moving average type applied to the slow %K leg (default 0):
+
+        * 0 = SMA (Simple)
+        * 1 = EMA (Exponential)
+        * 2 = WMA (Weighted)
+        * 3 = DEMA (Double EMA)
+        * 4 = TEMA (Triple EMA)
+        * 5 = TRIMA (Triangular)
+        * 6 = KAMA (Kaufman Adaptive)
+        * 7 = T3 (Tillson)
+        * 8 = T3 (Tillson; exact alias of 7)
+
+        Values ``0``-``6`` and ``8`` match TA-Lib's numbering, but ``7`` is T3
+        here where TA-Lib's ``7`` is MAMA.  MAMA is not reachable through any
+        ``matype`` value -- call :func:`ferro_ta.MAMA` directly.
     slowd_period : int, optional
         Slow %D smoothing period (default 3).
+    slowd_matype : int, optional
+        Moving average type applied to the slow %D leg (default 0):
+
+        * 0 = SMA (Simple)
+        * 1 = EMA (Exponential)
+        * 2 = WMA (Weighted)
+        * 3 = DEMA (Double EMA)
+        * 4 = TEMA (Triple EMA)
+        * 5 = TRIMA (Triangular)
+        * 6 = KAMA (Kaufman Adaptive)
+        * 7 = T3 (Tillson)
+        * 8 = T3 (Tillson; exact alias of 7)
+
+        Values ``0``-``6`` and ``8`` match TA-Lib's numbering, but ``7`` is T3
+        here where TA-Lib's ``7`` is MAMA.  MAMA is not reachable through any
+        ``matype`` value -- call :func:`ferro_ta.MAMA` directly.
 
     Returns
     -------
@@ -518,7 +578,9 @@ def STOCH(
             _to_f64(close),
             fastk_period,
             slowk_period,
+            slowk_matype,
             slowd_period,
+            slowd_matype,
         )
     except ValueError as e:
         _normalize_rust_error(e)
@@ -529,6 +591,7 @@ def STOCHRSI(
     timeperiod: int = 14,
     fastk_period: int = 5,
     fastd_period: int = 3,
+    fastd_matype: int = 0,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Stochastic Relative Strength Index.
 
@@ -542,6 +605,22 @@ def STOCHRSI(
         Stochastic %K period (default 5).
     fastd_period : int, optional
         Stochastic %D smoothing period (default 3).
+    fastd_matype : int, optional
+        Moving average type applied to the %D leg (default 0):
+
+        * 0 = SMA (Simple)
+        * 1 = EMA (Exponential)
+        * 2 = WMA (Weighted)
+        * 3 = DEMA (Double EMA)
+        * 4 = TEMA (Triple EMA)
+        * 5 = TRIMA (Triangular)
+        * 6 = KAMA (Kaufman Adaptive)
+        * 7 = T3 (Tillson)
+        * 8 = T3 (Tillson; exact alias of 7)
+
+        Values ``0``-``6`` and ``8`` match TA-Lib's numbering, but ``7`` is T3
+        here where TA-Lib's ``7`` is MAMA.  MAMA is not reachable through any
+        ``matype`` value -- call :func:`ferro_ta.MAMA` directly.
 
     Returns
     -------
@@ -549,7 +628,9 @@ def STOCHRSI(
         ``(fastk, fastd)`` — two arrays of equal length.
     """
     try:
-        return _stochrsi(_to_f64(close), timeperiod, fastk_period, fastd_period)
+        return _stochrsi(
+            _to_f64(close), timeperiod, fastk_period, fastd_period, fastd_matype
+        )
     except ValueError as e:
         _normalize_rust_error(e)
 
@@ -558,6 +639,7 @@ def APO(
     close: ArrayLike,
     fastperiod: int = 12,
     slowperiod: int = 26,
+    matype: int = 1,
 ) -> np.ndarray:
     """Absolute Price Oscillator.
 
@@ -566,17 +648,36 @@ def APO(
     close : array-like
         Sequence of closing prices.
     fastperiod : int, optional
-        Fast EMA period (default 12).
+        Fast MA period (default 12).
     slowperiod : int, optional
-        Slow EMA period (default 26).
+        Slow MA period (default 26).
+    matype : int, optional
+        Moving average type for both legs.  Defaults to ``1`` (EMA) rather
+        than TA-Lib's ``0`` (SMA), because this function has always computed
+        the EMA form; pass ``0`` for TA-Lib's SMA form (default 1):
+
+        * 0 = SMA (Simple)
+        * 1 = EMA (Exponential)
+        * 2 = WMA (Weighted)
+        * 3 = DEMA (Double EMA)
+        * 4 = TEMA (Triple EMA)
+        * 5 = TRIMA (Triangular)
+        * 6 = KAMA (Kaufman Adaptive)
+        * 7 = T3 (Tillson)
+        * 8 = T3 (Tillson; exact alias of 7)
+
+        Values ``0``-``6`` and ``8`` match TA-Lib's numbering, but ``7`` is T3
+        here where TA-Lib's ``7`` is MAMA.  MAMA is not reachable through any
+        ``matype`` value -- call :func:`ferro_ta.MAMA` directly.
 
     Returns
     -------
     numpy.ndarray
-        Array of APO values; leading ``slowperiod - 1`` entries are ``NaN``.
+        Array of APO values; leading entries are ``NaN`` for the slow leg's
+        lookback (which depends on *matype*).
     """
     try:
-        return _apo(_to_f64(close), fastperiod, slowperiod)
+        return _apo(_to_f64(close), fastperiod, slowperiod, matype)
     except ValueError as e:
         _normalize_rust_error(e)
 
@@ -586,6 +687,7 @@ def PPO(
     fastperiod: int = 12,
     slowperiod: int = 26,
     signalperiod: int = 9,
+    matype: int = 1,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Percentage Price Oscillator.
 
@@ -594,11 +696,29 @@ def PPO(
     close : array-like
         Sequence of closing prices.
     fastperiod : int, optional
-        Fast EMA period (default 12).
+        Fast MA period (default 12).
     slowperiod : int, optional
-        Slow EMA period (default 26).
+        Slow MA period (default 26).
     signalperiod : int, optional
         Signal EMA period (default 9).
+    matype : int, optional
+        Moving average type for the fast and slow legs.  Defaults to ``1``
+        (EMA) rather than TA-Lib's ``0`` (SMA), because this function has
+        always computed the EMA form; pass ``0`` for TA-Lib's SMA form (default 1):
+
+        * 0 = SMA (Simple)
+        * 1 = EMA (Exponential)
+        * 2 = WMA (Weighted)
+        * 3 = DEMA (Double EMA)
+        * 4 = TEMA (Triple EMA)
+        * 5 = TRIMA (Triangular)
+        * 6 = KAMA (Kaufman Adaptive)
+        * 7 = T3 (Tillson)
+        * 8 = T3 (Tillson; exact alias of 7)
+
+        Values ``0``-``6`` and ``8`` match TA-Lib's numbering, but ``7`` is T3
+        here where TA-Lib's ``7`` is MAMA.  MAMA is not reachable through any
+        ``matype`` value -- call :func:`ferro_ta.MAMA` directly.
 
     Returns
     -------
@@ -606,7 +726,7 @@ def PPO(
         ``(ppo, signal, histogram)`` — three arrays of equal length.
     """
     try:
-        return _ppo(_to_f64(close), fastperiod, slowperiod, signalperiod)
+        return _ppo(_to_f64(close), fastperiod, slowperiod, signalperiod, matype)
     except ValueError as e:
         _normalize_rust_error(e)
 

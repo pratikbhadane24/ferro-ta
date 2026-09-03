@@ -275,7 +275,13 @@ pub fn batch_stoch<'py>(
                 &c_cols[i],
                 fastk_period,
                 slowk_period,
+                // `batch_stoch` mirrors `ferro_ta_core::batch::batch_stoch`,
+                // which kept its pre-matype signature: SMA/SMA (matype 0), the
+                // pre-matype behaviour. Exposing the two matypes here would
+                // drift the Python batch surface from the core's.
+                0,
                 slowd_period,
+                0,
             )
         };
         if parallel {

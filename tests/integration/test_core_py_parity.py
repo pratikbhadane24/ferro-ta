@@ -277,8 +277,16 @@ class TestMomentumVolGoldens:
             streakperiod=2,
             rankperiod=2,
         )
-        _assert_nan_prefix(result, 2)
-        _assert_close(result[2:], np.array([200.0 / 3.0, 25.0, 587.5 / 9.0]))
+        # Canonical percent rank: previous `rankperiod` values, exclusive of the
+        # current bar, counted with `<=`. ROC(close, 1)[0] is NaN, so every rank
+        # window touching index 0 is NaN and the first finite bar is index 3.
+        #   RSI(close, 2)   = [.., .., 100, 50, 250/3]
+        #   RSI(streak, 2)  = [.., .., 100, 25, 62.5]
+        #   PctRank(ROC, 2) = [.., .., NaN, 0, 100]
+        #   CRSI[3] = (50 + 25 + 0) / 3          = 25
+        #   CRSI[4] = (250/3 + 62.5 + 100) / 3   = 1475/18
+        _assert_nan_prefix(result, 3)
+        _assert_close(result[3:], np.array([25.0, 1475.0 / 18.0]))
 
     def test_bbpercent_bbwidth_from_bbands(self):
         # cargo: bbpercent_bbwidth_from_bbands

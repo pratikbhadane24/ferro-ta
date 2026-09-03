@@ -287,8 +287,12 @@ fn shift_forward(src: &[f64], shift: usize) -> Vec<f64> {
 
 /// Moving-average envelopes: `MA * (1 ± percent / 100)`.
 ///
-/// `matype` matches [`overlap::ma`] (0=SMA … 7=T3). Returns
+/// `matype` matches [`overlap::ma`] (`0`=SMA … `7`|`8`=T3). Returns
 /// `(upper, middle, lower)`.
+///
+/// `0`-`6` and `8` match TA-Lib's `TA_MAType`; `7` is T3 here where
+/// TA-Lib's `7` is MAMA, and MAMA is not reachable through any `matype`
+/// (call [`overlap::mama`] directly). Values above `8` yield all-`NaN`.
 pub fn ma_envelopes(
     close: &[f64],
     timeperiod: usize,

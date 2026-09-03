@@ -134,6 +134,11 @@ pub fn alligator<'py>(
     ))
 }
 
+/// Moving Average Envelopes: an MA of type `matype` with bands at
+/// ±`percent`%. Returns (upper, middle, lower).
+///
+/// `0`–`6` and `8` match TA-Lib's numbering; `7` is T3 here where TA-Lib's `7`
+/// is MAMA, and MAMA is not reachable through any `matype` (use `ferro_ta.MAMA`).
 #[pyfunction]
 #[pyo3(signature = (close, timeperiod = 20, percent = 2.5, matype = 0))]
 pub fn ma_envelopes<'py>(
@@ -148,9 +153,9 @@ pub fn ma_envelopes<'py>(
     Bound<'py, PyArray1<f64>>,
 )> {
     validation::validate_timeperiod(timeperiod, "timeperiod", 1)?;
-    if matype > 7 {
+    if matype > 8 {
         return Err(PyValueError::new_err(
-            "matype must be 0–7 (SMA/EMA/WMA/DEMA/TEMA/TRIMA/KAMA/T3)",
+            "matype must be 0–8 (SMA/EMA/WMA/DEMA/TEMA/TRIMA/KAMA/T3; 8 aliases T3)",
         ));
     }
     let prices = close.as_slice()?;

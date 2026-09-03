@@ -678,7 +678,10 @@ class TestCRSI:
     def test_small_period_golden(self):
         close = np.array([10.0, 11.0, 12.0, 11.0, 13.0])
         result = CRSI(close, timeperiod=2, streakperiod=2, rankperiod=2)
-        assert np.all(np.isnan(result[:2]))
-        np.testing.assert_allclose(result[2], 200.0 / 3.0, atol=1e-10)
+        # ROC(close, 1) = [nan, 10, 100/11, -25/3, 200/11]. PercentRank uses
+        # the two *previous* ROC values with a `<=` comparison, so index 2 is
+        # nan (its window holds ROC[0] = nan), index 3 is 0 and index 4 is 100.
+        # CRSI propagates nan, so the warmup runs through index 2.
+        assert np.all(np.isnan(result[:3]))
         np.testing.assert_allclose(result[3], 25.0, atol=1e-10)
-        np.testing.assert_allclose(result[4], 587.5 / 9.0, atol=1e-10)
+        np.testing.assert_allclose(result[4], 1475.0 / 18.0, atol=1e-10)

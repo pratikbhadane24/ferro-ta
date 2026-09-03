@@ -77,5 +77,33 @@ test = false
 doc = false
 bench = false
 
+[[bin]]
+name = "fuzz_stddev"
+path = "fuzz_targets/fuzz_stddev.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_cci"
+path = "fuzz_targets/fuzz_cci.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_obv"
+path = "fuzz_targets/fuzz_obv.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_donchian"
+path = "fuzz_targets/fuzz_donchian.rs"
+test = false
+doc = false
+bench = false
+
 [profile.release]
 debug = 1

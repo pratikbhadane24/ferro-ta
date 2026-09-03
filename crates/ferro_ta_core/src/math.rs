@@ -1,7 +1,5 @@
 //! Math utilities.
 
-use std::collections::VecDeque;
-
 /// Compute the rolling sum over `timeperiod` bars.
 ///
 /// Returns a `Vec<f64>` of length `n`. The first `timeperiod - 1` values
@@ -51,65 +49,32 @@ pub fn min(real: &[f64], timeperiod: usize) -> Vec<f64> {
 
 /// Compute the sliding maximum over `timeperiod` bars in O(n) time.
 ///
-/// Uses a monotonic decreasing deque so each element is pushed/popped at
-/// most once. The first `timeperiod - 1` values are `NaN`.
+/// Thin wrapper over [`crate::rolling::sliding_max_into`], which owns the
+/// monotonic-deque implementation shared with `math_ops` and the extended
+/// indicators. Output is bit-identical to the previous inline `VecDeque`
+/// version: the first `timeperiod - 1` values are `NaN`, and all values are
+/// `NaN` when `timeperiod < 1` or `real.len() < timeperiod`.
 ///
 /// # Arguments
 /// * `real` - Input series.
 /// * `timeperiod` - Rolling window size (must be >= 1).
 pub fn sliding_max(real: &[f64], timeperiod: usize) -> Vec<f64> {
-    let n = real.len();
-    let mut result = vec![f64::NAN; n];
-    if timeperiod < 1 || n < timeperiod {
-        return result;
-    }
-    let mut dq: VecDeque<usize> = VecDeque::new();
-    for i in 0..n {
-        // Remove indices outside the window
-        while dq.front().map(|&j| j + timeperiod <= i).unwrap_or(false) {
-            dq.pop_front();
-        }
-        // Maintain decreasing deque
-        while dq.back().map(|&j| real[j] <= real[i]).unwrap_or(false) {
-            dq.pop_back();
-        }
-        dq.push_back(i);
-        if i + 1 >= timeperiod {
-            result[i] = real[*dq.front().unwrap()];
-        }
-    }
+    let mut result = vec![f64::NAN; real.len()];
+    crate::rolling::sliding_max_into(real, timeperiod, &mut result);
     result
 }
 
 /// Compute the sliding minimum over `timeperiod` bars in O(n) time.
 ///
-/// Uses a monotonic increasing deque so each element is pushed/popped at
-/// most once. The first `timeperiod - 1` values are `NaN`.
+/// Thin wrapper over [`crate::rolling::sliding_min_into`]. See
+/// [`sliding_max`] for the warmup and degenerate-input contract.
 ///
 /// # Arguments
 /// * `real` - Input series.
 /// * `timeperiod` - Rolling window size (must be >= 1).
 pub fn sliding_min(real: &[f64], timeperiod: usize) -> Vec<f64> {
-    let n = real.len();
-    let mut result = vec![f64::NAN; n];
-    if timeperiod < 1 || n < timeperiod {
-        return result;
-    }
-    let mut dq: VecDeque<usize> = VecDeque::new();
-    for i in 0..n {
-        // Remove indices outside the window
-        while dq.front().map(|&j| j + timeperiod <= i).unwrap_or(false) {
-            dq.pop_front();
-        }
-        // Maintain increasing deque
-        while dq.back().map(|&j| real[j] >= real[i]).unwrap_or(false) {
-            dq.pop_back();
-        }
-        dq.push_back(i);
-        if i + 1 >= timeperiod {
-            result[i] = real[*dq.front().unwrap()];
-        }
-    }
+    let mut result = vec![f64::NAN; real.len()];
+    crate::rolling::sliding_min_into(real, timeperiod, &mut result);
     result
 }
 

@@ -4,6 +4,7 @@ use crate::math;
 use crate::momentum;
 use crate::overlap;
 use crate::price_transform;
+use crate::simd;
 
 /// Elder Ray Index: bull power and bear power versus an EMA of close.
 ///
@@ -20,13 +21,15 @@ pub fn elder_ray(
     timeperiod: usize,
 ) -> (Vec<f64>, Vec<f64>) {
     let n = close.len();
-    let mut bull = vec![f64::NAN; n];
-    let mut bear = vec![f64::NAN; n];
     if timeperiod < 1 || n == 0 {
-        return (bull, bear);
+        return (vec![f64::NAN; n], vec![f64::NAN; n]);
     }
 
     let ema = overlap::ema(close, timeperiod);
+    // Warmup bars where the EMA is not finite keep the initialized `NaN` in
+    // *both* outputs, exactly as the two `push(f64::NAN)` calls did.
+    let mut bull = vec![f64::NAN; n];
+    let mut bear = vec![f64::NAN; n];
     for i in 0..n {
         if ema[i].is_finite() {
             bull[i] = high[i] - ema[i];
@@ -50,16 +53,16 @@ pub fn elder_ray(
 /// * `timeperiod` — highest/lowest lookback (classic default 9).
 pub fn fisher(high: &[f64], low: &[f64], timeperiod: usize) -> (Vec<f64>, Vec<f64>) {
     let n = high.len();
-    let mut fish = vec![f64::NAN; n];
-    let mut signal = vec![f64::NAN; n];
     if timeperiod < 1 || n < timeperiod {
-        return (fish, signal);
+        return (vec![f64::NAN; n], vec![f64::NAN; n]);
     }
 
     let hl2 = price_transform::medprice(high, low);
     let max_h = math::max(&hl2, timeperiod);
     let min_l = math::min(&hl2, timeperiod);
 
+    let mut fish = vec![f64::NAN; n];
+    let mut signal = vec![f64::NAN; n];
     let mut value = 0.0_f64;
     let mut prev_fish = 0.0_f64;
     let mut have_fish = false;
@@ -92,8 +95,12 @@ pub fn fisher(high: &[f64], low: &[f64], timeperiod: usize) -> (Vec<f64>, Vec<f6
 ///
 /// Streak is the run length of consecutive up (+) or down (−) closes
 /// (0 on an unchanged bar). Percent rank is
-/// `100 * count(window < current) / rankperiod` over the last `rankperiod`
-/// one-bar ROC values.
+/// `100 * count(previous <= current) / rankperiod` over the `rankperiod`
+/// one-bar ROC values *preceding* the current bar, matching Connors'
+/// definition and TradingView's `ta.percentrank`.
+///
+/// A bar is `NaN` unless all three components are finite, so the output
+/// warms up with the slowest of the three.
 ///
 /// # Arguments
 /// * `close` — price series.
@@ -102,9 +109,8 @@ pub fn fisher(high: &[f64], low: &[f64], timeperiod: usize) -> (Vec<f64>, Vec<f6
 /// * `rankperiod` — percent-rank lookback (classic default 100).
 pub fn crsi(close: &[f64], timeperiod: usize, streakperiod: usize, rankperiod: usize) -> Vec<f64> {
     let n = close.len();
-    let mut result = vec![f64::NAN; n];
     if timeperiod < 1 || streakperiod < 1 || rankperiod < 1 || n == 0 {
-        return result;
+        return vec![f64::NAN; n];
     }
 
     let rsi_price = momentum::rsi(close, timeperiod);
@@ -113,6 +119,7 @@ pub fn crsi(close: &[f64], timeperiod: usize, streakperiod: usize, rankperiod: u
     let roc1 = momentum::roc(close, 1);
     let pct_rank = percent_rank(&roc1, rankperiod);
 
+    let mut result = vec![f64::NAN; n];
     for i in 0..n {
         let a = rsi_price[i];
         let b = rsi_streak[i];
@@ -151,36 +158,40 @@ fn up_down_streak(close: &[f64]) -> Vec<f64> {
     streak
 }
 
-/// Rolling percent rank: `100 * count(window < current) / timeperiod`.
+/// Rolling percent rank: `100 * count(previous <= current) / timeperiod`.
+///
+/// The window is the `timeperiod` values *preceding* index `i`
+/// (`src[i - timeperiod .. i]`), exclusive of the current bar, so the first
+/// output lands at index `timeperiod` and the result can reach a full 100.
+/// This matches TradingView's `ta.percentrank(source, length)`.
 ///
 /// Windows that contain a non-finite value stay `NaN`.
+///
+/// The `<=` tally is the hot loop (CRSI's default `rankperiod` is 100, so it
+/// dominates the whole kernel), so it is delegated to the vectorized
+/// [`simd::count_le`]. The "does this window hold a non-finite value?" guard
+/// that used to short-circuit that same scan is instead maintained
+/// incrementally as a sliding count, keeping it O(1) per bar and leaving the
+/// inner loop a pure branchless compare-and-accumulate.
 fn percent_rank(src: &[f64], timeperiod: usize) -> Vec<f64> {
     let n = src.len();
-    let mut result = vec![f64::NAN; n];
-    if timeperiod < 1 || n < timeperiod {
-        return result;
+    if timeperiod < 1 || n <= timeperiod {
+        return vec![f64::NAN; n];
     }
     let scale = 100.0 / timeperiod as f64;
-    for i in (timeperiod - 1)..n {
-        let start = i + 1 - timeperiod;
+    let mut result = vec![f64::NAN; n];
+
+    // Number of non-finite values in the current window `src[i - P .. i]`.
+    let mut holes = src[..timeperiod].iter().filter(|v| !v.is_finite()).count();
+    for i in timeperiod..n {
         let current = src[i];
-        if !current.is_finite() {
-            continue;
+        if holes == 0 && current.is_finite() {
+            let count = simd::count_le(&src[(i - timeperiod)..i], current);
+            result[i] = count as f64 * scale;
         }
-        let mut count = 0.0;
-        let mut ok = true;
-        for &v in &src[start..=i] {
-            if !v.is_finite() {
-                ok = false;
-                break;
-            }
-            if v < current {
-                count += 1.0;
-            }
-        }
-        if ok {
-            result[i] = count * scale;
-        }
+        // Slide the window forward one bar: drop `src[i - P]`, admit `src[i]`.
+        holes -= usize::from(!src[i - timeperiod].is_finite());
+        holes += usize::from(!current.is_finite());
     }
     result
 }
@@ -253,13 +264,139 @@ mod tests {
         // cargo: crsi_golden_small_periods
         let close = [10.0, 11.0, 12.0, 11.0, 13.0];
         let result = crsi(&close, 2, 2, 2);
-        assert!(result[0].is_nan() && result[1].is_nan());
-        // RSI(close,2)[2]=100, RSI(streak,2)[2]=100, pctrank=0 → 200/3
-        assert!((result[2] - 200.0 / 3.0).abs() < 1e-10);
+        // ROC(close,1) = [NaN, 10, 100/11, -25/3, 200/11].
+        // PercentRank(ROC,2) is NaN at i=2 (its window {ROC[0], ROC[1]}
+        // holds a NaN), 0 at i=3 ({10, 9.09} vs -8.33) and 100 at i=4
+        // ({9.09, -8.33} vs 18.18). CRSI propagates NaN, so index 2 is NaN.
+        assert!(result[0].is_nan() && result[1].is_nan() && result[2].is_nan());
         // RSI(close,2)[3]=50, RSI(streak,2)[3]=25, pctrank=0 → 25
         assert!((result[3] - 25.0).abs() < 1e-10);
-        // RSI(close,2)[4]=250/3, RSI(streak,2)[4]=62.5, pctrank=50 → 587.5/9
-        assert!((result[4] - 587.5 / 9.0).abs() < 1e-10);
+        // RSI(close,2)[4]=250/3, RSI(streak,2)[4]=62.5, pctrank=100 → 1475/18
+        assert!((result[4] - 1475.0 / 18.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn percent_rank_is_exclusive_and_reaches_100() {
+        // Previous `timeperiod` values only, `<=` comparison, denominator 2.
+        let src = [1.0, 2.0, 3.0, 0.0, 5.0];
+        let pr = percent_rank(&src, 2);
+        assert!(pr[0].is_nan() && pr[1].is_nan());
+        // i=2: {1,2} vs 3 → 2/2
+        assert!((pr[2] - 100.0).abs() < 1e-12);
+        // i=3: {2,3} vs 0 → 0/2
+        assert!((pr[3] - 0.0).abs() < 1e-12);
+        // i=4: {3,0} vs 5 → 2/2
+        assert!((pr[4] - 100.0).abs() < 1e-12);
+        // A tie counts (`<=`).
+        let flat = [4.0, 4.0, 4.0];
+        assert!((percent_rank(&flat, 2)[2] - 100.0).abs() < 1e-12);
+        // Non-finite in the window keeps the bar NaN.
+        let holed = [f64::NAN, 1.0, 2.0, 3.0];
+        let pr = percent_rank(&holed, 2);
+        assert!(pr[2].is_nan());
+        assert!((pr[3] - 100.0).abs() < 1e-12);
+        // n == timeperiod leaves no room for an exclusive window.
+        assert!(percent_rank(&[1.0, 2.0], 2).iter().all(|v| v.is_nan()));
+    }
+
+    /// Verbatim copy of the pre-vectorization `percent_rank`: a full scalar
+    /// scan of every window with an early break on the first non-finite
+    /// value. Kept as the ground truth for the bit-identity test below.
+    fn reference_percent_rank(src: &[f64], timeperiod: usize) -> Vec<f64> {
+        let n = src.len();
+        let mut result = vec![f64::NAN; n];
+        if timeperiod < 1 || n <= timeperiod {
+            return result;
+        }
+        let scale = 100.0 / timeperiod as f64;
+        for i in timeperiod..n {
+            let current = src[i];
+            if !current.is_finite() {
+                continue;
+            }
+            let mut count = 0.0;
+            let mut ok = true;
+            for &v in &src[(i - timeperiod)..i] {
+                if !v.is_finite() {
+                    ok = false;
+                    break;
+                }
+                if v <= current {
+                    count += 1.0;
+                }
+            }
+            if ok {
+                result[i] = count * scale;
+            }
+        }
+        result
+    }
+
+    /// Outputs are `100 * k / P` for integer `k`, so exact bit equality is
+    /// the right bar — an epsilon would hide a semantic change.
+    #[test]
+    fn percent_rank_is_bit_identical_to_reference() {
+        let mut series: Vec<Vec<f64>> = vec![
+            vec![],
+            vec![1.0],
+            vec![1.0, 2.0],
+            vec![1.0, 2.0, 3.0, 0.0, 5.0],
+            // Plateau: every element ties, so `<=` must count the whole window.
+            vec![4.0; 40],
+            // Plateau followed by a step down, then back up.
+            [vec![7.0; 15], vec![1.0; 15], vec![7.0; 15]].concat(),
+            // Monotone up and monotone down (0% and 100% extremes).
+            (0..60).map(|i| i as f64).collect(),
+            (0..60).map(|i| -(i as f64)).collect(),
+            // Non-finite values in assorted positions, including runs.
+            vec![
+                f64::NAN,
+                1.0,
+                2.0,
+                3.0,
+                f64::INFINITY,
+                4.0,
+                5.0,
+                f64::NEG_INFINITY,
+                f64::NAN,
+                f64::NAN,
+                6.0,
+                7.0,
+                8.0,
+                9.0,
+                10.0,
+            ],
+            // Signed zeros, which compare equal.
+            vec![-0.0, 0.0, -0.0, 0.0, -0.0, 0.0, -0.0, 0.0, -0.0, 0.0],
+        ];
+        // A longer pseudo-random walk with sprinkled holes, to hit the
+        // lane-remainder paths at many window offsets.
+        let mut x = 0.0f64;
+        let mut state = 0x2545_f491_4f6c_dd1du64;
+        let mut walk = Vec::with_capacity(500);
+        for i in 0..500 {
+            state = state.wrapping_mul(6364136223846793005).wrapping_add(1);
+            x += ((state >> 33) as f64 / (1u64 << 31) as f64) - 1.0;
+            walk.push(if i % 97 == 0 { f64::NAN } else { x });
+        }
+        series.push(walk);
+
+        for src in &series {
+            for period in [1usize, 2, 3, 7, 8, 9, 16, 17, 100] {
+                let got = percent_rank(src, period);
+                let want = reference_percent_rank(src, period);
+                assert_eq!(got.len(), want.len());
+                for (i, (g, w)) in got.iter().zip(&want).enumerate() {
+                    assert_eq!(
+                        g.to_bits(),
+                        w.to_bits(),
+                        "percent_rank bit mismatch at i={i} (len {}, period {period}): \
+                         got {g}, want {w}",
+                        src.len()
+                    );
+                }
+            }
+        }
     }
 
     #[test]

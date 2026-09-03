@@ -56,7 +56,7 @@ function runBenchmark({ bars }) {
     ["ADX", () => wasm.adx(high, low, close, 14)],
     ["MFI", () => wasm.mfi(high, low, close, volume, 14)],
     ["ATR", () => wasm.atr(high, low, close, 14)],
-    ["BBANDS", () => wasm.bbands(close, 20, 2.0, 2.0)],
+    ["BBANDS", () => wasm.bbands(close, 20, 2.0, 2.0, 0)],
   ];
 
   const results = cases.map(([name, fn]) => {

@@ -6,14 +6,18 @@ use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
 fn validate_matype(matype: u8) -> PyResult<()> {
-    if matype > 7 {
+    if matype > 8 {
         return Err(PyValueError::new_err(
-            "matype must be 0–7 (SMA/EMA/WMA/DEMA/TEMA/TRIMA/KAMA/T3)",
+            "matype must be 0–8 (SMA/EMA/WMA/DEMA/TEMA/TRIMA/KAMA/T3; 8 aliases T3)",
         ));
     }
     Ok(())
 }
 
+/// On Balance Volume smoothed by an MA of type `matype`.
+///
+/// `0`–`6` and `8` match TA-Lib's numbering; `7` is T3 here where TA-Lib's `7`
+/// is MAMA, and MAMA is not reachable through any `matype` (use `ferro_ta.MAMA`).
 #[pyfunction]
 #[pyo3(signature = (close, volume, timeperiod = 20, matype = 1))]
 pub fn obv_smoothed<'py>(

@@ -3,18 +3,24 @@ use numpy::{IntoPyArray, PyArray1, PyReadonlyArray1};
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
-/// Reject MA types outside the documented 0–7 range instead of silently
+/// Reject MA types outside the documented 0–8 range instead of silently
 /// falling back to SMA.
 fn validate_matype(matype: u8, name: &str) -> PyResult<()> {
-    if matype > 7 {
+    if matype > 8 {
         return Err(PyValueError::new_err(format!(
-            "{name} must be 0–7 (SMA/EMA/WMA/DEMA/TEMA/TRIMA/KAMA/T3), got {matype}"
+            "{name} must be 0–8 (SMA/EMA/WMA/DEMA/TEMA/TRIMA/KAMA/T3; 8 aliases T3)"
         )));
     }
     Ok(())
 }
 
-/// MACD with configurable MA types for fast/slow/signal (matype 0–7). Returns (macd_line, signal_line, histogram).
+/// MACD with configurable MA types for fast/slow/signal (matype 0–8). Returns (macd_line, signal_line, histogram).
+///
+/// `fastmatype`/`slowmatype`/`signalmatype` default to `1` (EMA), not TA-Lib's
+/// `0` (SMA), so the defaults reproduce plain `MACD`.
+///
+/// `0`–`6` and `8` match TA-Lib's numbering; `7` is T3 here where TA-Lib's `7`
+/// is MAMA, and MAMA is not reachable through any `matype` (use `ferro_ta.MAMA`).
 #[pyfunction]
 #[pyo3(signature = (close, fastperiod = 12, fastmatype = 1, slowperiod = 26, slowmatype = 1, signalperiod = 9, signalmatype = 1))]
 #[allow(clippy::type_complexity, clippy::too_many_arguments)]

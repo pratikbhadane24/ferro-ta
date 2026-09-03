@@ -17,10 +17,14 @@ fn sma_nan_aware(src: &[f64], timeperiod: usize) -> Vec<f64> {
 
 /// On-Balance Volume smoothed with [`overlap::ma`].
 ///
-/// `matype` matches `MA` (0=SMA … 7=T3). Default wrappers use EMA (`1`).
+/// `matype` matches `MA` (`0`=SMA … `7`|`8`=T3). Default wrappers use EMA (`1`).
+///
+/// `0`-`6` and `8` match TA-Lib's `TA_MAType`; `7` is T3 here where
+/// TA-Lib's `7` is MAMA, and MAMA is not reachable through any `matype`
+/// (call [`overlap::mama`] directly). Values above `8` yield all-`NaN`.
 pub fn obv_smoothed(close: &[f64], volume: &[f64], timeperiod: usize, matype: u8) -> Vec<f64> {
     let n = close.len();
-    if timeperiod < 1 || n == 0 {
+    if timeperiod < 1 || n == 0 || volume.len() != n {
         return vec![f64::NAN; n];
     }
     let raw = volume::obv(close, volume);
@@ -40,7 +44,7 @@ pub fn cmf(
 ) -> Vec<f64> {
     let n = close.len();
     let mut result = vec![f64::NAN; n];
-    if timeperiod < 1 || n < timeperiod {
+    if timeperiod < 1 || n < timeperiod || high.len() != n || low.len() != n || volume.len() != n {
         return result;
     }
     let mut mfv = vec![0.0; n];
@@ -75,7 +79,7 @@ pub fn cmf(
 pub fn emv(high: &[f64], low: &[f64], volume: &[f64], timeperiod: usize, scale: f64) -> Vec<f64> {
     let n = high.len();
     let mut raw = vec![f64::NAN; n];
-    if n == 0 {
+    if n == 0 || low.len() != n || volume.len() != n {
         return raw;
     }
     for i in 1..n {
@@ -97,7 +101,7 @@ pub fn emv(high: &[f64], low: &[f64], volume: &[f64], timeperiod: usize, scale: 
 pub fn force_index(close: &[f64], volume: &[f64], timeperiod: usize) -> Vec<f64> {
     let n = close.len();
     let mut raw = vec![f64::NAN; n];
-    if n == 0 {
+    if n == 0 || volume.len() != n {
         return raw;
     }
     for i in 1..n {
@@ -135,7 +139,11 @@ pub fn pvi(close: &[f64], volume: &[f64]) -> Vec<f64> {
     volume_index(close, volume, true)
 }
 
-/// PVI plus a moving-average signal (`matype` matches `MA`).
+/// PVI plus a moving-average signal (`matype` matches `MA`, `0`-`8`).
+///
+/// `0`-`6` and `8` match TA-Lib's `TA_MAType`; `7` is T3 here where
+/// TA-Lib's `7` is MAMA, and MAMA is not reachable through any `matype`
+/// (call [`overlap::mama`] directly). Values above `8` yield all-`NaN`.
 pub fn pvi_with_signal(
     close: &[f64],
     volume: &[f64],
@@ -154,7 +162,7 @@ pub fn pvi_with_signal(
 fn volume_index(close: &[f64], volume: &[f64], positive: bool) -> Vec<f64> {
     let n = close.len();
     let mut result = vec![f64::NAN; n];
-    if n == 0 {
+    if n == 0 || volume.len() != n {
         return result;
     }
     result[0] = 1000.0;
@@ -210,7 +218,14 @@ pub fn kvo(
 ) -> (Vec<f64>, Vec<f64>) {
     let n = close.len();
     let nan = vec![f64::NAN; n];
-    if n == 0 || fastperiod < 1 || slowperiod < 1 || signalperiod < 1 {
+    if n == 0
+        || high.len() != n
+        || low.len() != n
+        || volume.len() != n
+        || fastperiod < 1
+        || slowperiod < 1
+        || signalperiod < 1
+    {
         return (nan.clone(), nan);
     }
     let mut vf = vec![f64::NAN; n];
@@ -263,7 +278,7 @@ pub fn kvo(
 pub fn pvt(close: &[f64], volume: &[f64]) -> Vec<f64> {
     let n = close.len();
     let mut result = vec![0.0; n];
-    if n == 0 {
+    if n == 0 || volume.len() != n {
         return result;
     }
     result[0] = 0.0;
@@ -396,5 +411,130 @@ mod tests {
         assert!((raw[1] - 22.5).abs() < 1e-12);
         let smoothed = emv(&h, &l, &v, 3, 10_000.0);
         assert!(smoothed[3].is_finite(), "EMV SMA poisoned by leading NaN");
+    }
+
+    #[test]
+    fn cmf_length_mismatch_returns_nan() {
+        let h = [10.0, 12.0, 11.0, 13.0];
+        let l = [8.0, 9.0, 9.0, 10.0];
+        let c = [9.0, 10.5, 10.0, 11.5];
+        let v = [100.0, 100.0, 100.0, 100.0];
+        let short = [1.0, 2.0];
+        let long = [1.0, 2.0, 3.0, 4.0, 5.0];
+        for other in [short.as_slice(), long.as_slice()] {
+            for result in [
+                cmf(other, &l, &c, &v, 3),
+                cmf(&h, other, &c, &v, 3),
+                cmf(&h, &l, &c, other, 3),
+            ] {
+                assert_eq!(result.len(), c.len());
+                assert!(result.iter().all(|x| x.is_nan()));
+            }
+        }
+    }
+
+    const SHORT: [f64; 2] = [1.0, 2.0];
+    const LONG: [f64; 5] = [1.0, 2.0, 3.0, 4.0, 5.0];
+
+    fn all_nan(xs: &[f64]) -> bool {
+        xs.iter().all(|x| x.is_nan())
+    }
+
+    fn all_zero(xs: &[f64]) -> bool {
+        xs.iter().all(|x| *x == 0.0)
+    }
+
+    #[test]
+    fn obv_smoothed_length_mismatch_returns_nan() {
+        let c = [1.0, 2.0, 3.0, 2.0];
+        for other in [SHORT.as_slice(), LONG.as_slice()] {
+            let result = obv_smoothed(&c, other, 3, 1);
+            assert_eq!(result.len(), c.len());
+            assert!(all_nan(&result));
+        }
+    }
+
+    #[test]
+    fn emv_length_mismatch_returns_nan() {
+        let h = [12.0, 14.0, 15.0, 16.0];
+        let l = [10.0, 11.0, 12.0, 13.0];
+        let v = [1000.0, 2000.0, 1500.0, 1800.0];
+        for other in [SHORT.as_slice(), LONG.as_slice()] {
+            for result in [
+                emv(&h, other, &v, 3, 10_000.0),
+                emv(&h, &l, other, 3, 10_000.0),
+            ] {
+                assert_eq!(result.len(), h.len());
+                assert!(all_nan(&result));
+            }
+        }
+    }
+
+    #[test]
+    fn force_index_length_mismatch_returns_nan() {
+        let c = [10.0, 12.0, 11.0, 13.0];
+        for other in [SHORT.as_slice(), LONG.as_slice()] {
+            for result in [force_index(&c, other, 1), force_index(&c, other, 3)] {
+                assert_eq!(result.len(), c.len());
+                assert!(all_nan(&result));
+            }
+        }
+    }
+
+    #[test]
+    fn nvi_length_mismatch_returns_nan() {
+        let c = [10.0, 11.0, 12.0, 11.5];
+        for other in [SHORT.as_slice(), LONG.as_slice()] {
+            let idx = nvi(&c, other);
+            assert_eq!(idx.len(), c.len());
+            assert!(all_nan(&idx));
+            let (idx, signal) = nvi_with_ema(&c, other, 3);
+            assert_eq!(idx.len(), c.len());
+            assert_eq!(signal.len(), c.len());
+            assert!(all_nan(&idx) && all_nan(&signal));
+        }
+    }
+
+    #[test]
+    fn pvi_length_mismatch_returns_nan() {
+        let c = [10.0, 11.0, 12.0, 11.5];
+        for other in [SHORT.as_slice(), LONG.as_slice()] {
+            let idx = pvi(&c, other);
+            assert_eq!(idx.len(), c.len());
+            assert!(all_nan(&idx));
+            let (idx, signal) = pvi_with_signal(&c, other, 3, 1);
+            assert_eq!(idx.len(), c.len());
+            assert_eq!(signal.len(), c.len());
+            assert!(all_nan(&idx) && all_nan(&signal));
+        }
+    }
+
+    #[test]
+    fn kvo_length_mismatch_returns_nan() {
+        let h = [12.0, 14.0, 15.0, 16.0];
+        let l = [10.0, 11.0, 12.0, 13.0];
+        let c = [11.0, 13.0, 14.0, 15.0];
+        let v = [1000.0, 2000.0, 1500.0, 1800.0];
+        for other in [SHORT.as_slice(), LONG.as_slice()] {
+            for (kvo_out, signal) in [
+                kvo(other, &l, &c, &v, 2, 3, 2),
+                kvo(&h, other, &c, &v, 2, 3, 2),
+                kvo(&h, &l, &c, other, 2, 3, 2),
+            ] {
+                assert_eq!(kvo_out.len(), c.len());
+                assert_eq!(signal.len(), c.len());
+                assert!(all_nan(&kvo_out) && all_nan(&signal));
+            }
+        }
+    }
+
+    #[test]
+    fn pvt_length_mismatch_returns_zeros() {
+        let c = [10.0, 11.0, 10.0, 12.0];
+        for other in [SHORT.as_slice(), LONG.as_slice()] {
+            let result = pvt(&c, other);
+            assert_eq!(result.len(), c.len());
+            assert!(all_zero(&result));
+        }
     }
 }

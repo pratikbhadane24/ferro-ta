@@ -1,29 +1,20 @@
-//! Criterion benchmarks for ferro_ta_core — pure Rust indicator throughput.
+//! Criterion benchmarks for ferro_ta_core — legacy core indicator throughput.
 //!
 //! Run from repo root:  cargo bench -p ferro_ta_core
 //! Or:  cd crates/ferro_ta_core && cargo bench
 //!
-//! Input sizes: 1k, 10k, 100k, and 1M bars for key indicators.
+//! This target keeps the original headline sweep: `[1k, 10k, 100k, 1M]` bars
+//! for a handful of core kernels. The ~70-kernel extended catalog lives in the
+//! sibling `extended` bench target, which explains its own (deliberately
+//! cheaper) size strategy.
+//!
+//! Synthetic input generators are shared via `benches/common/mod.rs`.
+mod common;
+
+use common::{synthetic_close, synthetic_high_low_close};
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
 use ferro_ta_core::{futures, momentum, options, overlap, volatility};
 use std::hint::black_box;
-
-fn synthetic_close(n: usize) -> Vec<f64> {
-    let mut v = Vec::with_capacity(n);
-    let mut price = 100.0_f64;
-    for i in 0..n {
-        price += ((i as f64 * 0.1).sin()) * 0.5;
-        v.push(price);
-    }
-    v
-}
-
-fn synthetic_high_low_close(n: usize) -> (Vec<f64>, Vec<f64>, Vec<f64>) {
-    let close = synthetic_close(n);
-    let high: Vec<f64> = close.iter().map(|&c| c + 0.5).collect();
-    let low: Vec<f64> = close.iter().map(|&c| c - 0.5).collect();
-    (high, low, close)
-}
 
 fn bench_sma(c: &mut Criterion) {
     let mut group = c.benchmark_group("SMA");
@@ -78,7 +69,7 @@ fn bench_bbands(c: &mut Criterion) {
     for size in [1_000_usize, 10_000, 100_000, 1_000_000] {
         let close = synthetic_close(size);
         group.bench_with_input(BenchmarkId::from_parameter(size), &close, |b, close| {
-            b.iter(|| overlap::bbands(black_box(close), 20, 2.0, 2.0))
+            b.iter(|| overlap::bbands(black_box(close), 20, 2.0, 2.0, 0))
         });
     }
     group.finish();
@@ -196,7 +187,6 @@ fn bench_curve_summary(c: &mut Criterion) {
     });
     group.finish();
 }
-
 criterion_group!(
     benches,
     bench_sma,

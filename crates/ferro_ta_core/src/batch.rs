@@ -285,13 +285,17 @@ pub fn batch_stoch(
     let mut all_k = Vec::with_capacity(high.len());
     let mut all_d = Vec::with_capacity(high.len());
     for i in 0..high.len() {
+        // `batch_stoch` keeps its pre-matype signature; SMA/SMA (matype 0)
+        // is TA-Lib's default and what this wrapper has always computed.
         let (k, d) = momentum::stoch(
             &high[i],
             &low[i],
             &close[i],
             fastk_period,
             slowk_period,
+            0,
             slowd_period,
+            0,
         );
         all_k.push(k);
         all_d.push(d);

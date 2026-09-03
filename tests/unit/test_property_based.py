@@ -125,6 +125,22 @@ if HAS_HYPOTHESIS:
     @given(price_arrays, integers(min_value=2, max_value=50))
     @settings(max_examples=30, deadline=5000)
     def test_bbands_middle_equals_sma(close, timeperiod):
+        """BBANDS' middle band is the window mean, i.e. the SMA.
+
+        Compared at ``rtol=1e-9``, not bit-exactly. The two are computed by
+        different means of the same window: ``BBANDS`` reads its centre off the
+        rolling-Welford accumulator that also produces the deviation (one vetted
+        accumulator for both, which is what fixed a band-collapse bug where a
+        large finite bar drove the half-width to zero), while ``SMA`` uses a
+        streaming add/subtract recurrence. They agree to within a few ulps, and
+        the previous exact agreement was an accident of both using the same
+        recurrence rather than a guarantee.
+
+        Hypothesis finds this with adversarial input --- ``[48577.0, 999999.7,
+        0.5, 0.5]`` at ``timeperiod=2`` spans six orders of magnitude and
+        produced a 1.16e-10 relative difference. ``1e-9`` leaves ~9x headroom
+        over that while still catching any real divergence in the centre.
+        """
         if len(close) < timeperiod:
             timeperiod = min(timeperiod, len(close))
             if timeperiod < 1:
@@ -132,7 +148,7 @@ if HAS_HYPOTHESIS:
         _, middle, _ = BBANDS(close, timeperiod=timeperiod)
         sma = SMA(close, timeperiod=timeperiod)
         mask = np.isfinite(middle) & np.isfinite(sma)
-        np.testing.assert_allclose(middle[mask], sma[mask], rtol=1e-10)
+        np.testing.assert_allclose(middle[mask], sma[mask], rtol=1e-9)
 
     # ------------------------------------------------------------------
     # MACD properties

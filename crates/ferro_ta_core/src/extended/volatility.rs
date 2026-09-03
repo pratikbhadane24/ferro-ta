@@ -60,7 +60,7 @@ pub fn mass(high: &[f64], low: &[f64], timeperiod: usize, sumperiod: usize) -> V
 ///
 /// `NaN` when the band range is zero.
 pub fn bbpercent(close: &[f64], timeperiod: usize, nbdevup: f64, nbdevdn: f64) -> Vec<f64> {
-    let (upper, _middle, lower) = overlap::bbands(close, timeperiod, nbdevup, nbdevdn);
+    let (upper, _middle, lower) = overlap::bbands(close, timeperiod, nbdevup, nbdevdn, 0);
     let n = close.len();
     let mut result = vec![f64::NAN; n];
     for i in 0..n {
@@ -76,7 +76,7 @@ pub fn bbpercent(close: &[f64], timeperiod: usize, nbdevup: f64, nbdevdn: f64) -
 ///
 /// `NaN` when the middle band is zero.
 pub fn bbwidth(close: &[f64], timeperiod: usize, nbdevup: f64, nbdevdn: f64) -> Vec<f64> {
-    let (upper, middle, lower) = overlap::bbands(close, timeperiod, nbdevup, nbdevdn);
+    let (upper, middle, lower) = overlap::bbands(close, timeperiod, nbdevup, nbdevdn, 0);
     let n = close.len();
     let mut result = vec![f64::NAN; n];
     for i in 0..n {
@@ -288,7 +288,7 @@ mod tests {
         let close = [1.0, 2.0, 3.0, 4.0, 5.0];
         let pct = bbpercent(&close, 3, 2.0, 2.0);
         let width = bbwidth(&close, 3, 2.0, 2.0);
-        let (upper, middle, lower) = overlap::bbands(&close, 3, 2.0, 2.0);
+        let (upper, middle, lower) = overlap::bbands(&close, 3, 2.0, 2.0, 0);
         assert!(pct[0].is_nan() && pct[1].is_nan());
         let std = (2.0_f64 / 3.0).sqrt();
         // %B[2] = (3 - (2-2s)) / (4s) = (1+2s)/(4s)
