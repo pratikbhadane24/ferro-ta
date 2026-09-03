@@ -113,16 +113,14 @@ impl AtrState {
     }
 
     pub fn update(&mut self, high: f64, low: f64, close: f64) -> f64 {
-        let tr = if self.has_prev {
-            let hl = high - low;
-            let hc = (high - self.prev_close).abs();
-            let lc = (low - self.prev_close).abs();
-            hl.max(hc).max(lc)
-        } else {
-            high - low
-        };
+        // TA-Lib skips TR[0]; first ATR is the SMA of TR[1..=period] at bar `period`.
+        if !self.has_prev {
+            self.prev_close = close;
+            self.has_prev = true;
+            return f64::NAN;
+        }
+        let tr = crate::volatility::true_range(high, low, self.prev_close);
         self.prev_close = close;
-        self.has_prev = true;
 
         if !self.seeded {
             self.tr_buf.push(tr);
@@ -132,10 +130,10 @@ impl AtrState {
             let seed = self.tr_buf.iter().sum::<f64>() / self.period as f64;
             self.atr = seed;
             self.seeded = true;
-            return f64::NAN; // first `period` bars (including this one) return NaN
+            return seed;
         }
-        let pf = (self.period - 1) as f64;
-        self.atr = (self.atr * pf + tr) / self.period as f64;
+        let p = self.period as f64;
+        self.atr = (self.atr * (p - 1.0) + tr) / p;
         self.atr
     }
 
@@ -415,7 +413,7 @@ impl StreamingBBands {
             return (f64::NAN, f64::NAN, f64::NAN);
         }
 
-        let variance = self.m2 / (count - 1.0);
+        let variance = self.m2 / count;
         let std = variance.sqrt();
         (
             self.mean + self.nbdevup * std,
@@ -482,7 +480,8 @@ impl StreamingMACD {
         let macd = fast_val - slow_val;
         let signal = self.signal.update(macd);
         if signal.is_nan() {
-            return (macd, f64::NAN, f64::NAN);
+            // Match batch: NaN-pad MACD until the signal line is valid.
+            return (f64::NAN, f64::NAN, f64::NAN);
         }
         (macd, signal, macd - signal)
     }
@@ -585,7 +584,8 @@ impl StreamingStoch {
         }
         self.slowk_buf.push_back(slowk);
         if self.slowk_buf.len() < self.slowd_period {
-            return (slowk, f64::NAN);
+            // Match batch: NaN-pad both until slowd is valid.
+            return (f64::NAN, f64::NAN);
         }
 
         let slowd = self.slowk_buf.iter().sum::<f64>() / self.slowd_period as f64;
@@ -696,13 +696,20 @@ impl StreamingSupertrend {
         let lower_basic = hl2 - self.multiplier * atr;
 
         if !self.has_bands {
+            // First ATR-valid bar is `timeperiod`; emit using unadjusted bands
+            // and the same close-vs-upper rule as batch (do not hardcode -1).
             self.upper_band = upper_basic;
             self.lower_band = lower_basic;
             self.has_bands = true;
-            self.direction = -1;
+            self.direction = if close > self.upper_band { 1 } else { -1 };
             self.prev_close = close;
             self.has_prev = true;
-            return (self.upper_band, self.direction);
+            let line = if self.direction == 1 {
+                self.lower_band
+            } else {
+                self.upper_band
+            };
+            return (line, self.direction);
         }
 
         let prev_close = self.prev_close;
@@ -828,14 +835,32 @@ mod tests {
     #[test]
     fn test_atr_warmup() {
         let mut atr = StreamingATR::new(3).unwrap();
-        // First 3 bars return NaN (period = 3, seed happens on bar 3 but still NaN)
+        // First 3 bars return NaN (TR[0] skipped; seed at bar `period`)
         assert!(atr.update(10.0, 9.0, 9.5).is_nan());
         assert!(atr.update(11.0, 9.5, 10.5).is_nan());
         assert!(atr.update(10.5, 9.0, 9.5).is_nan());
-        // Bar 4: first real value
+        // Bar 4 (index 3): SMA of TR[1..=3]
         let v = atr.update(11.0, 10.0, 10.5);
         assert!(!v.is_nan());
         assert!(v > 0.0);
+    }
+
+    #[test]
+    fn streaming_atr_matches_batch_bar_for_bar() {
+        let h = vec![20.0, 12.0, 13.0, 14.0, 15.0, 16.0, 15.5, 17.0];
+        let l = vec![5.0, 10.0, 11.0, 12.0, 13.0, 14.0, 13.0, 15.0];
+        let c = vec![10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 14.0, 16.0];
+        let period = 3;
+        let batch = crate::volatility::atr(&h, &l, &c, period);
+        let mut stream = StreamingATR::new(period).unwrap();
+        for i in 0..h.len() {
+            let v = stream.update(h[i], l[i], c[i]);
+            assert!(
+                approx_eq(v, batch[i], 1e-10),
+                "bar {i}: streaming={v} batch={}",
+                batch[i]
+            );
+        }
     }
 
     #[test]
@@ -852,16 +877,46 @@ mod tests {
     }
 
     #[test]
+    fn streaming_bbands_uses_population_std() {
+        let prices = vec![1.0, 2.0, 3.0, 4.0, 5.0];
+        let (bu, bm, bl) = crate::overlap::bbands(&prices, 3, 2.0, 2.0);
+        let mut bb = StreamingBBands::new(3, 2.0, 2.0).unwrap();
+        for (i, &p) in prices.iter().enumerate() {
+            let (u, m, l) = bb.update(p);
+            assert!(approx_eq(u, bu[i], 1e-10), "upper[{i}]: {u} vs {}", bu[i]);
+            assert!(approx_eq(m, bm[i], 1e-10), "middle[{i}]: {m} vs {}", bm[i]);
+            assert!(approx_eq(l, bl[i], 1e-10), "lower[{i}]: {l} vs {}", bl[i]);
+        }
+        // Window [1,2,3]: pop std = sqrt(2/3), not sample std = 1.
+        let pop_std = (2.0_f64 / 3.0).sqrt();
+        assert!(approx_eq(bu[2], 2.0 + 2.0 * pop_std, 1e-12));
+    }
+
+    #[test]
     fn test_macd_basic() {
         let mut macd = StreamingMACD::new(3, 5, 2).unwrap();
-        // Feed enough bars for the slow (5) to seed
-        for i in 0..4 {
-            let (m, s, h) = macd.update(100.0 + i as f64);
-            assert!(m.is_nan());
+        // sig_start = (5-1)+(2-1) = 5; MACD itself is NaN-padded until then
+        for i in 0..5 {
+            let (m, s, _h) = macd.update(100.0 + i as f64);
+            assert!(m.is_nan(), "macd should be NaN at bar {i}");
+            assert!(s.is_nan());
         }
-        // Bar 5: slow seeds
-        let (m, s, _h) = macd.update(104.0);
+        let (m, s, _h) = macd.update(105.0);
         assert!(!m.is_nan());
+        assert!(!s.is_nan());
+    }
+
+    #[test]
+    fn streaming_macd_matches_batch_including_nan_pad() {
+        let close: Vec<f64> = (0..40).map(|i| 100.0 + i as f64).collect();
+        let (bm, bs, bh) = crate::overlap::macd(&close, 12, 26, 9);
+        let mut stream = StreamingMACD::new(12, 26, 9).unwrap();
+        for i in 0..close.len() {
+            let (m, s, h) = stream.update(close[i]);
+            assert!(approx_eq(m, bm[i], 1e-10), "macd[{i}]: {m} vs {}", bm[i]);
+            assert!(approx_eq(s, bs[i], 1e-10), "signal[{i}]: {s} vs {}", bs[i]);
+            assert!(approx_eq(h, bh[i], 1e-10), "hist[{i}]: {h} vs {}", bh[i]);
+        }
     }
 
     #[test]
@@ -873,17 +928,27 @@ mod tests {
     #[test]
     fn test_stoch_basic() {
         let mut stoch = StreamingStoch::new(3, 2, 2).unwrap();
-        // Need fastk_period bars, then slowk_period, then slowd_period
-        let (k, d) = stoch.update(10.0, 8.0, 9.0);
-        assert!(k.is_nan() && d.is_nan());
-        let (k, d) = stoch.update(11.0, 9.0, 10.0);
-        assert!(k.is_nan() && d.is_nan());
-        // Bar 3: fastk ready, collecting slowk
-        let (k, d) = stoch.update(12.0, 10.0, 11.0);
-        assert!(k.is_nan());
-        // Bar 4
-        let (k, d) = stoch.update(13.0, 11.0, 12.0);
-        assert!(!k.is_nan());
+        // Both outputs stay NaN until slowd is valid (index 4).
+        for i in 0..4 {
+            let (k, d) = stoch.update(10.0 + i as f64, 8.0 + i as f64, 9.0 + i as f64);
+            assert!(k.is_nan() && d.is_nan(), "bar {i} should pad both");
+        }
+        let (k, d) = stoch.update(14.0, 12.0, 13.0);
+        assert!(!k.is_nan() && !d.is_nan());
+    }
+
+    #[test]
+    fn streaming_stoch_matches_batch_including_nan_pad() {
+        let h: Vec<f64> = (0..30).map(|i| 12.0 + i as f64).collect();
+        let l: Vec<f64> = (0..30).map(|i| 8.0 + i as f64).collect();
+        let c: Vec<f64> = (0..30).map(|i| 10.0 + i as f64).collect();
+        let (bk, bd) = crate::momentum::stoch(&h, &l, &c, 5, 3, 3);
+        let mut stream = StreamingStoch::new(5, 3, 3).unwrap();
+        for i in 0..h.len() {
+            let (k, d) = stream.update(h[i], l[i], c[i]);
+            assert!(approx_eq(k, bk[i], 1e-10), "slowk[{i}]: {k} vs {}", bk[i]);
+            assert!(approx_eq(d, bd[i], 1e-10), "slowd[{i}]: {d} vs {}", bd[i]);
+        }
     }
 
     #[test]
@@ -913,10 +978,28 @@ mod tests {
         assert!(line.is_nan() && dir == 0);
         let (line, dir) = st.update(10.5, 9.0, 9.5);
         assert!(line.is_nan() && dir == 0);
-        // Bar 4: first real value
+        // Bar 4 (index 3 = timeperiod): first real value
         let (line, dir) = st.update(11.0, 10.0, 10.5);
         assert!(!line.is_nan());
         assert!(dir == 1 || dir == -1);
+    }
+
+    #[test]
+    fn streaming_supertrend_matches_batch() {
+        let h = vec![20.0, 12.0, 13.0, 14.0, 15.0, 14.5, 15.5, 16.0, 15.0, 17.0];
+        let l = vec![5.0, 10.0, 11.0, 12.0, 13.0, 12.5, 13.5, 14.0, 13.0, 14.5];
+        let c = vec![10.0, 11.0, 12.0, 13.0, 14.0, 13.5, 14.5, 15.0, 14.0, 16.0];
+        let (bl, bd) = crate::extended::supertrend(&h, &l, &c, 3, 2.0);
+        let mut stream = StreamingSupertrend::new(3, 2.0).unwrap();
+        for i in 0..h.len() {
+            let (line, dir) = stream.update(h[i], l[i], c[i]);
+            assert!(
+                approx_eq(line, bl[i], 1e-10),
+                "line[{i}]: {line} vs {}",
+                bl[i]
+            );
+            assert_eq!(dir, bd[i], "dir[{i}]: {dir} vs {}", bd[i]);
+        }
     }
 
     #[test]

@@ -12,10 +12,6 @@ pub fn mom<'py>(
 ) -> PyResult<Bound<'py, PyArray1<f64>>> {
     validation::validate_timeperiod(timeperiod, "timeperiod", 1)?;
     let prices = close.as_slice()?;
-    let n = prices.len();
-    let mut result = vec![f64::NAN; n];
-    for i in timeperiod..n {
-        result[i] = prices[i] - prices[i - timeperiod];
-    }
+    let result = ferro_ta_core::momentum::mom(prices, timeperiod);
     Ok(result.into_pyarray(py))
 }

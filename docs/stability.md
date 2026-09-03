@@ -83,12 +83,35 @@ Example timeline:
 
 ---
 
+## Numerical changes
+
+Function **names and signatures** stay stable. **Numeric values** can change
+when a formula is corrected to match the documented definition (TA-Lib drop-in
+or a published metric). Those are listed in `CHANGELOG.md` under
+`### Changed`. This campaign includes:
+
+| Surface | What changed |
+|---------|----------------|
+| Ichimoku Senkou | No-lookahead: `senkou[i]` reads tenkan/kijun/raw_b at `i - d` |
+| CMO | Wilder smoothing (same seed as RSI), not a rolling sum |
+| Sharpe / Sortino | Mean excess return, not CAGR |
+| Alpha / information ratio | `mean(r) − β · mean(r_b)`; IR = `mean(r − r_b) / TE` |
+| ATR in Supertrend / Keltner / Chandelier | Public TA-Lib ATR (`TR[1..=period]`) |
+| TRANGE | Bar 0 is NaN |
+| OBV | Bar 0 is `volume[0]` |
+| KAMA | First emitted value at index `timeperiod` |
+| Streaming BBands | Population std (`/n`), matching batch |
+
+Treat a changelog numerical break as a **patch or minor** change unless the
+Python signature or return type also changes (that remains a **major** bump).
+
 ## What is NOT covered
 
 - The Rust ABI of the compiled extension (`_ferro_ta.so` / `_ferro_ta.pyd`).
   Only the Python-level API is covered by this policy.
 - Numerical precision beyond what is documented (exact TA-Lib matches for listed
-  indicators, "correlated" for Wilder-seeded indicators).
+  indicators, "correlated" for Wilder-seeded indicators). See **Numerical
+  changes** above when a documented formula is corrected.
 - Performance characteristics — we may change the implementation to be faster
   (e.g. moving a Python loop to Rust) without a version bump.
 

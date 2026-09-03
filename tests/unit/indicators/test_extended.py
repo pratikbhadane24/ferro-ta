@@ -103,6 +103,35 @@ class TestICHIMOKU:
             valid = arr[~np.isnan(arr)]
             assert np.all(np.isfinite(valid))
 
+    def test_senkou_no_lookahead(self):
+        d = 4
+        tenkan, kijun, senkou_a, senkou_b, chikou = ICHIMOKU(
+            _H,
+            _L,
+            _C,
+            tenkan_period=3,
+            kijun_period=5,
+            senkou_b_period=6,
+            displacement=d,
+        )
+        raw_b = np.full(N, np.nan)
+        for i in range(5, N):
+            raw_b[i] = (_H[i - 5 : i + 1].max() + _L[i - 5 : i + 1].min()) / 2.0
+        for i in range(N):
+            if i < d:
+                assert np.isnan(senkou_a[i]) and np.isnan(senkou_b[i])
+                continue
+            src = i - d
+            if np.isfinite(tenkan[src]) and np.isfinite(kijun[src]):
+                assert np.isclose(senkou_a[i], (tenkan[src] + kijun[src]) / 2.0)
+            else:
+                assert np.isnan(senkou_a[i])
+            if np.isfinite(raw_b[src]):
+                assert np.isclose(senkou_b[i], raw_b[src])
+            else:
+                assert np.isnan(senkou_b[i])
+            assert np.isclose(chikou[i], _C[src])
+
 
 # ---------------------------------------------------------------------------
 # DONCHIAN

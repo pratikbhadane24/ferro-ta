@@ -24,7 +24,13 @@ pub fn implied_volatility(
         return f64::NAN;
     }
     if contract.time_to_expiry == 0.0 {
-        return 0.0;
+        // At expiry the only consistent price is intrinsic (σ=0). Any other
+        // quote cannot be inverted to a finite volatility.
+        let intrinsic = price_lower_bound(contract);
+        if (target_price - intrinsic).abs() <= config.tolerance {
+            return 0.0;
+        }
+        return f64::NAN;
     }
 
     let lower = price_lower_bound(contract);
@@ -148,6 +154,10 @@ pub fn iv_percentile(iv_series: &[f64], window: usize) -> Vec<f64> {
     for end in (window - 1)..n {
         let start = end + 1 - window;
         let current = iv_series[end];
+        if !current.is_finite() {
+            out[end] = f64::NAN;
+            continue;
+        }
         let count = iv_series[start..=end]
             .iter()
             .filter(|&&v| v <= current)
@@ -237,5 +247,44 @@ mod tests {
         assert!((rank[2] - 1.0).abs() < 1e-12);
         assert!((pct[3] - (1.0 / 3.0)).abs() < 1e-12);
         assert!((z[2] - 1.224_744_871).abs() < 1e-6);
+    }
+
+    #[test]
+    fn implied_vol_at_expiry_is_zero_only_at_intrinsic() {
+        let contract = OptionContract {
+            model: PricingModel::BlackScholes,
+            underlying: 110.0,
+            strike: 100.0,
+            rate: 0.05,
+            carry: 0.0,
+            time_to_expiry: 0.0,
+            kind: OptionKind::Call,
+        };
+        let cfg = IvSolverConfig {
+            initial_guess: 0.2,
+            tolerance: 1e-8,
+            max_iterations: 50,
+        };
+        let at_intrinsic = implied_volatility(contract, 10.0, cfg);
+        assert!(
+            (at_intrinsic - 0.0).abs() < 1e-12,
+            "T=0 at intrinsic must be σ=0, got {at_intrinsic}"
+        );
+        let not_intrinsic = implied_volatility(contract, 5.0, cfg);
+        assert!(
+            not_intrinsic.is_nan(),
+            "T=0 away from intrinsic must be NaN, got {not_intrinsic}"
+        );
+    }
+
+    #[test]
+    fn iv_percentile_nan_current_is_nan() {
+        let iv = [10.0, 20.0, f64::NAN];
+        let pct = iv_percentile(&iv, 3);
+        assert!(
+            pct[2].is_nan(),
+            "NaN current IV must yield NaN percentile, got {}",
+            pct[2]
+        );
     }
 }

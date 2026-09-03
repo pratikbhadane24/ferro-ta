@@ -4,6 +4,7 @@
 ///
 /// OBV is a cumulative indicator that adds volume on up-close bars and
 /// subtracts volume on down-close bars. Unchanged closes contribute zero.
+/// Bar 0 is seeded with `volume[0]` (TA-Lib; there is no prior close).
 /// Returns a `Vec<f64>` of length `n` with no `NaN` values.
 ///
 /// # Arguments
@@ -15,7 +16,7 @@ pub fn obv(close: &[f64], volume: &[f64]) -> Vec<f64> {
     if n == 0 {
         return result;
     }
-    // result[0] stays 0; accumulation starts from bar 1
+    result[0] = volume[0];
     for i in 1..n {
         result[i] = result[i - 1]
             + if close[i] > close[i - 1] {
@@ -146,9 +147,26 @@ mod tests {
         let c = vec![1.0, 2.0, 3.0];
         let v = vec![100.0, 200.0, 300.0];
         let result = obv(&c, &v);
-        assert!((result[0] - 0.0).abs() < 1e-10);
-        assert!((result[1] - 200.0).abs() < 1e-10);
-        assert!((result[2] - 500.0).abs() < 1e-10);
+        assert!((result[0] - 100.0).abs() < 1e-10);
+        assert!((result[1] - 300.0).abs() < 1e-10);
+        assert!((result[2] - 600.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn obv_bar0_accumulates_like_talib() {
+        // TA-Lib seeds OBV[0] = volume[0] (no prior close to compare),
+        // then adds/subtracts subsequent volume. The old bug left bar 0 at 0.
+        let c = [1.0, 2.0, 3.0, 2.0, 2.0];
+        let v = [100.0, 200.0, 300.0, 400.0, 50.0];
+        let result = obv(&c, &v);
+        let expected = [100.0, 300.0, 600.0, 200.0, 200.0];
+        for (i, &exp) in expected.iter().enumerate() {
+            assert!(
+                (result[i] - exp).abs() < 1e-10,
+                "OBV[{i}]: got {} expected {exp}",
+                result[i]
+            );
+        }
     }
 
     #[test]

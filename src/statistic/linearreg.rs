@@ -1,8 +1,6 @@
-use super::common::rolling_linreg_apply;
 use crate::validation;
 use numpy::{IntoPyArray, PyArray1, PyReadonlyArray1};
 use pyo3::prelude::*;
-use std::f64::consts::PI;
 
 /// Linear regression fitted value at the last point of the window.
 #[pyfunction]
@@ -14,10 +12,7 @@ pub fn linearreg<'py>(
 ) -> PyResult<Bound<'py, PyArray1<f64>>> {
     validation::validate_timeperiod(timeperiod, "timeperiod", 1)?;
     let prices = close.as_slice()?;
-    let last_x = (timeperiod - 1) as f64;
-    let result = rolling_linreg_apply(prices, timeperiod, |slope, intercept| {
-        intercept + slope * last_x
-    });
+    let result = ferro_ta_core::statistic::linearreg(prices, timeperiod);
     Ok(result.into_pyarray(py))
 }
 
@@ -31,7 +26,7 @@ pub fn linearreg_slope<'py>(
 ) -> PyResult<Bound<'py, PyArray1<f64>>> {
     validation::validate_timeperiod(timeperiod, "timeperiod", 1)?;
     let prices = close.as_slice()?;
-    let result = rolling_linreg_apply(prices, timeperiod, |slope, _| slope);
+    let result = ferro_ta_core::statistic::linearreg_slope(prices, timeperiod);
     Ok(result.into_pyarray(py))
 }
 
@@ -45,7 +40,7 @@ pub fn linearreg_intercept<'py>(
 ) -> PyResult<Bound<'py, PyArray1<f64>>> {
     validation::validate_timeperiod(timeperiod, "timeperiod", 1)?;
     let prices = close.as_slice()?;
-    let result = rolling_linreg_apply(prices, timeperiod, |_, intercept| intercept);
+    let result = ferro_ta_core::statistic::linearreg_intercept(prices, timeperiod);
     Ok(result.into_pyarray(py))
 }
 
@@ -59,7 +54,7 @@ pub fn linearreg_angle<'py>(
 ) -> PyResult<Bound<'py, PyArray1<f64>>> {
     validation::validate_timeperiod(timeperiod, "timeperiod", 1)?;
     let prices = close.as_slice()?;
-    let result = rolling_linreg_apply(prices, timeperiod, |slope, _| slope.atan() * 180.0 / PI);
+    let result = ferro_ta_core::statistic::linearreg_angle(prices, timeperiod);
     Ok(result.into_pyarray(py))
 }
 
@@ -73,9 +68,6 @@ pub fn tsf<'py>(
 ) -> PyResult<Bound<'py, PyArray1<f64>>> {
     validation::validate_timeperiod(timeperiod, "timeperiod", 1)?;
     let prices = close.as_slice()?;
-    let forecast_x = timeperiod as f64;
-    let result = rolling_linreg_apply(prices, timeperiod, |slope, intercept| {
-        intercept + slope * forecast_x
-    });
+    let result = ferro_ta_core::statistic::tsf(prices, timeperiod);
     Ok(result.into_pyarray(py))
 }

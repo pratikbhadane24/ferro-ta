@@ -4777,7 +4777,7 @@
       ]
     },
     "rust_core": {
-      "public_function_count": 351,
+      "public_function_count": 353,
       "functions": [
         {
           "module": "aggregation",
@@ -4857,6 +4857,11 @@
         {
           "module": "backtest",
           "function": "compute_performance_metrics",
+          "file": "backtest.rs"
+        },
+        {
+          "module": "backtest",
+          "function": "compute_performance_metrics_with_positions",
           "file": "backtest.rs"
         },
         {
@@ -5427,6 +5432,11 @@
         {
           "module": "momentum",
           "function": "stoch",
+          "file": "momentum.rs"
+        },
+        {
+          "module": "momentum",
+          "function": "stochf",
           "file": "momentum.rs"
         },
         {

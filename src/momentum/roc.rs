@@ -1,9 +1,6 @@
 use crate::validation;
 use numpy::{IntoPyArray, PyArray1, PyReadonlyArray1};
-use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
-use ta::indicators::RateOfChange;
-use ta::Next;
 
 /// Rate of Change: (price - prev) / prev * 100. Leading timeperiod values are NaN.
 #[pyfunction]
@@ -15,16 +12,7 @@ pub fn roc<'py>(
 ) -> PyResult<Bound<'py, PyArray1<f64>>> {
     validation::validate_timeperiod(timeperiod, "timeperiod", 1)?;
     let prices = close.as_slice()?;
-    let n = prices.len();
-    let mut indicator =
-        RateOfChange::new(timeperiod).map_err(|e| PyValueError::new_err(e.to_string()))?;
-    let mut result = vec![f64::NAN; n];
-    for (i, &price) in prices.iter().enumerate() {
-        let val = indicator.next(price);
-        if i >= timeperiod {
-            result[i] = val;
-        }
-    }
+    let result = ferro_ta_core::momentum::roc(prices, timeperiod);
     Ok(result.into_pyarray(py))
 }
 
@@ -38,14 +26,7 @@ pub fn rocp<'py>(
 ) -> PyResult<Bound<'py, PyArray1<f64>>> {
     validation::validate_timeperiod(timeperiod, "timeperiod", 1)?;
     let prices = close.as_slice()?;
-    let n = prices.len();
-    let mut result = vec![f64::NAN; n];
-    for i in timeperiod..n {
-        let prev = prices[i - timeperiod];
-        if prev != 0.0 {
-            result[i] = (prices[i] - prev) / prev;
-        }
-    }
+    let result = ferro_ta_core::momentum::rocp(prices, timeperiod);
     Ok(result.into_pyarray(py))
 }
 
@@ -59,14 +40,7 @@ pub fn rocr<'py>(
 ) -> PyResult<Bound<'py, PyArray1<f64>>> {
     validation::validate_timeperiod(timeperiod, "timeperiod", 1)?;
     let prices = close.as_slice()?;
-    let n = prices.len();
-    let mut result = vec![f64::NAN; n];
-    for i in timeperiod..n {
-        let prev = prices[i - timeperiod];
-        if prev != 0.0 {
-            result[i] = prices[i] / prev;
-        }
-    }
+    let result = ferro_ta_core::momentum::rocr(prices, timeperiod);
     Ok(result.into_pyarray(py))
 }
 
@@ -80,13 +54,6 @@ pub fn rocr100<'py>(
 ) -> PyResult<Bound<'py, PyArray1<f64>>> {
     validation::validate_timeperiod(timeperiod, "timeperiod", 1)?;
     let prices = close.as_slice()?;
-    let n = prices.len();
-    let mut result = vec![f64::NAN; n];
-    for i in timeperiod..n {
-        let prev = prices[i - timeperiod];
-        if prev != 0.0 {
-            result[i] = (prices[i] / prev) * 100.0;
-        }
-    }
+    let result = ferro_ta_core::momentum::rocr100(prices, timeperiod);
     Ok(result.into_pyarray(py))
 }

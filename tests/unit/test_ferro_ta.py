@@ -667,7 +667,8 @@ class TestTRANGE:
 
     def test_values_positive(self):
         result = TRANGE(OHLCV_HIGH, OHLCV_LOW, OHLCV_CLOSE)
-        assert all(v > 0 for v in result)
+        assert np.isnan(result[0])
+        assert all(v > 0 for v in result[1:])
 
 
 # ---------------------------------------------------------------------------
@@ -2719,6 +2720,34 @@ class TestICHIMOKU:
         # chikou[26:] == close[0 : N-26]
         for i in range(26, self.N):
             assert math.isclose(ch[i], self.C[i - 26], rel_tol=1e-9)
+
+    def test_senkou_no_lookahead(self):
+        d = 3
+        t, k, sa, sb, _ = ICHIMOKU(
+            self.H,
+            self.L,
+            self.C,
+            tenkan_period=3,
+            kijun_period=4,
+            senkou_b_period=5,
+            displacement=d,
+        )
+        raw_b = np.full(self.N, np.nan)
+        for i in range(4, self.N):
+            raw_b[i] = (self.H[i - 4 : i + 1].max() + self.L[i - 4 : i + 1].min()) / 2.0
+        for i in range(self.N):
+            if i < d:
+                assert np.isnan(sa[i]) and np.isnan(sb[i])
+                continue
+            src = i - d
+            if np.isfinite(t[src]) and np.isfinite(k[src]):
+                assert math.isclose(sa[i], (t[src] + k[src]) / 2.0, rel_tol=1e-9)
+            else:
+                assert np.isnan(sa[i])
+            if np.isfinite(raw_b[src]):
+                assert math.isclose(sb[i], raw_b[src], rel_tol=1e-9)
+            else:
+                assert np.isnan(sb[i])
 
     def test_pandas_output(self):
         import pandas as pd

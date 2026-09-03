@@ -26,6 +26,19 @@ pub fn nan_to_num(v: f64) -> f64 {
     }
 }
 
+/// Map a raw strategy signal to a position.
+///
+/// NaN means "no new signal" and carries `prior`. Infinities still go through
+/// [`nan_to_num`].
+#[inline]
+fn position_from_signal(signal: f64, prior: f64) -> f64 {
+    if signal.is_nan() {
+        prior
+    } else {
+        nan_to_num(signal)
+    }
+}
+
 /// Kelly criterion formula: f = win_rate − (1 − win_rate) × (|avg_loss| / avg_win), clamped to [0, 1].
 #[inline]
 pub fn kelly_formula(win_rate: f64, avg_win: f64, avg_loss: f64) -> f64 {
@@ -106,6 +119,11 @@ pub struct BacktestConfig {
     pub periods_per_year: f64,
     pub margin_ratio: f64,
     pub margin_call_pct: f64,
+    /// Per-bar loss circuit breaker (fraction of equity). Despite the name this
+    /// is **not** a calendar-day aggregate: the engine has no session timestamps,
+    /// so a single bar whose strategy return is `< -daily_loss_limit` trips the
+    /// breaker. When bars are daily (`periods_per_year ≈ 252`) one bar is one
+    /// session and the name matches. `0.0` disables the limit.
     pub daily_loss_limit: f64,
     pub total_loss_limit: f64,
     pub commission: Option<CommissionModel>,
@@ -401,7 +419,7 @@ pub fn backtest_core(
     let mut positions = vec![0.0_f64; n];
     if n > 1 {
         for i in 1..n {
-            positions[i] = nan_to_num(signals[i - 1]);
+            positions[i] = position_from_signal(signals[i - 1], positions[i - 1]);
         }
     }
 
@@ -594,7 +612,7 @@ pub fn backtest_ohlcv_core(
 
     for i in 1..n {
         let pos_start = st.current_pos;
-        let desired_pos = nan_to_num(signals[i - 1]);
+        let desired_pos = position_from_signal(signals[i - 1], st.current_pos);
 
         // --- Margin call check (at bar open) ---
         if margin_ratio > 0.0
@@ -656,6 +674,7 @@ pub fn backtest_ohlcv_core(
             running_equity *= 1.0 + strategy_returns[i - 1];
         }
         if !circuit_broken {
+            // Per-bar (not calendar-day) loss limit — see BacktestConfig::daily_loss_limit.
             if daily_loss_limit > 0.0 && i > 1 && strategy_returns[i - 1] < -daily_loss_limit {
                 circuit_broken = true;
             }
@@ -1049,13 +1068,87 @@ pub fn backtest_ohlcv_core(
 // Performance metrics
 // ---------------------------------------------------------------------------
 
+/// Contiguous non-zero return runs, each treated as one inferred round-trip.
+fn round_trip_pnls_from_returns(returns: &[f64]) -> Vec<f64> {
+    let mut pnls = Vec::new();
+    let mut current: Option<f64> = None;
+    for &v in returns {
+        if v.is_finite() && v != 0.0 {
+            current = Some(current.unwrap_or(0.0) + v);
+        } else if let Some(pnl) = current.take() {
+            pnls.push(pnl);
+        }
+    }
+    if let Some(pnl) = current {
+        pnls.push(pnl);
+    }
+    pnls
+}
+
+/// Round-trip PnLs from a position vector. A trade is a contiguous run of the
+/// same sign; bar returns during the run are summed. A sign flip closes the
+/// old trade and opens a new one on that bar (the flip bar belongs to the new
+/// position, matching lagged-signal fill semantics).
+fn round_trip_pnls_from_positions(positions: &[f64], returns: &[f64]) -> Vec<f64> {
+    let n = positions.len().min(returns.len());
+    let mut pnls = Vec::new();
+    let mut i = 0;
+    while i < n {
+        let p = positions[i];
+        if !p.is_finite() || p.abs() < 1e-12 {
+            i += 1;
+            continue;
+        }
+        let dir = p.signum();
+        let mut pnl = 0.0;
+        while i < n {
+            let cur = positions[i];
+            if !cur.is_finite() || cur.abs() < 1e-12 || cur.signum() != dir {
+                break;
+            }
+            if returns[i].is_finite() {
+                pnl += returns[i];
+            }
+            i += 1;
+        }
+        pnls.push(pnl);
+    }
+    pnls
+}
+
 /// Compute all industry-standard performance metrics from strategy returns and equity.
+///
+/// Sharpe and Sortino use mean excess return, not CAGR:
+/// `(mean(r) − rf/N) / std(r) * sqrt(N)`.
 pub fn compute_performance_metrics(
     strategy_returns: &[f64],
     equity: &[f64],
     periods_per_year: f64,
     risk_free_rate: f64,
     benchmark_returns: Option<&[f64]>,
+) -> Result<BacktestMetrics, String> {
+    compute_performance_metrics_with_positions(
+        strategy_returns,
+        equity,
+        periods_per_year,
+        risk_free_rate,
+        benchmark_returns,
+        None,
+    )
+}
+
+/// Same as [`compute_performance_metrics`], with an optional position series.
+///
+/// When `positions` is provided, `n_trades`, `win_rate`, and `n_position_changes`
+/// are taken from the position vector (round-trips / actual changes). When it is
+/// `None`, trades are inferred from contiguous non-zero return runs.
+pub fn compute_performance_metrics_with_positions(
+    strategy_returns: &[f64],
+    equity: &[f64],
+    periods_per_year: f64,
+    risk_free_rate: f64,
+    benchmark_returns: Option<&[f64]>,
+    positions: Option<&[f64]>,
 ) -> Result<BacktestMetrics, String> {
     let r = strategy_returns;
     let eq = equity;
@@ -1174,13 +1267,15 @@ pub fn compute_performance_metrics(
         0.0
     };
     let annual_vol = std_r * periods_per_year.sqrt();
-    let sharpe = if annual_vol > 0.0 {
-        (cagr - risk_free_rate) / annual_vol
+    // Sharpe / Sortino use mean excess return, not CAGR:
+    // (mean(r) − rf/N) / std(r) * sqrt(N). Breaking change vs the prior CAGR form.
+    let sharpe = if std_r > 0.0 {
+        (mean_r - rf_per_bar) / std_r * periods_per_year.sqrt()
     } else {
         0.0
     };
     let sortino = if downside_std > 0.0 {
-        (cagr - risk_free_rate) / (downside_std * periods_per_year.sqrt())
+        (mean_r - rf_per_bar) / downside_std * periods_per_year.sqrt()
     } else {
         0.0
     };
@@ -1190,26 +1285,27 @@ pub fn compute_performance_metrics(
         0.0
     };
 
-    // Win / loss analysis — single pass with running counters
-    let mut n_active = 0_usize;
+    // Win / loss analysis on round-trip PnLs (not per non-zero bar).
+    let trade_pnls = match positions {
+        Some(pos) if pos.len() == n => round_trip_pnls_from_positions(pos, r),
+        _ => round_trip_pnls_from_returns(r),
+    };
+    let n_trades = trade_pnls.len();
     let mut n_wins = 0_usize;
     let mut n_losses = 0_usize;
     let mut win_sum = 0.0_f64;
     let mut loss_sum = 0.0_f64;
-    for &v in &valid_r {
-        if v != 0.0 {
-            n_active += 1;
-            if v > 0.0 {
-                n_wins += 1;
-                win_sum += v;
-            } else {
-                n_losses += 1;
-                loss_sum += v.abs();
-            }
+    for &pnl in &trade_pnls {
+        if pnl > 0.0 {
+            n_wins += 1;
+            win_sum += pnl;
+        } else if pnl < 0.0 {
+            n_losses += 1;
+            loss_sum += pnl.abs();
         }
     }
-    let win_rate = if n_active > 0 {
-        n_wins as f64 / n_active as f64
+    let win_rate = if n_trades > 0 {
+        n_wins as f64 / n_trades as f64
     } else {
         0.0
     };
@@ -1276,15 +1372,25 @@ pub fn compute_performance_metrics(
         f64::INFINITY
     };
 
-    // Position changes
-    let mut n_pos_changes = 0_usize;
-    for i in 1..n {
-        let prev_active = r[i - 1].is_finite() && r[i - 1] != 0.0;
-        let cur_active = r[i].is_finite() && r[i] != 0.0;
-        if prev_active != cur_active {
-            n_pos_changes += 1;
+    // Position changes: count actual position-vector diffs when provided;
+    // otherwise infer enter/exit from return activity (zero ↔ non-zero).
+    let n_pos_changes = match positions {
+        Some(pos) if pos.len() == n => pos
+            .windows(2)
+            .filter(|w| (w[0] - w[1]).abs() > 1e-12)
+            .count(),
+        _ => {
+            let mut count = 0_usize;
+            for i in 1..n {
+                let prev_active = r[i - 1].is_finite() && r[i - 1] != 0.0;
+                let cur_active = r[i].is_finite() && r[i] != 0.0;
+                if prev_active != cur_active {
+                    count += 1;
+                }
+            }
+            count
         }
-    }
+    };
 
     // Benchmark metrics
     let (
@@ -1341,20 +1447,26 @@ pub fn compute_performance_metrics(
                     0.0
                 };
                 let bench_ann_vol = b_std * periods_per_year.sqrt();
-                let bench_sharpe = if bench_ann_vol > 0.0 {
-                    (bench_cagr - risk_free_rate) / bench_ann_vol
+                let bench_sharpe = if b_std > 0.0 {
+                    (b_mean - rf_per_bar) / b_std * periods_per_year.sqrt()
                 } else {
                     0.0
                 };
 
                 let cov_val = cov_sum / nb as f64;
                 let beta_val = if b_var > 0.0 { cov_val / b_var } else { 0.0 };
-                let alpha_val = cagr - bench_cagr;
+                // Jensen α = mean(r) − β · mean(r_b), annualized. Not CAGR − bench CAGR.
+                let alpha_val = (s_mean - beta_val * b_mean) * periods_per_year;
 
                 let ex_mean = ex_sum / nb as f64;
-                let ex_var = ex_sq_sum / nb as f64 - ex_mean * ex_mean;
-                let te = ex_var.max(0.0).sqrt() * periods_per_year.sqrt();
-                let ir = if te > 0.0 { alpha_val / te } else { 0.0 };
+                let ex_var = (ex_sq_sum / nb as f64 - ex_mean * ex_mean).max(0.0);
+                let te = ex_var.sqrt() * periods_per_year.sqrt();
+                // IR = mean(r − r_b) / std(r − r_b) * sqrt(N)
+                let ir = if ex_var > 0.0 {
+                    ex_mean / ex_var.sqrt() * periods_per_year.sqrt()
+                } else {
+                    0.0
+                };
 
                 (
                     Some(bench_total_return),
@@ -1399,7 +1511,7 @@ pub fn compute_performance_metrics(
         kurtosis,
         best_bar,
         worst_bar,
-        n_trades: n_active,
+        n_trades,
         n_position_changes: n_pos_changes,
         benchmark_total_return,
         benchmark_cagr,
@@ -2119,5 +2231,188 @@ mod tests {
         let close: Vec<f64> = (1..=30).map(|i| 100.0 + (i as f64).sin() * 10.0).collect();
         let signals = rsi_threshold_signals(&close, 14, 30.0, 70.0);
         assert_eq!(signals.len(), close.len());
+    }
+
+    fn equity_from_returns(returns: &[f64]) -> Vec<f64> {
+        let mut equity = Vec::with_capacity(returns.len());
+        let mut cum = 1.0;
+        for &r in returns {
+            cum *= 1.0 + r;
+            equity.push(cum);
+        }
+        equity
+    }
+
+    #[test]
+    fn sharpe_and_sortino_use_mean_excess_return() {
+        // Breaking change: Sharpe/Sortino use mean bar excess, not CAGR.
+        let returns = vec![0.01, 0.02, -0.005, 0.015, 0.0, -0.01];
+        let equity = equity_from_returns(&returns);
+        let ppy = 252.0;
+        let rf = 0.0;
+        let n = returns.len() as f64;
+        let mean_r: f64 = returns.iter().sum::<f64>() / n;
+        let var: f64 = returns.iter().map(|&v| (v - mean_r).powi(2)).sum::<f64>() / n;
+        let std_r = var.sqrt();
+        let rf_bar = rf / ppy;
+        let downside_sq: f64 = returns
+            .iter()
+            .filter(|&&v| v < rf_bar)
+            .map(|&v| (v - rf_bar).powi(2))
+            .sum();
+        let downside_std = (downside_sq / n).sqrt();
+        let exp_sharpe = (mean_r - rf_bar) / std_r * ppy.sqrt();
+        let exp_sortino = (mean_r - rf_bar) / downside_std * ppy.sqrt();
+
+        let m = compute_performance_metrics(&returns, &equity, ppy, rf, None).unwrap();
+        assert!(
+            (m.sharpe - exp_sharpe).abs() < 1e-10,
+            "sharpe {} != mean-excess {}",
+            m.sharpe,
+            exp_sharpe
+        );
+        assert!(
+            (m.sortino - exp_sortino).abs() < 1e-10,
+            "sortino {} != mean-excess {}",
+            m.sortino,
+            exp_sortino
+        );
+    }
+
+    #[test]
+    fn alpha_uses_beta_and_ir_uses_active_return() {
+        let r = vec![0.02, -0.01, 0.03, 0.00, 0.01, -0.005];
+        let rb = vec![0.01, -0.005, 0.015, 0.005, 0.008, 0.002];
+        let equity = equity_from_returns(&r);
+        let ppy = 252.0;
+        let n = r.len() as f64;
+        let s_mean: f64 = r.iter().sum::<f64>() / n;
+        let b_mean: f64 = rb.iter().sum::<f64>() / n;
+        let mut cov = 0.0;
+        let mut b_var = 0.0;
+        let mut ex_sum = 0.0;
+        let mut ex_sq = 0.0;
+        for i in 0..r.len() {
+            cov += (r[i] - s_mean) * (rb[i] - b_mean);
+            b_var += (rb[i] - b_mean).powi(2);
+            let ex = r[i] - rb[i];
+            ex_sum += ex;
+            ex_sq += ex * ex;
+        }
+        cov /= n;
+        b_var /= n;
+        let beta = cov / b_var;
+        let exp_alpha = (s_mean - beta * b_mean) * ppy;
+        let ex_mean = ex_sum / n;
+        let ex_var = (ex_sq / n - ex_mean * ex_mean).max(0.0);
+        let te = ex_var.sqrt() * ppy.sqrt();
+        let exp_ir = ex_mean / ex_var.sqrt() * ppy.sqrt();
+
+        let m = compute_performance_metrics(&r, &equity, ppy, 0.0, Some(&rb)).unwrap();
+        assert!((m.beta.unwrap() - beta).abs() < 1e-10);
+        assert!(
+            (m.alpha.unwrap() - exp_alpha).abs() < 1e-8,
+            "alpha {} != Jensen {}",
+            m.alpha.unwrap(),
+            exp_alpha
+        );
+        assert!((m.tracking_error.unwrap() - te).abs() < 1e-10);
+        assert!(
+            (m.information_ratio.unwrap() - exp_ir).abs() < 1e-8,
+            "IR {} != {}",
+            m.information_ratio.unwrap(),
+            exp_ir
+        );
+    }
+
+    #[test]
+    fn win_rate_and_n_trades_are_round_trips_not_bars() {
+        // Two trades: a winning run then a losing run. Five non-zero bars.
+        let returns = vec![0.0, 0.02, 0.01, 0.0, -0.03, -0.01, 0.0];
+        let equity = equity_from_returns(&returns);
+        let m = compute_performance_metrics(&returns, &equity, 252.0, 0.0, None).unwrap();
+        assert_eq!(
+            m.n_trades, 2,
+            "n_trades must count round-trips, not non-zero bars (got {})",
+            m.n_trades
+        );
+        assert!(
+            (m.win_rate - 0.5).abs() < 1e-12,
+            "win_rate {} must be 1 win / 2 trades",
+            m.win_rate
+        );
+    }
+
+    #[test]
+    fn n_position_changes_counts_position_vector_not_return_activity() {
+        // Held long through a flat bar: two position changes (enter, exit),
+        // but four return-activity transitions if someone keys off r != 0.
+        let positions = vec![0.0, 1.0, 1.0, 1.0, 0.0];
+        let returns = vec![0.0, 0.01, 0.0, 0.02, 0.0];
+        let equity = equity_from_returns(&returns);
+        let m = compute_performance_metrics_with_positions(
+            &returns,
+            &equity,
+            252.0,
+            0.0,
+            None,
+            Some(&positions),
+        )
+        .unwrap();
+        assert_eq!(m.n_position_changes, 2);
+        assert_eq!(m.n_trades, 1);
+        assert!((m.win_rate - 1.0).abs() < 1e-12);
+    }
+
+    #[test]
+    fn nan_signals_carry_prior_position() {
+        let close = vec![100.0, 101.0, 102.0, 103.0, 104.0];
+        let signals = vec![1.0, 1.0, f64::NAN, 1.0, 0.0];
+        let result = backtest_core(&close, &signals, None, 0.0, 100_000.0, 0.0).unwrap();
+        // positions[i] = signal[i-1]; NaN at signals[2] must carry positions[2], not flatten.
+        assert!((result.positions[1] - 1.0).abs() < 1e-12);
+        assert!((result.positions[2] - 1.0).abs() < 1e-12);
+        assert!(
+            (result.positions[3] - 1.0).abs() < 1e-12,
+            "NaN signal flattened to 0, got {}",
+            result.positions[3]
+        );
+        assert!((result.positions[4] - 1.0).abs() < 1e-12);
+    }
+
+    #[test]
+    fn drawdown_tracks_peak_equity() {
+        // Peak 1.2 then trough 0.9 → max DD = (0.9 − 1.2) / 1.2 = −0.25.
+        let equity = vec![1.0, 1.2, 1.1, 0.9, 1.0];
+        let returns = vec![0.0, 0.2, -1.0 / 12.0, -0.2 / 1.1, 0.1 / 0.9];
+        let m = compute_performance_metrics(&returns, &equity, 252.0, 0.0, None).unwrap();
+        assert!((m.max_drawdown - (-0.25)).abs() < 1e-12);
+    }
+
+    #[test]
+    fn daily_loss_limit_trips_on_a_single_bar() {
+        // Least-breaking semantics: `daily_loss_limit` is a per-bar circuit
+        // breaker (the engine has no calendar timestamps). A single −15% bar
+        // trips a 5% limit and flats subsequent positions.
+        let n = 8;
+        let mut close = vec![100.0; n];
+        close[3] = 85.0;
+        close[4] = 85.0;
+        close[5] = 86.0;
+        close[6] = 87.0;
+        close[7] = 88.0;
+        let open = close.clone();
+        let high: Vec<f64> = close.iter().map(|&c| c + 1.0).collect();
+        let low: Vec<f64> = close.iter().map(|&c| c - 1.0).collect();
+        let signals = vec![1.0; n];
+        let mut config = BacktestConfig::default();
+        config.daily_loss_limit = 0.05;
+        let result =
+            backtest_ohlcv_core(&open, &high, &low, &close, &signals, &config, None).unwrap();
+        assert!(
+            result.positions[5..].iter().all(|&p| p.abs() < 1e-12),
+            "per-bar daily_loss_limit must flatten after the crash bar, got {:?}",
+            result.positions
+        );
     }
 }

@@ -132,6 +132,7 @@ pub fn black_76_greeks(
     let discount = (-rate * time_to_expiry).exp();
     let d1 =
         ((forward / strike).ln() + 0.5 * volatility * volatility * time_to_expiry) / sigma_sqrt_t;
+    let d2 = d1 - sigma_sqrt_t;
     let pdf_d1 = pdf(d1);
 
     let delta = match kind {
@@ -143,8 +144,13 @@ pub fn black_76_greeks(
     let theta = numerical_theta(time_to_expiry, |t| {
         black_76_price(forward, strike, rate, t, volatility, kind)
     });
-    let rho =
-        -time_to_expiry * black_76_price(forward, strike, rate, time_to_expiry, volatility, kind);
+    // Analytical ρ holding the forward fixed: −T · K · e^{−rT} · N(±d2).
+    // (−T · price) is the total derivative through the discount factor on the
+    // whole premium, not the strike-discount ρ used here.
+    let rho = match kind {
+        OptionKind::Call => -time_to_expiry * strike * discount * cdf(d2),
+        OptionKind::Put => -time_to_expiry * strike * discount * cdf(-d2),
+    };
 
     Greeks {
         delta,
@@ -213,7 +219,7 @@ pub fn black_scholes_extended_greeks(
     dividend_yield: f64,
     time_to_expiry: f64,
     volatility: f64,
-    _kind: OptionKind,
+    kind: OptionKind,
 ) -> ExtendedGreeks {
     if !bs_inputs_valid(
         spot,
@@ -245,11 +251,18 @@ pub fn black_scholes_extended_greeks(
 
     let vanna = -carry_discount * pdf_d1 * d2 / volatility;
     let volga = spot * carry_discount * pdf_d1 * sqrt_t * d1 * d2 / volatility;
-    let charm = -carry_discount
-        * pdf_d1
+    // Charm = ∂Δ/∂τ. The n(d1) term is shared; the q N(±d1) term differs
+    // for puts (Haug / Wikipedia).
+    let charm_common = pdf_d1
         * (2.0 * (rate - dividend_yield) * time_to_expiry - d2 * sigma_sqrt_t)
         / (2.0 * time_to_expiry * sigma_sqrt_t);
+    let charm_extra = match kind {
+        OptionKind::Call => dividend_yield * cdf(d1),
+        OptionKind::Put => -dividend_yield * cdf(-d1),
+    };
+    let charm = -carry_discount * (charm_common + charm_extra);
     let speed = -gamma / spot * (d1 / sigma_sqrt_t + 1.0);
+    // Color = ∂Γ/∂τ is identical for calls and puts (Γ itself is).
     let color = -carry_discount * pdf_d1 / (2.0 * spot * time_to_expiry * sigma_sqrt_t)
         * (2.0 * (rate - dividend_yield) * time_to_expiry + 1.0
             - d1 * (2.0 * (rate - dividend_yield) * time_to_expiry - d2 * sigma_sqrt_t)
@@ -323,5 +336,97 @@ mod tests {
         assert!(eg.color.is_finite());
         // Volga must be positive (convex in vol)
         assert!(eg.volga >= 0.0);
+    }
+
+    fn expected_charm(
+        spot: f64,
+        strike: f64,
+        rate: f64,
+        dividend_yield: f64,
+        time_to_expiry: f64,
+        volatility: f64,
+        kind: OptionKind,
+    ) -> f64 {
+        use crate::options::normal::{cdf, pdf};
+        let sqrt_t = time_to_expiry.sqrt();
+        let sigma_sqrt_t = volatility * sqrt_t;
+        let carry_discount = (-dividend_yield * time_to_expiry).exp();
+        let d1 = ((spot / strike).ln()
+            + (rate - dividend_yield + 0.5 * volatility * volatility) * time_to_expiry)
+            / sigma_sqrt_t;
+        let d2 = d1 - sigma_sqrt_t;
+        let common = pdf(d1) * (2.0 * (rate - dividend_yield) * time_to_expiry - d2 * sigma_sqrt_t)
+            / (2.0 * time_to_expiry * sigma_sqrt_t);
+        let extra = match kind {
+            OptionKind::Call => dividend_yield * cdf(d1),
+            OptionKind::Put => -dividend_yield * cdf(-d1),
+        };
+        -carry_discount * (common + extra)
+    }
+
+    #[test]
+    fn extended_greeks_charm_depends_on_kind_when_carry_nonzero() {
+        let call =
+            black_scholes_extended_greeks(100.0, 100.0, 0.05, 0.03, 1.0, 0.2, OptionKind::Call);
+        let put =
+            black_scholes_extended_greeks(100.0, 100.0, 0.05, 0.03, 1.0, 0.2, OptionKind::Put);
+        let exp_call = expected_charm(100.0, 100.0, 0.05, 0.03, 1.0, 0.2, OptionKind::Call);
+        let exp_put = expected_charm(100.0, 100.0, 0.05, 0.03, 1.0, 0.2, OptionKind::Put);
+        assert!(
+            (call.charm - exp_call).abs() < 1e-10,
+            "call charm {} != {}",
+            call.charm,
+            exp_call
+        );
+        assert!(
+            (put.charm - exp_put).abs() < 1e-10,
+            "put charm {} != {}",
+            put.charm,
+            exp_put
+        );
+        assert!(
+            (call.charm - put.charm).abs() > 1e-6,
+            "charm must differ for call vs put when q≠0"
+        );
+    }
+
+    #[test]
+    fn black_76_rho_is_analytical_strike_discount() {
+        use crate::options::normal::cdf;
+        let forward = 100.0_f64;
+        let strike = 100.0_f64;
+        let rate = 0.03_f64;
+        let t = 1.0_f64;
+        let vol = 0.2_f64;
+        let sqrt_t = t.sqrt();
+        let d1 = ((forward / strike).ln() + 0.5 * vol * vol * t) / (vol * sqrt_t);
+        let d2 = d1 - vol * sqrt_t;
+        let discount = (-rate * t).exp();
+        let exp_call = -t * strike * discount * cdf(d2);
+        let exp_put = -t * strike * discount * cdf(-d2);
+        let call = black_76_greeks(forward, strike, rate, t, vol, OptionKind::Call);
+        let put = black_76_greeks(forward, strike, rate, t, vol, OptionKind::Put);
+        assert!(
+            (call.rho - exp_call).abs() < 1e-10,
+            "Black-76 call ρ {} != {}",
+            call.rho,
+            exp_call
+        );
+        assert!(
+            (put.rho - exp_put).abs() < 1e-10,
+            "Black-76 put ρ {} != {}",
+            put.rho,
+            exp_put
+        );
+        // The old −T·price formula is a different number for this ATM case.
+        let price = crate::options::pricing::black_76_price(
+            forward,
+            strike,
+            rate,
+            t,
+            vol,
+            OptionKind::Call,
+        );
+        assert!((call.rho - (-t * price)).abs() > 1.0);
     }
 }

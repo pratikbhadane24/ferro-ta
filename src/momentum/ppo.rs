@@ -2,8 +2,6 @@ use crate::validation;
 use numpy::{IntoPyArray, PyArray1, PyReadonlyArray1};
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
-use ta::indicators::PercentagePriceOscillator;
-use ta::Next;
 
 /// Percentage Price Oscillator. Returns (ppo_line, signal_line, histogram).
 #[pyfunction]
@@ -29,21 +27,8 @@ pub fn ppo<'py>(
         ));
     }
     let prices = close.as_slice()?;
-    let n = prices.len();
-    let mut indicator = PercentagePriceOscillator::new(fastperiod, slowperiod, signalperiod)
-        .map_err(|e| PyValueError::new_err(e.to_string()))?;
-    let warmup = slowperiod + signalperiod - 2;
-    let mut ppo_line = vec![f64::NAN; n];
-    let mut signal_line = vec![f64::NAN; n];
-    let mut hist = vec![f64::NAN; n];
-    for (i, &price) in prices.iter().enumerate() {
-        let out = indicator.next(price);
-        if i >= warmup {
-            ppo_line[i] = out.ppo;
-            signal_line[i] = out.signal;
-            hist[i] = out.histogram;
-        }
-    }
+    let (ppo_line, signal_line, hist) =
+        ferro_ta_core::momentum::ppo(prices, fastperiod, slowperiod, signalperiod);
     Ok((
         ppo_line.into_pyarray(py),
         signal_line.into_pyarray(py),

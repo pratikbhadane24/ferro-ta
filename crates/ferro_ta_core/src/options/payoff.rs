@@ -66,7 +66,8 @@ pub fn strategy_payoff_dense(
     multipliers: &[f64],
 ) -> Vec<f64> {
     let n_legs = instruments.len();
-    // Validate that all leg slices are the same length; return zeros if not.
+    // Mismatched leg slices are an input error — return NaNs, not a silent
+    // zero-payoff (which looks like a flat strategy).
     if sides.len() != n_legs
         || option_types.len() != n_legs
         || strikes.len() != n_legs
@@ -75,7 +76,7 @@ pub fn strategy_payoff_dense(
         || quantities.len() != n_legs
         || multipliers.len() != n_legs
     {
-        return vec![0.0; spot_grid.len()];
+        return vec![f64::NAN; spot_grid.len()];
     }
 
     let mut total = vec![0.0_f64; spot_grid.len()];
@@ -388,5 +389,26 @@ mod tests {
         assert!((out[0] - (-10.0)).abs() < 1e-10);
         assert!((out[1] - 0.0).abs() < 1e-10);
         assert!((out[2] - 10.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn payoff_mismatched_legs_returns_nans() {
+        let grid = vec![90.0, 100.0, 110.0];
+        let out = strategy_payoff_dense(
+            &grid,
+            &[0, 0],
+            &[1], // sides length ≠ n_legs
+            &[1, 1],
+            &[100.0, 110.0],
+            &[5.0, 4.0],
+            &[0.0, 0.0],
+            &[1.0, 1.0],
+            &[1.0, 1.0],
+        );
+        assert_eq!(out.len(), grid.len());
+        assert!(
+            out.iter().all(|v| v.is_nan()),
+            "mismatched legs must be NaN, got {out:?}"
+        );
     }
 }

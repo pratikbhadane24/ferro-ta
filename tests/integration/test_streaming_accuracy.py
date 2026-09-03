@@ -185,25 +185,17 @@ class TestStreamingATR:
 
     @pytest.mark.parametrize("period", [7, 14, 21])
     def test_streaming_matches_batch(self, period):
-        """Streaming ATR should match batch ATR in the converged (post-warmup) region.
-
-        Note: streaming ATR uses a different initialization seed than batch ATR, so
-        values may differ during the early warmup bars.  The tail (last 30%) converges
-        to identical values.  We compare the full overlap region with atol=0.05 to
-        capture any remaining seeding difference without false-positives.
-        """
-        # Batch
+        """Streaming ATR should match batch ATR bar-for-bar."""
         batch_out = ferro_ta.ATR(HIGH, LOW, CLOSE, timeperiod=period)
 
-        # Streaming
         streamer = StreamingATR(period=period)
         stream_out = np.array(
             [streamer.update(h, l, c) for h, l, c in zip(HIGH, LOW, CLOSE)]
         )
 
-        # Compare only the overlap region where both arrays are valid
-        mask = np.isfinite(batch_out) & np.isfinite(stream_out)
-        assert np.allclose(stream_out[mask], batch_out[mask], atol=0.05)
+        assert np.allclose(stream_out, batch_out, equal_nan=True, atol=1e-10)
+
+    def test_atr_non_negative(self):
         """ATR values should be non-negative."""
         period = 14
         streamer = StreamingATR(period=period)
@@ -211,7 +203,6 @@ class TestStreamingATR:
             [streamer.update(h, l, c) for h, l, c in zip(HIGH, LOW, CLOSE)]
         )
 
-        # Filter out NaN values
         valid = stream_out[~np.isnan(stream_out)]
 
         assert np.all(valid >= 0.0), "ATR should be non-negative"
@@ -251,34 +242,20 @@ class TestStreamingBBands:
 
     @pytest.mark.parametrize("period", [10, 20, 30])
     def test_streaming_matches_batch(self, period):
-        """Streaming BBands middle band matches batch exactly; bands within expected range.
-
-        Note: the streaming BBands Rust implementation uses sample std (ddof=1) while
-        the batch BBANDS (TA-Lib convention) uses population std (ddof=0).  The middle
-        band (SMA) is identical.  Upper/lower differ by a ~sqrt(N/(N-1)) factor; we
-        verify proximity with atol=0.2 and confirm internal consistency separately.
-        """
-        # Batch
+        """Streaming BBands should match batch BBands (population std) bar-for-bar."""
         batch_upper, batch_middle, batch_lower = ferro_ta.BBANDS(
             CLOSE, timeperiod=period
         )
 
-        # Streaming
         streamer = StreamingBBands(period=period, nbdevup=2.0, nbdevdn=2.0)
         stream_results = [streamer.update(c) for c in CLOSE]
         stream_upper = np.array([r[0] for r in stream_results])
         stream_middle = np.array([r[1] for r in stream_results])
         stream_lower = np.array([r[2] for r in stream_results])
 
-        # Compare only overlapping valid region
-        mask = np.isfinite(batch_middle)
-        # Middle band (SMA) must match exactly
-        assert np.allclose(stream_middle[mask], batch_middle[mask], atol=1e-10), (
-            "BBands middle (SMA) must match batch exactly"
-        )
-        # Upper/lower: streaming uses sample std; batch uses population std — use atol=0.2
-        assert np.allclose(stream_upper[mask], batch_upper[mask], atol=0.2)
-        assert np.allclose(stream_lower[mask], batch_lower[mask], atol=0.2)
+        assert np.allclose(stream_upper, batch_upper, equal_nan=True, atol=1e-10)
+        assert np.allclose(stream_middle, batch_middle, equal_nan=True, atol=1e-10)
+        assert np.allclose(stream_lower, batch_lower, equal_nan=True, atol=1e-10)
 
     def test_reset_gives_same_result(self):
         """Reset and re-feed should give identical output."""
@@ -321,12 +298,9 @@ class TestStreamingMACD:
         stream_signal = np.array([r[1] for r in stream_results])
         stream_hist = np.array([r[2] for r in stream_results])
 
-        # Streaming MACD starts computing sooner (fewer NaN warmup bars due to EMA seeding).
-        # Values where batch is valid are identical to batch values within floating-point.
-        mask = np.isfinite(batch_macd)
-        assert np.allclose(stream_macd[mask], batch_macd[mask], atol=1e-8)
-        assert np.allclose(stream_signal[mask], batch_signal[mask], atol=1e-8)
-        assert np.allclose(stream_hist[mask], batch_hist[mask], atol=1e-8)
+        assert np.allclose(stream_macd, batch_macd, equal_nan=True, atol=1e-10)
+        assert np.allclose(stream_signal, batch_signal, equal_nan=True, atol=1e-10)
+        assert np.allclose(stream_hist, batch_hist, equal_nan=True, atol=1e-10)
 
     def test_histogram_identity(self):
         """histogram should always equal macd - signal."""
@@ -378,11 +352,8 @@ class TestStreamingStoch:
         stream_slowk = np.array([r[0] for r in stream_results])
         stream_slowd = np.array([r[1] for r in stream_results])
 
-        # Streaming Stoch starts computing sooner (fewer NaN warmup bars).
-        # Values where batch is valid match exactly.
-        mask = np.isfinite(batch_slowk)
-        assert np.allclose(stream_slowk[mask], batch_slowk[mask], atol=1e-8)
-        assert np.allclose(stream_slowd[mask], batch_slowd[mask], atol=1e-8)
+        assert np.allclose(stream_slowk, batch_slowk, equal_nan=True, atol=1e-10)
+        assert np.allclose(stream_slowd, batch_slowd, equal_nan=True, atol=1e-10)
 
     def test_stoch_range_zero_to_hundred(self):
         """Stochastic values should be in range [0, 100]."""
