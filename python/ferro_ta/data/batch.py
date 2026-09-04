@@ -421,14 +421,74 @@ def batch_stoch(
     close: ArrayLike,
     fastk_period: int = 5,
     slowk_period: int = 3,
+    slowk_matype: int = 0,
     slowd_period: int = 3,
+    slowd_matype: int = 0,
     parallel: bool = True,
 ) -> tuple[np.ndarray, np.ndarray]:
+    """Stochastic across every column of a 2-D ``(n_samples, n_series)`` input.
+
+    Parameters follow TA-Lib's *interleaved* order — each ``*_matype`` comes
+    immediately after the period it types — matching :func:`ferro_ta.STOCH`,
+    so a mis-ordered positional call fails the type checker instead of
+    returning a wrong answer.
+
+    Parameters
+    ----------
+    high, low, close : array-like
+        2-D arrays of shape ``(n_samples, n_series)``; one column per series.
+    fastk_period : int, optional
+        Fast %K period (default 5).
+    slowk_period : int, optional
+        Slow %K smoothing period (default 3).
+    slowk_matype : int, optional
+        Moving average type applied to the slow %K leg (default 0):
+
+        * 0 = SMA (Simple)
+        * 1 = EMA (Exponential)
+        * 2 = WMA (Weighted)
+        * 3 = DEMA (Double EMA)
+        * 4 = TEMA (Triple EMA)
+        * 5 = TRIMA (Triangular)
+        * 6 = KAMA (Kaufman Adaptive)
+        * 7 = T3 (Tillson)
+        * 8 = T3 (Tillson; exact alias of 7)
+
+        Values ``0``-``6`` and ``8`` match TA-Lib's numbering, but ``7`` is T3
+        here where TA-Lib's ``7`` is MAMA.  MAMA is not reachable through any
+        ``matype`` value -- call :func:`ferro_ta.MAMA` directly.
+    slowd_period : int, optional
+        Slow %D smoothing period (default 3).
+    slowd_matype : int, optional
+        Moving average type applied to the slow %D leg (default 0); same
+        numbering and the same ``7`` caveat as ``slowk_matype``.
+    parallel : bool, optional
+        Process columns in parallel via Rayon (default ``True``).
+
+    Returns
+    -------
+    tuple[numpy.ndarray, numpy.ndarray]
+        ``(slowk, slowd)`` — two arrays shaped like the input.
+
+    Raises
+    ------
+    ValueError
+        If either matype is outside ``0``-``8``, or the three inputs disagree
+        in shape.
+    """
     h = np.ascontiguousarray(high, dtype=np.float64)
     low_arr = np.ascontiguousarray(low, dtype=np.float64)
     c = np.ascontiguousarray(close, dtype=np.float64)
     k, d = _rust_batch_stoch(
-        h, low_arr, c, fastk_period, slowk_period, slowd_period, parallel
+        h,
+        low_arr,
+        c,
+        fastk_period,
+        slowk_period,
+        slowk_matype,
+        slowd_period,
+        slowd_matype,
+        parallel,
     )
     return np.asarray(k), np.asarray(d)
 

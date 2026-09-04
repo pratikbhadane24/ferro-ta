@@ -3069,12 +3069,20 @@ pub fn batch_atr(high: &Array, low: &Array, close: &Array, timeperiod: usize) ->
 }
 
 /// Batch Stochastic across multiple HLC column sets. Returns [Array[slowk_cols], Array[slowd_cols]].
+///
+/// `slowk_matype` / `slowd_matype` select the smoothing MA, `0`-`8` (`0` = SMA,
+/// TA-Lib's default). Each matype follows the period it types, matching
+/// `TA_STOCH`, so a mis-ordered call is a type error rather than a wrong
+/// answer. `0`-`6` and `8` match TA-Lib's numbering; `7` is T3 here where
+/// TA-Lib's `7` is MAMA, and MAMA is not reachable through any matype (call
+/// `mama` directly). A value above `8` yields an empty result.
 #[wasm_bindgen]
-pub fn batch_stoch(high: &Array, low: &Array, close: &Array, fastk_period: usize, slowk_period: usize, slowd_period: usize) -> Array {
+#[allow(clippy::too_many_arguments)]
+pub fn batch_stoch(high: &Array, low: &Array, close: &Array, fastk_period: usize, slowk_period: usize, slowk_matype: u8, slowd_period: usize, slowd_matype: u8) -> Array {
     let h = array_of_f64arr_to_vecs(high);
     let l = array_of_f64arr_to_vecs(low);
     let c = array_of_f64arr_to_vecs(close);
-    match ferro_ta_core::batch::batch_stoch(&h, &l, &c, fastk_period, slowk_period, slowd_period) {
+    match ferro_ta_core::batch::batch_stoch(&h, &l, &c, fastk_period, slowk_period, slowk_matype, slowd_period, slowd_matype) {
         Ok((sk, sd)) => {
             let out = Array::new();
             out.push(&vecs_to_array_of_f64arr(sk));

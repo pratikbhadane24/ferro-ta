@@ -136,10 +136,22 @@ if HAS_HYPOTHESIS:
         the previous exact agreement was an accident of both using the same
         recurrence rather than a guarantee.
 
-        Hypothesis finds this with adversarial input --- ``[48577.0, 999999.7,
-        0.5, 0.5]`` at ``timeperiod=2`` spans six orders of magnitude and
-        produced a 1.16e-10 relative difference. ``1e-9`` leaves ~9x headroom
-        over that while still catching any real divergence in the centre.
+        The tolerance encodes the error model rather than a constant. A
+        rounding error in a sum of ``p`` values is bounded by roughly
+        ``p * eps * max|x|`` --- it scales with the *largest* element of the
+        window, not with the magnitude of the result. So a pure ``rtol`` fails
+        whenever a window spans many orders of magnitude: the absolute error is
+        set by the big element while ``rtol`` is measured against the small one.
+
+        Two earlier attempts here used a bare ``rtol`` (``1e-10``, then
+        ``1e-9``), each widened after Hypothesis produced a counterexample --- a
+        6-order window giving 1.16e-10, then a 7-order window
+        (``3.28e4`` beside ``1.95e-3``) giving 1.78e-9 off an absolute
+        difference of only 3.47e-12. Chasing the constant was the wrong move;
+        Hypothesis will beat any constant. Scaling ``atol`` to
+        ``p * eps * max|close|`` closes it, with a factor of 8 for headroom,
+        and still fails on a real divergence in the centre, which would be
+        many orders larger.
         """
         if len(close) < timeperiod:
             timeperiod = min(timeperiod, len(close))
@@ -148,7 +160,9 @@ if HAS_HYPOTHESIS:
         _, middle, _ = BBANDS(close, timeperiod=timeperiod)
         sma = SMA(close, timeperiod=timeperiod)
         mask = np.isfinite(middle) & np.isfinite(sma)
-        np.testing.assert_allclose(middle[mask], sma[mask], rtol=1e-9)
+        scale = float(np.max(np.abs(close))) if close.size else 0.0
+        atol = 8.0 * timeperiod * float(np.finfo(np.float64).eps) * scale
+        np.testing.assert_allclose(middle[mask], sma[mask], rtol=1e-9, atol=atol)
 
     # ------------------------------------------------------------------
     # MACD properties
