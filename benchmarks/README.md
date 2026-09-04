@@ -183,6 +183,128 @@ nightly workflow runs `benchmarks/bench_simd.py` and writes
 either file. Read `simd.json` as a recorded observation, not as an enforced
 contract.
 
+## openalgo head-to-head: measurement methodology and its noise floor
+
+`benchmarks/bench_vs_openalgo.py` compares ferro-ta against
+[openalgo](https://pypi.org/project/openalgo/) on 69 overlapping indicators at
+10k and 100k bars, and `benchmarks/check_vs_openalgo_regression.py` diffs two of
+its artifacts. **Read this before quoting a single number from either.**
+
+> ⚠️ `bench_vs_openalgo.py` defaults `--json` to
+> `benchmarks/artifacts/latest/benchmark_vs_openalgo.json`, a committed baseline
+> deliberately left at its pre-optimization state. Always pass an explicit
+> scratch path:
+>
+> ```bash
+> uv run --with "openalgo>=2.0" python benchmarks/bench_vs_openalgo.py \
+>     --sizes 10000 100000 --json /tmp/bench_a.json
+> uv run python benchmarks/check_vs_openalgo_regression.py \
+>     --baseline /tmp/bench_a.json --candidate /tmp/bench_b.json
+> ```
+
+### The finding: a single run cannot resolve rows inside roughly ±15%
+
+Run the harness **twice against a byte-identical binary** and the "measurement"
+moves. Under the original design (median of 7 samples, one warmup, all of
+ferro-ta's runs then all of openalgo's), the run-to-run delta in `ferro_ta_us`
+was:
+
+| statistic | first report | pair 1 measured here | pair 2 measured here |
+|-----------|-------------:|---------------------:|---------------------:|
+| median | 0.9% | 1.0% | 0.6% |
+| p90 | 6.9% | 9.3% | 7.3% |
+| **max** | **54.9%** | **20.9%** | **131.1%** |
+| verdict flips (of 138 rows) | 6 | 9 | 6 |
+| of those, sign reversals (win ↔ loss) | ≥1 (`VWMA`) | 0 | 2 |
+
+The worst case: `VWMA@100000` measured 201.7 µs in one run and 416.3 µs in the
+next — speedup 1.109 → 0.502, so the harness reported a **104% regression on a
+row that is genuinely ~1.1× faster** (hand re-measurement with interleaving
+confirms the kernel is faster, and `MACD` behaves the same way). Independently, identical Rust source compiled into a different
+binary moved timings 4–8% from code-layout variance alone. Any optimization
+verdict drawn from one run and one row inside ±15% is noise.
+
+### Root cause: the noise is per *process*, not per sample
+
+Within one process a row is extremely reproducible — the minimum of 51 samples
+across three blocks with reallocated inputs varies by well under 1%. Yet the
+*same row, same binary, next process* can sit in a completely different mode:
+
+```text
+VWMA@100000  ferro_ta min per process:  ~200 µs  or  ~460 µs   (2.3x)
+MACD@100000  ferro_ta min per process:  ~490 µs  or  ~657 µs   (1.3x)
+MIDPRICE@10000  openalgo min per process:  ~64 µs  or  ~107 µs (1.7x)
+```
+
+Each mode is stable across *every* sample of the process that sees it (8 blocks
+probed, spread < 1%), and consecutive invocations tend to inherit the same mode,
+so two artifacts generated back to back can look agreeably stable and then
+disagree by 2× an hour later. **No within-process statistic — more samples, a
+different estimator, lower variance — can see this.** On this machine
+(macOS/arm64) it is not fixable either: `os.sched_setaffinity` does not exist on
+Darwin, and a `pthread_set_qos_class_self_np(QOS_CLASS_USER_INTERACTIVE)` hint
+was measured to make no difference (still bimodal, 463–705 µs on `MACD@100k`).
+
+### What the harness does about it
+
+| decision | why |
+|----------|-----|
+| **Reports `min_us`, not `median_us`** | Every sample is the true cost plus non-negative interference, so the min is the least-biased estimate of the kernel cost. The median averages interference in — the right answer for observed latency, the wrong one for comparing kernels. `median_us`, `mean_us`, `stddev_us` and `cv_pct` are still recorded per row. |
+| **51 samples at ≤20k bars, 21 at 100k**, in 3 blocks with reallocated inputs and a fresh warmup each | Wall clock scales linearly with sample count and 10k rows are ~10× cheaper, so they get ~2.4× the samples. Blocks give a within-process error bar. |
+| **Interleaved A/B timing** (ferro-ta and openalgo alternate every sample, order flipping) | Timing all of A then all of B lets one thermal or scheduling excursion land entirely on one side. This was the single largest improvement: run-to-run `speedup` p90 fell from ~10.5% to ~2.8%. |
+| **Three separate measurement processes**, reporting each side's cross-process minimum | The only remedy for per-process modes. `--processes N` tunes it; `--processes 1` measures in-process only and is *not* reproducible. |
+| **CPU pinning where the OS has it** | `os.sched_setaffinity` pins to one core on Linux and removes migration noise. Absent on macOS/Windows: the harness detects that, records the reason in `metadata.methodology.cpu_pinning`, prints it, and carries on. **The Linux pinning path is written but untested — this machine is macOS/arm64.** |
+| **Refuses to call a row it cannot resolve** | `outcome` widens the ±5% tie band to the row's own `dispersion_pct` (the gap between the two lowest independent minima, noisier side). A row whose noise exceeds its claimed gap is reported as a `tie`, flagged `outcome_inconclusive`, printed with `?`, and listed in `summary.by_size[].inconclusive`. |
+
+Cost: ~12 s wall for the full 138-row run (was ~1.6 s).
+
+### Measured result of the change
+
+Two runs each, byte-identical binary, four pairings of four artifacts:
+
+| | before (median-of-7, sequential) | after (min, interleaved, 3 processes) |
+|---|---|---|
+| `ferro_ta_us` delta — median / p90 / max | 0.6–1.0% / 7.3–9.3% / **20.9–131%** | 0.4–0.6% / 6.0–6.5% / **9.9–10.1%** |
+| `speedup` delta — median / p90 / max | 1.4–2.2% / 10.4–10.6% / 54.8% | 0.4% / 2.8–3.4% / 50.2% (one row) |
+| verdict flips per pair | 9 and 6 | 6, 2, 6, 2 |
+| **sign reversals (win ↔ loss)** | **2** | **0** |
+
+The absolute-timing and ratio noise both improved by roughly 3×, and the
+class of error that produced the `VWMA` "104% regression" — a win reported as a
+loss — did not recur in any pairing. Verdict flips did **not** go to zero, and
+that is the honest state of the harness:
+
+- Most surviving flips are rows sitting within ~2% of the 1.05 / 0.95 tie
+  boundary (`BETA@10k`, `ROCR100@100k`, `SUPERTREND@100k`, `DONCHIAN@100k`).
+  Any threshold flips there; the point estimates agree to <1%.
+- A few rows are genuinely unresolvable because *openalgo's* fast mode is not
+  sampled in every run (`STOCH@10000` flips in every pairing, `MIDPRICE@10000`
+  in two). Three processes reduce this; five did not help further.
+- So: **treat any single row as unresolved inside ±15%, and any row inside a
+  couple of percent of the tie band as unresolved regardless.** Re-run and diff
+  with `check_vs_openalgo_regression.py`; do not quote one row from one run.
+
+### Artifact schema (v3)
+
+`schema_version` is now `3`. Existing fields keep their names — the differ needs
+`ferro_ta_us`, `openalgo_us`, `speedup`, `outcome`, `ferro_ta_stats.cv_pct` and
+`summary.by_size[].openalgo_wins_or_ties` — but two meanings changed:
+
+- **`ferro_ta_us` / `openalgo_us` / `speedup` are now minima, not medians.** A
+  min is systematically lower than a median, so v2 and v3 artifacts are not
+  directly comparable; regenerate the baseline before diffing.
+- **`outcome` can be `tie` on a row whose speedup is outside ±5%**, when the
+  row's own dispersion is larger than its gap. `outcome_at_tie_band` records
+  what the fixed band alone would have said.
+
+Added fields: `n_processes`, `n_runs_by_size`, `reported_metric`, `interleaved`,
+`cpu_pinning`, and per row `measured_runs`, `measurement_blocks`, `processes`,
+`process_ferro_ta_min_us`, `process_openalgo_min_us`, `dispersion_pct`,
+`required_margin_pct`, `outcome_at_tie_band`, `outcome_inconclusive`, plus
+`min_gap_pct` / `samples` inside each `*_stats` block and
+`inconclusive_rows` / `inconclusive` / `median_dispersion_pct` /
+`max_dispersion_pct` in the summary.
+
 ---
 
 ## Speed comparison (100k bars, median µs — lower is better)
@@ -286,6 +408,11 @@ uv run python benchmarks/bench_vs_talib.py --sizes 10000 100000 --json benchmark
 # Selected derivatives analytics comparison (BSM price, IV, Greeks, Black-76)
 # against built-in analytical references plus optional installed libraries
 uv run python benchmarks/bench_derivatives_compare.py --sizes 1000 10000 --json benchmark_derivatives_compare.json
+
+# openalgo head-to-head (69 indicators; ALWAYS pass an explicit scratch --json,
+# the default path is a committed pre-optimization baseline)
+uv run --with "openalgo>=2.0" python benchmarks/bench_vs_openalgo.py \
+    --sizes 10000 100000 --json /tmp/benchmark_vs_openalgo.json
 
 # Optional regression check used in CI
 uv run python benchmarks/check_vs_talib_regression.py --input benchmark_vs_talib.json

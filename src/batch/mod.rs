@@ -243,8 +243,16 @@ pub fn batch_atr<'py>(
 
 type StochBatchResult<'py> = (Bound<'py, PyArray2<f64>>, Bound<'py, PyArray2<f64>>);
 
+/// Batch Stochastic. `slowk_matype`/`slowd_matype` follow TA-Lib's
+/// *interleaved* argument order — each matype immediately after the period it
+/// types — matching [`ferro_ta_core::batch::batch_stoch`] and the scalar
+/// `STOCH`.
+///
+/// Values `0`–`6` and `8` match TA-Lib's `TA_MAType`, but **`7` is T3 here
+/// where TA-Lib's `7` is MAMA**, and MAMA is not reachable through any
+/// `matype` value — callers need `ferro_ta.MAMA`.
 #[pyfunction]
-#[pyo3(signature = (high, low, close, fastk_period = 5, slowk_period = 3, slowd_period = 3, parallel = true))]
+#[pyo3(signature = (high, low, close, fastk_period = 5, slowk_period = 3, slowk_matype = 0, slowd_period = 3, slowd_matype = 0, parallel = true))]
 #[allow(clippy::too_many_arguments)]
 pub fn batch_stoch<'py>(
     py: Python<'py>,
@@ -253,9 +261,21 @@ pub fn batch_stoch<'py>(
     close: PyReadonlyArray2<'py, f64>,
     fastk_period: usize,
     slowk_period: usize,
+    slowk_matype: u8,
     slowd_period: usize,
+    slowd_matype: u8,
     parallel: bool,
 ) -> PyResult<StochBatchResult<'py>> {
+    if slowk_matype > 8 {
+        return Err(PyValueError::new_err(
+            "slowk_matype must be 0–8 (SMA/EMA/WMA/DEMA/TEMA/TRIMA/KAMA/T3; 8 aliases T3)",
+        ));
+    }
+    if slowd_matype > 8 {
+        return Err(PyValueError::new_err(
+            "slowd_matype must be 0–8 (SMA/EMA/WMA/DEMA/TEMA/TRIMA/KAMA/T3; 8 aliases T3)",
+        ));
+    }
     let arr_h = high.as_array();
     let arr_l = low.as_array();
     let arr_c = close.as_array();
@@ -275,13 +295,9 @@ pub fn batch_stoch<'py>(
                 &c_cols[i],
                 fastk_period,
                 slowk_period,
-                // `batch_stoch` mirrors `ferro_ta_core::batch::batch_stoch`,
-                // which kept its pre-matype signature: SMA/SMA (matype 0), the
-                // pre-matype behaviour. Exposing the two matypes here would
-                // drift the Python batch surface from the core's.
-                0,
+                slowk_matype,
                 slowd_period,
-                0,
+                slowd_matype,
             )
         };
         if parallel {

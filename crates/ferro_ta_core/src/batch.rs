@@ -272,30 +272,49 @@ pub fn batch_atr(
 
 /// Apply Stochastic to each set of (high, low, close) columns.
 /// Returns `(slowk_columns, slowd_columns)`.
+///
+/// The two matypes follow TA-Lib's *interleaved* argument order — each matype
+/// immediately after the period it types — so a mis-ordered positional call is
+/// a compile error rather than a silently wrong answer. Pass `0, 0` (SMA/SMA,
+/// TA-Lib's default) for the pre-matype behaviour.
+///
+/// # `matype` values
+///
+/// `0`=SMA, `1`=EMA, `2`=WMA, `3`=DEMA, `4`=TEMA, `5`=TRIMA, `6`=KAMA,
+/// `7`=T3, `8`=T3 (an exact alias of `7`). Values `0`–`6` and `8` match
+/// TA-Lib's `TA_MAType`, but **`7` is T3 here where TA-Lib's `7` is MAMA**,
+/// and MAMA is not reachable through any `matype` value — call
+/// [`overlap::mama`](crate::overlap::mama) directly. See the
+/// [`overlap`](crate::overlap) module docs.
+///
+/// A matype above `MAX_MATYPE` (`8`) yields all-`NaN` columns rather than a
+/// silent SMA fallback; validation of the caller-supplied value belongs in the
+/// binding layer.
 #[allow(clippy::type_complexity)]
+#[allow(clippy::too_many_arguments)] // mirrors TA_STOCH's argument list
 pub fn batch_stoch(
     high: &[Vec<f64>],
     low: &[Vec<f64>],
     close: &[Vec<f64>],
     fastk_period: usize,
     slowk_period: usize,
+    slowk_matype: u8,
     slowd_period: usize,
+    slowd_matype: u8,
 ) -> Result<(Vec<Vec<f64>>, Vec<Vec<f64>>), String> {
     validate_hlc_columns(high, low, close)?;
     let mut all_k = Vec::with_capacity(high.len());
     let mut all_d = Vec::with_capacity(high.len());
     for i in 0..high.len() {
-        // `batch_stoch` keeps its pre-matype signature; SMA/SMA (matype 0)
-        // is TA-Lib's default and what this wrapper has always computed.
         let (k, d) = momentum::stoch(
             &high[i],
             &low[i],
             &close[i],
             fastk_period,
             slowk_period,
-            0,
+            slowk_matype,
             slowd_period,
-            0,
+            slowd_matype,
         );
         all_k.push(k);
         all_d.push(d);
@@ -537,10 +556,114 @@ mod tests {
         let high = vec![h];
         let low = vec![l];
         let close = vec![c];
-        let (k, d) = batch_stoch(&high, &low, &close, 5, 3, 3).unwrap();
+        let (k, d) = batch_stoch(&high, &low, &close, 5, 3, 0, 3, 0).unwrap();
         assert_eq!(k.len(), 1);
         assert_eq!(d.len(), 1);
         assert_eq!(k[0].len(), d[0].len());
+    }
+
+    /// Verbatim copy of `batch_stoch` as it stood before the two matypes were
+    /// threaded through — it hard-coded SMA/SMA. Used to prove that the new
+    /// signature called with `0, 0` is bit-identical to the old behaviour.
+    #[allow(clippy::type_complexity)]
+    fn reference_batch_stoch(
+        high: &[Vec<f64>],
+        low: &[Vec<f64>],
+        close: &[Vec<f64>],
+        fastk_period: usize,
+        slowk_period: usize,
+        slowd_period: usize,
+    ) -> Result<(Vec<Vec<f64>>, Vec<Vec<f64>>), String> {
+        validate_hlc_columns(high, low, close)?;
+        let mut all_k = Vec::with_capacity(high.len());
+        let mut all_d = Vec::with_capacity(high.len());
+        for i in 0..high.len() {
+            let (k, d) = momentum::stoch(
+                &high[i],
+                &low[i],
+                &close[i],
+                fastk_period,
+                slowk_period,
+                0,
+                slowd_period,
+                0,
+            );
+            all_k.push(k);
+            all_d.push(d);
+        }
+        Ok((all_k, all_d))
+    }
+
+    #[test]
+    fn test_batch_stoch_sma_defaults_are_bit_identical_to_pre_matype() {
+        let (h, l, c) = hlc_data();
+        let high = vec![h.clone(), h.iter().map(|v| v * 1.01).collect()];
+        let low = vec![l.clone(), l.iter().map(|v| v * 0.99).collect()];
+        let close = vec![c.clone(), c.iter().map(|v| v * 1.005).collect()];
+
+        for &(fk, sk, sd) in &[(5usize, 3usize, 3usize), (14, 1, 5), (3, 6, 2)] {
+            let (want_k, want_d) = reference_batch_stoch(&high, &low, &close, fk, sk, sd).unwrap();
+            let (got_k, got_d) = batch_stoch(&high, &low, &close, fk, sk, 0, sd, 0).unwrap();
+
+            assert_eq!(got_k.len(), want_k.len());
+            assert_eq!(got_d.len(), want_d.len());
+            for (col, (want, got)) in want_k.iter().zip(got_k.iter()).enumerate() {
+                assert_eq!(want.len(), got.len());
+                for (idx, (w, g)) in want.iter().zip(got.iter()).enumerate() {
+                    assert_eq!(
+                        w.to_bits(),
+                        g.to_bits(),
+                        "slowk col {col} idx {idx} differs for ({fk},{sk},{sd})"
+                    );
+                }
+            }
+            for (col, (want, got)) in want_d.iter().zip(got_d.iter()).enumerate() {
+                assert_eq!(want.len(), got.len());
+                for (idx, (w, g)) in want.iter().zip(got.iter()).enumerate() {
+                    assert_eq!(
+                        w.to_bits(),
+                        g.to_bits(),
+                        "slowd col {col} idx {idx} differs for ({fk},{sk},{sd})"
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn test_batch_stoch_non_sma_matype_differs_from_default() {
+        let (h, l, c) = hlc_data();
+        let high = vec![h];
+        let low = vec![l];
+        let close = vec![c];
+
+        let (sma_k, sma_d) = batch_stoch(&high, &low, &close, 5, 3, 0, 3, 0).unwrap();
+        let (ema_k, ema_d) = batch_stoch(&high, &low, &close, 5, 3, 1, 3, 1).unwrap();
+
+        let differs = |a: &[f64], b: &[f64]| {
+            a.iter()
+                .zip(b.iter())
+                .any(|(x, y)| x.is_finite() && y.is_finite() && x.to_bits() != y.to_bits())
+        };
+        assert!(
+            differs(&sma_k[0], &ema_k[0]),
+            "slowk should react to matype"
+        );
+        assert!(
+            differs(&sma_d[0], &ema_d[0]),
+            "slowd should react to matype"
+        );
+    }
+
+    #[test]
+    fn test_batch_stoch_out_of_range_matype_is_all_nan() {
+        let (h, l, c) = hlc_data();
+        let high = vec![h];
+        let low = vec![l];
+        let close = vec![c];
+        let (k, d) = batch_stoch(&high, &low, &close, 5, 3, 9, 3, 0).unwrap();
+        assert!(k[0].iter().all(|v| v.is_nan()));
+        assert!(d[0].iter().all(|v| v.is_nan()));
     }
 
     #[test]

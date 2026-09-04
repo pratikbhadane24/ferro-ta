@@ -21,6 +21,9 @@ if anything diverges. Findings are reported as one of:
                       in one and positional-or-keyword in the other, which
                       changes what a positional call binds to)
   param-default       same parameters, different default value
+  param-annotation    same parameter, but the stub's annotated type is
+                      incompatible with the runtime's (e.g. ``close: int``
+                      against a runtime ``close: ArrayLike``)
   return-shape        one side returns a single value where the other returns
                       a tuple, or both return tuples of different length
 
@@ -45,6 +48,8 @@ Policy — what is deliberately *not* an error
 5. ``@overload`` groups are skipped with a note, since a single runtime
    signature cannot be matched against several stub declarations.
 6. Return *types* are not compared; only the return *shape* is (see below).
+7. Parameter annotations are compared by *compatibility class*, not textually,
+   and only in one direction (see below).
 
 Policy — return annotations are compared by shape, not by type
 --------------------------------------------------------------
@@ -85,6 +90,79 @@ Names present in exactly one place *are* errors: a stub-only name is a promise
 the runtime cannot keep, and a runtime function in ``__all__`` with no stub
 declaration is unchecked public API. Runtime coverage is limited to
 ``__all__`` so that incidental re-exports are not flagged.
+
+Policy — parameter annotations are compared by compatibility class
+------------------------------------------------------------------
+A stub saying ``close: int`` where the runtime says ``close: ArrayLike`` is the
+same class of defect as the ``PPO`` return-type bug above: a type checker
+blesses a call that cannot work. But textual comparison is unusable here for
+the same reason it is unusable for returns — the stub is *deliberately* richer
+than the runtime (``NDArray[np.float64]`` against ``np.ndarray``), and a noisy
+gate gets switched off. So each annotation is bucketed into a coarse
+compatibility class and only *cross-class* mismatches are reported:
+
+  ``array``     ``ArrayLike``, ``np.ndarray``, ``NDArray[...]``, and
+                ``Sequence``/``Iterable``/``list``/``tuple`` of a numeric type
+  ``int``       ``int`` and the numpy integer scalar types
+  ``float``     ``float`` and the numpy floating scalar types
+  ``bool``      ``bool``, ``np.bool_``
+  ``str``       ``str``
+  ``bytes``     ``bytes``, ``bytearray``
+  ``callable``  ``Callable``, ``Callable[...]``
+  ``mapping``   ``dict[...]``, ``Mapping[...]``
+  ``none``      ``None``
+  ``unknown``   anything else
+
+A union (``X | Y``, ``Optional[X]``, ``Union[X, Y]``) becomes the set of its
+members' classes. Three rules keep the check sound without making it brittle:
+
+1. **``unknown`` is absence of information, not drift.** ``Any``, type
+   variables (the runtime's ``F`` vs. the stub's ``_F``), bare ``list``, and
+   anything the bucketing does not recognise all land in ``unknown``, and a
+   parameter whose *either* side is ``unknown`` is skipped. Same for a
+   parameter carrying no annotation on one side: absence of information again.
+2. **Direction matters.** The stub may be *narrower* than the runtime — that is
+   a legitimate documentation choice, and the real stub uses it: ``info``
+   declares ``func_or_name: Callable[..., Any] | str`` against a runtime
+   ``Any``. So the requirement is that every class the stub admits is one the
+   runtime also admits; a stub that is *wider* or *incompatible* is the
+   finding, since only that direction blesses calls the runtime rejects.
+3. **The numeric tower is honoured**, since Python's is: a stub ``int`` is
+   accepted against a runtime ``float``, and ``bool`` against ``int`` or
+   ``float``. Scalars are deliberately *not* accepted against ``array``, even
+   though ``ArrayLike`` technically admits scalars — that is exactly the
+   ``close: int`` defect this check exists to catch.
+
+Optionality is folded in as an ordinary class (``none``), with one
+concession: a runtime parameter defaulting to ``None`` is treated as admitting
+``None`` even if its annotation does not say so, so a stub ``X | None`` against
+a runtime ``x: X = None`` is not reported.
+
+Known blind spots
+-----------------
+What this check still does not see, as of the annotation work above:
+
+* Stub classes are entirely unchecked (12 of them), for the pyo3 reason in
+  policy note 3 — their bodies, not just their ``__init__``, are invisible.
+* ``@overload`` groups are dropped rather than merely left uncompared: an
+  overloaded name is not even checked for existence at runtime. (The stub
+  declares none today, so the note is about the next one added.)
+* Module-level constants are invisible in both directions (a stub-declared
+  constant the runtime lacks, and vice versa) — the stub's only one is
+  ``__version__: str``.
+* Defaults that are not literals (``= SomeEnum.X``) are treated as elided, so
+  only their *presence* is checked, not their value.
+* ``async def`` vs. ``def`` is not detected; the two are parsed identically.
+* Only ``__init__.pyi`` is compared. Submodule stubs, if any are added, are
+  not checked.
+* Return comparison remains shape-only, so two same-shape returns with
+  different element protocols (a 3-tuple of arrays vs. a 3-tuple of floats)
+  still pass. The parameter-annotation classes above are *not* applied to
+  return elements.
+
+Closed by the annotation comparison: a parameter whose stub type was
+incompatible with the runtime's used to pass silently; it is now a
+``param-annotation`` finding.
 """
 
 from __future__ import annotations
@@ -110,6 +188,8 @@ class Param(NamedTuple):
     name: str
     kind: str
     default: Any
+    # The annotation exactly as written, or None when there is none to compare.
+    annotation: str | None = None
 
     @property
     def has_default(self) -> bool:
@@ -250,6 +330,147 @@ def compare_returns(
 
 
 # ---------------------------------------------------------------------------
+# Parameter annotations: compatibility classes
+# ---------------------------------------------------------------------------
+
+UNKNOWN = "unknown"
+
+# Leaf names (module qualifier ignored) mapped to their compatibility class.
+LEAF_CLASSES = {
+    "ArrayLike": "array",
+    "NDArray": "array",
+    "ndarray": "array",
+    "int": "int",
+    "integer": "int",
+    "signedinteger": "int",
+    "unsignedinteger": "int",
+    "intp": "int",
+    "int8": "int",
+    "int16": "int",
+    "int32": "int",
+    "int64": "int",
+    "uint8": "int",
+    "uint16": "int",
+    "uint32": "int",
+    "uint64": "int",
+    "float": "float",
+    "floating": "float",
+    "double": "float",
+    "float16": "float",
+    "float32": "float",
+    "float64": "float",
+    "bool": "bool",
+    "bool_": "bool",
+    "str": "str",
+    "bytes": "bytes",
+    "bytearray": "bytes",
+    "Callable": "callable",
+    "None": "none",
+    "NoneType": "none",
+}
+
+# Containers that count as array-like when their elements are numeric.
+SEQUENCE_ROOTS = frozenset(
+    {"Sequence", "MutableSequence", "Iterable", "Collection", "list", "tuple", "List"}
+)
+MAPPING_ROOTS = frozenset({"dict", "Dict", "Mapping", "MutableMapping"})
+NUMERIC_CLASSES = frozenset({"int", "float", "bool"})
+
+# What a stub class may legitimately be, given the runtime's class: Python's
+# numeric tower, and nothing else. Scalars are *not* widened into "array".
+ACCEPTED_BY = {
+    "bool": frozenset({"bool", "int", "float"}),
+    "int": frozenset({"int", "float"}),
+}
+
+
+def annotation_text(annotation: Any) -> str | None:
+    """Normalise a runtime annotation to source text, or None if absent.
+
+    ``ferro_ta`` postpones its annotations, so these arrive as strings; real
+    objects are handled too for robustness against a module that does not.
+    """
+    if annotation is inspect.Parameter.empty:
+        return None
+    if annotation is None or annotation is type(None):
+        return "None"
+    if isinstance(annotation, str):
+        return annotation
+    return getattr(annotation, "__name__", None) or str(annotation)
+
+
+def _subscript_elements(node: ast.Subscript) -> list[ast.expr]:
+    if isinstance(node.slice, ast.Tuple):
+        return list(node.slice.elts)
+    return [node.slice]
+
+
+def _classes_of(node: ast.expr) -> frozenset[str]:
+    """Compatibility classes admitted by one annotation expression."""
+    if isinstance(node, ast.Constant):
+        return frozenset({"none"}) if node.value is None else frozenset({UNKNOWN})
+    if isinstance(node, ast.BinOp) and isinstance(node.op, ast.BitOr):
+        return _classes_of(node.left) | _classes_of(node.right)
+    if isinstance(node, ast.Subscript):
+        root = _annotation_root(node.value)
+        elements = _subscript_elements(node)
+        if root == "Optional":
+            return _classes_of(elements[0]) | {"none"}
+        if root == "Union":
+            return frozenset().union(*(_classes_of(e) for e in elements))
+        if root == "Annotated":
+            return _classes_of(elements[0])
+        if root in SEQUENCE_ROOTS:
+            items = [
+                _classes_of(element)
+                for element in elements
+                if not (isinstance(element, ast.Constant) and element.value is Ellipsis)
+            ]
+            item_classes = frozenset().union(*items) if items else frozenset()
+            if item_classes and item_classes <= NUMERIC_CLASSES:
+                return frozenset({"array"})
+            return frozenset({UNKNOWN})
+        if root in MAPPING_ROOTS:
+            return frozenset({"mapping"})
+        return frozenset({LEAF_CLASSES.get(root, UNKNOWN)})
+    root = _annotation_root(node)
+    if root in MAPPING_ROOTS:
+        return frozenset({"mapping"})
+    return frozenset({LEAF_CLASSES.get(root, UNKNOWN)})
+
+
+def classify_annotation(text: str | None) -> frozenset[str]:
+    """Bucket an annotation into compatibility classes.
+
+    An empty or unparsable annotation, and anything the buckets do not
+    recognise, yields ``{"unknown"}`` — absence of information, never drift.
+    """
+    if text is None:
+        return frozenset({UNKNOWN})
+    try:
+        return _classes_of(ast.parse(text, mode="eval").body)
+    except SyntaxError:
+        return frozenset({UNKNOWN})
+
+
+def annotations_match(stub: Param, runtime: Param) -> bool:
+    """Whether the stub's annotated type is compatible with the runtime's.
+
+    Direction-aware: the stub may admit *fewer* types than the runtime, never
+    more. See the annotation policy in the module docstring.
+    """
+    stub_classes = classify_annotation(stub.annotation)
+    runtime_classes = classify_annotation(runtime.annotation)
+    if UNKNOWN in stub_classes or UNKNOWN in runtime_classes:
+        return True  # absence of information, not drift
+    if runtime.default is None:
+        runtime_classes = runtime_classes | {"none"}
+    return all(
+        ACCEPTED_BY.get(cls, frozenset({cls})) & runtime_classes for cls in stub_classes
+    )
+
+
+# ---------------------------------------------------------------------------
 # Stub parsing
 # ---------------------------------------------------------------------------
 
@@ -267,6 +488,10 @@ def _stub_default(node: ast.expr | None) -> Any:
         return ELIDED_DEFAULT
 
 
+def _stub_annotation(arg: ast.arg) -> str | None:
+    return None if arg.annotation is None else ast.unparse(arg.annotation)
+
+
 def stub_params(node: ast.FunctionDef | ast.AsyncFunctionDef) -> list[Param]:
     args = node.args
     params: list[Param] = []
@@ -280,16 +505,34 @@ def stub_params(node: ast.FunctionDef | ast.AsyncFunctionDef) -> list[Param]:
             if index < len(args.posonlyargs)
             else "POSITIONAL_OR_KEYWORD"
         )
-        params.append(Param(arg.arg, kind, default))
+        params.append(Param(arg.arg, kind, default, _stub_annotation(arg)))
 
     if args.vararg is not None:
-        params.append(Param(args.vararg.arg, "VAR_POSITIONAL", NO_DEFAULT))
+        params.append(
+            Param(
+                args.vararg.arg,
+                "VAR_POSITIONAL",
+                NO_DEFAULT,
+                _stub_annotation(args.vararg),
+            )
+        )
 
     for arg, kw_default in zip(args.kwonlyargs, args.kw_defaults):
-        params.append(Param(arg.arg, "KEYWORD_ONLY", _stub_default(kw_default)))
+        params.append(
+            Param(
+                arg.arg,
+                "KEYWORD_ONLY",
+                _stub_default(kw_default),
+                _stub_annotation(arg),
+            )
+        )
 
     if args.kwarg is not None:
-        params.append(Param(args.kwarg.arg, "VAR_KEYWORD", NO_DEFAULT))
+        params.append(
+            Param(
+                args.kwarg.arg, "VAR_KEYWORD", NO_DEFAULT, _stub_annotation(args.kwarg)
+            )
+        )
 
     return params
 
@@ -332,6 +575,7 @@ def runtime_params(func: Any) -> list[Param] | None:
             NO_DEFAULT
             if parameter.default is inspect.Parameter.empty
             else parameter.default,
+            annotation_text(parameter.annotation),
         )
         for parameter in signature.parameters.values()
     ]
@@ -421,6 +665,19 @@ def compare(name: str, stub: list[Param], runtime: list[Param]) -> list[Finding]
                     "param-default",
                     f"{stub_param.name}: stub default {stub_param.render()}, "
                     f"runtime default {runtime_param.render()}",
+                )
+            )
+        if not annotations_match(stub_param, runtime_param):
+            stub_classes = sorted(classify_annotation(stub_param.annotation))
+            runtime_classes = sorted(classify_annotation(runtime_param.annotation))
+            findings.append(
+                Finding(
+                    name,
+                    "param-annotation",
+                    f"{stub_param.name}: stub admits {stub_classes}, "
+                    f"runtime admits {runtime_classes}",
+                    f"{stub_param.name}: {stub_param.annotation}",
+                    f"{runtime_param.name}: {runtime_param.annotation}",
                 )
             )
     return findings

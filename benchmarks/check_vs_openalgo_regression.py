@@ -87,6 +87,7 @@ class Artifact:
     runtime: dict[str, Any]
     git: dict[str, Any]
     n_runs: int
+    reported_metric: str
     openalgo_wins_or_ties: dict[int, tuple[str, ...]]
 
 
@@ -212,6 +213,12 @@ def load_artifact(path: Path) -> Artifact:
     runtime = payload.get("runtime")
     git = payload.get("git")
     n_runs = payload.get("n_runs")
+    # schema_version 2 carried no `reported_metric` and reported the *median*
+    # of its samples; version 3 reports the cross-process *minimum*. The two
+    # are not comparable -- see `_require_comparable_metrics`.
+    reported_metric = payload.get("reported_metric")
+    if not isinstance(reported_metric, str) or not reported_metric:
+        reported_metric = "median_us"
     return Artifact(
         path=path,
         rows=rows,
@@ -222,6 +229,31 @@ def load_artifact(path: Path) -> Artifact:
         if isinstance(n_runs, int) and not isinstance(n_runs, bool)
         else 0,
         openalgo_wins_or_ties=wins_or_ties,
+        reported_metric=reported_metric,
+    )
+
+
+def _require_comparable_metrics(baseline: Artifact, candidate: Artifact) -> None:
+    """Refuse to diff artifacts whose timings mean different things.
+
+    ``bench_vs_openalgo.py`` reported the *median* of its samples through
+    schema_version 2 and the cross-process *minimum* from version 3 onward.
+    A minimum is systematically lower than a median of the same samples, so
+    diffing a v2 baseline against a v3 candidate shows a uniform apparent
+    speedup that is purely the change of estimator -- on the order of the
+    noise this tool exists to detect, and in the same direction as a real
+    improvement. That is the most dangerous failure mode available to a
+    regression checker, so it is refused rather than warned about.
+    """
+    if baseline.reported_metric == candidate.reported_metric:
+        return
+    raise ArtifactError(
+        "refusing to compare artifacts that report different statistics: "
+        f"{baseline.path} reports {baseline.reported_metric!r} but "
+        f"{candidate.path} reports {candidate.reported_metric!r}. A minimum "
+        "is systematically lower than a median over the same samples, so the "
+        "diff would show a uniform apparent speedup that is only the change "
+        "of estimator. Regenerate the baseline with the current harness."
     )
 
 
@@ -450,6 +482,7 @@ def main() -> int:
     try:
         baseline = load_artifact(Path(args.baseline))
         candidate = load_artifact(Path(args.candidate))
+        _require_comparable_metrics(baseline, candidate)
     except ArtifactError as exc:
         print(f"ERROR: {exc}")
         return EXIT_INPUT_ERROR
