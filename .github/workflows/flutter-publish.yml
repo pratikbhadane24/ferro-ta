@@ -323,3 +323,21 @@ jobs:
           grep -q 'flutter_rust_bridge' /tmp/dry-run.txt \
             && echo "OK: only the expected flutter_rust_bridge pin warning (intentional)." \
             || echo "OK: no warnings."
+
+      # A dispatch run cannot publish, so hand off the fully assembled package
+      # (bindings + every platform's native library). This is how a brand-new
+      # package's FIRST version gets out: pub.dev only automates publishing for
+      # packages that already exist, so the owner downloads this artifact and
+      # runs `dart pub publish` from it once.
+      - name: Upload assembled package (manual dispatch)
+        if: github.event_name != 'push'
+        uses: actions/upload-artifact@v7
+        with:
+          name: flutter-package-assembled
+          path: |
+            flutter
+            !flutter/.dart_tool
+            !flutter/build
+            !flutter/rust/target
+          include-hidden-files: true
+          retention-days: 7
