@@ -11,7 +11,7 @@ env:
   # rely on runtime SIMD dispatch (the `multiversion` crate), matching every
   # other build job in this repo.
   RUSTFLAGS: ""
-  FRB_VERSION: "2.11.1"
+  FRB_VERSION: "2.13.0"
 
 jobs:
   flutter:
@@ -54,8 +54,11 @@ jobs:
       # flutter_rust_bridge glue. This is the real gate — it proves the Dart
       # bindings and the Rust glue build from the current api surface.
       # -------------------------------------------------------------------
+      # Prebuilt binary via cargo-binstall instead of a multi-minute compile.
       - name: Install flutter_rust_bridge_codegen
-        run: cargo install "flutter_rust_bridge_codegen@${FRB_VERSION}" --locked
+        uses: taiki-e/install-action@v2
+        with:
+          tool: flutter_rust_bridge_codegen@${{ env.FRB_VERSION }}
 
       - name: Resolve Dart dependencies
         working-directory: flutter

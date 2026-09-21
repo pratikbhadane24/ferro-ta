@@ -28,7 +28,7 @@ permissions:
 env:
   # Portable binaries — override target-cpu=native, rely on runtime SIMD dispatch.
   RUSTFLAGS: ""
-  FRB_VERSION: "2.11.1"
+  FRB_VERSION: "2.13.0"
   LIB: ferro_ta_flutter
 
 jobs:
@@ -229,8 +229,8 @@ jobs:
     needs: [codegen, build-android-linux, build-apple, build-windows]
     runs-on: ubuntu-latest
     # OIDC token for pub.dev automated publishing (analog of PyPI trusted
-    # publishing). `dart pub publish` requests the JWT itself when this is set —
-    # no manual token exchange needed. Scoped to this job only.
+    # publishing). The publish step exchanges it for a pub.dev token below.
+    # Scoped to this job only.
     permissions:
       contents: read
       id-token: write
@@ -333,7 +333,21 @@ jobs:
         if: github.event_name == 'push'
         working-directory: flutter
         run: |
+          set -euo pipefail
           flutter pub get
+          # `dart pub publish` does not fetch the OIDC token itself; the
+          # dart-lang/setup-dart action normally does (lib/main.dart,
+          # createPubOIDCToken). That action would install a second Dart SDK
+          # that cannot resolve `sdk: flutter`, so do the same exchange here.
+          # The token lives only in this step's environment and is masked.
+          PUB_TOKEN="$(curl -sSf \
+            -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=https://pub.dev" | jq -r '.value')"
+          [ -n "$PUB_TOKEN" ] && [ "$PUB_TOKEN" != "null" ] \
+            || { echo "ERROR: could not obtain a pub.dev OIDC token." >&2; exit 1; }
+          echo "::add-mask::${PUB_TOKEN}"
+          export PUB_TOKEN
+          dart pub token add https://pub.dev --env-var PUB_TOKEN
           dart pub publish --force
 
       # pub.dev rejects automated publishing that is not tag-triggered, so a

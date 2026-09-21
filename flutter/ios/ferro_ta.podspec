@@ -10,7 +10,7 @@ Pod::Spec.new do |s|
   s.description      = <<-DESC
 Rust-powered technical-analysis indicators for Flutter via flutter_rust_bridge.
                        DESC
-  s.homepage         = 'https://github.com/pratikbhadane/ferro-ta'
+  s.homepage         = 'https://github.com/pratikbhadane24/ferro-ta'
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'ferro-ta contributors' => 'pratikbhadane24@gmail.com' }
   s.source           = { :path => '.' }

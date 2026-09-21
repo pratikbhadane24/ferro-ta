@@ -9,6 +9,22 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.3.1] — 2026-09-21
+
+### Fixed
+
+- Flutter package metadata (`repository`, `homepage`, `issue_tracker` in
+  `pubspec.yaml`, and the iOS/macOS podspec homepages) pointed at
+  `github.com/pratikbhadane/ferro-ta` instead of
+  `github.com/pratikbhadane24/ferro-ta`.
+- Flutter: `flutter_rust_bridge` 2.11.1 → 2.13.0, added a package example,
+  corrected README/doc snippets (`BigInt` periods, required `matype`), and
+  shortened the pub.dev description.
+- `flutter-publish.yml` now exchanges the GitHub OIDC token for a pub.dev token
+  before `dart pub publish` (previously only `dart-lang/setup-dart` did this,
+  and the workflow does not use it), so tag-triggered publishing can
+  authenticate.
+
 ## [1.3.0] — 2026-09-21
 
 ### Added
@@ -624,7 +640,8 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ---
 
-[Unreleased]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.3.1...HEAD
+[1.3.1]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.1.3...v1.2.0
 [1.1.3]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.1.2...v1.1.3
