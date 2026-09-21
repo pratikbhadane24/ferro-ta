@@ -33,6 +33,45 @@ env:
 
 jobs:
   # ---------------------------------------------------------------------------
+  # Run flutter_rust_bridge codegen ONCE and share its output. The generated
+  # Rust glue and Dart bindings are platform-independent, so every build job
+  # and the publish job download this artifact instead of each compiling the
+  # codegen tool and setting up Flutter (that was ~60% of the wall-clock time).
+  # Staged relative to flutter/, like the native-lib artifacts below.
+  # ---------------------------------------------------------------------------
+  codegen:
+    name: FRB codegen
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # These workflows never push; don't leave the token in
+          # .git/config where later third-party steps could read it.
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@stable
+      # Prebuilt binary via cargo-binstall: seconds instead of a multi-minute
+      # `cargo install` compile.
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: flutter_rust_bridge_codegen@${{ env.FRB_VERSION }}
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable, cache: true }
+      - name: Generate bindings
+        run: cd flutter && flutter pub get && flutter_rust_bridge_codegen generate
+      - name: Stage generated files
+        run: |
+          set -euo pipefail
+          mkdir -p codegen/rust/src codegen/lib/src
+          cp flutter/rust/src/frb_generated.rs codegen/rust/src/
+          cp -R flutter/lib/src/rust codegen/lib/src/
+          find codegen -type f | sort
+      - uses: actions/upload-artifact@v7
+        with:
+          name: frb-codegen
+          path: codegen
+          if-no-files-found: error
+
+  # ---------------------------------------------------------------------------
   # Build prebuilt native libraries, one runner per OS family. Each job runs FRB
   # codegen (so the cdylib exports the bridge symbols) then cross-compiles and
   # uploads its platform's libs as an artifact for the single publish job below.
@@ -45,6 +84,7 @@ jobs:
   # layout, so `cp -R <artifact>/. flutter/` is correct for every platform.
   # ---------------------------------------------------------------------------
   build-android-linux:
+    needs: codegen
     name: Build Android + Linux
     runs-on: ubuntu-latest
     steps:
@@ -56,16 +96,20 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android,x86_64-unknown-linux-gnu
-      - uses: subosito/flutter-action@v2
-        with: { channel: stable }
-      - name: FRB codegen
-        run: |
-          cargo install "flutter_rust_bridge_codegen@${FRB_VERSION}" --locked
-          cd flutter && flutter pub get && flutter_rust_bridge_codegen generate
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: flutter/rust
+      - name: Fetch generated bindings
+        uses: actions/download-artifact@v8
+        with:
+          name: frb-codegen
+          path: flutter
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-ndk
       - name: Build Android .so (all ABIs)
         working-directory: flutter/rust
         run: |
-          cargo install cargo-ndk --locked
           cargo ndk -t arm64-v8a -t armeabi-v7a -t x86_64 \
             -o "$GITHUB_WORKSPACE/stage/android/src/main/jniLibs" \
             build --release --features frb
@@ -85,6 +129,7 @@ jobs:
           if-no-files-found: error
 
   build-apple:
+    needs: codegen
     name: Build iOS + macOS
     runs-on: macos-latest
     steps:
@@ -96,12 +141,14 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-apple-ios,aarch64-apple-ios-sim,x86_64-apple-ios,aarch64-apple-darwin,x86_64-apple-darwin
-      - uses: subosito/flutter-action@v2
-        with: { channel: stable }
-      - name: FRB codegen
-        run: |
-          cargo install "flutter_rust_bridge_codegen@${FRB_VERSION}" --locked
-          cd flutter && flutter pub get && flutter_rust_bridge_codegen generate
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: flutter/rust
+      - name: Fetch generated bindings
+        uses: actions/download-artifact@v8
+        with:
+          name: frb-codegen
+          path: flutter
       - name: Build macOS universal .dylib
         working-directory: flutter/rust
         run: |
@@ -139,6 +186,7 @@ jobs:
           if-no-files-found: error
 
   build-windows:
+    needs: codegen
     name: Build Windows
     runs-on: windows-latest
     steps:
@@ -150,14 +198,14 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-pc-windows-msvc
-      - uses: subosito/flutter-action@v2
-        with: { channel: stable }
-      - name: FRB codegen
-        run: |
-          cargo install "flutter_rust_bridge_codegen@$env:FRB_VERSION" --locked
-          # `&&`, not `;` — PowerShell's `;` does not short-circuit, so a failed
-          # `pub get` would still run codegen and fail confusingly later.
-          cd flutter && flutter pub get && flutter_rust_bridge_codegen generate
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: flutter/rust
+      - name: Fetch generated bindings
+        uses: actions/download-artifact@v8
+        with:
+          name: frb-codegen
+          path: flutter
       - name: Build Windows .dll
         working-directory: flutter/rust
         run: |
@@ -178,7 +226,7 @@ jobs:
   # ---------------------------------------------------------------------------
   publish:
     name: Publish to pub.dev
-    needs: [build-android-linux, build-apple, build-windows]
+    needs: [codegen, build-android-linux, build-apple, build-windows]
     runs-on: ubuntu-latest
     # OIDC token for pub.dev automated publishing (analog of PyPI trusted
     # publishing). `dart pub publish` requests the JWT itself when this is set —
@@ -192,14 +240,8 @@ jobs:
           # These workflows never push; don't leave the token in
           # .git/config where later third-party steps could read it.
           persist-credentials: false
-      - uses: dtolnay/rust-toolchain@stable
       - uses: subosito/flutter-action@v2
-        with: { channel: stable }
-
-      - name: Regenerate Dart bindings for the package
-        run: |
-          cargo install "flutter_rust_bridge_codegen@${FRB_VERSION}" --locked
-          cd flutter && flutter pub get && flutter_rust_bridge_codegen generate
+        with: { channel: stable, cache: true }
 
       - name: Download all native artifacts into the plugin tree
         uses: actions/download-artifact@v8
@@ -211,7 +253,7 @@ jobs:
           set -euo pipefail
           echo "Downloaded artifact trees:"; find flutter-artifacts -type f | sort
           # Each artifact is staged relative to flutter/, so this is a direct overlay.
-          for a in native-android-linux native-apple native-windows; do
+          for a in frb-codegen native-android-linux native-apple native-windows; do
             cp -R "flutter-artifacts/$a/." flutter/
           done
           # Guard against an artifact flattening (see the staging note above):
@@ -323,3 +365,21 @@ jobs:
           grep -q 'flutter_rust_bridge' /tmp/dry-run.txt \
             && echo "OK: only the expected flutter_rust_bridge pin warning (intentional)." \
             || echo "OK: no warnings."
+
+      # A dispatch run cannot publish, so hand off the fully assembled package
+      # (bindings + every platform's native library). This is how a brand-new
+      # package's FIRST version gets out: pub.dev only automates publishing for
+      # packages that already exist, so the owner downloads this artifact and
+      # runs `dart pub publish` from it once.
+      - name: Upload assembled package (manual dispatch)
+        if: github.event_name != 'push'
+        uses: actions/upload-artifact@v7
+        with:
+          name: flutter-package-assembled
+          path: |
+            flutter
+            !flutter/.dart_tool
+            !flutter/build
+            !flutter/rust/target
+          include-hidden-files: true
+          retention-days: 7

@@ -3,6 +3,17 @@
 All notable changes to the `ferro_ta` Flutter package are documented here. The
 package version tracks the ferro-ta release version.
 
+## 1.3.0
+
+- Bound the full extended catalog: 51 additional indicators (adaptive moving
+  averages and stops, momentum/volatility studies, volume indicators,
+  oscillators, statistic/hybrid helpers) and signal utilities (`CROSSOVER`,
+  `CROSSUNDER`, `HIGHEST`, `LOWEST`, `VALUEWHEN`, ...). Multi-output indicators
+  return Dart tuples in the documented output order.
+- Numerical fixes from the single-engine unification onto `ferro_ta_core`
+  (CMO Wilder smoothing, no-lookahead Ichimoku Senkou, `OBV[0] = volume[0]`,
+  `TRANGE[0] = NaN`, KAMA warmup). See the main CHANGELOG for details.
+
 ## 1.2.0
 
 - Initial Flutter binding for ferro-ta via flutter_rust_bridge.

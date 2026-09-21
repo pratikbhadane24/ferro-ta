@@ -5,7 +5,7 @@ resolver = "2"
 
 [package]
 name = "ferro_ta"
-version = "1.2.0"
+version = "1.3.0"
 edition = "2021"
 description = "PyO3 Python bindings for ferro-ta, a Rust-core technical analysis library"
 license = "MIT"
@@ -35,7 +35,7 @@ pyo3-log = "0.12"
 # this crate's own `simd` feature (below). Without this, core's default `simd`
 # would always be on and `--no-default-features` could never produce a true
 # pure-scalar build (used by the SIMD benchmark baseline).
-ferro_ta_core = { path = "crates/ferro_ta_core", version = "1.2.0", default-features = false, features = ["serde"] }
+ferro_ta_core = { path = "crates/ferro_ta_core", version = "1.3.0", default-features = false, features = ["serde"] }
 
 [dev-dependencies]
 criterion = { version = "0.8", features = ["html_reports"] }

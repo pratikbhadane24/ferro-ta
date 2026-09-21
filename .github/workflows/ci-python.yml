@@ -144,7 +144,7 @@ jobs:
           curl -sL https://sourceforge.net/projects/ta-lib/files/ta-lib/0.4.0/ta-lib-0.4.0-src.tar.gz/download -o ta-lib-0.4.0-src.tar.gz
           tar -xzf ta-lib-0.4.0-src.tar.gz
           cd ta-lib && ./configure --prefix=/usr && make && sudo make install && sudo ldconfig
-      - run: pip install dist/*.whl numpy pytest pandas ta-lib
+      - run: pip install dist/*.whl numpy pytest pandas "ta-lib<0.8"
       - name: Fail if talib is unavailable (the suite would silently skip)
         run: python -c "import talib; print('talib', talib.__version__)"
       - run: pytest tests/integration/test_vs_talib.py -v
@@ -172,7 +172,7 @@ jobs:
           curl -sL https://sourceforge.net/projects/ta-lib/files/ta-lib/0.4.0/ta-lib-0.4.0-src.tar.gz/download -o ta-lib-0.4.0-src.tar.gz
           tar -xzf ta-lib-0.4.0-src.tar.gz
           cd ta-lib && ./configure --prefix=/usr && make && sudo make install && sudo ldconfig
-      - run: pip install dist/*.whl numpy ta-lib
+      - run: pip install dist/*.whl numpy "ta-lib<0.8"
       - run: python benchmarks/bench_vs_talib.py --sizes 10000 100000 --json benchmark_vs_talib.json
       - run: python3 benchmarks/check_vs_talib_regression.py --input benchmark_vs_talib.json
       - uses: actions/upload-artifact@v7

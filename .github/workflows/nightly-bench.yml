@@ -50,7 +50,7 @@ jobs:
           uv sync --extra dev
           uv run maturin build --release --out dist
           uv run pip install --force-reinstall dist/*.whl
-          uv run pip install ta-lib
+          uv run pip install "ta-lib<0.8"
 
       - name: Fail if talib is unavailable (the vs-TA-Lib gate would be vacuous)
         run: uv run python -c "import talib; print('talib', talib.__version__)"

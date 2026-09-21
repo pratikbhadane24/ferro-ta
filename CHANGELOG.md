@@ -9,6 +9,8 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.3.0] — 2026-09-21
+
 ### Added
 
 - Extended the public catalog with adaptive moving averages and stops (`ALMA`,
@@ -622,7 +624,8 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ---
 
-[Unreleased]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.1.3...v1.2.0
 [1.1.3]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.1.1...v1.1.2
