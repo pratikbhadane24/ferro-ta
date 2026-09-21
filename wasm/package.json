@@ -1,6 +1,6 @@
 {
   "name": "ferro-ta-wasm",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "JavaScript/WASM bindings for ferro-ta, a Rust-core technical analysis library",
   "main": "node/ferro_ta_wasm.js",
   "module": "web/ferro_ta_wasm.js",

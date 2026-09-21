@@ -1,6 +1,6 @@
 [package]
 name = "ferro_ta_core"
-version = "1.2.0"
+version = "1.3.0"
 edition = "2021"
 description = "Pure Rust technical analysis core — the compute engine behind ferro-ta language bindings"
 license = "MIT"

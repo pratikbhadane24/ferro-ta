@@ -220,7 +220,7 @@ For source builds, packaging details, and platform notes, see
 Release status
 --------------
 
-These docs track package version ``1.2.0``.
+These docs track package version ``1.3.0``.
 
 - Release notes by version: :doc:`changelog`
 - Canonical project changelog: `CHANGELOG.md <https://github.com/pratikbhadane24/ferro-ta/blob/main/CHANGELOG.md>`_
