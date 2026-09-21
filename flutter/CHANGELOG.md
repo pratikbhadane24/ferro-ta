@@ -3,6 +3,11 @@
 All notable changes to the `ferro_ta` Flutter package are documented here. The
 package version tracks the ferro-ta release version.
 
+## 1.3.1
+
+- Fixed the repository, homepage, and issue-tracker links (they pointed at
+  the wrong GitHub account).
+
 ## 1.3.0
 
 - Bound the full extended catalog: 51 additional indicators (adaptive moving

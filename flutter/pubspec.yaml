@@ -3,10 +3,10 @@ description: >-
   Fast technical-analysis indicators for Flutter — 130+ Rust-powered functions
   (moving averages, RSI, MACD, Bollinger Bands, ATR, candlestick patterns and
   more) via flutter_rust_bridge, with prebuilt native binaries for all platforms.
-version: 1.3.0
-repository: https://github.com/pratikbhadane/ferro-ta
-homepage: https://github.com/pratikbhadane/ferro-ta
-issue_tracker: https://github.com/pratikbhadane/ferro-ta/issues
+version: 1.3.1
+repository: https://github.com/pratikbhadane24/ferro-ta
+homepage: https://github.com/pratikbhadane24/ferro-ta
+issue_tracker: https://github.com/pratikbhadane24/ferro-ta/issues
 topics:
   - technical-analysis
   - finance
