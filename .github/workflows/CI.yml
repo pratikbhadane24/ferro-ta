@@ -410,7 +410,7 @@ jobs:
           pip install dist/*.whl
 
       - name: Generate Python SBOM (CycloneDX via anchore/sbom-action)
-        uses: anchore/sbom-action@v0.24.0
+        uses: anchore/sbom-action@v0.24.2
         with:
           artifact-name: ferro-ta-python-sbom.spdx.json
           output-file: ferro-ta-python-sbom.spdx.json
