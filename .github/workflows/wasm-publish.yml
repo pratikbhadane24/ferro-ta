@@ -27,8 +27,15 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v7
         with:
-          node-version: "20"
+          # npm trusted publishing (tokenless OIDC) needs npm >= 11.5.1. Node 20
+          # ships npm 10, which publishes anonymously and gets `E404 PUT` back.
+          node-version: "24"
           registry-url: "https://registry.npmjs.org"
+
+      - name: Require an npm CLI that supports trusted publishing
+        run: |
+          npm install -g npm@^11.5.1
+          npm --version
 
       - name: Install Rust and wasm-pack
         uses: dtolnay/rust-toolchain@stable
