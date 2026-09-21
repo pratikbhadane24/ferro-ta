@@ -17,6 +17,13 @@ and the project uses [Semantic Versioning](https://semver.org/).
   `pubspec.yaml`, and the iOS/macOS podspec homepages) pointed at
   `github.com/pratikbhadane/ferro-ta` instead of
   `github.com/pratikbhadane24/ferro-ta`.
+- Flutter: `flutter_rust_bridge` 2.11.1 → 2.13.0, added a package example,
+  corrected README/doc snippets (`BigInt` periods, required `matype`), and
+  shortened the pub.dev description.
+- `flutter-publish.yml` now exchanges the GitHub OIDC token for a pub.dev token
+  before `dart pub publish` (previously only `dart-lang/setup-dart` did this,
+  and the workflow does not use it), so tag-triggered publishing can
+  authenticate.
 
 ## [1.3.0] — 2026-09-21
 

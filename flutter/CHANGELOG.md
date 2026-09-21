@@ -7,6 +7,12 @@ package version tracks the ferro-ta release version.
 
 - Fixed the repository, homepage, and issue-tracker links (they pointed at
   the wrong GitHub account).
+- Upgraded flutter_rust_bridge to 2.13.0 (still pinned exactly; the Dart
+  runtime must match the codegen that built the native libraries).
+- Added `example/example.dart`.
+- Fixed the README and library-doc snippets: period arguments are `BigInt`
+  (Rust `usize`), and `bbands` requires `matype`.
+- Shortened the package description to pub.dev's 60–180 character range.
 
 ## 1.3.0
 

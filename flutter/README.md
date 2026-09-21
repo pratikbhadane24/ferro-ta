@@ -24,9 +24,9 @@ Future<void> main() async {
   await FerroTa.init(); // load the native library once
 
   final close = Float64List.fromList([1, 2, 3, 4, 5, 6, 7]);
-  final sma3 = await sma(close: close, timeperiod: 3);
+  final sma3 = await sma(close: close, timeperiod: BigInt.from(3));
   final (upper, middle, lower) =
-      await bbands(close: close, timeperiod: 5, nbdevup: 2, nbdevdn: 2);
+      await bbands(close: close, timeperiod: BigInt.from(5), nbdevup: 2, nbdevdn: 2, matype: 0);
 }
 ```
 

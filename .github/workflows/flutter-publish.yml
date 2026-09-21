@@ -28,7 +28,7 @@ permissions:
 env:
   # Portable binaries — override target-cpu=native, rely on runtime SIMD dispatch.
   RUSTFLAGS: ""
-  FRB_VERSION: "2.11.1"
+  FRB_VERSION: "2.13.0"
   LIB: ferro_ta_flutter
 
 jobs:

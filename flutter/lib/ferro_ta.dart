@@ -9,7 +9,7 @@
 ///
 /// Future<void> main() async {
 ///   await FerroTa.init();
-///   final out = await sma(close: myCloses, timeperiod: 30);
+///   final out = await sma(close: myCloses, timeperiod: BigInt.from(30));
 /// }
 /// ```
 ///
