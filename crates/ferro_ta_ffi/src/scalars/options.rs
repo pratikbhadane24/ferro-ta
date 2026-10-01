@@ -58,6 +58,8 @@ crate::ffi_scalar_exports! {
         -> [out_lower: f64, out_upper: f64]
         = options::surface::expected_move(spot, iv, days_to_expiry, trading_days_per_year);
     /// Solve implied volatility with guarded Newton iterations and bisection fallback.
+    /// The result is NaN (with FT_OK) when no volatility reproduces `target_price`
+    /// (outside the no-arbitrage bounds) or the solver does not converge.
     ft_implied_volatility(target_price: float, model: pricing_model, underlying: float, strike: float, rate: float, carry: float, time_to_expiry: float, kind: option_kind, initial_guess: float, tolerance: float, max_iterations: count)
         -> [out_value: f64]
         = options::iv::implied_volatility(

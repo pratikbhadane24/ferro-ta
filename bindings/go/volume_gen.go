@@ -55,6 +55,7 @@ func Ad(high []float64, low []float64, close []float64, volume []float64) ([]flo
 // Adosc wraps ferro_ta_core volume::adosc.
 //
 // Chaikin A/D Oscillator: fast EMA of AD minus slow EMA of AD.
+// Requires: fastperiod < slowperiod (else ErrInvalidParam).
 func Adosc(high []float64, low []float64, close []float64, volume []float64, fastperiod int, slowperiod int) ([]float64, error) {
 	n := len(high)
 	if err := checkLengths("Adosc", []string{"high", "low", "close", "volume"}, []int{len(high), len(low), len(close), len(volume)}); err != nil {

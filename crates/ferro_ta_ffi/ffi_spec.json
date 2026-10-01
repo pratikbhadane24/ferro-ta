@@ -194,10 +194,10 @@
           "name": "signalmatype"
         }
       ],
-      "requires": ""
+      "requires": "fastperiod < slowperiod"
     },
     {
-      "doc": "Generic Moving Average. matype: 0=SMA, 1=EMA, 2=WMA, 3=DEMA, 4=TEMA,",
+      "doc": "Generic Moving Average. matype: 0=SMA, 1=EMA, 2=WMA, 3=DEMA, 4=TEMA, 5=TRIMA, 6=KAMA, 7=T3, 8=T3 (TA-Lib's T3 number, an alias of `7`).",
       "group": "overlap",
       "inputs": [
         "close"
@@ -263,7 +263,7 @@
           "name": "matype"
         }
       ],
-      "requires": ""
+      "requires": "maxperiod >= minperiod"
     },
     {
       "doc": "Compute the Exponential Moving Average (EMA).",
@@ -434,7 +434,7 @@
           "name": "signalperiod"
         }
       ],
-      "requires": ""
+      "requires": "fastperiod < slowperiod"
     },
     {
       "doc": "MESA Adaptive Moving Average. Returns `(mama, fama)`.",
@@ -948,10 +948,10 @@
           "name": "matype"
         }
       ],
-      "requires": ""
+      "requires": "fastperiod < slowperiod"
     },
     {
-      "doc": "Percentage Price Oscillator: `(fast MA - slow MA) / slow MA * 100`.",
+      "doc": "Percentage Price Oscillator: `(fast MA - slow MA) / slow MA * 100`. Returns `(ppo_line, signal_line, histogram)`.",
       "group": "momentum",
       "inputs": [
         "close"
@@ -1001,7 +1001,7 @@
           "name": "matype"
         }
       ],
-      "requires": ""
+      "requires": "fastperiod < slowperiod"
     },
     {
       "doc": "TRIX: 1-period rate of change of triple-smoothed EMA.",
@@ -1028,7 +1028,7 @@
       "requires": ""
     },
     {
-      "doc": "Williams %R: `-100 * (HH - close) / (HH - LL)` over the window.",
+      "doc": "Williams %R: `-100 * (HH - close) / (HH - LL)` over the window. Returns values in `[-100, 0]`.",
       "group": "momentum",
       "inputs": [
         "high",
@@ -1621,10 +1621,10 @@
           "name": "slowperiod"
         }
       ],
-      "requires": ""
+      "requires": "fastperiod < slowperiod"
     },
     {
-      "doc": "Hilbert Transform Instantaneous Trendline (Ehlers).",
+      "doc": "Hilbert Transform Instantaneous Trendline (Ehlers). Smooths price over the dominant cycle period.",
       "group": "cycle",
       "inputs": [
         "close"
@@ -1697,7 +1697,7 @@
       "requires": ""
     },
     {
-      "doc": "Hilbert Transform SineWave. Returns `(sine, leadsine)` where leadsine",
+      "doc": "Hilbert Transform SineWave. Returns `(sine, leadsine)` where leadsine leads sine by 45 degrees.",
       "group": "cycle",
       "inputs": [
         "close"
@@ -2156,7 +2156,7 @@
       "requires": ""
     },
     {
-      "doc": "Rolling sum over `timeperiod` bars using an O(n) sliding window.",
+      "doc": "Rolling sum over `timeperiod` bars using an O(n) sliding window. Leading `timeperiod - 1` values are NaN.",
       "group": "math_ops",
       "inputs": [
         "real"
@@ -2180,7 +2180,7 @@
       "requires": ""
     },
     {
-      "doc": "Rolling maximum over `timeperiod` bars (O(n) monotonic deque).",
+      "doc": "Rolling maximum over `timeperiod` bars (O(n) monotonic deque). Delegates to `math::sliding_max`.",
       "group": "math_ops",
       "inputs": [
         "real"
@@ -2204,7 +2204,7 @@
       "requires": ""
     },
     {
-      "doc": "Rolling minimum over `timeperiod` bars (O(n) monotonic deque).",
+      "doc": "Rolling minimum over `timeperiod` bars (O(n) monotonic deque). Delegates to `math::sliding_min`.",
       "group": "math_ops",
       "inputs": [
         "real"
@@ -2228,7 +2228,7 @@
       "requires": ""
     },
     {
-      "doc": "Index of rolling maximum over `timeperiod` bars.",
+      "doc": "Index of rolling maximum over `timeperiod` bars. Returns 0-based index. During warmup the value is `-1`.",
       "group": "math_ops",
       "inputs": [
         "real"
@@ -2252,7 +2252,7 @@
       "requires": ""
     },
     {
-      "doc": "Index of rolling minimum over `timeperiod` bars.",
+      "doc": "Index of rolling minimum over `timeperiod` bars. Returns 0-based index. During warmup the value is `-1`.",
       "group": "math_ops",
       "inputs": [
         "real"
@@ -3812,7 +3812,7 @@
       "requires": ""
     },
     {
-      "doc": "Williams Fractals: local swing high / swing low with `timeperiod` bars",
+      "doc": "Williams Fractals: local swing high / swing low with `timeperiod` bars on each side of the pivot.",
       "group": "extended",
       "inputs": [
         "high",
@@ -3873,7 +3873,7 @@
       "requires": ""
     },
     {
-      "doc": "# Returns",
+      "doc": "# Returns `(tenkan, kijun, senkou_a, senkou_b, chikou)` arrays. Mismatched input lengths yield all `NaN`.",
       "group": "extended",
       "inputs": [
         "high",
@@ -4062,7 +4062,7 @@
           "name": "slowperiod"
         }
       ],
-      "requires": ""
+      "requires": "fastperiod < slowperiod"
     },
     {
       "doc": "Accelerator Oscillator: `AO − SMA(AO, timeperiod)`.",
@@ -4099,7 +4099,7 @@
           "name": "timeperiod"
         }
       ],
-      "requires": ""
+      "requires": "fastperiod < slowperiod"
     },
     {
       "doc": "Price Oscillator (SMA): `SMA(close, fast) − SMA(close, slow)`.",
@@ -4129,10 +4129,10 @@
           "name": "slowperiod"
         }
       ],
-      "requires": ""
+      "requires": "fastperiod < slowperiod"
     },
     {
-      "doc": "Detrended Price Oscillator: `close[i − shift] − SMA(close, timeperiod)`,",
+      "doc": "Detrended Price Oscillator: `close[i − shift] − SMA(close, timeperiod)`, where `shift = timeperiod / 2 + 1`.",
       "group": "extended",
       "inputs": [
         "close"
@@ -4218,7 +4218,7 @@
           "name": "slowperiod"
         }
       ],
-      "requires": ""
+      "requires": "fastperiod < slowperiod"
     },
     {
       "doc": "Know Sure Thing: weighted sum of four ROC SMAs, plus a signal SMA.",
@@ -4415,7 +4415,7 @@
           "name": "d2"
         }
       ],
-      "requires": ""
+      "requires": "fastperiod < slowperiod"
     },
     {
       "doc": "Gator Oscillator from the Alligator jaw / teeth / lips.",
@@ -4538,7 +4538,7 @@
       "requires": ""
     },
     {
-      "doc": "Median bands: rolling median of `(high + low) / 2`, ATR envelopes, and an",
+      "doc": "Median bands: rolling median of `(high + low) / 2`, ATR envelopes, and an EMA of the median.",
       "group": "extended",
       "inputs": [
         "high",
@@ -4651,7 +4651,7 @@
           "name": "sigma"
         }
       ],
-      "requires": ""
+      "requires": "sigma > 0.0"
     },
     {
       "doc": "Zero-lag exponential moving average.",
@@ -5384,7 +5384,7 @@
           "name": "slowperiod"
         }
       ],
-      "requires": ""
+      "requires": "fastperiod < slowperiod"
     },
     {
       "doc": "Volume rate of change: `100 * (volume - volume[timeperiod]) / volume[timeperiod]`.",
@@ -5452,7 +5452,7 @@
           "name": "signalperiod"
         }
       ],
-      "requires": ""
+      "requires": "fastperiod < slowperiod"
     },
     {
       "doc": "Price Volume Trend: cumulative `volume * (close - close[1]) / close[1]`.",
@@ -6780,7 +6780,7 @@
       ]
     },
     {
-      "doc": "Solve implied volatility with guarded Newton iterations and bisection fallback.",
+      "doc": "Solve implied volatility with guarded Newton iterations and bisection fallback.\nThe result is NaN (with FT_OK) when no volatility reproduces `target_price`\n(outside the no-arbitrage bounds) or the solver does not converge.",
       "group": "options",
       "name": "ft_implied_volatility",
       "outputs": [

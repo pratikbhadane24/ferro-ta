@@ -47,9 +47,7 @@ jobs:
       tag: ${{ steps.v.outputs.tag }}
       version: ${{ steps.v.outputs.version }}
     steps:
-      - uses: actions/checkout@v7
-        with:
-          persist-credentials: false
+      # Validate the tag BEFORE it is used anywhere (it is a checkout ref below).
       - id: v
         env:
           RELEASE_TAG: ${{ github.event.release.tag_name }}
@@ -57,16 +55,34 @@ jobs:
         run: |
           set -euo pipefail
           tag="${RELEASE_TAG:-$INPUT_TAG}"
-          if ! [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([-.][0-9A-Za-z.]+)?$ ]]; then
-            echo "Expected a tag like v1.3.1, got: $tag"; exit 1
-          fi
-          version="${tag#v}"
-          go_version=$(sed -n 's/^const Version = "\(.*\)"$/\1/p' bindings/go/version_gen.go)
-          if [ "$go_version" != "$version" ]; then
-            echo "bindings/go Version ($go_version) != release ($version); run bump_version.py"; exit 1
+          # Strict SemVer: Go rejects versions such as v1.3.1.post1.
+          if ! [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "Expected a SemVer tag like v1.3.1 or v1.3.1-rc.1, got: $tag"; exit 1
           fi
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
-          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "version=${tag#v}" >> "$GITHUB_OUTPUT"
+      # Every job builds from the release tag, never the dispatch ref, so the
+      # archives always match the header and Go wrappers they are tagged with.
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ steps.v.outputs.tag }}
+          persist-credentials: false
+      - name: Check the tagged sources match the release
+        env:
+          VERSION: ${{ steps.v.outputs.version }}
+        run: |
+          set -euo pipefail
+          go_version=$(sed -n 's/^const Version = "\(.*\)"$/\1/p' bindings/go/version_gen.go)
+          if [ "$go_version" != "$VERSION" ]; then
+            echo "bindings/go Version ($go_version) != release ($VERSION); run bump_version.py"; exit 1
+          fi
+          # Go requires a /vN module path suffix from v2 on; a v2+ tag on a
+          # suffix-less module could never be fetched, and Go tags are permanent.
+          major="${VERSION%%.*}"
+          module=$(sed -n 's/^module //p' bindings/go/go.mod)
+          if [ "$major" -ge 2 ] && [[ "$module" != */v"$major" ]]; then
+            echo "go.mod module path ($module) must end in /v$major for a v$major release"; exit 1
+          fi
 
   # ---------------------------------------------------------------------------
   # One job per platform. `go` entries produce the archive the Go module links;
@@ -82,26 +98,28 @@ jobs:
       matrix:
         include:
           # ubuntu-22.04: older glibc baseline so the archive links on more systems.
-          - { id: linux_amd64, os: ubuntu-22.04, target: x86_64-unknown-linux-gnu, go: true, test: true }
-          - { id: linux_arm64, os: ubuntu-22.04-arm, target: aarch64-unknown-linux-gnu, go: true, test: true }
-          - { id: darwin_arm64, os: macos-latest, target: aarch64-apple-darwin, go: true, test: true }
-          - { id: darwin_amd64, os: macos-latest, target: x86_64-apple-darwin, go: true, test: false }
+          - { id: linux_amd64, os: ubuntu-22.04, target: x86_64-unknown-linux-gnu, goarch: amd64, go: true, test: true }
+          - { id: linux_arm64, os: ubuntu-22.04-arm, target: aarch64-unknown-linux-gnu, goarch: arm64, go: true, test: true }
+          - { id: darwin_arm64, os: macos-latest, target: aarch64-apple-darwin, goarch: arm64, go: true, test: true }
+          # Tested under Rosetta on the arm64 runner (GOARCH=amd64).
+          - { id: darwin_amd64, os: macos-latest, target: x86_64-apple-darwin, goarch: amd64, go: true, test: true }
           # cgo on Windows drives MinGW gcc, so Go needs the -gnu archive...
-          - { id: windows_amd64, os: windows-latest, target: x86_64-pc-windows-gnu, go: true, test: true }
+          - { id: windows_amd64, os: windows-latest, target: x86_64-pc-windows-gnu, goarch: amd64, go: true, test: true }
           # ...while C/C++ users on Windows expect an MSVC .lib/.dll.
-          - { id: windows_amd64_msvc, os: windows-latest, target: x86_64-pc-windows-msvc, go: false, test: false }
+          - { id: windows_amd64_msvc, os: windows-latest, target: x86_64-pc-windows-msvc, goarch: amd64, go: false, test: false }
     defaults:
       run:
         shell: bash
     steps:
       - uses: actions/checkout@v7
         with:
+          ref: ${{ needs.version.outputs.tag }}
           persist-credentials: false
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
       - name: Build
-        run: cargo build -p ferro_ta_ffi --release --target ${{ matrix.target }}
+        run: cargo build --locked -p ferro_ta_ffi --release --target ${{ matrix.target }}
       - name: Stage artifacts
         env:
           ID: ${{ matrix.id }}
@@ -120,11 +138,20 @@ jobs:
           mkdir -p "stage/c/$pkg/include" "stage/c/$pkg/lib"
           cp crates/ferro_ta_ffi/include/ferro_ta.h "stage/c/$pkg/include/"
           cp LICENSE "stage/c/$pkg/"
-          for f in libferro_ta_ffi.a libferro_ta_ffi.so libferro_ta_ffi.dylib \
-                   ferro_ta_ffi.dll ferro_ta_ffi.lib ferro_ta_ffi.dll.lib libferro_ta_ffi.dll.a; do
+          static=0; shared=0
+          for f in libferro_ta_ffi.a ferro_ta_ffi.lib; do
+            if [ -f "$out/$f" ]; then cp "$out/$f" "stage/c/$pkg/lib/"; static=1; fi
+          done
+          for f in libferro_ta_ffi.so libferro_ta_ffi.dylib ferro_ta_ffi.dll; do
+            if [ -f "$out/$f" ]; then cp "$out/$f" "stage/c/$pkg/lib/"; shared=1; fi
+          done
+          for f in ferro_ta_ffi.dll.lib libferro_ta_ffi.dll.a; do  # Windows import libraries
             if [ -f "$out/$f" ]; then cp "$out/$f" "stage/c/$pkg/lib/"; fi
           done
           ls -la "stage/c/$pkg/lib"
+          if [ "$static" != 1 ] || [ "$shared" != 1 ]; then
+            echo "missing static ($static) or shared ($shared) library for $ID"; exit 1
+          fi
           (cd stage/c && tar czf "$pkg.tar.gz" "$pkg" && rm -rf "$pkg")
       - uses: actions/setup-go@v6
         if: matrix.test
@@ -135,6 +162,9 @@ jobs:
         if: matrix.test
         env:
           ID: ${{ matrix.id }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: "1"
+          FERRO_TA_REQUIRE_GOLDEN: "1"
         run: |
           mkdir -p "bindings/go/lib/$ID"
           cp "stage/go/$ID/libferro_ta_ffi.a" "bindings/go/lib/$ID/"
@@ -171,21 +201,31 @@ jobs:
       - name: Assemble module with prebuilt archives
         run: |
           set -euo pipefail
-          for dir in artifacts/go/*/; do
-            id=$(basename "$dir")
+          for id in linux_amd64 linux_arm64 darwin_amd64 darwin_arm64 windows_amd64; do
+            src="artifacts/go/$id/libferro_ta_ffi.a"
+            [ -f "$src" ] || { echo "missing Go archive for $id"; exit 1; }
             mkdir -p "bindings/go/lib/$id"
-            cp "$dir/libferro_ta_ffi.a" "bindings/go/lib/$id/"
+            cp "$src" "bindings/go/lib/$id/"
           done
           find bindings/go/lib -type f -exec ls -la {} \;
           # Go module zips are capped at 500 MB; stay far below it.
           size=$(du -sm bindings/go | cut -f1)
           echo "module size: ${size} MB"
           [ "$size" -lt 200 ]
+      # Assets first: if this fails, no Go tag exists yet and a rerun starts clean.
+      - name: Upload C/C++ assets to the GitHub Release
+        if: env.DRY_RUN != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$TAG" artifacts/c/*.tar.gz --clobber
       - name: Commit archives on a detached commit and tag it
         run: |
           set -euo pipefail
           if git ls-remote --exit-code --tags origin "refs/tags/$GO_TAG" >/dev/null; then
-            echo "$GO_TAG already exists; refusing to move a published Go version."; exit 1
+            # Published Go versions are immutable; a rerun only completes the
+            # remaining steps (asset upload above, proxy warm-up, verify).
+            echo "::notice::$GO_TAG already exists; leaving it unchanged."
+            exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -197,11 +237,6 @@ jobs:
             echo "Dry run: would push $GO_TAG"; git show --stat HEAD | head -20; exit 0
           fi
           git push origin "refs/tags/$GO_TAG"
-      - name: Upload C/C++ assets to the GitHub Release
-        if: env.DRY_RUN != 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh release upload "$TAG" artifacts/c/*.tar.gz --clobber
       - name: Warm the Go module proxy
         if: env.DRY_RUN != 'true'
         run: |
@@ -209,7 +244,7 @@ jobs:
             if curl -fsS "https://proxy.golang.org/$MODULE/@v/$TAG.info"; then exit 0; fi
             sleep 20
           done
-          echo "proxy did not serve $MODULE@$TAG yet (it will on first request)"
+          echo "::warning::proxy did not serve $MODULE@$TAG yet (it will on first request)"
 
   # ---------------------------------------------------------------------------
   # Prove the published module works for a consumer with no Rust toolchain.
@@ -217,7 +252,7 @@ jobs:
   verify:
     name: go get on ${{ matrix.os }}
     needs: [version, publish]
-    if: github.event_name == 'release'
+    if: github.event_name == 'release' || inputs.dry_run == false
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -252,11 +287,16 @@ jobs:
           	if err != nil {
           		panic(err)
           	}
-          	fmt.Println(ferrota.Version, out)
+          	fmt.Println(ferrota.Version)
+          	fmt.Println(out)
           }
           EOF
           for _ in 1 2 3 4 5 6; do
             if go get "$MODULE@$VERSION"; then break; fi
             sleep 30
           done
+          got=$(go run . | head -1)
+          if [ "v$got" != "$VERSION" ]; then
+            echo "module reports Version $got, expected $VERSION"; exit 1
+          fi
           go run .

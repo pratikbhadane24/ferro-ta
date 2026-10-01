@@ -148,6 +148,9 @@ macro_rules! ffi_exports {
             /// pointer valid for `len` writes (pointers may be NULL when
             /// `len == 0`). An output may alias an input for in-place use.
             #[no_mangle]
+            // `!(rule)` is deliberate: for float rules such as `sigma > 0.0` it
+            // also rejects NaN, which `sigma <= 0.0` would let through.
+            #[allow(clippy::neg_cmp_op_on_partial_ord)]
             pub unsafe extern "C" fn $name(
                 $($input: *const f64,)+
                 len: usize,

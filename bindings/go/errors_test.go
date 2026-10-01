@@ -152,3 +152,19 @@ func TestCrossParamRule(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestFastPeriodMustBeBelowSlow(t *testing.T) {
+	// Previously returned all-NaN with a nil error, indistinguishable from warm-up.
+	if _, _, _, err := Macd(ramp(64), 26, 12, 9); !errors.Is(err, ErrInvalidParam) {
+		t.Fatalf("got %v, want ErrInvalidParam", err)
+	}
+	if _, err := Apo(ramp(64), 12, 12, MATypeEMA); !errors.Is(err, ErrInvalidParam) {
+		t.Fatalf("equal periods: got %v, want ErrInvalidParam", err)
+	}
+}
+
+func TestOversizedPeriodIsRejected(t *testing.T) {
+	if _, err := Sma(ramp(8), 1<<40); !errors.Is(err, ErrInvalidParam) {
+		t.Fatalf("got %v, want ErrInvalidParam", err)
+	}
+}

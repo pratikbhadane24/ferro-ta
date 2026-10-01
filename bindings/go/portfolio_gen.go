@@ -27,7 +27,7 @@ func RollingBeta(asset []float64, benchmark []float64, window int) ([]float64, e
 // Compute relative strength of an asset vs a benchmark.
 func RelativeStrength(assetReturns []float64, benchmarkReturns []float64) ([]float64, error) {
 	n := len(assetReturns)
-	if err := checkLengths("RelativeStrength", []string{"asset_returns", "benchmark_returns"}, []int{len(assetReturns), len(benchmarkReturns)}); err != nil {
+	if err := checkLengths("RelativeStrength", []string{"assetReturns", "benchmarkReturns"}, []int{len(assetReturns), len(benchmarkReturns)}); err != nil {
 		return nil, err
 	}
 	outBuf := make([]float64, n)

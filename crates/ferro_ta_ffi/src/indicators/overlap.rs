@@ -10,13 +10,13 @@ crate::ffi_exports! {
         -> [out_macd: f64, out_signal: f64, out_hist: f64];
     /// MACD with configurable MA types for fast/slow/signal.
     ft_macdext = overlap::macdext(close)[fastperiod: period, fastmatype: matype, slowperiod: period, slowmatype: matype, signalperiod: period, signalmatype: matype]
-        -> [out_macd: f64, out_signal: f64, out_hist: f64];
-    /// Generic Moving Average. matype: 0=SMA, 1=EMA, 2=WMA, 3=DEMA, 4=TEMA,
+        -> [out_macd: f64, out_signal: f64, out_hist: f64] if fastperiod < slowperiod;
+    /// Generic Moving Average. matype: 0=SMA, 1=EMA, 2=WMA, 3=DEMA, 4=TEMA, 5=TRIMA, 6=KAMA, 7=T3, 8=T3 (TA-Lib's T3 number, an alias of `7`).
     ft_ma = overlap::ma(close)[timeperiod: period, matype: matype]
         -> [out: f64];
     /// Moving Average with Variable Period per bar.
     ft_mavp = overlap::mavp(close, periods)[minperiod: period, maxperiod: period, matype: matype]
-        -> [out: f64];
+        -> [out: f64] if maxperiod >= minperiod;
     /// Compute the Exponential Moving Average (EMA).
     ft_ema = overlap::ema(close)[timeperiod: period]
         -> [out: f64];
@@ -34,7 +34,7 @@ crate::ffi_exports! {
         -> [out: f64];
     /// Compute the Moving Average Convergence/Divergence (MACD).
     ft_macd = overlap::macd(close)[fastperiod: period, slowperiod: period, signalperiod: period]
-        -> [out_macd: f64, out_signal: f64, out_hist: f64];
+        -> [out_macd: f64, out_signal: f64, out_hist: f64] if fastperiod < slowperiod;
     /// MESA Adaptive Moving Average. Returns `(mama, fama)`.
     ft_mama = overlap::mama(close)[fastlimit: float, slowlimit: float]
         -> [out_mama: f64, out_fama: f64];

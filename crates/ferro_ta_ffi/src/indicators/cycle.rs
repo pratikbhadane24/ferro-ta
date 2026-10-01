@@ -2,7 +2,7 @@
 
 crate::ffi_exports! {
     group: "cycle",
-    /// Hilbert Transform Instantaneous Trendline (Ehlers).
+    /// Hilbert Transform Instantaneous Trendline (Ehlers). Smooths price over the dominant cycle period.
     ft_ht_trendline = cycle::ht_trendline(close)[]
         -> [out: f64];
     /// Hilbert Transform Dominant Cycle Period in bars.
@@ -14,7 +14,7 @@ crate::ffi_exports! {
     /// Hilbert Transform Phasor components. Returns `(inphase, quadrature)`.
     ft_ht_phasor = cycle::ht_phasor(close)[]
         -> [out_inphase: f64, out_quadrature: f64];
-    /// Hilbert Transform SineWave. Returns `(sine, leadsine)` where leadsine
+    /// Hilbert Transform SineWave. Returns `(sine, leadsine)` where leadsine leads sine by 45 degrees.
     ft_ht_sine = cycle::ht_sine(close)[]
         -> [out_sine: f64, out_leadsine: f64];
     /// Hilbert Transform Trend vs Cycle Mode: 1 = trending, 0 = cycling.

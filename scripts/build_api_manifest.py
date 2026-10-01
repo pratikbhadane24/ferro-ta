@@ -517,7 +517,7 @@ def support_matrix_count_snippets(counts: dict[str, int]) -> list[str]:
         f"{counts['flutter_excluded_count']} ``MANUAL_EXCLUDE``",
         f"{counts['common_python_wasm_count']} names shared with Python",
         f"{counts['common_all_four_count']} names are present on all four",
-        f"{counts['go_count']} C ABI / Go exports",
+        f"{counts['go_count']} C / Go coverage rows",
     ]
 
 

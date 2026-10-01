@@ -24,6 +24,8 @@ import csv
 import ctypes
 import json
 import math
+import random
+import subprocess
 import sys
 from pathlib import Path
 
@@ -35,6 +37,43 @@ LIB_DIR = ROOT / "target" / "release"
 
 BARS = 120
 SIGNIFICANT_DIGITS = 15
+PATTERN_BARS = 1000
+PATTERN_SEED = 7
+
+# Multi-candle patterns that need exact bar sequences and never fire on the
+# synthetic data. Their wrappers come from the same generated code path as
+# the 43 patterns that do fire, which the golden replay does exercise.
+KNOWN_SILENT_PATTERNS = frozenset(
+    {
+        "ft_cdl2crows",
+        "ft_cdl3blackcrows",
+        "ft_cdl3linestrike",
+        "ft_cdl3starsinsouth",
+        "ft_cdl3whitesoldiers",
+        "ft_cdlabandonedbaby",
+        "ft_cdlconcealbabyswall",
+        "ft_cdlcounterattack",
+        "ft_cdldarkcloudcover",
+        "ft_cdlgapsidesidewhite",
+        "ft_cdlinneck",
+        "ft_cdlkicking",
+        "ft_cdlkickingbylength",
+        "ft_cdlmathold",
+        "ft_cdlonneck",
+        "ft_cdlpiercing",
+        "ft_cdlrisefall3methods",
+        "ft_cdlupsidegap2crows",
+    }
+)
+
+# Per-function parameter values chosen so the output actually varies on the
+# fixture data (a constant output cannot catch a wrapper bug).
+PARAM_OVERRIDES: dict[str, dict[str, float]] = {
+    # atr_pct_threshold is compared with the ATR/close *fraction* (~0.01-0.03).
+    "ft_regime_combined": {"adx_threshold": 50.0, "atr_pct_threshold": 0.01},
+    "ft_detect_breaks_cusum": {"threshold": 1.0, "slack": 0.001},
+    "ft_rolling_variance_break": {"threshold": 1.5},
+}
 
 # Input argument name -> fixture column.
 INPUT_COLUMNS = {
@@ -186,12 +225,28 @@ C_ELEM = {
 }
 
 
-def load_library() -> ctypes.CDLL:
+def load_library(spec: dict) -> ctypes.CDLL:
+    """Build the C ABI library and load it, refusing a stale build.
+
+    Calling a library built from older sources with the current spec's argument
+    lists would be undefined behaviour recorded as truth, so the build is
+    always refreshed and its version checked against the spec.
+    """
+    build = subprocess.run(
+        ["cargo", "build", "-q", "-p", "ferro_ta_ffi", "--release"], cwd=ROOT
+    )
+    if build.returncode != 0:
+        sys.exit("cargo build -p ferro_ta_ffi --release failed")
     for name in ("libferro_ta_ffi.dylib", "libferro_ta_ffi.so", "ferro_ta_ffi.dll"):
         path = LIB_DIR / name
         if path.exists():
-            return ctypes.CDLL(str(path))
-    sys.exit("native library not found; run: cargo build -p ferro_ta_ffi --release")
+            lib = ctypes.CDLL(str(path))
+            lib.ft_version.restype = ctypes.c_char_p
+            version = lib.ft_version().decode()
+            if version != spec["version"]:
+                sys.exit(f"library version {version} != spec version {spec['version']}")
+            return lib
+    sys.exit(f"native library not found in {LIB_DIR}")
 
 
 def load_inputs() -> dict[str, list[float]]:
@@ -223,6 +278,33 @@ def load_inputs() -> dict[str, list[float]]:
     return cols
 
 
+def synthetic_ohlc(n: int, seed: int = PATTERN_SEED) -> dict[str, list[float]]:
+    """Seeded OHLC with varied candle shapes (dojis, marubozus, long shadows,
+    gaps, trend runs) so most candlestick patterns fire at least once.
+    `random.Random` is deterministic across platforms and Python versions."""
+    rng = random.Random(seed)
+    cols: dict[str, list[float]] = {k: [] for k in ("open", "high", "low", "close")}
+    price, trend = 100.0, 0.0
+    for i in range(n):
+        if i % 15 == 0:
+            trend = rng.choice([-1.0, 0.0, 1.0]) * rng.uniform(0.3, 1.2)
+        gap = rng.choice([0.0, 0.0, 0.0, rng.uniform(-2.0, 2.0)])
+        open_ = price + gap
+        body = rng.choice([0.0, 0.02, rng.uniform(0.1, 0.6), rng.uniform(0.8, 3.0)])
+        bias = 0.15 * ((trend > 0) - (trend < 0))
+        direction = 1.0 if rng.random() < 0.5 + bias else -1.0
+        close = open_ + direction * body + trend * 0.3
+        upper = rng.choice([0.0, rng.uniform(0.0, 0.3), rng.uniform(0.3, 2.5)])
+        lower = rng.choice([0.0, rng.uniform(0.0, 0.3), rng.uniform(0.3, 2.5)])
+        cols["open"].append(round(open_, 4))
+        cols["close"].append(round(close, 4))
+        cols["high"].append(round(max(open_, close) + upper, 4))
+        cols["low"].append(round(min(open_, close) - lower, 4))
+        price = close
+    cols["volume"] = [1000.0 + 37.0 * (i % 11) for i in range(n)]
+    return cols
+
+
 def param_value(param: dict) -> float | int:
     kind, name = param["kind"], param["name"]
     if kind == "period":
@@ -245,10 +327,42 @@ def encode(value: float) -> float | str | None:
     return float(f"{value:.{SIGNIFICANT_DIGITS}g}")
 
 
+def distinct_params(name: str, params_spec: list[dict]) -> dict[str, float | int]:
+    """Representative params, made pairwise distinct within each type group.
+
+    Equal values for two same-typed params would let a wrapper that swaps
+    them pass the golden replay. Integers step up by one, floats by 1/8 of
+    their magnitude, and MA types take distinct non-zero values.
+    """
+    overrides = PARAM_OVERRIDES.get(name, {})
+    used: dict[str, set] = {"int": set(), "float": set(), "matype": set()}
+    next_matype = 1
+    values: dict[str, float | int] = {}
+    for p in params_spec:
+        kind = p["kind"]
+        if kind == "matype":
+            value: float | int = next_matype
+            next_matype += 1
+            group = "matype"
+        else:
+            value = overrides.get(p["name"], param_value(p))
+            group = "float" if kind == "float" else "int"
+            while value in used[group]:
+                if group == "int":
+                    value += 1
+                else:
+                    value = round(value + (abs(value) / 8 or 0.125), 10)
+        used[group].add(value)
+        values[p["name"]] = value
+    return values
+
+
 def call_function(lib: ctypes.CDLL, fn: dict, cols: dict[str, list[float]]) -> dict:
     n = len(cols["close"])
     input_names = [INPUT_COLUMNS[name] for name in fn["inputs"]]
-    params = {p["name"]: param_value(p) for p in fn["params"]}
+    if len(set(input_names)) != len(input_names):
+        sys.exit(f"{fn['name']}: two inputs share a column ({input_names})")
+    params = distinct_params(fn["name"], fn["params"])
     in_arrays = [(ctypes.c_double * n)(*cols[col]) for col in input_names]
     out_arrays = [(C_ELEM[o["elem"]] * n)() for o in fn["outputs"]]
     args = [*in_arrays, ctypes.c_size_t(n)]
@@ -273,11 +387,14 @@ def call_function(lib: ctypes.CDLL, fn: dict, cols: dict[str, list[float]]) -> d
     }
 
 
-def call_scalar(lib: ctypes.CDLL, fn: dict, enum_index: int, enums: dict) -> dict:
-    params = {p["name"]: param_value(p) for p in fn["params"]}
-    for p in fn["params"]:
-        if p["kind"] == "enum":
-            params[p["name"]] = enums[p["enum"]][enum_index]["value"]
+def call_scalar(lib: ctypes.CDLL, fn: dict, variant: int, enums: dict) -> dict:
+    params = distinct_params(fn["name"], fn["params"])
+    # Enum params rotate through their values with an offset per position, so
+    # two enum params never share an index and both cases differ.
+    enum_params = [p for p in fn["params"] if p["kind"] == "enum"]
+    for position, p in enumerate(enum_params):
+        values = enums[p["enum"]]
+        params[p["name"]] = values[(variant + position) % len(values)]["value"]
     outs = [C_ELEM[o["elem"]]() for o in fn["outputs"]]
     args = [C_SCALAR[p["c_type"]](params[p["name"]]) for p in fn["params"]]
     func = getattr(lib, fn["name"])
@@ -293,18 +410,18 @@ def call_scalar(lib: ctypes.CDLL, fn: dict, enum_index: int, enums: dict) -> dic
 
 
 def scalar_cases(lib: ctypes.CDLL, spec: dict) -> list[dict]:
-    """One case per scalar; a second with every enum at its last value."""
+    """One case per scalar; a second, with rotated enum values, if it has enums."""
     enums = {e["name"]: e["values"] for e in spec["enums"]}
     cases = []
     for fn in spec["scalars"]:
         cases.append(call_scalar(lib, fn, 0, enums))
         if any(p["kind"] == "enum" for p in fn["params"]):
-            cases.append(call_scalar(lib, fn, -1, enums))
+            cases.append(call_scalar(lib, fn, 1, enums))
     return cases
 
 
 def run_stream(lib: ctypes.CDLL, stream: dict, cols: dict[str, list[float]]) -> dict:
-    params = {p["name"]: param_value(p) for p in stream["params"]}
+    params = distinct_params(stream["name"], stream["params"])
     input_names = [INPUT_COLUMNS[name] for name in stream["inputs"]]
     handle = ctypes.c_void_p()
     new = getattr(lib, stream["new_fn"])
@@ -337,33 +454,76 @@ def run_stream(lib: ctypes.CDLL, stream: dict, cols: dict[str, list[float]]) -> 
     }
 
 
+def dataset_for(fn: dict) -> str:
+    """Candlestick patterns replay on synthetic bars where most of them fire."""
+    return "patterns" if fn["name"].startswith("ft_cdl") else "daily"
+
+
+def weak_outputs(case: dict) -> list[str]:
+    """Outputs that cannot detect a broken wrapper: all-NaN or constant."""
+    return [
+        name
+        for name, values in case["outputs"].items()
+        if all(v is None for v in values) or len(set(values)) <= 1
+    ]
+
+
+def validate_strength(cases: list[dict]) -> None:
+    """Fail on any weak output, except documented never-firing patterns."""
+    errors, now_firing = [], []
+    for case in cases:
+        label = case.get("fn") or case.get("stream")
+        weak = weak_outputs(case)
+        if label in KNOWN_SILENT_PATTERNS:
+            if not weak:
+                now_firing.append(label)
+            continue
+        errors += [f"{label}.{out}" for out in weak]
+    if now_firing:
+        print(
+            f"note: remove from KNOWN_SILENT_PATTERNS (now firing): {', '.join(now_firing)}"
+        )
+    if errors:
+        sys.exit(
+            "weak golden outputs (all-NaN or constant) cannot catch wrapper bugs; "
+            f"adjust inputs or PARAM_OVERRIDES: {', '.join(errors)}"
+        )
+
+
 def main() -> int:
     spec = json.loads(SPEC_PATH.read_text())
-    lib = load_library()
-    cols = load_inputs()
+    lib = load_library(spec)
+    datasets = {"daily": load_inputs(), "patterns": synthetic_ohlc(PATTERN_BARS)}
+    functions = [
+        {
+            **call_function(lib, fn, datasets[dataset_for(fn)]),
+            "dataset": dataset_for(fn),
+        }
+        for fn in spec["functions"]
+    ]
+    streams = [
+        {**run_stream(lib, s, datasets["daily"]), "dataset": "daily"}
+        for s in spec["streams"]
+    ]
+    validate_strength(functions + streams)
     golden = {
         "note": 'Generated by scripts/build_golden_fixtures.py. NaN is null; Inf is "inf"/"-inf".',
         "version": spec["version"],
-        "bars": len(cols["close"]),
-        "columns": {k: [encode(v) for v in vals] for k, vals in cols.items()},
-        "functions": [call_function(lib, fn, cols) for fn in spec["functions"]],
+        "datasets": {
+            name: {k: [encode(v) for v in vals] for k, vals in cols.items()}
+            for name, cols in datasets.items()
+        },
+        "functions": functions,
         "scalars": scalar_cases(lib, spec),
-        "streams": [run_stream(lib, s, cols) for s in spec["streams"]],
+        "streams": streams,
     }
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     OUT_PATH.write_text(json.dumps(golden, separators=(",", ":")) + "\n")
-    all_nan = [
-        case["fn"]
-        for case in golden["functions"]
-        if all(v is None for vals in case["outputs"].values() for v in vals)
-    ]
     size_kb = OUT_PATH.stat().st_size // 1024
     print(
-        f"wrote {OUT_PATH.relative_to(ROOT)} ({len(golden['functions'])} functions, "
-        f"{len(golden['scalars'])} scalar cases, {len(golden['streams'])} streams, {size_kb} KiB)"
+        f"wrote {OUT_PATH.relative_to(ROOT)} ({len(functions)} functions, "
+        f"{len(golden['scalars'])} scalar cases, {len(streams)} streams, {size_kb} KiB)"
     )
-    if all_nan:
-        print(f"warning: all-NaN output (weak coverage) for: {', '.join(all_nan)}")
     return 0
 
 

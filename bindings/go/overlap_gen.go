@@ -38,6 +38,7 @@ func Macdfix(close []float64, signalperiod int) (macd []float64, signal []float6
 // Macdext wraps ferro_ta_core overlap::macdext.
 //
 // MACD with configurable MA types for fast/slow/signal.
+// Requires: fastperiod < slowperiod (else ErrInvalidParam).
 func Macdext(close []float64, fastperiod int, fastmatype MAType, slowperiod int, slowmatype MAType, signalperiod int, signalmatype MAType) (macd []float64, signal []float64, hist []float64, err error) {
 	n := len(close)
 	macdBuf := make([]float64, n)
@@ -51,7 +52,7 @@ func Macdext(close []float64, fastperiod int, fastmatype MAType, slowperiod int,
 
 // Ma wraps ferro_ta_core overlap::ma.
 //
-// Generic Moving Average. matype: 0=SMA, 1=EMA, 2=WMA, 3=DEMA, 4=TEMA,
+// Generic Moving Average. matype: 0=SMA, 1=EMA, 2=WMA, 3=DEMA, 4=TEMA, 5=TRIMA, 6=KAMA, 7=T3, 8=T3 (TA-Lib's T3 number, an alias of `7`).
 func Ma(close []float64, timeperiod int, matype MAType) ([]float64, error) {
 	n := len(close)
 	outBuf := make([]float64, n)
@@ -64,6 +65,7 @@ func Ma(close []float64, timeperiod int, matype MAType) ([]float64, error) {
 // Mavp wraps ferro_ta_core overlap::mavp.
 //
 // Moving Average with Variable Period per bar.
+// Requires: maxperiod >= minperiod (else ErrInvalidParam).
 func Mavp(close []float64, periods []float64, minperiod int, maxperiod int, matype MAType) ([]float64, error) {
 	n := len(close)
 	if err := checkLengths("Mavp", []string{"close", "periods"}, []int{len(close), len(periods)}); err != nil {
@@ -139,6 +141,7 @@ func Kama(close []float64, timeperiod int) ([]float64, error) {
 // Macd wraps ferro_ta_core overlap::macd.
 //
 // Compute the Moving Average Convergence/Divergence (MACD).
+// Requires: fastperiod < slowperiod (else ErrInvalidParam).
 func Macd(close []float64, fastperiod int, slowperiod int, signalperiod int) (macd []float64, signal []float64, hist []float64, err error) {
 	n := len(close)
 	macdBuf := make([]float64, n)

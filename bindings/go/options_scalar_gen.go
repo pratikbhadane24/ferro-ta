@@ -150,6 +150,8 @@ func ExpectedMove(spot float64, iv float64, daysToExpiry float64, tradingDaysPer
 // ImpliedVolatility wraps ferro_ta_core options::implied_volatility.
 //
 // Solve implied volatility with guarded Newton iterations and bisection fallback.
+// The result is NaN (with FT_OK) when no volatility reproduces `target_price`
+// (outside the no-arbitrage bounds) or the solver does not converge.
 func ImpliedVolatility(targetPrice float64, model PricingModel, underlying float64, strike float64, rate float64, carry float64, timeToExpiry float64, kind OptionKind, initialGuess float64, tolerance float64, maxIterations int) (float64, error) {
 	var valueOut float64
 	if err := statusError("ImpliedVolatility", C.ft_implied_volatility(C.double(targetPrice), C.int32_t(model), C.double(underlying), C.double(strike), C.double(rate), C.double(carry), C.double(timeToExpiry), C.int32_t(kind), C.double(initialGuess), C.double(tolerance), C.int64_t(maxIterations), (*C.double)(unsafe.Pointer(&valueOut)))); err != nil {

@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
-
-from .common import with_requires
 
 GO_ELEM = {"f64": "float64", "i32": "int32", "i64": "int64", "i8": "int8"}
 C_ELEM = {"f64": "C.double", "i32": "C.int32_t", "i64": "C.int64_t", "i8": "C.int8_t"}
@@ -15,15 +14,59 @@ def go_name(snake: str) -> str:
     return "".join(part[:1].upper() + part[1:] for part in snake.split("_") if part)
 
 
+GO_KEYWORDS = frozenset(
+    "break case chan const continue default defer else fallthrough for func go goto "
+    "if import interface map package range return select struct switch type var".split()
+)
+# Identifiers the generated function bodies use themselves. Shadowing other
+# builtins (`close`, `real`) is legal and keeps public signatures readable.
+GO_GENERATED_LOCALS = frozenset(
+    "n err len make nil unsafe runtime sync s h step bar in p "
+    "statusError checkLengths closedError inPtr outPtr".split()
+)
+
+_SNAKE_TOKEN_RE = re.compile(r"\b[a-z_][a-z0-9_]*\b")
+
+
 def go_ident(snake: str) -> str:
-    """Lower-camel local identifier: `fastk_period` -> `fastkPeriod`."""
+    """Lower-camel local identifier: `fastk_period` -> `fastkPeriod`.
+
+    Names that would collide with a Go keyword or with an identifier the
+    generated body relies on get a trailing underscore.
+    """
     name = go_name(snake)
-    return name[:1].lower() + name[1:]
+    ident = name[:1].lower() + name[1:]
+    if ident in GO_KEYWORDS or ident in GO_GENERATED_LOCALS:
+        return ident + "_"
+    return ident
+
+
+def check_unique_idents(entry: str, idents: list[str]) -> None:
+    """Fail generation (naming the spec entry) if two Go identifiers collide."""
+    seen: set[str] = set()
+    for ident in idents:
+        if ident in seen:
+            raise ValueError(f"{entry}: Go identifier {ident!r} is generated twice")
+        seen.add(ident)
+
+
+def go_requires(fn: dict) -> str:
+    """Doc text with the cross-parameter rule rewritten to Go parameter names."""
+    if not fn.get("requires"):
+        return fn["doc"]
+    params = {p["name"] for p in fn["params"]}
+    rule = _SNAKE_TOKEN_RE.sub(
+        lambda m: go_ident(m.group(0)) if m.group(0) in params else m.group(0),
+        fn["requires"],
+    )
+    return f"{fn['doc']}\nRequires: {rule} (else ErrInvalidParam)."
 
 
 def go_out_name(out_name: str) -> str:
     """`out` -> `out`, `out_upper` -> `upper`."""
-    return "out" if out_name == "out" else go_ident(out_name.removeprefix("out_"))
+    if out_name == "out":
+        return "out"
+    return go_ident(out_name.removeprefix("out_"))
 
 
 def go_param_type(param: dict) -> str:
@@ -64,6 +107,10 @@ def go_function(fn: dict) -> list[str]:
     name = go_name(core)
     inputs = [go_ident(i) for i in fn["inputs"]]
     outs = [(go_out_name(o["name"]), o) for o in fn["outputs"]]
+    check_unique_idents(
+        fn["name"],
+        inputs + [go_ident(p["name"]) for p in fn["params"]] + [n for n, _ in outs],
+    )
     single = len(outs) == 1
     if single:
         results = f"([]{GO_ELEM[outs[0][1]['elem']]}, error)"
@@ -76,13 +123,13 @@ def go_function(fn: dict) -> list[str]:
         *go_doc(
             name,
             f"wraps ferro_ta_core {fn['group']}::{core}.",
-            with_requires(fn, "ErrInvalidParam"),
+            go_requires(fn),
         ),
         f"func {name}({go_signature_params(fn['inputs'], fn['params'], '[]float64')}) {results} {{",
         f"\tn := len({inputs[0]})",
     ]
     if len(inputs) > 1:
-        names = ", ".join(f'"{i}"' for i in fn["inputs"])
+        names = ", ".join(f'"{i}"' for i in inputs)
         lens = ", ".join(f"len({i})" for i in inputs)
         body += [
             f'\tif err := checkLengths("{name}", []string{{{names}}}, []int{{{lens}}}); err != nil {{',
@@ -347,6 +394,17 @@ def render_go_golden_dispatch(spec: dict) -> str:
     ]
     for stream in spec["streams"]:
         out += go_golden_stream(stream)
+    out += [
+        "}",
+        "",
+        "// goldenParamNames lists each export's parameters, so a fixture whose",
+        "// params drifted from the spec fails instead of silently passing zeros.",
+        "// Positional struct literals keep the generated block gofmt-stable.",
+        "var goldenParamNames = []goldenParamList{",
+    ]
+    for entry in [*spec["functions"], *spec["scalars"], *spec["streams"]]:
+        names = ", ".join(f'"{p["name"]}"' for p in entry["params"])
+        out.append(f'\t{{"{entry["name"]}", []string{{{names}}}}},')
     out += ["}", ""]
     return "\n".join(out)
 

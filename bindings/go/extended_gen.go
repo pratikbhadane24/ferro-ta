@@ -119,7 +119,7 @@ func Dmi(high []float64, low []float64, close []float64, timeperiod int) (plusDi
 
 // WilliamsFractals wraps ferro_ta_core extended::williams_fractals.
 //
-// Williams Fractals: local swing high / swing low with `timeperiod` bars
+// Williams Fractals: local swing high / swing low with `timeperiod` bars on each side of the pivot.
 func WilliamsFractals(high []float64, low []float64, timeperiod int) (up []float64, down []float64, err error) {
 	n := len(high)
 	if err := checkLengths("WilliamsFractals", []string{"high", "low"}, []int{len(high), len(low)}); err != nil {
@@ -151,7 +151,7 @@ func Rwi(high []float64, low []float64, close []float64, timeperiod int) (rwiHig
 
 // Ichimoku wraps ferro_ta_core extended::ichimoku.
 //
-// # Returns
+// # Returns `(tenkan, kijun, senkou_a, senkou_b, chikou)` arrays. Mismatched input lengths yield all `NaN`.
 func Ichimoku(high []float64, low []float64, close []float64, tenkanPeriod int, kijunPeriod int, senkouBPeriod int, displacement int) (tenkan []float64, kijun []float64, senkouA []float64, senkouB []float64, chikou []float64, err error) {
 	n := len(high)
 	if err := checkLengths("Ichimoku", []string{"high", "low", "close"}, []int{len(high), len(low), len(close)}); err != nil {
@@ -215,6 +215,7 @@ func Crsi(close []float64, timeperiod int, streakperiod int, rankperiod int) ([]
 // Ao wraps ferro_ta_core extended::ao.
 //
 // Awesome Oscillator: `SMA(median, fast) − SMA(median, slow)`.
+// Requires: fastperiod < slowperiod (else ErrInvalidParam).
 func Ao(high []float64, low []float64, fastperiod int, slowperiod int) ([]float64, error) {
 	n := len(high)
 	if err := checkLengths("Ao", []string{"high", "low"}, []int{len(high), len(low)}); err != nil {
@@ -230,6 +231,7 @@ func Ao(high []float64, low []float64, fastperiod int, slowperiod int) ([]float6
 // Ac wraps ferro_ta_core extended::ac.
 //
 // Accelerator Oscillator: `AO − SMA(AO, timeperiod)`.
+// Requires: fastperiod < slowperiod (else ErrInvalidParam).
 func Ac(high []float64, low []float64, fastperiod int, slowperiod int, timeperiod int) ([]float64, error) {
 	n := len(high)
 	if err := checkLengths("Ac", []string{"high", "low"}, []int{len(high), len(low)}); err != nil {
@@ -245,6 +247,7 @@ func Ac(high []float64, low []float64, fastperiod int, slowperiod int, timeperio
 // Po wraps ferro_ta_core extended::po.
 //
 // Price Oscillator (SMA): `SMA(close, fast) − SMA(close, slow)`.
+// Requires: fastperiod < slowperiod (else ErrInvalidParam).
 func Po(close []float64, fastperiod int, slowperiod int) ([]float64, error) {
 	n := len(close)
 	outBuf := make([]float64, n)
@@ -256,7 +259,7 @@ func Po(close []float64, fastperiod int, slowperiod int) ([]float64, error) {
 
 // Dpo wraps ferro_ta_core extended::dpo.
 //
-// Detrended Price Oscillator: `close[i − shift] − SMA(close, timeperiod)`,
+// Detrended Price Oscillator: `close[i − shift] − SMA(close, timeperiod)`, where `shift = timeperiod / 2 + 1`.
 func Dpo(close []float64, timeperiod int) ([]float64, error) {
 	n := len(close)
 	outBuf := make([]float64, n)
@@ -285,6 +288,7 @@ func Rvi(open []float64, high []float64, low []float64, close []float64, timeper
 // Cho wraps ferro_ta_core extended::cho.
 //
 // Chaikin Oscillator — same math as [`volume::adosc`].
+// Requires: fastperiod < slowperiod (else ErrInvalidParam).
 func Cho(high []float64, low []float64, close []float64, volume []float64, fastperiod int, slowperiod int) ([]float64, error) {
 	n := len(high)
 	if err := checkLengths("Cho", []string{"high", "low", "close", "volume"}, []int{len(high), len(low), len(close), len(volume)}); err != nil {
@@ -342,6 +346,7 @@ func Vortex(high []float64, low []float64, close []float64, timeperiod int) (plu
 // Stc wraps ferro_ta_core extended::stc.
 //
 // Schaff Trend Cycle: stochastic of MACD, double-smoothed (`d1`, `d2`).
+// Requires: fastperiod < slowperiod (else ErrInvalidParam).
 func Stc(close []float64, fastperiod int, slowperiod int, cycleperiod int, d1 int, d2 int) ([]float64, error) {
 	n := len(close)
 	outBuf := make([]float64, n)
@@ -393,7 +398,7 @@ func Median(real []float64, timeperiod int) ([]float64, error) {
 
 // MedianBands wraps ferro_ta_core extended::median_bands.
 //
-// Median bands: rolling median of `(high + low) / 2`, ATR envelopes, and an
+// Median bands: rolling median of `(high + low) / 2`, ATR envelopes, and an EMA of the median.
 func MedianBands(high []float64, low []float64, close []float64, timeperiod int, atrPeriod int, multiplier float64) (median []float64, upper []float64, lower []float64, medianEma []float64, err error) {
 	n := len(high)
 	if err := checkLengths("MedianBands", []string{"high", "low", "close"}, []int{len(high), len(low), len(close)}); err != nil {
@@ -424,6 +429,7 @@ func Mode(real []float64, timeperiod int, bins int) ([]float64, error) {
 // Alma wraps ferro_ta_core extended::alma.
 //
 // Arnaud Legoux Moving Average.
+// Requires: sigma > 0.0 (else ErrInvalidParam).
 func Alma(close []float64, timeperiod int, offset float64, sigma float64) ([]float64, error) {
 	n := len(close)
 	outBuf := make([]float64, n)
@@ -748,6 +754,7 @@ func PviWithSignal(close []float64, volume []float64, timeperiod int, matype MAT
 // Volosc wraps ferro_ta_core extended::volosc.
 //
 // Volume oscillator: `100 * (SMA(vol, fast) - SMA(vol, slow)) / SMA(vol, slow)`.
+// Requires: fastperiod < slowperiod (else ErrInvalidParam).
 func Volosc(volume []float64, fastperiod int, slowperiod int) ([]float64, error) {
 	n := len(volume)
 	outBuf := make([]float64, n)
@@ -772,6 +779,7 @@ func Vroc(volume []float64, timeperiod int) ([]float64, error) {
 // Kvo wraps ferro_ta_core extended::kvo.
 //
 // Klinger Volume Oscillator and its EMA signal.
+// Requires: fastperiod < slowperiod (else ErrInvalidParam).
 func Kvo(high []float64, low []float64, close []float64, volume []float64, fastperiod int, slowperiod int, signalperiod int) (kvo []float64, signal []float64, err error) {
 	n := len(high)
 	if err := checkLengths("Kvo", []string{"high", "low", "close", "volume"}, []int{len(high), len(low), len(close), len(volume)}); err != nil {

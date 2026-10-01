@@ -153,7 +153,7 @@ See the benchmark methodology and artifacts:
 - 240+ indicators over a shared Rust core, including adaptive moving averages, volume oscillators,
   and signal utilities (`ALMA`, `VIDYA`, `KVO`, `VORTEX`, `CROSSOVER`, and related).
 - The extended catalog is bound on every surface: 360 core symbols, 247 Python names, 344 WASM
-  exports, 194 generated Flutter wrappers, and 259 C ABI / Go exports. See [docs/languages/coverage](docs/languages/coverage.rst)
+  exports, 194 generated Flutter wrappers, and 262 C ABI / Go exports. See [docs/languages/coverage](docs/languages/coverage.rst)
   for the per-indicator table.
 - Batch and streaming APIs for multi-series and bar-by-bar workloads.
 - Python extras: NumPy-first execution with pandas and polars adapters, type stubs, and Sphinx autodoc.

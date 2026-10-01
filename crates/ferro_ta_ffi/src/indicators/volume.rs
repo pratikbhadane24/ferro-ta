@@ -13,5 +13,5 @@ crate::ffi_exports! {
         -> [out: f64];
     /// Chaikin A/D Oscillator: fast EMA of AD minus slow EMA of AD.
     ft_adosc = volume::adosc(high, low, close, volume)[fastperiod: period, slowperiod: period]
-        -> [out: f64];
+        -> [out: f64] if fastperiod < slowperiod;
 }

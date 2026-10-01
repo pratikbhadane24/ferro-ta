@@ -146,6 +146,7 @@ func Aroonosc(high []float64, low []float64, timeperiod int) ([]float64, error) 
 // Apo wraps ferro_ta_core momentum::apo.
 //
 // Absolute Price Oscillator: `fast MA - slow MA`.
+// Requires: fastperiod < slowperiod (else ErrInvalidParam).
 func Apo(close []float64, fastperiod int, slowperiod int, matype MAType) ([]float64, error) {
 	n := len(close)
 	outBuf := make([]float64, n)
@@ -157,7 +158,8 @@ func Apo(close []float64, fastperiod int, slowperiod int, matype MAType) ([]floa
 
 // Ppo wraps ferro_ta_core momentum::ppo.
 //
-// Percentage Price Oscillator: `(fast MA - slow MA) / slow MA * 100`.
+// Percentage Price Oscillator: `(fast MA - slow MA) / slow MA * 100`. Returns `(ppo_line, signal_line, histogram)`.
+// Requires: fastperiod < slowperiod (else ErrInvalidParam).
 func Ppo(close []float64, fastperiod int, slowperiod int, signalperiod int, matype MAType) (ppo []float64, signal []float64, hist []float64, err error) {
 	n := len(close)
 	ppoBuf := make([]float64, n)
@@ -183,7 +185,7 @@ func Trix(close []float64, timeperiod int) ([]float64, error) {
 
 // Willr wraps ferro_ta_core momentum::willr.
 //
-// Williams %R: `-100 * (HH - close) / (HH - LL)` over the window.
+// Williams %R: `-100 * (HH - close) / (HH - LL)` over the window. Returns values in `[-100, 0]`.
 func Willr(high []float64, low []float64, close []float64, timeperiod int) ([]float64, error) {
 	n := len(high)
 	if err := checkLengths("Willr", []string{"high", "low", "close"}, []int{len(high), len(low), len(close)}); err != nil {

@@ -21,8 +21,10 @@ and the project uses [Semantic Versioning](https://semver.org/).
   for linux/darwin amd64+arm64 and windows amd64, so `go get` needs no Rust.
 - **C ABI crate `ferro_ta_ffi`** and generated header `ferro_ta.h`: the shared
   foundation for Go, C/C++ and future C-ABI languages. Status-code errors,
-  caller-allocated outputs, contained panics, validated periods (`int64`),
-  enums and finite float params. Each release attaches C/C++ archives per
+  caller-allocated outputs, contained panics, validated periods (`int64`,
+  capped at 2^24 so absurd values cannot exhaust memory), enums, finite float
+  params, and the Python binding's cross-parameter rules (e.g. MACD
+  `fastperiod < slowperiod`). Each release attaches C/C++ archives per
   platform (MSVC build on Windows).
 - `ffi_spec.json` signature table, `scripts/build_ffi_bindings.py` codegen
   (`--check` in CI) and language-neutral golden fixtures

@@ -9,7 +9,7 @@ import "C"
 
 // RollingSum wraps ferro_ta_core math_ops::rolling_sum.
 //
-// Rolling sum over `timeperiod` bars using an O(n) sliding window.
+// Rolling sum over `timeperiod` bars using an O(n) sliding window. Leading `timeperiod - 1` values are NaN.
 func RollingSum(real []float64, timeperiod int) ([]float64, error) {
 	n := len(real)
 	outBuf := make([]float64, n)
@@ -21,7 +21,7 @@ func RollingSum(real []float64, timeperiod int) ([]float64, error) {
 
 // RollingMax wraps ferro_ta_core math_ops::rolling_max.
 //
-// Rolling maximum over `timeperiod` bars (O(n) monotonic deque).
+// Rolling maximum over `timeperiod` bars (O(n) monotonic deque). Delegates to `math::sliding_max`.
 func RollingMax(real []float64, timeperiod int) ([]float64, error) {
 	n := len(real)
 	outBuf := make([]float64, n)
@@ -33,7 +33,7 @@ func RollingMax(real []float64, timeperiod int) ([]float64, error) {
 
 // RollingMin wraps ferro_ta_core math_ops::rolling_min.
 //
-// Rolling minimum over `timeperiod` bars (O(n) monotonic deque).
+// Rolling minimum over `timeperiod` bars (O(n) monotonic deque). Delegates to `math::sliding_min`.
 func RollingMin(real []float64, timeperiod int) ([]float64, error) {
 	n := len(real)
 	outBuf := make([]float64, n)
@@ -45,7 +45,7 @@ func RollingMin(real []float64, timeperiod int) ([]float64, error) {
 
 // RollingMaxindex wraps ferro_ta_core math_ops::rolling_maxindex.
 //
-// Index of rolling maximum over `timeperiod` bars.
+// Index of rolling maximum over `timeperiod` bars. Returns 0-based index. During warmup the value is `-1`.
 func RollingMaxindex(real []float64, timeperiod int) ([]int64, error) {
 	n := len(real)
 	outBuf := make([]int64, n)
@@ -57,7 +57,7 @@ func RollingMaxindex(real []float64, timeperiod int) ([]int64, error) {
 
 // RollingMinindex wraps ferro_ta_core math_ops::rolling_minindex.
 //
-// Index of rolling minimum over `timeperiod` bars.
+// Index of rolling minimum over `timeperiod` bars. Returns 0-based index. During warmup the value is `-1`.
 func RollingMinindex(real []float64, timeperiod int) ([]int64, error) {
 	n := len(real)
 	outBuf := make([]int64, n)

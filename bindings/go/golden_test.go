@@ -17,6 +17,15 @@ var goldenPath = filepath.Join("..", "..", "tests", "fixtures", "golden", "ffi_g
 
 const goldenRelTol = 1e-9
 
+// requireGoldenEnv makes a missing fixture a failure instead of a skip; CI
+// sets it so a moved fixture cannot turn the golden suites into no-ops.
+const requireGoldenEnv = "FERRO_TA_REQUIRE_GOLDEN"
+
+type goldenParamList struct {
+	name   string
+	params []string
+}
+
 type goldenStepper struct {
 	step  func(bar map[string]float64) (map[string]any, error)
 	close func() error
@@ -25,6 +34,7 @@ type goldenStepper struct {
 type goldenCase struct {
 	Fn      string                       `json:"fn"`
 	Stream  string                       `json:"stream"`
+	Dataset string                       `json:"dataset"`
 	Inputs  map[string]string            `json:"inputs"`
 	Params  map[string]float64           `json:"params"`
 	Outputs map[string][]json.RawMessage `json:"outputs"`
@@ -37,16 +47,19 @@ type goldenScalarCase struct {
 }
 
 type goldenFile struct {
-	Columns   map[string][]json.RawMessage `json:"columns"`
-	Functions []goldenCase                 `json:"functions"`
-	Scalars   []goldenScalarCase           `json:"scalars"`
-	Streams   []goldenCase                 `json:"streams"`
+	Datasets  map[string]map[string][]json.RawMessage `json:"datasets"`
+	Functions []goldenCase                            `json:"functions"`
+	Scalars   []goldenScalarCase                      `json:"scalars"`
+	Streams   []goldenCase                            `json:"streams"`
 }
 
-func loadGolden(t *testing.T) (goldenFile, map[string][]float64) {
+func loadGolden(t *testing.T) (goldenFile, map[string]map[string][]float64) {
 	t.Helper()
 	raw, err := os.ReadFile(goldenPath)
 	if errors.Is(err, os.ErrNotExist) {
+		if os.Getenv(requireGoldenEnv) != "" {
+			t.Fatalf("%s is set but %s is missing", requireGoldenEnv, goldenPath)
+		}
 		t.Skip("golden fixtures not available outside the ferro-ta repository")
 	}
 	if err != nil {
@@ -56,11 +69,45 @@ func loadGolden(t *testing.T) (goldenFile, map[string][]float64) {
 	if err := json.Unmarshal(raw, &g); err != nil {
 		t.Fatalf("parse %s: %v", goldenPath, err)
 	}
-	cols := make(map[string][]float64, len(g.Columns))
-	for name, vals := range g.Columns {
-		cols[name] = decodeFloats(t, vals)
+	datasets := make(map[string]map[string][]float64, len(g.Datasets))
+	for name, columns := range g.Datasets {
+		cols := make(map[string][]float64, len(columns))
+		for col, vals := range columns {
+			cols[col] = decodeFloats(t, vals)
+		}
+		datasets[name] = cols
 	}
-	return g, cols
+	return g, datasets
+}
+
+// checkParamNames fails when a fixture case's params differ from the spec's,
+// since a missing map key would otherwise silently read as zero.
+func checkParamNames(t *testing.T, name string, params map[string]float64) {
+	t.Helper()
+	for _, entry := range goldenParamNames {
+		if entry.name != name {
+			continue
+		}
+		if len(entry.params) != len(params) {
+			t.Fatalf("%s: fixture has params %v, spec has %v", name, params, entry.params)
+		}
+		for _, p := range entry.params {
+			if _, ok := params[p]; !ok {
+				t.Fatalf("%s: fixture is missing param %q; regenerate the fixtures", name, p)
+			}
+		}
+		return
+	}
+	t.Fatalf("%s: not in the generated parameter table", name)
+}
+
+func datasetColumns(t *testing.T, datasets map[string]map[string][]float64, name string) map[string][]float64 {
+	t.Helper()
+	cols, ok := datasets[name]
+	if !ok {
+		t.Fatalf("unknown dataset %q", name)
+	}
+	return cols
 }
 
 // decodeFloats maps the fixture encoding back to float64: null is NaN and
@@ -127,7 +174,7 @@ func compareSeries(t *testing.T, label string, got, want []float64) {
 }
 
 func TestGoldenFunctions(t *testing.T) {
-	g, cols := loadGolden(t)
+	g, datasets := loadGolden(t)
 	if len(g.Functions) != len(goldenFunctions) {
 		t.Errorf("fixture has %d functions, Go dispatch has %d: regenerate fixtures and bindings",
 			len(g.Functions), len(goldenFunctions))
@@ -138,6 +185,8 @@ func TestGoldenFunctions(t *testing.T) {
 			if !ok {
 				t.Fatalf("no Go wrapper for %s", c.Fn)
 			}
+			checkParamNames(t, c.Fn, c.Params)
+			cols := datasetColumns(t, datasets, c.Dataset)
 			in := make(map[string][]float64, len(c.Inputs))
 			for arg, col := range c.Inputs {
 				in[arg] = cols[col]
@@ -154,7 +203,7 @@ func TestGoldenFunctions(t *testing.T) {
 }
 
 func TestGoldenStreams(t *testing.T) {
-	g, cols := loadGolden(t)
+	g, datasets := loadGolden(t)
 	if len(g.Streams) != len(goldenStreams) {
 		t.Errorf("fixture has %d streams, Go dispatch has %d", len(g.Streams), len(goldenStreams))
 	}
@@ -164,6 +213,8 @@ func TestGoldenStreams(t *testing.T) {
 			if !ok {
 				t.Fatalf("no Go wrapper for stream %s", c.Stream)
 			}
+			checkParamNames(t, c.Stream, c.Params)
+			cols := datasetColumns(t, datasets, c.Dataset)
 			s, err := build(c.Params)
 			if err != nil {
 				t.Fatal(err)
@@ -210,6 +261,7 @@ func TestGoldenScalars(t *testing.T) {
 			if !ok {
 				t.Fatalf("no Go wrapper for %s", c.Fn)
 			}
+			checkParamNames(t, c.Fn, c.Params)
 			got, err := call(c.Params)
 			if err != nil {
 				t.Fatal(err)

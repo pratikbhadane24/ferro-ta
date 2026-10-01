@@ -9,7 +9,7 @@ import "C"
 
 // HtTrendline wraps ferro_ta_core cycle::ht_trendline.
 //
-// Hilbert Transform Instantaneous Trendline (Ehlers).
+// Hilbert Transform Instantaneous Trendline (Ehlers). Smooths price over the dominant cycle period.
 func HtTrendline(close []float64) ([]float64, error) {
 	n := len(close)
 	outBuf := make([]float64, n)
@@ -58,7 +58,7 @@ func HtPhasor(close []float64) (inphase []float64, quadrature []float64, err err
 
 // HtSine wraps ferro_ta_core cycle::ht_sine.
 //
-// Hilbert Transform SineWave. Returns `(sine, leadsine)` where leadsine
+// Hilbert Transform SineWave. Returns `(sine, leadsine)` where leadsine leads sine by 45 degrees.
 func HtSine(close []float64) (sine []float64, leadsine []float64, err error) {
 	n := len(close)
 	sineBuf := make([]float64, n)

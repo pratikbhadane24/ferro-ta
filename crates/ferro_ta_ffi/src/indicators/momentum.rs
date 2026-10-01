@@ -31,14 +31,14 @@ crate::ffi_exports! {
         -> [out: f64];
     /// Absolute Price Oscillator: `fast MA - slow MA`.
     ft_apo = momentum::apo(close)[fastperiod: period, slowperiod: period, matype: matype]
-        -> [out: f64];
-    /// Percentage Price Oscillator: `(fast MA - slow MA) / slow MA * 100`.
+        -> [out: f64] if fastperiod < slowperiod;
+    /// Percentage Price Oscillator: `(fast MA - slow MA) / slow MA * 100`. Returns `(ppo_line, signal_line, histogram)`.
     ft_ppo = momentum::ppo(close)[fastperiod: period, slowperiod: period, signalperiod: period, matype: matype]
-        -> [out_ppo: f64, out_signal: f64, out_hist: f64];
+        -> [out_ppo: f64, out_signal: f64, out_hist: f64] if fastperiod < slowperiod;
     /// TRIX: 1-period rate of change of triple-smoothed EMA.
     ft_trix = momentum::trix(close)[timeperiod: period]
         -> [out: f64];
-    /// Williams %R: `-100 * (HH - close) / (HH - LL)` over the window.
+    /// Williams %R: `-100 * (HH - close) / (HH - LL)` over the window. Returns values in `[-100, 0]`.
     ft_willr = momentum::willr(high, low, close)[timeperiod: period]
         -> [out: f64];
     /// Commodity Channel Index: `(tp - SMA(tp)) / (0.015 * MAD)`.

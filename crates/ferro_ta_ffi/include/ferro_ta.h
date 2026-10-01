@@ -8,11 +8,16 @@
  *  - Array inputs are `const double *` sharing one `size_t len`.
  *  - Outputs are caller-allocated arrays of length `len`, written only on success.
  *    An output may alias an input (in-place). Any array may be NULL when len == 0.
- *  - Periods are int64_t (validated >= their minimum), MA types int32_t in 0..8.
+ *  - Periods are int64_t in [minimum, 2^24], MA types int32_t in 0..8.
+ *  - Cross-parameter rules (e.g. fastperiod < slowperiod) are listed as
+ *    'Requires:' on each function; violations return FT_ERR_INVALID_PARAM.
  *  - Float parameters must be finite; enum parameters must be a listed value.
- *  - Scalar functions write each result through an output pointer.
+ *  - Scalar functions write each result through an output pointer. A NaN
+ *    result with FT_OK means the inputs are outside the model's domain
+ *    (e.g. spot <= 0) or a solver found no solution.
  *  - Leading warm-up values are NaN; output length always equals input length.
- *  - Streaming handles are not thread-safe; free each exactly once.
+ *  - Streaming handles are not thread-safe; free each exactly once. After
+ *    FT_ERR_PANIC from an update the handle's state is unspecified: reset it.
  */
 
 #ifndef FERRO_TA_H
@@ -64,16 +69,18 @@ int32_t ft_macdfix(const double *close, size_t len, int64_t signalperiod, double
 
 /**
  * MACD with configurable MA types for fast/slow/signal.
+ * Requires: fastperiod < slowperiod (else FT_ERR_INVALID_PARAM).
  */
 int32_t ft_macdext(const double *close, size_t len, int64_t fastperiod, int32_t fastmatype, int64_t slowperiod, int32_t slowmatype, int64_t signalperiod, int32_t signalmatype, double *out_macd, double *out_signal, double *out_hist);
 
 /**
- * Generic Moving Average. matype: 0=SMA, 1=EMA, 2=WMA, 3=DEMA, 4=TEMA,
+ * Generic Moving Average. matype: 0=SMA, 1=EMA, 2=WMA, 3=DEMA, 4=TEMA, 5=TRIMA, 6=KAMA, 7=T3, 8=T3 (TA-Lib's T3 number, an alias of `7`).
  */
 int32_t ft_ma(const double *close, size_t len, int64_t timeperiod, int32_t matype, double *out);
 
 /**
  * Moving Average with Variable Period per bar.
+ * Requires: maxperiod >= minperiod (else FT_ERR_INVALID_PARAM).
  */
 int32_t ft_mavp(const double *close, const double *periods, size_t len, int64_t minperiod, int64_t maxperiod, int32_t matype, double *out);
 
@@ -104,6 +111,7 @@ int32_t ft_kama(const double *close, size_t len, int64_t timeperiod, double *out
 
 /**
  * Compute the Moving Average Convergence/Divergence (MACD).
+ * Requires: fastperiod < slowperiod (else FT_ERR_INVALID_PARAM).
  */
 int32_t ft_macd(const double *close, size_t len, int64_t fastperiod, int64_t slowperiod, int64_t signalperiod, double *out_macd, double *out_signal, double *out_hist);
 
@@ -196,11 +204,13 @@ int32_t ft_aroonosc(const double *high, const double *low, size_t len, int64_t t
 
 /**
  * Absolute Price Oscillator: `fast MA - slow MA`.
+ * Requires: fastperiod < slowperiod (else FT_ERR_INVALID_PARAM).
  */
 int32_t ft_apo(const double *close, size_t len, int64_t fastperiod, int64_t slowperiod, int32_t matype, double *out);
 
 /**
- * Percentage Price Oscillator: `(fast MA - slow MA) / slow MA * 100`.
+ * Percentage Price Oscillator: `(fast MA - slow MA) / slow MA * 100`. Returns `(ppo_line, signal_line, histogram)`.
+ * Requires: fastperiod < slowperiod (else FT_ERR_INVALID_PARAM).
  */
 int32_t ft_ppo(const double *close, size_t len, int64_t fastperiod, int64_t slowperiod, int64_t signalperiod, int32_t matype, double *out_ppo, double *out_signal, double *out_hist);
 
@@ -210,7 +220,7 @@ int32_t ft_ppo(const double *close, size_t len, int64_t fastperiod, int64_t slow
 int32_t ft_trix(const double *close, size_t len, int64_t timeperiod, double *out);
 
 /**
- * Williams %R: `-100 * (HH - close) / (HH - LL)` over the window.
+ * Williams %R: `-100 * (HH - close) / (HH - LL)` over the window. Returns values in `[-100, 0]`.
  */
 int32_t ft_willr(const double *high, const double *low, const double *close, size_t len, int64_t timeperiod, double *out);
 
@@ -315,13 +325,14 @@ int32_t ft_ad(const double *high, const double *low, const double *close, const 
 
 /**
  * Chaikin A/D Oscillator: fast EMA of AD minus slow EMA of AD.
+ * Requires: fastperiod < slowperiod (else FT_ERR_INVALID_PARAM).
  */
 int32_t ft_adosc(const double *high, const double *low, const double *close, const double *volume, size_t len, int64_t fastperiod, int64_t slowperiod, double *out);
 
 /* ---- cycle ----------------------------------------------------------------- */
 
 /**
- * Hilbert Transform Instantaneous Trendline (Ehlers).
+ * Hilbert Transform Instantaneous Trendline (Ehlers). Smooths price over the dominant cycle period.
  */
 int32_t ft_ht_trendline(const double *close, size_t len, double *out);
 
@@ -341,7 +352,7 @@ int32_t ft_ht_dcphase(const double *close, size_t len, double *out);
 int32_t ft_ht_phasor(const double *close, size_t len, double *out_inphase, double *out_quadrature);
 
 /**
- * Hilbert Transform SineWave. Returns `(sine, leadsine)` where leadsine
+ * Hilbert Transform SineWave. Returns `(sine, leadsine)` where leadsine leads sine by 45 degrees.
  */
 int32_t ft_ht_sine(const double *close, size_t len, double *out_sine, double *out_leadsine);
 
@@ -447,27 +458,27 @@ int32_t ft_div(const double *a, const double *b, size_t len, double *out);
 /* ---- math_ops -------------------------------------------------------------- */
 
 /**
- * Rolling sum over `timeperiod` bars using an O(n) sliding window.
+ * Rolling sum over `timeperiod` bars using an O(n) sliding window. Leading `timeperiod - 1` values are NaN.
  */
 int32_t ft_rolling_sum(const double *real, size_t len, int64_t timeperiod, double *out);
 
 /**
- * Rolling maximum over `timeperiod` bars (O(n) monotonic deque).
+ * Rolling maximum over `timeperiod` bars (O(n) monotonic deque). Delegates to `math::sliding_max`.
  */
 int32_t ft_rolling_max(const double *real, size_t len, int64_t timeperiod, double *out);
 
 /**
- * Rolling minimum over `timeperiod` bars (O(n) monotonic deque).
+ * Rolling minimum over `timeperiod` bars (O(n) monotonic deque). Delegates to `math::sliding_min`.
  */
 int32_t ft_rolling_min(const double *real, size_t len, int64_t timeperiod, double *out);
 
 /**
- * Index of rolling maximum over `timeperiod` bars.
+ * Index of rolling maximum over `timeperiod` bars. Returns 0-based index. During warmup the value is `-1`.
  */
 int32_t ft_rolling_maxindex(const double *real, size_t len, int64_t timeperiod, int64_t *out);
 
 /**
- * Index of rolling minimum over `timeperiod` bars.
+ * Index of rolling minimum over `timeperiod` bars. Returns 0-based index. During warmup the value is `-1`.
  */
 int32_t ft_rolling_minindex(const double *real, size_t len, int64_t timeperiod, int64_t *out);
 
@@ -838,7 +849,7 @@ int32_t ft_hull_ma(const double *close, size_t len, int64_t timeperiod, double *
 int32_t ft_dmi(const double *high, const double *low, const double *close, size_t len, int64_t timeperiod, double *out_plus_di, double *out_minus_di, double *out_adx);
 
 /**
- * Williams Fractals: local swing high / swing low with `timeperiod` bars
+ * Williams Fractals: local swing high / swing low with `timeperiod` bars on each side of the pivot.
  */
 int32_t ft_williams_fractals(const double *high, const double *low, size_t len, int64_t timeperiod, double *out_up, double *out_down);
 
@@ -848,7 +859,7 @@ int32_t ft_williams_fractals(const double *high, const double *low, size_t len, 
 int32_t ft_rwi(const double *high, const double *low, const double *close, size_t len, int64_t timeperiod, double *out_rwi_high, double *out_rwi_low);
 
 /**
- * # Returns
+ * # Returns `(tenkan, kijun, senkou_a, senkou_b, chikou)` arrays. Mismatched input lengths yield all `NaN`.
  */
 int32_t ft_ichimoku(const double *high, const double *low, const double *close, size_t len, int64_t tenkan_period, int64_t kijun_period, int64_t senkou_b_period, int64_t displacement, double *out_tenkan, double *out_kijun, double *out_senkou_a, double *out_senkou_b, double *out_chikou);
 
@@ -869,21 +880,24 @@ int32_t ft_crsi(const double *close, size_t len, int64_t timeperiod, int64_t str
 
 /**
  * Awesome Oscillator: `SMA(median, fast) − SMA(median, slow)`.
+ * Requires: fastperiod < slowperiod (else FT_ERR_INVALID_PARAM).
  */
 int32_t ft_ao(const double *high, const double *low, size_t len, int64_t fastperiod, int64_t slowperiod, double *out);
 
 /**
  * Accelerator Oscillator: `AO − SMA(AO, timeperiod)`.
+ * Requires: fastperiod < slowperiod (else FT_ERR_INVALID_PARAM).
  */
 int32_t ft_ac(const double *high, const double *low, size_t len, int64_t fastperiod, int64_t slowperiod, int64_t timeperiod, double *out);
 
 /**
  * Price Oscillator (SMA): `SMA(close, fast) − SMA(close, slow)`.
+ * Requires: fastperiod < slowperiod (else FT_ERR_INVALID_PARAM).
  */
 int32_t ft_po(const double *close, size_t len, int64_t fastperiod, int64_t slowperiod, double *out);
 
 /**
- * Detrended Price Oscillator: `close[i − shift] − SMA(close, timeperiod)`,
+ * Detrended Price Oscillator: `close[i − shift] − SMA(close, timeperiod)`, where `shift = timeperiod / 2 + 1`.
  */
 int32_t ft_dpo(const double *close, size_t len, int64_t timeperiod, double *out);
 
@@ -894,6 +908,7 @@ int32_t ft_rvi(const double *open, const double *high, const double *low, const 
 
 /**
  * Chaikin Oscillator — same math as [`volume::adosc`].
+ * Requires: fastperiod < slowperiod (else FT_ERR_INVALID_PARAM).
  */
 int32_t ft_cho(const double *high, const double *low, const double *close, const double *volume, size_t len, int64_t fastperiod, int64_t slowperiod, double *out);
 
@@ -914,6 +929,7 @@ int32_t ft_vortex(const double *high, const double *low, const double *close, si
 
 /**
  * Schaff Trend Cycle: stochastic of MACD, double-smoothed (`d1`, `d2`).
+ * Requires: fastperiod < slowperiod (else FT_ERR_INVALID_PARAM).
  */
 int32_t ft_stc(const double *close, size_t len, int64_t fastperiod, int64_t slowperiod, int64_t cycleperiod, int64_t d1, int64_t d2, double *out);
 
@@ -933,7 +949,7 @@ int32_t ft_coppock(const double *close, size_t len, int64_t wma_period, int64_t 
 int32_t ft_median(const double *real, size_t len, int64_t timeperiod, double *out);
 
 /**
- * Median bands: rolling median of `(high + low) / 2`, ATR envelopes, and an
+ * Median bands: rolling median of `(high + low) / 2`, ATR envelopes, and an EMA of the median.
  */
 int32_t ft_median_bands(const double *high, const double *low, const double *close, size_t len, int64_t timeperiod, int64_t atr_period, double multiplier, double *out_median, double *out_upper, double *out_lower, double *out_median_ema);
 
@@ -944,6 +960,7 @@ int32_t ft_mode(const double *real, size_t len, int64_t timeperiod, int64_t bins
 
 /**
  * Arnaud Legoux Moving Average.
+ * Requires: sigma > 0.0 (else FT_ERR_INVALID_PARAM).
  */
 int32_t ft_alma(const double *close, size_t len, int64_t timeperiod, double offset, double sigma, double *out);
 
@@ -1059,6 +1076,7 @@ int32_t ft_pvi_with_signal(const double *close, const double *volume, size_t len
 
 /**
  * Volume oscillator: `100 * (SMA(vol, fast) - SMA(vol, slow)) / SMA(vol, slow)`.
+ * Requires: fastperiod < slowperiod (else FT_ERR_INVALID_PARAM).
  */
 int32_t ft_volosc(const double *volume, size_t len, int64_t fastperiod, int64_t slowperiod, double *out);
 
@@ -1069,6 +1087,7 @@ int32_t ft_vroc(const double *volume, size_t len, int64_t timeperiod, double *ou
 
 /**
  * Klinger Volume Oscillator and its EMA signal.
+ * Requires: fastperiod < slowperiod (else FT_ERR_INVALID_PARAM).
  */
 int32_t ft_kvo(const double *high, const double *low, const double *close, const double *volume, size_t len, int64_t fastperiod, int64_t slowperiod, int64_t signalperiod, double *out_kvo, double *out_signal);
 
@@ -1287,6 +1306,8 @@ int32_t ft_expected_move(double spot, double iv, double days_to_expiry, double t
 
 /**
  * Solve implied volatility with guarded Newton iterations and bisection fallback.
+ * The result is NaN (with FT_OK) when no volatility reproduces `target_price`
+ * (outside the no-arbitrage bounds) or the solver does not converge.
  */
 int32_t ft_implied_volatility(double target_price, int32_t model, double underlying, double strike, double rate, double carry, double time_to_expiry, int32_t kind, double initial_guess, double tolerance, int64_t max_iterations, double *out_value);
 

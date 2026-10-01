@@ -7,6 +7,8 @@ permissions:
   contents: read
 
 env:
+  # A moved or missing golden fixture must fail CI, not skip the golden suites.
+  FERRO_TA_REQUIRE_GOLDEN: "1"
   # Portable binaries: override `target-cpu=native` from .cargo/config.toml and
   # rely on runtime SIMD dispatch, matching every other build job in this repo.
   RUSTFLAGS: ""
@@ -43,19 +45,25 @@ jobs:
   # archive because cgo drives gcc, not MSVC.
   # ---------------------------------------------------------------------------
   go:
-    name: Go ${{ matrix.go }} (${{ matrix.os }})
+    name: Go ${{ matrix.go }} (${{ matrix.os }}, ${{ matrix.goarch }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - { os: ubuntu-latest, go: stable, target: x86_64-unknown-linux-gnu, race: true }
-          - { os: ubuntu-latest, go: "1.22", target: x86_64-unknown-linux-gnu, race: false }
-          - { os: macos-latest, go: stable, target: aarch64-apple-darwin, race: true }
-          - { os: windows-latest, go: stable, target: x86_64-pc-windows-gnu, race: false }
+          - { os: ubuntu-latest, go: stable, target: x86_64-unknown-linux-gnu, goarch: amd64, race: true }
+          - { os: ubuntu-latest, go: "1.22", target: x86_64-unknown-linux-gnu, goarch: amd64, race: false }
+          - { os: ubuntu-24.04-arm, go: stable, target: aarch64-unknown-linux-gnu, goarch: arm64, race: true }
+          - { os: macos-latest, go: stable, target: aarch64-apple-darwin, goarch: arm64, race: true }
+          # Intel macOS archive + LDFLAGS, run under Rosetta on the arm64 runner.
+          - { os: macos-latest, go: stable, target: x86_64-apple-darwin, goarch: amd64, race: false }
+          - { os: windows-latest, go: stable, target: x86_64-pc-windows-gnu, goarch: amd64, race: false }
     defaults:
       run:
         shell: bash
+    env:
+      GOARCH: ${{ matrix.goarch }}
+      CGO_ENABLED: "1"
     steps:
       - uses: actions/checkout@v7
         with:
@@ -75,13 +83,15 @@ jobs:
           cargo build -p ferro_ta_ffi --release --target ${{ matrix.target }}
           # Log what the archive needs at link time; cgo.go's LDFLAGS must cover it.
           cargo rustc -q -p ferro_ta_ffi --release --target ${{ matrix.target }} --lib \
-            --crate-type staticlib -- --print native-static-libs 2>&1 | grep native-static-libs || true
+            --crate-type staticlib -- --print native-static-libs 2>&1 | grep native-static-libs
           dest="bindings/go/lib/$(go env GOOS)_$(go env GOARCH)"
           mkdir -p "$dest"
           cp "target/${{ matrix.target }}/release/libferro_ta_ffi.a" "$dest/"
       - name: gofmt
         if: matrix.go == 'stable'
-        run: test -z "$(gofmt -l bindings/go)"
+        run: |
+          out=$(gofmt -l bindings/go)
+          test -z "$out" || { echo "gofmt needed: $out"; exit 1; }
       - name: go vet
         working-directory: bindings/go
         run: go vet ./...

@@ -201,3 +201,13 @@ fn every_streaming_type_has_a_spec() {
         assert!(names.contains(&want), "missing stream spec {want}");
     }
 }
+
+#[test]
+fn oversized_stream_period_is_rejected() {
+    let mut h = ptr::null_mut();
+    assert_eq!(
+        unsafe { ft_stream_sma_new(1 << 40, &mut h) },
+        FT_ERR_INVALID_PARAM
+    );
+    assert!(h.is_null());
+}

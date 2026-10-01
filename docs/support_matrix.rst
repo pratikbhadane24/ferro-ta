@@ -128,7 +128,8 @@ generated :doc:`languages/coverage` table and must be refreshed with
        131 names are present on all four surfaces.
    * - Go
      - Go module ``github.com/pratikbhadane24/ferro-ta/bindings/go``
-     - 259 C ABI / Go exports
+     - 259 C / Go coverage rows (262 C ABI exports; ``rolling_max`` and
+       ``max`` share a row, as on every surface)
      - cgo over the ``ferro_ta_ffi`` C ABI; prebuilt static archives for
        Linux and macOS (amd64/arm64) and Windows (amd64), so ``go get`` needs
        no Rust toolchain. Includes option pricing and streaming indicators.

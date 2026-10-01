@@ -323,3 +323,111 @@ fn cross_param_rule_is_recorded_in_spec() {
     let sma = all_specs().find(|s| s.name == "ft_sma").unwrap();
     assert_eq!(sma.requires, "");
 }
+
+#[test]
+fn every_fast_slow_export_requires_fast_below_slow() {
+    for spec in all_specs() {
+        let names: Vec<_> = spec.params.iter().map(|p| p.name).collect();
+        if names.contains(&"fastperiod") && names.contains(&"slowperiod") {
+            assert_eq!(spec.requires, "fastperiod < slowperiod", "{}", spec.name);
+        }
+    }
+}
+
+#[test]
+fn fast_not_below_slow_is_invalid_param() {
+    let close = series(64);
+    let n = close.len();
+    let (mut a, mut b, mut c) = (vec![7.0; n], vec![7.0; n], vec![7.0; n]);
+    for (fast, slow) in [(26, 12), (12, 12)] {
+        let status = unsafe {
+            ft_macd(
+                close.as_ptr(),
+                n,
+                fast,
+                slow,
+                9,
+                a.as_mut_ptr(),
+                b.as_mut_ptr(),
+                c.as_mut_ptr(),
+            )
+        };
+        assert_eq!(status, FT_ERR_INVALID_PARAM, "fast={fast} slow={slow}");
+    }
+    assert!(a.iter().all(|v| *v == 7.0));
+}
+
+#[test]
+fn mavp_max_below_min_is_invalid_param() {
+    let close = series(32);
+    let periods = vec![5.0; 32];
+    let mut out = vec![0.0; 32];
+    let status = unsafe {
+        ft_mavp(
+            close.as_ptr(),
+            periods.as_ptr(),
+            32,
+            10,
+            5,
+            0,
+            out.as_mut_ptr(),
+        )
+    };
+    assert_eq!(status, FT_ERR_INVALID_PARAM);
+    let status = unsafe {
+        ft_mavp(
+            close.as_ptr(),
+            periods.as_ptr(),
+            32,
+            5,
+            5,
+            0,
+            out.as_mut_ptr(),
+        )
+    };
+    assert_eq!(
+        status, FT_OK,
+        "maxperiod == minperiod is allowed, as in Python"
+    );
+}
+
+#[test]
+fn alma_non_positive_sigma_is_invalid_param() {
+    let close = series(32);
+    let mut out = vec![0.0; 32];
+    for sigma in [0.0, -1.0] {
+        let status = unsafe { ft_alma(close.as_ptr(), 32, 9, 0.85, sigma, out.as_mut_ptr()) };
+        assert_eq!(status, FT_ERR_INVALID_PARAM, "sigma={sigma}");
+    }
+}
+
+#[test]
+fn oversized_period_is_rejected_instead_of_aborting() {
+    // Without a cap, core allocations sized by the period abort the process.
+    let close = series(8);
+    let mut out = vec![0.0; 8];
+    for period in [1i64 << 40, i64::MAX] {
+        let status = unsafe {
+            ft_rvi(
+                close.as_ptr(),
+                close.as_ptr(),
+                close.as_ptr(),
+                close.as_ptr(),
+                8,
+                period,
+                out.as_mut_ptr(),
+                out.as_mut_ptr(),
+            )
+        };
+        assert_eq!(status, FT_ERR_INVALID_PARAM, "period={period}");
+    }
+    let at_cap = unsafe {
+        ft_sma(
+            close.as_ptr(),
+            8,
+            ferro_ta_ffi::marshal::MAX_PERIOD,
+            out.as_mut_ptr(),
+        )
+    };
+    assert_eq!(at_cap, FT_OK, "the cap itself is a valid period");
+}

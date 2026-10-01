@@ -39,7 +39,7 @@ func CheckCross(fast []float64, slow []float64) ([]int8, error) {
 // Compute the cumulative PnL from funding rate payments.
 func FundingCumulativePnl(positionSize []float64, fundingRate []float64) ([]float64, error) {
 	n := len(positionSize)
-	if err := checkLengths("FundingCumulativePnl", []string{"position_size", "funding_rate"}, []int{len(positionSize), len(fundingRate)}); err != nil {
+	if err := checkLengths("FundingCumulativePnl", []string{"positionSize", "fundingRate"}, []int{len(positionSize), len(fundingRate)}); err != nil {
 		return nil, err
 	}
 	outBuf := make([]float64, n)

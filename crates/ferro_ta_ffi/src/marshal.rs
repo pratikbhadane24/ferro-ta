@@ -31,6 +31,15 @@ pub fn check_output<T>(ptr: *mut T, len: usize) -> Result<(), Status> {
     Ok(())
 }
 
+/// Largest accepted period / count (2^24 ≈ 16.7M bars).
+///
+/// Core functions allocate buffers sized by the period before comparing it
+/// with the input length, and an allocation failure aborts the process
+/// (`catch_unwind` cannot contain it). Capping here turns an absurd value from
+/// a host program into `FT_ERR_INVALID_PARAM` instead of killing the host. The
+/// same cap bounds counts such as solver iterations.
+pub const MAX_PERIOD: i64 = 1 << 24;
+
 /// Validate a raw scalar parameter and convert it to the core's Rust type.
 pub trait Param<Raw>: Sized {
     fn from_raw(raw: Raw, kind: ParamKind) -> Result<Self, Status>;
@@ -45,7 +54,7 @@ impl Param<i64> for usize {
                 unreachable!("not an integer period")
             }
         };
-        if raw < min {
+        if raw < min || raw > MAX_PERIOD {
             return Err(Status::InvalidParam);
         }
         usize::try_from(raw).map_err(|_| Status::InvalidParam)

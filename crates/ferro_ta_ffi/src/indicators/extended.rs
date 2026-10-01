@@ -23,13 +23,13 @@ crate::ffi_exports! {
     /// Directional Movement Index as `(PLUS_DI, MINUS_DI, ADX)`.
     ft_dmi = extended::dmi(high, low, close)[timeperiod: period]
         -> [out_plus_di: f64, out_minus_di: f64, out_adx: f64];
-    /// Williams Fractals: local swing high / swing low with `timeperiod` bars
+    /// Williams Fractals: local swing high / swing low with `timeperiod` bars on each side of the pivot.
     ft_williams_fractals = extended::williams_fractals(high, low)[timeperiod: period]
         -> [out_up: f64, out_down: f64];
     /// Random Walk Index (Poulos): max over lookbacks `2..=timeperiod` of
     ft_rwi = extended::rwi(high, low, close)[timeperiod: period 2]
         -> [out_rwi_high: f64, out_rwi_low: f64];
-    /// # Returns
+    /// # Returns `(tenkan, kijun, senkou_a, senkou_b, chikou)` arrays. Mismatched input lengths yield all `NaN`.
     ft_ichimoku = extended::ichimoku(high, low, close)[tenkan_period: period, kijun_period: period, senkou_b_period: period, displacement: count]
         -> [out_tenkan: f64, out_kijun: f64, out_senkou_a: f64, out_senkou_b: f64, out_chikou: f64];
     /// Elder Ray Index: bull power and bear power versus an EMA of close.
@@ -43,14 +43,14 @@ crate::ffi_exports! {
         -> [out: f64];
     /// Awesome Oscillator: `SMA(median, fast) − SMA(median, slow)`.
     ft_ao = extended::ao(high, low)[fastperiod: period, slowperiod: period]
-        -> [out: f64];
+        -> [out: f64] if fastperiod < slowperiod;
     /// Accelerator Oscillator: `AO − SMA(AO, timeperiod)`.
     ft_ac = extended::ac(high, low)[fastperiod: period, slowperiod: period, timeperiod: period]
-        -> [out: f64];
+        -> [out: f64] if fastperiod < slowperiod;
     /// Price Oscillator (SMA): `SMA(close, fast) − SMA(close, slow)`.
     ft_po = extended::po(close)[fastperiod: period, slowperiod: period]
-        -> [out: f64];
-    /// Detrended Price Oscillator: `close[i − shift] − SMA(close, timeperiod)`,
+        -> [out: f64] if fastperiod < slowperiod;
+    /// Detrended Price Oscillator: `close[i − shift] − SMA(close, timeperiod)`, where `shift = timeperiod / 2 + 1`.
     ft_dpo = extended::dpo(close)[timeperiod: period]
         -> [out: f64];
     /// Relative Vigor Index and its 4-bar weighted signal.
@@ -58,7 +58,7 @@ crate::ffi_exports! {
         -> [out_rvi: f64, out_signal: f64];
     /// Chaikin Oscillator — same math as [`volume::adosc`].
     ft_cho = extended::cho(high, low, close, volume)[fastperiod: period, slowperiod: period]
-        -> [out: f64];
+        -> [out: f64] if fastperiod < slowperiod;
     /// Know Sure Thing: weighted sum of four ROC SMAs, plus a signal SMA.
     ft_kst = extended::kst(close)[roc1: period, roc2: period, roc3: period, roc4: period, sma1: period, sma2: period, sma3: period, sma4: period, signalperiod: period]
         -> [out_kst: f64, out_signal: f64];
@@ -70,7 +70,7 @@ crate::ffi_exports! {
         -> [out_plus_vi: f64, out_minus_vi: f64];
     /// Schaff Trend Cycle: stochastic of MACD, double-smoothed (`d1`, `d2`).
     ft_stc = extended::stc(close)[fastperiod: period, slowperiod: period, cycleperiod: period, d1: period, d2: period]
-        -> [out: f64];
+        -> [out: f64] if fastperiod < slowperiod;
     /// Gator Oscillator from the Alligator jaw / teeth / lips.
     ft_gator = extended::gator(high, low)[jaw_period: period, jaw_shift: count, teeth_period: period, teeth_shift: count, lips_period: period, lips_shift: count]
         -> [out_upper: f64, out_lower: f64];
@@ -80,7 +80,7 @@ crate::ffi_exports! {
     /// Rolling median of `real` over `timeperiod`.
     ft_median = extended::median(real)[timeperiod: period]
         -> [out: f64];
-    /// Median bands: rolling median of `(high + low) / 2`, ATR envelopes, and an
+    /// Median bands: rolling median of `(high + low) / 2`, ATR envelopes, and an EMA of the median.
     ft_median_bands = extended::median_bands(high, low, close)[timeperiod: period, atr_period: period, multiplier: float]
         -> [out_median: f64, out_upper: f64, out_lower: f64, out_median_ema: f64];
     /// Rolling mode via equal-width discretization of each window.
@@ -88,7 +88,7 @@ crate::ffi_exports! {
         -> [out: f64];
     /// Arnaud Legoux Moving Average.
     ft_alma = extended::alma(close)[timeperiod: period, offset: float, sigma: float]
-        -> [out: f64];
+        -> [out: f64] if sigma > 0.0;
     /// Zero-lag exponential moving average.
     ft_zlema = extended::zlema(close)[timeperiod: period]
         -> [out: f64];
@@ -157,13 +157,13 @@ crate::ffi_exports! {
         -> [out_pvi: f64, out_signal: f64];
     /// Volume oscillator: `100 * (SMA(vol, fast) - SMA(vol, slow)) / SMA(vol, slow)`.
     ft_volosc = extended::volosc(volume)[fastperiod: period, slowperiod: period]
-        -> [out: f64];
+        -> [out: f64] if fastperiod < slowperiod;
     /// Volume rate of change: `100 * (volume - volume[timeperiod]) / volume[timeperiod]`.
     ft_vroc = extended::vroc(volume)[timeperiod: period]
         -> [out: f64];
     /// Klinger Volume Oscillator and its EMA signal.
     ft_kvo = extended::kvo(high, low, close, volume)[fastperiod: period, slowperiod: period, signalperiod: period]
-        -> [out_kvo: f64, out_signal: f64];
+        -> [out_kvo: f64, out_signal: f64] if fastperiod < slowperiod;
     /// Price Volume Trend: cumulative `volume * (close - close[1]) / close[1]`.
     ft_pvt = extended::pvt(close, volume)[]
         -> [out: f64];

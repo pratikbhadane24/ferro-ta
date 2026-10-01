@@ -107,7 +107,9 @@ func TestStreamConcurrentUpdates(t *testing.T) {
 	}
 }
 
-func TestStreamFinalizerReleasesHandle(t *testing.T) {
+// Smoke test: abandoned streams are released by their finalizers (which call
+// Close) without crashing. It cannot observe the native free itself.
+func TestStreamAbandonedHandlesAreSafeToCollect(t *testing.T) {
 	for i := 0; i < 1000; i++ {
 		if _, err := NewStreamEma(10); err != nil {
 			t.Fatal(err)

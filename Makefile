@@ -78,6 +78,7 @@ ffi-gen:
 # (release tags ship these prebuilt; on main, lib/ is gitignored).
 GO_HOST := $(shell go env GOOS 2>/dev/null)_$(shell go env GOARCH 2>/dev/null)
 go-lib:
+	@test "$(GO_HOST)" != "_" || { echo "go not found on PATH"; exit 1; }
 	cargo build -p ferro_ta_ffi --release
 	mkdir -p bindings/go/lib/$(GO_HOST)
 	cp target/release/libferro_ta_ffi.a bindings/go/lib/$(GO_HOST)/
@@ -85,8 +86,8 @@ go-lib:
 # Verify the Go binding: generated code is fresh and gofmt-clean, then vet + race tests.
 go: go-lib
 	python3 scripts/build_ffi_bindings.py --check
-	test -z "$$(gofmt -l bindings/go)"
-	cd bindings/go && go vet ./... && go test -race ./...
+	out=$$(gofmt -l bindings/go) && test -z "$$out"
+	cd bindings/go && go vet ./... && FERRO_TA_REQUIRE_GOLDEN=1 go test -race ./...
 
 # Everything the C ABI and its bindings must pass before a commit.
 ffi-check:

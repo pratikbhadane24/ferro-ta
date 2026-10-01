@@ -53,8 +53,9 @@ ABI conventions
 - Array inputs are ``const double *`` sharing one ``size_t len``; outputs are
   caller-allocated arrays of ``len`` elements, written only on success. An
   output may alias an input. Any array may be ``NULL`` when ``len == 0``.
-- Periods are ``int64_t`` (negative values are rejected, not wrapped), MA
-  types ``int32_t`` in 0–8, enums ``int32_t`` (``FT_OPTION_CALL``, ...),
+- Periods are ``int64_t`` in ``[minimum, 2^24]`` (negative values are
+  rejected, not wrapped; the cap keeps absurd values from exhausting memory),
+  MA types ``int32_t`` in 0–8, enums ``int32_t`` (``FT_OPTION_CALL``, ...),
   other scalars ``double`` (must be finite).
 - Scalar functions write each result through an output pointer
   (``ft_black_scholes_greeks`` → ``out_delta``, ``out_gamma``, ...).

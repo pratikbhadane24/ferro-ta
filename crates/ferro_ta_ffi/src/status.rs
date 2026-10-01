@@ -6,6 +6,13 @@
 //! read from a different thread than the one that set it.
 
 use std::ffi::c_char;
+
+// `guard` relies on unwinding to contain core panics. Under `panic = "abort"`
+// a panic would kill the host process instead, so refuse to build that way.
+#[cfg(panic = "abort")]
+compile_error!(
+    "ferro_ta_ffi must be built with panic = \"unwind\"; guard() cannot contain panics otherwise"
+);
 use std::panic::{catch_unwind, AssertUnwindSafe};
 
 pub const FT_OK: i32 = 0;
@@ -42,6 +49,9 @@ impl Status {
 /// Run `body` with panics contained, mapping the outcome to a status code.
 /// Unwinding across an `extern "C"` boundary aborts the host process, so every
 /// exported function goes through here.
+///
+/// The default panic hook still prints the panic message to stderr before it
+/// is contained; hosts that care can silence it with their own hook.
 pub fn guard(body: impl FnOnce() -> Result<(), Status>) -> i32 {
     match catch_unwind(AssertUnwindSafe(body)) {
         Ok(Ok(())) => FT_OK,

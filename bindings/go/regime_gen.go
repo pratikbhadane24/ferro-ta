@@ -49,7 +49,7 @@ func DetectBreaksCusum(series []float64, window int, threshold float64, slack fl
 // RollingVarianceBreak wraps ferro_ta_core regime::rolling_variance_break.
 //
 // Detect volatility regime breaks using rolling variance ratio.
-// Requires: long_window > short_window (else ErrInvalidParam).
+// Requires: longWindow > shortWindow (else ErrInvalidParam).
 func RollingVarianceBreak(series []float64, shortWindow int, longWindow int, threshold float64) ([]int8, error) {
 	n := len(series)
 	outBuf := make([]int8, n)

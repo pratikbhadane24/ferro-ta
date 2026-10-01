@@ -12,7 +12,7 @@ import "C"
 // Weighted stitching using next-contract weights in [0, 1].
 func WeightedContinuous(front []float64, next []float64, nextWeights []float64) ([]float64, error) {
 	n := len(front)
-	if err := checkLengths("WeightedContinuous", []string{"front", "next", "next_weights"}, []int{len(front), len(next), len(nextWeights)}); err != nil {
+	if err := checkLengths("WeightedContinuous", []string{"front", "next", "nextWeights"}, []int{len(front), len(next), len(nextWeights)}); err != nil {
 		return nil, err
 	}
 	outBuf := make([]float64, n)
@@ -27,7 +27,7 @@ func WeightedContinuous(front []float64, next []float64, nextWeights []float64) 
 // Back-adjusted continuous series using the roll date implied by the weights.
 func BackAdjustedContinuous(front []float64, next []float64, nextWeights []float64) ([]float64, error) {
 	n := len(front)
-	if err := checkLengths("BackAdjustedContinuous", []string{"front", "next", "next_weights"}, []int{len(front), len(next), len(nextWeights)}); err != nil {
+	if err := checkLengths("BackAdjustedContinuous", []string{"front", "next", "nextWeights"}, []int{len(front), len(next), len(nextWeights)}); err != nil {
 		return nil, err
 	}
 	outBuf := make([]float64, n)
@@ -42,7 +42,7 @@ func BackAdjustedContinuous(front []float64, next []float64, nextWeights []float
 // Ratio-adjusted continuous series using the roll date implied by the weights.
 func RatioAdjustedContinuous(front []float64, next []float64, nextWeights []float64) ([]float64, error) {
 	n := len(front)
-	if err := checkLengths("RatioAdjustedContinuous", []string{"front", "next", "next_weights"}, []int{len(front), len(next), len(nextWeights)}); err != nil {
+	if err := checkLengths("RatioAdjustedContinuous", []string{"front", "next", "nextWeights"}, []int{len(front), len(next), len(nextWeights)}); err != nil {
 		return nil, err
 	}
 	outBuf := make([]float64, n)

@@ -127,3 +127,25 @@ fn every_scalar_spec_is_unique() {
     }
     assert_eq!(seen.len(), 24);
 }
+
+#[test]
+fn implied_volatility_iterations_are_bounded() {
+    let mut v = 0.0;
+    let status = unsafe {
+        ft_implied_volatility(
+            7.5,
+            0,
+            100.0,
+            100.0,
+            0.0,
+            0.0,
+            1.0,
+            CALL,
+            0.2,
+            1e-8,
+            i64::MAX,
+            &mut v,
+        )
+    };
+    assert_eq!(status, FT_ERR_INVALID_PARAM);
+}

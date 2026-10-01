@@ -56,8 +56,10 @@ API shape
 - **Multiple outputs** are named results:
   ``Macd(...) (macd, signal, hist []float64, err error)``.
 - **Errors** are ``*ferrota.Error``; compare with ``errors.Is`` against
-  ``ErrInvalidParam`` (period below minimum, MA type outside 0–8, non-finite
-  float parameter, invalid enum), ``ErrLengthMismatch`` (series of different
+  ``ErrInvalidParam`` (period below its minimum or above 2^24, MA type
+  outside 0–8, non-finite float parameter, invalid enum, or a broken
+  cross-parameter rule such as ``fastperiod < slowperiod``, which is listed
+  under "Requires:" in each function's doc), ``ErrLengthMismatch`` (series of different
   lengths), or ``ErrPanic`` (internal error, contained).
 - **Typed constants**: ``MAType`` (``MATypeSMA`` … ``MATypeT3``),
   ``OptionKind`` (``OptionCall``, ``OptionPut``), ``DigitalKind``,
