@@ -73,6 +73,13 @@ def c_doc(doc: str, indent: str = "") -> list[str]:
     return lines
 
 
+def with_requires(fn: dict) -> str:
+    """Doc text plus the cross-parameter rule, if any."""
+    if not fn["requires"]:
+        return fn["doc"]
+    return f"{fn['doc']}\nRequires: {fn['requires']} (else FT_ERR_INVALID_PARAM)."
+
+
 def c_function(fn: dict) -> str:
     args = [f"const double *{name}" for name in fn["inputs"]]
     args.append("size_t len")
@@ -142,7 +149,7 @@ def render_header(spec: dict) -> str:
         if fn["group"] != group:
             group = fn["group"]
             out += ["", f"/* ---- {group} " + "-" * (70 - len(group)) + " */"]
-        out += ["", *c_doc(fn["doc"]), c_function(fn)]
+        out += ["", *c_doc(with_requires(fn)), c_function(fn)]
     out += ["", "/* ---- streaming " + "-" * 61 + " */"]
     for stream in spec["streams"]:
         out += ["", *c_stream(stream)]
@@ -223,7 +230,11 @@ def go_function(fn: dict) -> list[str]:
     zero_return = "nil, err" if single else ", ".join(["nil"] * len(outs)) + ", err"
 
     body = [
-        *go_doc(name, f"wraps ferro_ta_core {fn['group']}::{core}.", fn["doc"]),
+        *go_doc(
+            name,
+            f"wraps ferro_ta_core {fn['group']}::{core}.",
+            with_requires(fn).replace("FT_ERR_INVALID_PARAM", "ErrInvalidParam"),
+        ),
         f"func {name}({go_signature_params(fn['inputs'], fn['params'], '[]float64')}) {results} {{",
         f"\tn := len({inputs[0]})",
     ]

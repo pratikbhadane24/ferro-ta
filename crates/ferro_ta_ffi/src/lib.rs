@@ -32,12 +32,17 @@ pub mod indicators;
 
 pub use indicators::cycle::*;
 pub use indicators::extended::*;
+pub use indicators::futures::*;
 pub use indicators::math::*;
 pub use indicators::math_ops::*;
+pub use indicators::misc::*;
 pub use indicators::momentum::*;
+pub use indicators::options::*;
 pub use indicators::overlap::*;
 pub use indicators::pattern::*;
+pub use indicators::portfolio::*;
 pub use indicators::price_transform::*;
+pub use indicators::regime::*;
 pub use indicators::statistic::*;
 pub use indicators::volatility::*;
 pub use indicators::volume::*;

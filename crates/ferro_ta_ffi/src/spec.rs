@@ -57,6 +57,8 @@ pub struct FnSpec {
     /// Module the export belongs to (`overlap`, `momentum`, ...).
     pub group: &'static str,
     pub doc: &'static str,
+    /// Cross-parameter rule (Rust expression text), or `""` if none.
+    pub requires: &'static str,
     pub inputs: &'static [&'static str],
     pub params: &'static [ParamSpec],
     pub outputs: &'static [OutputSpec],

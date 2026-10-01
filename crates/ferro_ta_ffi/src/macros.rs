@@ -24,6 +24,10 @@
 //! * `float`: double
 //!
 //! Output element types: `f64`, `i32`, `i64`, `i8`.
+//!
+//! An optional trailing `if <condition>` adds a cross-parameter rule checked
+//! after conversion (e.g. `if long_window > short_window`); a violation returns
+//! `FT_ERR_INVALID_PARAM`.
 
 /// C-side type of a param kind.
 #[macro_export]
@@ -106,7 +110,7 @@ macro_rules! ffi_exports {
             $(#[doc = $doc:literal])*
             $name:ident = $($path:ident)::+ ( $($input:ident),+ )
                 [ $($param:ident : $kind:ident $($min:literal)?),* ]
-                -> [ $($out:ident : $elem:ident),+ ];
+                -> [ $($out:ident : $elem:ident),+ ] $(if $requires:expr)?;
         )+
     ) => {
         $(
@@ -130,6 +134,11 @@ macro_rules! ffi_exports {
                             $crate::ffi_kind!($kind $($min)?),
                         )?;
                     )*
+                    $(
+                        if !($requires) {
+                            return Err($crate::status::Status::InvalidParam);
+                        }
+                    )?
                     $( $crate::marshal::check_output($out, len)?; )+
                     if len == 0 {
                         return Ok(());
@@ -150,6 +159,7 @@ macro_rules! ffi_exports {
                     name: stringify!($name),
                     group: $group,
                     doc: concat!($($doc, "\n",)*),
+                    requires: concat!("", $(stringify!($requires))?),
                     inputs: &[$(stringify!($input)),+],
                     params: &[$(
                         $crate::spec::ParamSpec {

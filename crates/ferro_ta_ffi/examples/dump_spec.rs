@@ -13,9 +13,13 @@ use serde_json::{json, Value};
 
 fn param(p: &ParamSpec) -> Value {
     match p.kind {
-        ParamKind::Period { min } => json!({"name": p.name, "kind": "period", "c_type": "int64_t", "min": min}),
+        ParamKind::Period { min } => {
+            json!({"name": p.name, "kind": "period", "c_type": "int64_t", "min": min})
+        }
         ParamKind::Count => json!({"name": p.name, "kind": "count", "c_type": "int64_t", "min": 0}),
-        ParamKind::MaType => json!({"name": p.name, "kind": "matype", "c_type": "int32_t", "min": 0, "max": 8}),
+        ParamKind::MaType => {
+            json!({"name": p.name, "kind": "matype", "c_type": "int32_t", "min": 0, "max": 8})
+        }
         ParamKind::Float => json!({"name": p.name, "kind": "float", "c_type": "double"}),
     }
 }
@@ -31,7 +35,12 @@ fn output(o: &OutputSpec) -> Value {
 }
 
 fn doc(raw: &str) -> String {
-    raw.lines().map(str::trim).collect::<Vec<_>>().join("\n").trim().to_string()
+    raw.lines()
+        .map(str::trim)
+        .collect::<Vec<_>>()
+        .join("\n")
+        .trim()
+        .to_string()
 }
 
 fn main() {
@@ -41,6 +50,7 @@ fn main() {
                 "name": f.name,
                 "group": f.group,
                 "doc": doc(f.doc),
+                "requires": f.requires,
                 "inputs": f.inputs,
                 "params": f.params.iter().map(param).collect::<Vec<_>>(),
                 "outputs": f.outputs.iter().map(output).collect::<Vec<_>>(),
@@ -75,5 +85,8 @@ fn main() {
         "functions": functions,
         "streams": streams,
     });
-    println!("{}", serde_json::to_string_pretty(&spec).expect("spec serialises"));
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&spec).expect("spec serialises")
+    );
 }

@@ -297,3 +297,29 @@ fn finite_edge_float_params_are_accepted() {
         assert_eq!(status, FT_OK, "nbdev={ok}");
     }
 }
+
+#[test]
+fn cross_param_rule_is_enforced() {
+    let series = series(64);
+    let mut out = vec![9i8; series.len()];
+    // rolling_variance_break requires long_window > short_window.
+    let status = unsafe {
+        ft_rolling_variance_break(series.as_ptr(), series.len(), 10, 10, 2.0, out.as_mut_ptr())
+    };
+    assert_eq!(status, FT_ERR_INVALID_PARAM);
+    assert!(out.iter().all(|v| *v == 9));
+    let status = unsafe {
+        ft_rolling_variance_break(series.as_ptr(), series.len(), 5, 20, 2.0, out.as_mut_ptr())
+    };
+    assert_eq!(status, FT_OK);
+}
+
+#[test]
+fn cross_param_rule_is_recorded_in_spec() {
+    let spec = all_specs()
+        .find(|s| s.name == "ft_rolling_variance_break")
+        .unwrap();
+    assert_eq!(spec.requires, "long_window > short_window");
+    let sma = all_specs().find(|s| s.name == "ft_sma").unwrap();
+    assert_eq!(sma.requires, "");
+}

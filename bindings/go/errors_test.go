@@ -142,3 +142,13 @@ func TestVersion(t *testing.T) {
 		t.Fatalf("Go Version %q != native %q", Version, nativeVersion())
 	}
 }
+
+func TestCrossParamRule(t *testing.T) {
+	s := ramp(64)
+	if _, err := RollingVarianceBreak(s, 10, 10, 2); !errors.Is(err, ErrInvalidParam) {
+		t.Fatalf("long_window == short_window: got %v, want ErrInvalidParam", err)
+	}
+	if _, err := RollingVarianceBreak(s, 5, 20, 2); err != nil {
+		t.Fatal(err)
+	}
+}

@@ -821,6 +821,106 @@ var goldenFunctions = map[string]func(map[string][]float64, map[string]float64) 
 		out, err := Vwma(in["close"], in["volume"], int(p["timeperiod"]))
 		return map[string]any{"out": out}, err
 	},
+	"ft_iv_rank": func(in map[string][]float64, p map[string]float64) (map[string]any, error) {
+		out, err := IvRank(in["iv_series"], int(p["window"]))
+		return map[string]any{"out": out}, err
+	},
+	"ft_iv_percentile": func(in map[string][]float64, p map[string]float64) (map[string]any, error) {
+		out, err := IvPercentile(in["iv_series"], int(p["window"]))
+		return map[string]any{"out": out}, err
+	},
+	"ft_iv_zscore": func(in map[string][]float64, p map[string]float64) (map[string]any, error) {
+		out, err := IvZscore(in["iv_series"], int(p["window"]))
+		return map[string]any{"out": out}, err
+	},
+	"ft_close_to_close_vol": func(in map[string][]float64, p map[string]float64) (map[string]any, error) {
+		out, err := CloseToCloseVol(in["close"], int(p["window"]), p["trading_days"])
+		return map[string]any{"out": out}, err
+	},
+	"ft_parkinson_vol": func(in map[string][]float64, p map[string]float64) (map[string]any, error) {
+		out, err := ParkinsonVol(in["high"], in["low"], int(p["window"]), p["trading_days"])
+		return map[string]any{"out": out}, err
+	},
+	"ft_garman_klass_vol": func(in map[string][]float64, p map[string]float64) (map[string]any, error) {
+		out, err := GarmanKlassVol(in["open"], in["high"], in["low"], in["close"], int(p["window"]), p["trading_days"])
+		return map[string]any{"out": out}, err
+	},
+	"ft_rogers_satchell_vol": func(in map[string][]float64, p map[string]float64) (map[string]any, error) {
+		out, err := RogersSatchellVol(in["open"], in["high"], in["low"], in["close"], int(p["window"]), p["trading_days"])
+		return map[string]any{"out": out}, err
+	},
+	"ft_yang_zhang_vol": func(in map[string][]float64, p map[string]float64) (map[string]any, error) {
+		out, err := YangZhangVol(in["open"], in["high"], in["low"], in["close"], int(p["window"]), p["trading_days"])
+		return map[string]any{"out": out}, err
+	},
+	"ft_weighted_continuous": func(in map[string][]float64, p map[string]float64) (map[string]any, error) {
+		out, err := WeightedContinuous(in["front"], in["next"], in["next_weights"])
+		return map[string]any{"out": out}, err
+	},
+	"ft_back_adjusted_continuous": func(in map[string][]float64, p map[string]float64) (map[string]any, error) {
+		out, err := BackAdjustedContinuous(in["front"], in["next"], in["next_weights"])
+		return map[string]any{"out": out}, err
+	},
+	"ft_ratio_adjusted_continuous": func(in map[string][]float64, p map[string]float64) (map[string]any, error) {
+		out, err := RatioAdjustedContinuous(in["front"], in["next"], in["next_weights"])
+		return map[string]any{"out": out}, err
+	},
+	"ft_regime_adx": func(in map[string][]float64, p map[string]float64) (map[string]any, error) {
+		out, err := RegimeAdx(in["adx"], p["threshold"])
+		return map[string]any{"out": out}, err
+	},
+	"ft_regime_combined": func(in map[string][]float64, p map[string]float64) (map[string]any, error) {
+		out, err := RegimeCombined(in["adx"], in["atr"], in["close"], p["adx_threshold"], p["atr_pct_threshold"])
+		return map[string]any{"out": out}, err
+	},
+	"ft_detect_breaks_cusum": func(in map[string][]float64, p map[string]float64) (map[string]any, error) {
+		out, err := DetectBreaksCusum(in["series"], int(p["window"]), p["threshold"], p["slack"])
+		return map[string]any{"out": out}, err
+	},
+	"ft_rolling_variance_break": func(in map[string][]float64, p map[string]float64) (map[string]any, error) {
+		out, err := RollingVarianceBreak(in["series"], int(p["short_window"]), int(p["long_window"]), p["threshold"])
+		return map[string]any{"out": out}, err
+	},
+	"ft_rolling_beta": func(in map[string][]float64, p map[string]float64) (map[string]any, error) {
+		out, err := RollingBeta(in["asset"], in["benchmark"], int(p["window"]))
+		return map[string]any{"out": out}, err
+	},
+	"ft_relative_strength": func(in map[string][]float64, p map[string]float64) (map[string]any, error) {
+		out, err := RelativeStrength(in["asset_returns"], in["benchmark_returns"])
+		return map[string]any{"out": out}, err
+	},
+	"ft_spread": func(in map[string][]float64, p map[string]float64) (map[string]any, error) {
+		out, err := Spread(in["a"], in["b"], p["hedge"])
+		return map[string]any{"out": out}, err
+	},
+	"ft_ratio": func(in map[string][]float64, p map[string]float64) (map[string]any, error) {
+		out, err := Ratio(in["a"], in["b"])
+		return map[string]any{"out": out}, err
+	},
+	"ft_zscore_series": func(in map[string][]float64, p map[string]float64) (map[string]any, error) {
+		out, err := ZscoreSeries(in["x"], int(p["window"]))
+		return map[string]any{"out": out}, err
+	},
+	"ft_rank_values": func(in map[string][]float64, p map[string]float64) (map[string]any, error) {
+		out, err := RankValues(in["x"])
+		return map[string]any{"out": out}, err
+	},
+	"ft_check_cross": func(in map[string][]float64, p map[string]float64) (map[string]any, error) {
+		out, err := CheckCross(in["fast"], in["slow"])
+		return map[string]any{"out": out}, err
+	},
+	"ft_funding_cumulative_pnl": func(in map[string][]float64, p map[string]float64) (map[string]any, error) {
+		out, err := FundingCumulativePnl(in["position_size"], in["funding_rate"])
+		return map[string]any{"out": out}, err
+	},
+	"ft_forward_fill_nan": func(in map[string][]float64, p map[string]float64) (map[string]any, error) {
+		out, err := ForwardFillNan(in["values"])
+		return map[string]any{"out": out}, err
+	},
+	"ft_rsi_threshold_signals": func(in map[string][]float64, p map[string]float64) (map[string]any, error) {
+		out, err := RsiThresholdSignals(in["close"], int(p["timeperiod"]), p["oversold"], p["overbought"])
+		return map[string]any{"out": out}, err
+	},
 }
 
 // goldenStreams builds each streaming wrapper for golden replay.

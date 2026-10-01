@@ -48,7 +48,8 @@
           "min": 0,
           "name": "matype"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "MACD with fixed 12/26 periods.",
@@ -81,7 +82,8 @@
           "min": 1,
           "name": "signalperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "MACD with configurable MA types for fast/slow/signal.",
@@ -147,7 +149,8 @@
           "min": 0,
           "name": "signalmatype"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Generic Moving Average. matype: 0=SMA, 1=EMA, 2=WMA, 3=DEMA, 4=TEMA,",
@@ -177,7 +180,8 @@
           "min": 0,
           "name": "matype"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Moving Average with Variable Period per bar.",
@@ -214,7 +218,8 @@
           "min": 0,
           "name": "matype"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Compute the Exponential Moving Average (EMA).",
@@ -237,7 +242,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Double Exponential Moving Average: `2*EMA - EMA(EMA)`.",
@@ -260,7 +266,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Triple Exponential Moving Average: `3*EMA - 3*EMA(EMA) + EMA(EMA(EMA))`.",
@@ -283,7 +290,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Tillson T3: 6 cascaded SMA-seeded EMAs with volume factor.",
@@ -311,7 +319,8 @@
           "kind": "float",
           "name": "vfactor"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Kaufman Adaptive Moving Average (TA-Lib).",
@@ -334,7 +343,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Compute the Moving Average Convergence/Divergence (MACD).",
@@ -379,7 +389,8 @@
           "min": 1,
           "name": "signalperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "MESA Adaptive Moving Average. Returns `(mama, fama)`.",
@@ -411,7 +422,8 @@
           "kind": "float",
           "name": "slowlimit"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Midpoint: `(max(close) + min(close)) / 2` over rolling window.",
@@ -434,7 +446,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "MidPrice: `(highest_high + lowest_low) / 2` over rolling window.",
@@ -458,7 +471,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Parabolic SAR.",
@@ -486,7 +500,8 @@
           "kind": "float",
           "name": "maximum"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Parabolic SAR Extended with configurable acceleration factors.",
@@ -544,7 +559,8 @@
           "kind": "float",
           "name": "accelerationmaxshort"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Compute the Simple Moving Average (SMA) over a rolling window.",
@@ -567,7 +583,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Triangular Moving Average (triangle-weighted).",
@@ -590,7 +607,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Compute the Weighted Moving Average (WMA).",
@@ -613,7 +631,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Compute the Plus Directional Movement (+DM), Wilder smoothed.",
@@ -637,7 +656,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Compute the Minus Directional Movement (-DM), Wilder smoothed.",
@@ -661,7 +681,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Compute the Plus Directional Indicator (+DI), Wilder smoothed.",
@@ -686,7 +707,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Compute the Minus Directional Indicator (-DI), Wilder smoothed.",
@@ -711,7 +733,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Compute the Directional Movement Index (DX).",
@@ -736,7 +759,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Compute the Average Directional Movement Index (ADX).",
@@ -761,7 +785,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Compute the ADX Rating (ADXR).",
@@ -786,7 +811,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Aroon indicator. Returns `(aroon_down, aroon_up)`.",
@@ -815,7 +841,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Aroon Oscillator: `aroon_up - aroon_down`.",
@@ -839,7 +866,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Absolute Price Oscillator: `fast MA - slow MA`.",
@@ -875,7 +903,8 @@
           "min": 0,
           "name": "matype"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Percentage Price Oscillator: `(fast MA - slow MA) / slow MA * 100`.",
@@ -927,7 +956,8 @@
           "min": 0,
           "name": "matype"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "TRIX: 1-period rate of change of triple-smoothed EMA.",
@@ -950,7 +980,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Williams %R: `-100 * (HH - close) / (HH - LL)` over the window.",
@@ -975,7 +1006,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Commodity Channel Index: `(tp - SMA(tp)) / (0.015 * MAD)`.",
@@ -1000,7 +1032,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Balance of Power: `(close - open) / (high - low)`.",
@@ -1019,7 +1052,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Compute the Momentum indicator: `close[i] - close[i - timeperiod]`.",
@@ -1042,7 +1076,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Rate of Change: `(close[i] - close[i-p]) / close[i-p] * 100`.",
@@ -1065,7 +1100,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Rate of Change Percentage: `(close[i] - close[i-p]) / close[i-p]`.",
@@ -1088,7 +1124,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Rate of Change Ratio: `close[i] / close[i-p]`.",
@@ -1111,7 +1148,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Rate of Change Ratio x 100: `close[i] / close[i-p] * 100`.",
@@ -1134,7 +1172,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Compute the Relative Strength Index (RSI).",
@@ -1157,7 +1196,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Chande Momentum Oscillator: `100 * (gains - losses) / (gains + losses)`.",
@@ -1180,7 +1220,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Compute the Stochastic Oscillator (TA-Lib compatible).",
@@ -1236,7 +1277,8 @@
           "min": 0,
           "name": "slowd_matype"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Fast Stochastic. Returns `(fastk, fastd)`.",
@@ -1279,7 +1321,8 @@
           "min": 0,
           "name": "fastd_matype"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Stochastic RSI. Returns `(fastk, fastd)`.",
@@ -1326,7 +1369,8 @@
           "min": 0,
           "name": "fastd_matype"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Ultimate Oscillator: weighted average of buying pressure over three periods.",
@@ -1363,7 +1407,8 @@
           "min": 1,
           "name": "timeperiod3"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Compute the Average True Range (ATR), Wilder smoothed (TA-Lib compatible).",
@@ -1388,7 +1433,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Compute the True Range for each bar.",
@@ -1406,7 +1452,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Normalized Average True Range: `ATR / close * 100`.",
@@ -1431,7 +1478,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Compute On-Balance Volume (OBV).",
@@ -1448,7 +1496,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Compute the Money Flow Index (MFI).",
@@ -1474,7 +1523,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Chaikin Accumulation/Distribution Line.",
@@ -1493,7 +1543,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Chaikin A/D Oscillator: fast EMA of AD minus slow EMA of AD.",
@@ -1525,7 +1576,8 @@
           "min": 1,
           "name": "slowperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Hilbert Transform Instantaneous Trendline (Ehlers).",
@@ -1541,7 +1593,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Hilbert Transform Dominant Cycle Period in bars.",
@@ -1557,7 +1610,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Hilbert Transform Dominant Cycle Phase in degrees.",
@@ -1573,7 +1627,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Hilbert Transform Phasor components. Returns `(inphase, quadrature)`.",
@@ -1594,7 +1649,8 @@
           "name": "out_quadrature"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Hilbert Transform SineWave. Returns `(sine, leadsine)` where leadsine",
@@ -1615,7 +1671,8 @@
           "name": "out_leadsine"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Hilbert Transform Trend vs Cycle Mode: 1 = trending, 0 = cycling.",
@@ -1631,7 +1688,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Compute the rolling population standard deviation, scaled by `nbdev`.",
@@ -1659,7 +1717,8 @@
           "kind": "float",
           "name": "nbdev"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Rolling population variance, scaled by `nbdev**2`.",
@@ -1687,7 +1746,8 @@
           "kind": "float",
           "name": "nbdev"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Linear regression fitted value at the last point of the window.",
@@ -1710,7 +1770,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Slope of the rolling linear regression line.",
@@ -1733,7 +1794,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Intercept of the rolling linear regression line.",
@@ -1756,7 +1818,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Angle of the regression line in degrees.",
@@ -1779,7 +1842,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Time Series Forecast: linear regression extrapolated one period ahead.",
@@ -1802,7 +1866,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Rolling beta: regression of real1 daily returns on real0 daily returns.",
@@ -1826,7 +1891,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Rolling Pearson correlation coefficient between two series.",
@@ -1850,7 +1916,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Compute the rolling sum over `timeperiod` bars.",
@@ -1873,7 +1940,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Compute the rolling maximum over `timeperiod` bars.",
@@ -1896,7 +1964,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Compute the rolling minimum over `timeperiod` bars.",
@@ -1919,7 +1988,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Compute the sliding maximum over `timeperiod` bars in O(n) time.",
@@ -1942,7 +2012,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Compute the sliding minimum over `timeperiod` bars in O(n) time.",
@@ -1965,7 +2036,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Element-wise addition of two arrays.",
@@ -1982,7 +2054,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Element-wise subtraction of two arrays.",
@@ -1999,7 +2072,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Element-wise multiplication of two arrays.",
@@ -2016,7 +2090,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Element-wise division of two arrays (NaN where b=0).",
@@ -2033,7 +2108,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Rolling sum over `timeperiod` bars using an O(n) sliding window.",
@@ -2056,7 +2132,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Rolling maximum over `timeperiod` bars (O(n) monotonic deque).",
@@ -2079,7 +2156,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Rolling minimum over `timeperiod` bars (O(n) monotonic deque).",
@@ -2102,7 +2180,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Index of rolling maximum over `timeperiod` bars.",
@@ -2125,7 +2204,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Index of rolling minimum over `timeperiod` bars.",
@@ -2148,7 +2228,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Average Price: (open + high + low + close) / 4.",
@@ -2167,7 +2248,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Median Price: (high + low) / 2.",
@@ -2184,7 +2266,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Typical Price: (high + low + close) / 3.",
@@ -2202,7 +2285,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Weighted Close Price: (high + low + close * 2) / 4.",
@@ -2220,7 +2304,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Two Crows (bearish)",
@@ -2239,7 +2324,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Three Black Crows (bearish)",
@@ -2258,7 +2344,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Three Inside Up/Down",
@@ -2277,7 +2364,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Three-Line Strike",
@@ -2296,7 +2384,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Three Outside Up/Down",
@@ -2315,7 +2404,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Three Stars In The South (bullish)",
@@ -2334,7 +2424,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Three Advancing White Soldiers (bullish)",
@@ -2353,7 +2444,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Abandoned Baby",
@@ -2372,7 +2464,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Advance Block (bearish)",
@@ -2391,7 +2484,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Belt-hold",
@@ -2410,7 +2504,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Breakaway",
@@ -2429,7 +2524,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Closing Marubozu",
@@ -2448,7 +2544,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Concealing Baby Swallow (bullish)",
@@ -2467,7 +2564,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Counterattack",
@@ -2486,7 +2584,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Dark Cloud Cover (bearish)",
@@ -2505,7 +2604,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Doji",
@@ -2524,7 +2624,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Doji Star",
@@ -2543,7 +2644,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Dragonfly Doji (bullish)",
@@ -2562,7 +2664,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Engulfing",
@@ -2581,7 +2684,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Evening Doji Star (bearish)",
@@ -2600,7 +2704,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Evening Star (bearish)",
@@ -2619,7 +2724,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Up/Down-gap side-by-side white lines",
@@ -2638,7 +2744,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Gravestone Doji (bearish)",
@@ -2657,7 +2764,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Hammer (bullish)",
@@ -2676,7 +2784,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Hanging Man (bearish)",
@@ -2695,7 +2804,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Harami",
@@ -2714,7 +2824,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Harami Cross",
@@ -2733,7 +2844,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "High-Wave Candle",
@@ -2752,7 +2864,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Hikkake Pattern",
@@ -2771,7 +2884,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Modified Hikkake Pattern",
@@ -2790,7 +2904,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Homing Pigeon (bullish)",
@@ -2809,7 +2924,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Identical Three Crows (bearish)",
@@ -2828,7 +2944,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "In-Neck Pattern (bearish)",
@@ -2847,7 +2964,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Inverted Hammer (bullish)",
@@ -2866,7 +2984,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Kicking",
@@ -2885,7 +3004,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Kicking — bull/bear determined by longer of the two marubozu",
@@ -2904,7 +3024,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Ladder Bottom (bullish)",
@@ -2923,7 +3044,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Long Legged Doji",
@@ -2942,7 +3064,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Long Line Candle",
@@ -2961,7 +3084,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Marubozu",
@@ -2980,7 +3104,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Matching Low (bullish)",
@@ -2999,7 +3124,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Mat Hold (bullish)",
@@ -3018,7 +3144,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Morning Doji Star (bullish)",
@@ -3037,7 +3164,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Morning Star (bullish)",
@@ -3056,7 +3184,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "On-Neck Pattern (bearish)",
@@ -3075,7 +3204,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Piercing Pattern (bullish)",
@@ -3094,7 +3224,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Rickshaw Man",
@@ -3113,7 +3244,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Rising/Falling Three Methods",
@@ -3132,7 +3264,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Separating Lines",
@@ -3151,7 +3284,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Shooting Star (bearish)",
@@ -3170,7 +3304,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Short Line Candle",
@@ -3189,7 +3324,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Spinning Top",
@@ -3208,7 +3344,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Stalled Pattern (bearish)",
@@ -3227,7 +3364,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Stick Sandwich (bullish)",
@@ -3246,7 +3384,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Takuri (Dragonfly Doji with very long lower shadow)",
@@ -3265,7 +3404,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Tasuki Gap",
@@ -3284,7 +3424,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Thrusting Pattern (bearish)",
@@ -3303,7 +3444,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Tristar Pattern",
@@ -3322,7 +3464,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Unique 3 River (bullish)",
@@ -3341,7 +3484,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Upside Gap Two Crows (bearish)",
@@ -3360,7 +3504,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Upside/Downside Gap Three Methods",
@@ -3379,7 +3524,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "ATR-based Supertrend indicator.",
@@ -3414,7 +3560,8 @@
           "kind": "float",
           "name": "multiplier"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Donchian Channels — rolling highest high / lowest low.",
@@ -3448,7 +3595,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Keltner Channels — EMA +/- (multiplier x ATR).",
@@ -3494,7 +3642,8 @@
           "kind": "float",
           "name": "multiplier"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Chandelier Exit — ATR-based trailing stop levels.",
@@ -3529,7 +3678,8 @@
           "kind": "float",
           "name": "multiplier"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Choppiness Index — measures market choppiness vs trending.",
@@ -3554,7 +3704,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Hull Moving Average (HMA).",
@@ -3577,7 +3728,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Directional Movement Index as `(PLUS_DI, MINUS_DI, ADX)`.",
@@ -3612,7 +3764,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Williams Fractals: local swing high / swing low with `timeperiod` bars",
@@ -3641,7 +3794,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Random Walk Index (Poulos): max over lookbacks `2..=timeperiod` of",
@@ -3671,7 +3825,8 @@
           "min": 2,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "# Returns",
@@ -3734,7 +3889,8 @@
           "min": 0,
           "name": "displacement"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Elder Ray Index: bull power and bear power versus an EMA of close.",
@@ -3764,7 +3920,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Ehlers Fisher Transform of median price, plus a 1-bar trigger.",
@@ -3793,7 +3950,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Connors RSI: average of price RSI, streak RSI, and percent rank of ROC.",
@@ -3828,7 +3986,8 @@
           "min": 1,
           "name": "rankperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Awesome Oscillator: `SMA(median, fast) − SMA(median, slow)`.",
@@ -3858,7 +4017,8 @@
           "min": 1,
           "name": "slowperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Accelerator Oscillator: `AO − SMA(AO, timeperiod)`.",
@@ -3894,7 +4054,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Price Oscillator (SMA): `SMA(close, fast) − SMA(close, slow)`.",
@@ -3923,7 +4084,8 @@
           "min": 1,
           "name": "slowperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Detrended Price Oscillator: `close[i − shift] − SMA(close, timeperiod)`,",
@@ -3946,7 +4108,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Relative Vigor Index and its 4-bar weighted signal.",
@@ -3977,7 +4140,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Chaikin Oscillator — same math as [`volume::adosc`].",
@@ -4009,7 +4173,8 @@
           "min": 1,
           "name": "slowperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Know Sure Thing: weighted sum of four ROC SMAs, plus a signal SMA.",
@@ -4085,7 +4250,8 @@
           "min": 1,
           "name": "signalperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "True Strength Index and an EMA signal of that series.",
@@ -4125,7 +4291,8 @@
           "min": 1,
           "name": "signalperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Vortex Indicator: `+VI` and `−VI` over `timeperiod`.",
@@ -4155,7 +4322,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Schaff Trend Cycle: stochastic of MACD, double-smoothed (`d1`, `d2`).",
@@ -4202,7 +4370,8 @@
           "min": 1,
           "name": "d2"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Gator Oscillator from the Alligator jaw / teeth / lips.",
@@ -4261,7 +4430,8 @@
           "min": 0,
           "name": "lips_shift"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Coppock Curve: `WMA(ROC(roc1) + ROC(roc2), wma_period)`.",
@@ -4296,7 +4466,8 @@
           "min": 1,
           "name": "roc2"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Rolling median of `real` over `timeperiod`.",
@@ -4319,7 +4490,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Median bands: rolling median of `(high + low) / 2`, ATR envelopes, and an",
@@ -4370,7 +4542,8 @@
           "kind": "float",
           "name": "multiplier"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Rolling mode via equal-width discretization of each window.",
@@ -4399,7 +4572,8 @@
           "min": 1,
           "name": "bins"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Arnaud Legoux Moving Average.",
@@ -4432,7 +4606,8 @@
           "kind": "float",
           "name": "sigma"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Zero-lag exponential moving average.",
@@ -4455,7 +4630,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Fractal Adaptive Moving Average (Ehlers).",
@@ -4478,7 +4654,8 @@
           "min": 2,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "McGinley Dynamic.",
@@ -4501,7 +4678,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Variable Index Dynamic Average (Chande).",
@@ -4530,7 +4708,8 @@
           "min": 1,
           "name": "cmo_period"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Bill Williams Alligator (jaw / teeth / lips).",
@@ -4594,7 +4773,8 @@
           "min": 0,
           "name": "lips_shift"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Moving-average envelopes: `MA * (1 ± percent / 100)`.",
@@ -4639,7 +4819,8 @@
           "min": 0,
           "name": "matype"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Chande Kroll Stop.",
@@ -4680,7 +4861,8 @@
           "min": 1,
           "name": "stop_period"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Chaikin Volatility: rate of change of an EMA of the high–low range.",
@@ -4710,7 +4892,8 @@
           "min": 1,
           "name": "rocperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Mass Index: rolling sum of the single/double EMA ratio of the high–low range.",
@@ -4740,7 +4923,8 @@
           "min": 1,
           "name": "sumperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Bollinger %B: `(close - lower) / (upper - lower)` from [`overlap::bbands`].",
@@ -4773,7 +4957,8 @@
           "kind": "float",
           "name": "nbdevdn"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Bollinger Bandwidth: `(upper - lower) / middle` from [`overlap::bbands`].",
@@ -4806,7 +4991,8 @@
           "kind": "float",
           "name": "nbdevdn"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Close-to-close historical volatility, annualized and in percent.",
@@ -4834,7 +5020,8 @@
           "kind": "float",
           "name": "annual"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Ulcer Index: RMS of percent drawdowns versus the rolling highest close.",
@@ -4857,7 +5044,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Stoller Average Range Channels: SMA of close ± `multiplier * ATR`.",
@@ -4903,7 +5091,8 @@
           "kind": "float",
           "name": "multiplier"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "On-Balance Volume smoothed with [`overlap::ma`].",
@@ -4934,7 +5123,8 @@
           "min": 0,
           "name": "matype"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Chaikin Money Flow: rolling sum of CLV × volume over rolling volume.",
@@ -4960,7 +5150,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Ease of Movement, then SMA.",
@@ -4990,7 +5181,8 @@
           "kind": "float",
           "name": "scale"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Force Index: `(close - close[1]) * volume`, optionally EMA-smoothed.",
@@ -5014,7 +5206,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Negative Volume Index, seeded at 1000.",
@@ -5031,7 +5224,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "NVI plus an EMA signal of that series.",
@@ -5060,7 +5254,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Positive Volume Index, seeded at 1000.",
@@ -5077,7 +5272,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "PVI plus a moving-average signal (`matype` matches `MA`, `0`-`8`).",
@@ -5113,7 +5309,8 @@
           "min": 0,
           "name": "matype"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Volume oscillator: `100 * (SMA(vol, fast) - SMA(vol, slow)) / SMA(vol, slow)`.",
@@ -5142,7 +5339,8 @@
           "min": 1,
           "name": "slowperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Volume rate of change: `100 * (volume - volume[timeperiod]) / volume[timeperiod]`.",
@@ -5165,7 +5363,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Klinger Volume Oscillator and its EMA signal.",
@@ -5208,7 +5407,8 @@
           "min": 1,
           "name": "signalperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Price Volume Trend: cumulative `volume * (close - close[1]) / close[1]`.",
@@ -5225,7 +5425,8 @@
           "name": "out"
         }
       ],
-      "params": []
+      "params": [],
+      "requires": ""
     },
     {
       "doc": "Relative volume: `volume / SMA(volume, timeperiod)`.",
@@ -5248,7 +5449,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Volume Weighted Average Price (cumulative or rolling).",
@@ -5274,7 +5476,8 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
     },
     {
       "doc": "Volume Weighted Moving Average.",
@@ -5298,7 +5501,627 @@
           "min": 1,
           "name": "timeperiod"
         }
-      ]
+      ],
+      "requires": ""
+    },
+    {
+      "doc": "Rolling IV rank.",
+      "group": "options",
+      "inputs": [
+        "iv_series"
+      ],
+      "name": "ft_iv_rank",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "window"
+        }
+      ],
+      "requires": ""
+    },
+    {
+      "doc": "Rolling IV percentile.",
+      "group": "options",
+      "inputs": [
+        "iv_series"
+      ],
+      "name": "ft_iv_percentile",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "window"
+        }
+      ],
+      "requires": ""
+    },
+    {
+      "doc": "Rolling IV z-score.",
+      "group": "options",
+      "inputs": [
+        "iv_series"
+      ],
+      "name": "ft_iv_zscore",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "window"
+        }
+      ],
+      "requires": ""
+    },
+    {
+      "doc": "Rolling close-to-close realized volatility.",
+      "group": "options",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_close_to_close_vol",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "window"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "trading_days"
+        }
+      ],
+      "requires": ""
+    },
+    {
+      "doc": "Rolling Parkinson high-low realized volatility estimator.",
+      "group": "options",
+      "inputs": [
+        "high",
+        "low"
+      ],
+      "name": "ft_parkinson_vol",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "window"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "trading_days"
+        }
+      ],
+      "requires": ""
+    },
+    {
+      "doc": "Rolling Garman-Klass OHLC realized volatility estimator.",
+      "group": "options",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_garman_klass_vol",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "window"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "trading_days"
+        }
+      ],
+      "requires": ""
+    },
+    {
+      "doc": "Rolling Rogers-Satchell OHLC realized volatility estimator.",
+      "group": "options",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_rogers_satchell_vol",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "window"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "trading_days"
+        }
+      ],
+      "requires": ""
+    },
+    {
+      "doc": "Rolling Yang-Zhang OHLC realized volatility estimator.",
+      "group": "options",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_yang_zhang_vol",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "window"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "trading_days"
+        }
+      ],
+      "requires": ""
+    },
+    {
+      "doc": "Weighted stitching using next-contract weights in [0, 1].",
+      "group": "futures",
+      "inputs": [
+        "front",
+        "next",
+        "next_weights"
+      ],
+      "name": "ft_weighted_continuous",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "requires": ""
+    },
+    {
+      "doc": "Back-adjusted continuous series using the roll date implied by the weights.",
+      "group": "futures",
+      "inputs": [
+        "front",
+        "next",
+        "next_weights"
+      ],
+      "name": "ft_back_adjusted_continuous",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "requires": ""
+    },
+    {
+      "doc": "Ratio-adjusted continuous series using the roll date implied by the weights.",
+      "group": "futures",
+      "inputs": [
+        "front",
+        "next",
+        "next_weights"
+      ],
+      "name": "ft_ratio_adjusted_continuous",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "requires": ""
+    },
+    {
+      "doc": "Label each bar as trend (1) or range (0) based on ADX level.",
+      "group": "regime",
+      "inputs": [
+        "adx"
+      ],
+      "name": "ft_regime_adx",
+      "outputs": [
+        {
+          "c_type": "int8_t",
+          "elem": "i8",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "threshold"
+        }
+      ],
+      "requires": ""
+    },
+    {
+      "doc": "Label each bar as trend (1) or range (0) using ADX + ATR-ratio rule.",
+      "group": "regime",
+      "inputs": [
+        "adx",
+        "atr",
+        "close"
+      ],
+      "name": "ft_regime_combined",
+      "outputs": [
+        {
+          "c_type": "int8_t",
+          "elem": "i8",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "adx_threshold"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "atr_pct_threshold"
+        }
+      ],
+      "requires": ""
+    },
+    {
+      "doc": "Detect structural breaks using a CUSUM (cumulative sum) approach.",
+      "group": "regime",
+      "inputs": [
+        "series"
+      ],
+      "name": "ft_detect_breaks_cusum",
+      "outputs": [
+        {
+          "c_type": "int8_t",
+          "elem": "i8",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 2,
+          "name": "window"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "threshold"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "slack"
+        }
+      ],
+      "requires": ""
+    },
+    {
+      "doc": "Detect volatility regime breaks using rolling variance ratio.",
+      "group": "regime",
+      "inputs": [
+        "series"
+      ],
+      "name": "ft_rolling_variance_break",
+      "outputs": [
+        {
+          "c_type": "int8_t",
+          "elem": "i8",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 2,
+          "name": "short_window"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "long_window"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "threshold"
+        }
+      ],
+      "requires": "long_window > short_window"
+    },
+    {
+      "doc": "Compute rolling beta of `asset` vs `benchmark` over a sliding `window`.",
+      "group": "portfolio",
+      "inputs": [
+        "asset",
+        "benchmark"
+      ],
+      "name": "ft_rolling_beta",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 2,
+          "name": "window"
+        }
+      ],
+      "requires": ""
+    },
+    {
+      "doc": "Compute relative strength of an asset vs a benchmark.",
+      "group": "portfolio",
+      "inputs": [
+        "asset_returns",
+        "benchmark_returns"
+      ],
+      "name": "ft_relative_strength",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "requires": ""
+    },
+    {
+      "doc": "Compute the spread between two series: a - hedge * b.",
+      "group": "portfolio",
+      "inputs": [
+        "a",
+        "b"
+      ],
+      "name": "ft_spread",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "hedge"
+        }
+      ],
+      "requires": ""
+    },
+    {
+      "doc": "Compute the ratio between two series: a / b.",
+      "group": "portfolio",
+      "inputs": [
+        "a",
+        "b"
+      ],
+      "name": "ft_ratio",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "requires": ""
+    },
+    {
+      "doc": "Compute the rolling Z-score of a 1-D series.",
+      "group": "portfolio",
+      "inputs": [
+        "x"
+      ],
+      "name": "ft_zscore_series",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 2,
+          "name": "window"
+        }
+      ],
+      "requires": ""
+    },
+    {
+      "doc": "Compute fractional rank of each element (1-based, ascending). Ties receive the average of their rank positions.",
+      "group": "utilities",
+      "inputs": [
+        "x"
+      ],
+      "name": "ft_rank_values",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "requires": ""
+    },
+    {
+      "doc": "Detect cross-over / cross-under events between two series.",
+      "group": "utilities",
+      "inputs": [
+        "fast",
+        "slow"
+      ],
+      "name": "ft_check_cross",
+      "outputs": [
+        {
+          "c_type": "int8_t",
+          "elem": "i8",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "requires": ""
+    },
+    {
+      "doc": "Compute the cumulative PnL from funding rate payments.",
+      "group": "utilities",
+      "inputs": [
+        "position_size",
+        "funding_rate"
+      ],
+      "name": "ft_funding_cumulative_pnl",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "requires": ""
+    },
+    {
+      "doc": "Forward-fill NaN values in a 1-D array. Leading NaN values are preserved until the first non-NaN value appears.",
+      "group": "utilities",
+      "inputs": [
+        "values"
+      ],
+      "name": "ft_forward_fill_nan",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "requires": ""
+    },
+    {
+      "doc": "RSI threshold strategy: +1 when RSI <= oversold, -1 when RSI >= overbought, 0 otherwise.",
+      "group": "utilities",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_rsi_threshold_signals",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "oversold"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "overbought"
+        }
+      ],
+      "requires": ""
     }
   ],
   "status_codes": [

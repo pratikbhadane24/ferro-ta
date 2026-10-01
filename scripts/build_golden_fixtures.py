@@ -53,6 +53,23 @@ INPUT_COLUMNS = {
     "prices": "close",
     "value": "close",
     "periods": "periods",
+    "iv_series": "iv",
+    "front": "close",
+    "next": "next",
+    "next_weights": "weights",
+    "adx": "oscillator",
+    "atr": "range",
+    "series": "returns",
+    "asset": "returns",
+    "benchmark": "benchmark_returns",
+    "asset_returns": "returns",
+    "benchmark_returns": "benchmark_returns",
+    "x": "close",
+    "fast": "close",
+    "slow": "slow",
+    "position_size": "position",
+    "funding_rate": "funding",
+    "values": "gappy",
 }
 
 # Period-like params whose relationships matter (fast < slow, etc.).
@@ -90,6 +107,9 @@ PERIOD_VALUES = {
     "cycleperiod": 5,
     "wma_period": 5,
     "bins": 4,
+    "window": 10,
+    "short_window": 5,
+    "long_window": 20,
 }
 DEFAULT_PERIOD = 5
 DEFAULT_COUNT = 2
@@ -117,6 +137,14 @@ FLOAT_VALUES = {
     "accelerationinitshort": 0.02,
     "accelerationshort": 0.02,
     "accelerationmaxshort": 0.2,
+    "trading_days": 252.0,
+    "threshold": 25.0,
+    "slack": 0.5,
+    "adx_threshold": 25.0,
+    "atr_pct_threshold": 1.0,
+    "hedge": 0.8,
+    "oversold": 30.0,
+    "overbought": 70.0,
 }
 
 C_SCALAR = {
@@ -147,8 +175,25 @@ def load_inputs() -> dict[str, list[float]]:
         key: [float(r[key]) for r in rows]
         for key in ("open", "high", "low", "close", "volume")
     }
-    # Variable-period input for MAVP: deterministic cycle through 2..10.
-    cols["periods"] = [float(2 + i % 9) for i in range(len(rows))]
+    n = len(rows)
+    close = cols["close"]
+    # Deterministic derived columns for inputs that are not raw OHLCV.
+    cols["periods"] = [float(2 + i % 9) for i in range(n)]  # MAVP periods in 2..10
+    cols["iv"] = [0.2 + 0.05 * math.sin(i * 0.3) for i in range(n)]
+    cols["oscillator"] = [50.0 + 40.0 * math.sin(i * 0.2) for i in range(n)]
+    cols["range"] = [h - lo for h, lo in zip(cols["high"], cols["low"])]
+    cols["returns"] = [0.0] + [close[i] / close[i - 1] - 1.0 for i in range(1, n)]
+    cols["benchmark_returns"] = [
+        0.6 * r + 0.001 * math.cos(i) for i, r in enumerate(cols["returns"])
+    ]
+    cols["next"] = [c * 1.01 for c in close]
+    cols["weights"] = [min(1.0, max(0.0, (i - n / 3) / (n / 3))) for i in range(n)]
+    cols["slow"] = [
+        sum(close[max(0, i - 4) : i + 1]) / (i - max(0, i - 4) + 1) for i in range(n)
+    ]
+    cols["position"] = [1.0 if (i // 10) % 2 == 0 else -1.0 for i in range(n)]
+    cols["funding"] = [0.0001 * math.sin(i * 0.5) for i in range(n)]
+    cols["gappy"] = [math.nan if i % 7 in (0, 3) else c for i, c in enumerate(close)]
     return cols
 
 

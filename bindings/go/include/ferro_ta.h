@@ -1079,6 +1079,142 @@ int32_t ft_vwap(const double *high, const double *low, const double *close, cons
  */
 int32_t ft_vwma(const double *close, const double *volume, size_t len, int64_t timeperiod, double *out);
 
+/* ---- options --------------------------------------------------------------- */
+
+/**
+ * Rolling IV rank.
+ */
+int32_t ft_iv_rank(const double *iv_series, size_t len, int64_t window, double *out);
+
+/**
+ * Rolling IV percentile.
+ */
+int32_t ft_iv_percentile(const double *iv_series, size_t len, int64_t window, double *out);
+
+/**
+ * Rolling IV z-score.
+ */
+int32_t ft_iv_zscore(const double *iv_series, size_t len, int64_t window, double *out);
+
+/**
+ * Rolling close-to-close realized volatility.
+ */
+int32_t ft_close_to_close_vol(const double *close, size_t len, int64_t window, double trading_days, double *out);
+
+/**
+ * Rolling Parkinson high-low realized volatility estimator.
+ */
+int32_t ft_parkinson_vol(const double *high, const double *low, size_t len, int64_t window, double trading_days, double *out);
+
+/**
+ * Rolling Garman-Klass OHLC realized volatility estimator.
+ */
+int32_t ft_garman_klass_vol(const double *open, const double *high, const double *low, const double *close, size_t len, int64_t window, double trading_days, double *out);
+
+/**
+ * Rolling Rogers-Satchell OHLC realized volatility estimator.
+ */
+int32_t ft_rogers_satchell_vol(const double *open, const double *high, const double *low, const double *close, size_t len, int64_t window, double trading_days, double *out);
+
+/**
+ * Rolling Yang-Zhang OHLC realized volatility estimator.
+ */
+int32_t ft_yang_zhang_vol(const double *open, const double *high, const double *low, const double *close, size_t len, int64_t window, double trading_days, double *out);
+
+/* ---- futures --------------------------------------------------------------- */
+
+/**
+ * Weighted stitching using next-contract weights in [0, 1].
+ */
+int32_t ft_weighted_continuous(const double *front, const double *next, const double *next_weights, size_t len, double *out);
+
+/**
+ * Back-adjusted continuous series using the roll date implied by the weights.
+ */
+int32_t ft_back_adjusted_continuous(const double *front, const double *next, const double *next_weights, size_t len, double *out);
+
+/**
+ * Ratio-adjusted continuous series using the roll date implied by the weights.
+ */
+int32_t ft_ratio_adjusted_continuous(const double *front, const double *next, const double *next_weights, size_t len, double *out);
+
+/* ---- regime ---------------------------------------------------------------- */
+
+/**
+ * Label each bar as trend (1) or range (0) based on ADX level.
+ */
+int32_t ft_regime_adx(const double *adx, size_t len, double threshold, int8_t *out);
+
+/**
+ * Label each bar as trend (1) or range (0) using ADX + ATR-ratio rule.
+ */
+int32_t ft_regime_combined(const double *adx, const double *atr, const double *close, size_t len, double adx_threshold, double atr_pct_threshold, int8_t *out);
+
+/**
+ * Detect structural breaks using a CUSUM (cumulative sum) approach.
+ */
+int32_t ft_detect_breaks_cusum(const double *series, size_t len, int64_t window, double threshold, double slack, int8_t *out);
+
+/**
+ * Detect volatility regime breaks using rolling variance ratio.
+ * Requires: long_window > short_window (else FT_ERR_INVALID_PARAM).
+ */
+int32_t ft_rolling_variance_break(const double *series, size_t len, int64_t short_window, int64_t long_window, double threshold, int8_t *out);
+
+/* ---- portfolio ------------------------------------------------------------- */
+
+/**
+ * Compute rolling beta of `asset` vs `benchmark` over a sliding `window`.
+ */
+int32_t ft_rolling_beta(const double *asset, const double *benchmark, size_t len, int64_t window, double *out);
+
+/**
+ * Compute relative strength of an asset vs a benchmark.
+ */
+int32_t ft_relative_strength(const double *asset_returns, const double *benchmark_returns, size_t len, double *out);
+
+/**
+ * Compute the spread between two series: a - hedge * b.
+ */
+int32_t ft_spread(const double *a, const double *b, size_t len, double hedge, double *out);
+
+/**
+ * Compute the ratio between two series: a / b.
+ */
+int32_t ft_ratio(const double *a, const double *b, size_t len, double *out);
+
+/**
+ * Compute the rolling Z-score of a 1-D series.
+ */
+int32_t ft_zscore_series(const double *x, size_t len, int64_t window, double *out);
+
+/* ---- utilities ------------------------------------------------------------- */
+
+/**
+ * Compute fractional rank of each element (1-based, ascending). Ties receive the average of their rank positions.
+ */
+int32_t ft_rank_values(const double *x, size_t len, double *out);
+
+/**
+ * Detect cross-over / cross-under events between two series.
+ */
+int32_t ft_check_cross(const double *fast, const double *slow, size_t len, int8_t *out);
+
+/**
+ * Compute the cumulative PnL from funding rate payments.
+ */
+int32_t ft_funding_cumulative_pnl(const double *position_size, const double *funding_rate, size_t len, double *out);
+
+/**
+ * Forward-fill NaN values in a 1-D array. Leading NaN values are preserved until the first non-NaN value appears.
+ */
+int32_t ft_forward_fill_nan(const double *values, size_t len, double *out);
+
+/**
+ * RSI threshold strategy: +1 when RSI <= oversold, -1 when RSI >= overbought, 0 otherwise.
+ */
+int32_t ft_rsi_threshold_signals(const double *close, size_t len, int64_t timeperiod, double oversold, double overbought, double *out);
+
 /* ---- streaming ------------------------------------------------------------- */
 
 /**

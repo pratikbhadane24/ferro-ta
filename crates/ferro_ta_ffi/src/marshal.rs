@@ -133,9 +133,8 @@ mod tests {
     fn length_mismatch_is_internal_error_and_writes_nothing() {
         let mut a = [7.0; 4];
         let mut b = [7.0; 4];
-        let result = unsafe {
-            (vec![1.0; 4], vec![2.0; 3]).write_to((a.as_mut_ptr(), b.as_mut_ptr()), 4)
-        };
+        let result =
+            unsafe { (vec![1.0; 4], vec![2.0; 3]).write_to((a.as_mut_ptr(), b.as_mut_ptr()), 4) };
         assert_eq!(result, Err(Status::Internal));
         assert_eq!(a, [7.0; 4], "first output must stay untouched");
         assert_eq!(b, [7.0; 4]);
