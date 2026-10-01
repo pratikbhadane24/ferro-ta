@@ -145,7 +145,33 @@ FLOAT_VALUES = {
     "hedge": 0.8,
     "oversold": 30.0,
     "overbought": 70.0,
+    # Scalar (option / futures / sizing) parameters.
+    "spot": 100.0,
+    "strike": 105.0,
+    "forward": 101.0,
+    "underlying": 100.0,
+    "rate": 0.03,
+    "dividend_yield": 0.01,
+    "carry": 0.02,
+    "time_to_expiry": 0.5,
+    "volatility": 0.25,
+    "iv": 0.25,
+    "call_price": 6.0,
+    "put_price": 5.5,
+    "target_price": 7.5,
+    "future": 101.5,
+    "front_price": 100.0,
+    "next_price": 101.0,
+    "days_to_expiry": 30.0,
+    "trading_days_per_year": 252.0,
+    "initial_guess": 0.2,
+    "tolerance": 1e-8,
+    "win_rate": 0.55,
+    "avg_win": 2.0,
+    "avg_loss": 1.0,
 }
+
+COUNT_VALUES = {"max_iterations": 100}
 
 C_SCALAR = {
     "int64_t": ctypes.c_int64,
@@ -202,8 +228,8 @@ def param_value(param: dict) -> float | int:
     if kind == "period":
         return max(PERIOD_VALUES.get(name, DEFAULT_PERIOD), param["min"])
     if kind == "count":
-        return DEFAULT_COUNT
-    if kind == "matype":
+        return COUNT_VALUES.get(name, DEFAULT_COUNT)
+    if kind in ("matype", "enum"):
         return 0
     if name not in FLOAT_VALUES:
         sys.exit(f"no golden value for float param {name!r}; add it to FLOAT_VALUES")
@@ -245,6 +271,36 @@ def call_function(lib: ctypes.CDLL, fn: dict, cols: dict[str, list[float]]) -> d
         "params": params,
         "outputs": outputs,
     }
+
+
+def call_scalar(lib: ctypes.CDLL, fn: dict, enum_index: int, enums: dict) -> dict:
+    params = {p["name"]: param_value(p) for p in fn["params"]}
+    for p in fn["params"]:
+        if p["kind"] == "enum":
+            params[p["name"]] = enums[p["enum"]][enum_index]["value"]
+    outs = [C_ELEM[o["elem"]]() for o in fn["outputs"]]
+    args = [C_SCALAR[p["c_type"]](params[p["name"]]) for p in fn["params"]]
+    func = getattr(lib, fn["name"])
+    func.restype = ctypes.c_int32
+    status = func(*args, *[ctypes.byref(o) for o in outs])
+    if status != 0:
+        sys.exit(f"{fn['name']} returned status {status} for params {params}")
+    return {
+        "fn": fn["name"],
+        "params": params,
+        "outputs": {o["name"]: encode(v.value) for o, v in zip(fn["outputs"], outs)},
+    }
+
+
+def scalar_cases(lib: ctypes.CDLL, spec: dict) -> list[dict]:
+    """One case per scalar; a second with every enum at its last value."""
+    enums = {e["name"]: e["values"] for e in spec["enums"]}
+    cases = []
+    for fn in spec["scalars"]:
+        cases.append(call_scalar(lib, fn, 0, enums))
+        if any(p["kind"] == "enum" for p in fn["params"]):
+            cases.append(call_scalar(lib, fn, -1, enums))
+    return cases
 
 
 def run_stream(lib: ctypes.CDLL, stream: dict, cols: dict[str, list[float]]) -> dict:
@@ -291,6 +347,7 @@ def main() -> int:
         "bars": len(cols["close"]),
         "columns": {k: [encode(v) for v in vals] for k, vals in cols.items()},
         "functions": [call_function(lib, fn, cols) for fn in spec["functions"]],
+        "scalars": scalar_cases(lib, spec),
         "streams": [run_stream(lib, s, cols) for s in spec["streams"]],
     }
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -303,7 +360,7 @@ def main() -> int:
     size_kb = OUT_PATH.stat().st_size // 1024
     print(
         f"wrote {OUT_PATH.relative_to(ROOT)} ({len(golden['functions'])} functions, "
-        f"{len(golden['streams'])} streams, {size_kb} KiB)"
+        f"{len(golden['scalars'])} scalar cases, {len(golden['streams'])} streams, {size_kb} KiB)"
     )
     if all_nan:
         print(f"warning: all-NaN output (weak coverage) for: {', '.join(all_nan)}")

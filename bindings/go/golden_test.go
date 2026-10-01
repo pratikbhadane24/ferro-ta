@@ -30,9 +30,16 @@ type goldenCase struct {
 	Outputs map[string][]json.RawMessage `json:"outputs"`
 }
 
+type goldenScalarCase struct {
+	Fn      string                     `json:"fn"`
+	Params  map[string]float64         `json:"params"`
+	Outputs map[string]json.RawMessage `json:"outputs"`
+}
+
 type goldenFile struct {
 	Columns   map[string][]json.RawMessage `json:"columns"`
 	Functions []goldenCase                 `json:"functions"`
+	Scalars   []goldenScalarCase           `json:"scalars"`
 	Streams   []goldenCase                 `json:"streams"`
 }
 
@@ -191,4 +198,31 @@ func scalarFloat(v any) float64 {
 		return float64(x)
 	}
 	panic(fmt.Sprintf("unexpected scalar type %T", v))
+}
+
+func TestGoldenScalars(t *testing.T) {
+	g, _ := loadGolden(t)
+	covered := map[string]bool{}
+	for i, c := range g.Scalars {
+		covered[c.Fn] = true
+		t.Run(fmt.Sprintf("%s/%d", c.Fn, i), func(t *testing.T) {
+			call, ok := goldenScalars[c.Fn]
+			if !ok {
+				t.Fatalf("no Go wrapper for %s", c.Fn)
+			}
+			got, err := call(c.Params)
+			if err != nil {
+				t.Fatal(err)
+			}
+			for name, raw := range c.Outputs {
+				want := decodeFloats(t, []json.RawMessage{raw})[0]
+				if v := scalarFloat(got[name]); !closeEnough(v, want) {
+					t.Fatalf("%s = %v, want %v", name, v, want)
+				}
+			}
+		})
+	}
+	if len(covered) != len(goldenScalars) {
+		t.Errorf("fixture covers %d scalar functions, Go dispatch has %d", len(covered), len(goldenScalars))
+	}
 }

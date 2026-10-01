@@ -4,6 +4,7 @@
 //! thread-safe: callers must not use one handle from two threads at once.
 //! Every handle from `*_new` must be released exactly once with `*_free`.
 
+use crate::marshal::WriteScalars;
 use crate::status::Status;
 use ferro_ta_core::streaming::{
     StreamingATR, StreamingBBands, StreamingEMA, StreamingError, StreamingMACD, StreamingRSI,
@@ -26,36 +27,6 @@ impl IntoCtorResult<StreamingVWAP> for StreamingVWAP {
         Ok(self)
     }
 }
-
-/// Write an `update` result (scalar or tuple) through output pointers.
-pub trait WriteScalars<P> {
-    /// # Safety
-    /// Every pointer in `ptrs` must be valid for one write.
-    unsafe fn write_to(self, ptrs: P);
-}
-
-impl WriteScalars<(*mut f64,)> for f64 {
-    unsafe fn write_to(self, ptrs: (*mut f64,)) {
-        // SAFETY: valid for one write per caller contract.
-        unsafe { ptrs.0.write(self) };
-    }
-}
-
-macro_rules! impl_write_scalars {
-    ($($t:ident $v:ident $p:ident),+) => {
-        impl<$($t),+> WriteScalars<($(*mut $t,)+)> for ($($t,)+) {
-            unsafe fn write_to(self, ptrs: ($(*mut $t,)+)) {
-                let ($($v,)+) = self;
-                let ($($p,)+) = ptrs;
-                // SAFETY: each pointer valid for one write per caller contract.
-                $( unsafe { $p.write($v) }; )+
-            }
-        }
-    };
-}
-
-impl_write_scalars!(A a pa, B b pb);
-impl_write_scalars!(A a pa, B b pb, C c pc);
 
 macro_rules! ffi_streams {
     (

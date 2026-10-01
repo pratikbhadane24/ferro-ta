@@ -5,11 +5,12 @@
  *
  * Conventions:
  *  - Every function returns an int32_t status (FT_OK == 0); see ft_status_message().
- *  - Inputs are `const double *` arrays sharing one `size_t len`.
+ *  - Array inputs are `const double *` sharing one `size_t len`.
  *  - Outputs are caller-allocated arrays of length `len`, written only on success.
  *    An output may alias an input (in-place). Any array may be NULL when len == 0.
  *  - Periods are int64_t (validated >= their minimum), MA types int32_t in 0..8.
- *  - Float parameters must be finite.
+ *  - Float parameters must be finite; enum parameters must be a listed value.
+ *  - Scalar functions write each result through an output pointer.
  *  - Leading warm-up values are NaN; output length always equals input length.
  *  - Streaming handles are not thread-safe; free each exactly once.
  */
@@ -36,6 +37,18 @@ extern "C" {
 const char *ft_status_message(int32_t code);
 /** Library version string. Static; do not free. */
 const char *ft_version(void);
+
+/* OptionKind values (int32_t parameters of that kind). */
+#define FT_OPTION_CALL 0
+#define FT_OPTION_PUT 1
+
+/* DigitalKind values (int32_t parameters of that kind). */
+#define FT_DIGITAL_CASH_OR_NOTHING 0
+#define FT_DIGITAL_ASSET_OR_NOTHING 1
+
+/* PricingModel values (int32_t parameters of that kind). */
+#define FT_MODEL_BLACK_SCHOLES 0
+#define FT_MODEL_BLACK_76 1
 
 /* ---- overlap --------------------------------------------------------------- */
 
@@ -1214,6 +1227,132 @@ int32_t ft_forward_fill_nan(const double *values, size_t len, double *out);
  * RSI threshold strategy: +1 when RSI <= oversold, -1 when RSI >= overbought, 0 otherwise.
  */
 int32_t ft_rsi_threshold_signals(const double *close, size_t len, int64_t timeperiod, double oversold, double overbought, double *out);
+
+/* ---- options (scalar) ------------------------------------------------------ */
+
+/**
+ * Black-Scholes-Merton price with continuous carry/dividend yield.
+ */
+int32_t ft_black_scholes_price(double spot, double strike, double rate, double dividend_yield, double time_to_expiry, double volatility, int32_t kind, double *out_value);
+
+/**
+ * Black-76 price using the forward price as the underlying input.
+ */
+int32_t ft_black_76_price(double forward, double strike, double rate, double time_to_expiry, double volatility, int32_t kind, double *out_value);
+
+/**
+ * Black-Scholes-Merton Greeks.
+ */
+int32_t ft_black_scholes_greeks(double spot, double strike, double rate, double dividend_yield, double time_to_expiry, double volatility, int32_t kind, double *out_delta, double *out_gamma, double *out_vega, double *out_theta, double *out_rho);
+
+/**
+ * Black-76 Greeks with respect to the forward.
+ */
+int32_t ft_black_76_greeks(double forward, double strike, double rate, double time_to_expiry, double volatility, int32_t kind, double *out_delta, double *out_gamma, double *out_vega, double *out_theta, double *out_rho);
+
+/**
+ * Extended Greeks under Black-Scholes-Merton (closed-form).
+ */
+int32_t ft_black_scholes_extended_greeks(double spot, double strike, double rate, double dividend_yield, double time_to_expiry, double volatility, int32_t kind, double *out_vanna, double *out_volga, double *out_charm, double *out_speed, double *out_color);
+
+/**
+ * American option price using the Barone-Adesi-Whaley (1987) quadratic approximation.
+ */
+int32_t ft_american_price_baw(double spot, double strike, double rate, double carry, double time_to_expiry, double volatility, int32_t kind, double *out_value);
+
+/**
+ * Early exercise premium = american_price - european_bsm_price.
+ */
+int32_t ft_early_exercise_premium(double spot, double strike, double rate, double carry, double time_to_expiry, double volatility, int32_t kind, double *out_value);
+
+/**
+ * Price a digital (binary) option under BSM.
+ */
+int32_t ft_digital_price(double spot, double strike, double rate, double carry, double time_to_expiry, double volatility, int32_t option_kind, int32_t digital_kind, double *out_value);
+
+/**
+ * Compute numerical delta, gamma, and vega for a digital option.
+ */
+int32_t ft_digital_greeks(double spot, double strike, double rate, double carry, double time_to_expiry, double volatility, int32_t option_kind, int32_t digital_kind, double *out_delta, double *out_gamma, double *out_vega);
+
+/**
+ * Put-call parity deviation: `C - P - (S·e^{-q·T} - K·e^{-r·T})`.
+ */
+int32_t ft_put_call_parity_deviation(double call_price, double put_price, double spot, double strike, double rate, double carry, double time_to_expiry, double *out_value);
+
+/**
+ * Expected ±1σ move over `days_to_expiry` calendar days.
+ */
+int32_t ft_expected_move(double spot, double iv, double days_to_expiry, double trading_days_per_year, double *out_lower, double *out_upper);
+
+/**
+ * Solve implied volatility with guarded Newton iterations and bisection fallback.
+ */
+int32_t ft_implied_volatility(double target_price, int32_t model, double underlying, double strike, double rate, double carry, double time_to_expiry, int32_t kind, double initial_guess, double tolerance, int64_t max_iterations, double *out_value);
+
+/**
+ * Lower no-arbitrage bound for the option price.
+ */
+int32_t ft_price_lower_bound(int32_t model, double underlying, double strike, double rate, double carry, double time_to_expiry, int32_t kind, double *out_value);
+
+/**
+ * Upper no-arbitrage bound for the option price.
+ */
+int32_t ft_price_upper_bound(int32_t model, double underlying, double strike, double rate, double carry, double time_to_expiry, int32_t kind, double *out_value);
+
+/* ---- futures (scalar) ------------------------------------------------------ */
+
+/**
+ * Futures basis: futures - spot.
+ */
+int32_t ft_basis(double spot, double future, double *out_value);
+
+/**
+ * Annualized simple basis return.
+ */
+int32_t ft_annualized_basis(double spot, double future, double time_to_expiry, double *out_value);
+
+/**
+ * Implied continuously compounded carry rate.
+ */
+int32_t ft_implied_carry_rate(double spot, double future, double time_to_expiry, double *out_value);
+
+/**
+ * Carry spread relative to the risk-free rate.
+ */
+int32_t ft_carry_spread(double spot, double future, double rate, double time_to_expiry, double *out_value);
+
+/**
+ * Annualized roll yield from front and next prices.
+ */
+int32_t ft_roll_yield(double front_price, double next_price, double time_to_expiry, double *out_value);
+
+/**
+ * Synthetic forward price from call/put parity.
+ */
+int32_t ft_synthetic_forward(double call_price, double put_price, double strike, double rate, double time_to_expiry, double *out_value);
+
+/**
+ * Synthetic spot price implied by call/put parity with continuous carry.
+ */
+int32_t ft_synthetic_spot(double call_price, double put_price, double strike, double rate, double carry, double time_to_expiry, double *out_value);
+
+/**
+ * Put-call parity residual. Zero means the inputs are parity-consistent.
+ */
+int32_t ft_parity_gap(double call_price, double put_price, double spot, double strike, double rate, double carry, double time_to_expiry, double *out_value);
+
+/* ---- sizing (scalar) ------------------------------------------------------- */
+
+/**
+ * Compute the Kelly fraction: f = win_rate - (1 - win_rate) * (|avg_loss| / avg_win), clamped to [0, 1].
+ */
+int32_t ft_kelly_fraction(double win_rate, double avg_win, double avg_loss, double *out_value);
+
+/**
+ * Half-Kelly fraction (conservative position sizing).
+ */
+int32_t ft_half_kelly_fraction(double win_rate, double avg_win, double avg_loss, double *out_value);
 
 /* ---- streaming ------------------------------------------------------------- */
 

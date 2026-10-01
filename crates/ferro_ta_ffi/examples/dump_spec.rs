@@ -7,8 +7,9 @@
 //! `scripts/build_ffi_bindings.py` turns this file into `include/ferro_ta.h`
 //! and every language's generated wrappers.
 
+use ferro_ta_ffi::enums::ALL_ENUMS;
 use ferro_ta_ffi::spec::{ElemType, OutputSpec, ParamKind, ParamSpec};
-use ferro_ta_ffi::{all_specs, all_stream_specs};
+use ferro_ta_ffi::{all_scalar_specs, all_specs, all_stream_specs};
 use serde_json::{json, Value};
 
 fn param(p: &ParamSpec) -> Value {
@@ -21,6 +22,9 @@ fn param(p: &ParamSpec) -> Value {
             json!({"name": p.name, "kind": "matype", "c_type": "int32_t", "min": 0, "max": 8})
         }
         ParamKind::Float => json!({"name": p.name, "kind": "float", "c_type": "double"}),
+        ParamKind::Enum(e) => {
+            json!({"name": p.name, "kind": "enum", "enum": e.name, "c_type": "int32_t"})
+        }
     }
 }
 
@@ -73,6 +77,28 @@ fn main() {
             })
         })
         .collect();
+    let scalars: Vec<Value> = all_scalar_specs()
+        .map(|f| {
+            json!({
+                "name": f.name,
+                "group": f.group,
+                "doc": doc(f.doc),
+                "params": f.params.iter().map(param).collect::<Vec<_>>(),
+                "outputs": f.outputs.iter().map(output).collect::<Vec<_>>(),
+            })
+        })
+        .collect();
+    let enums: Vec<Value> = ALL_ENUMS
+        .iter()
+        .map(|e| {
+            let values: Vec<Value> = e
+                .values
+                .iter()
+                .map(|(name, value)| json!({"name": name, "value": value}))
+                .collect();
+            json!({"name": e.name, "c_prefix": e.c_prefix, "values": values})
+        })
+        .collect();
     let spec = json!({
         "version": env!("CARGO_PKG_VERSION"),
         "status_codes": [
@@ -82,7 +108,9 @@ fn main() {
             {"name": "FT_ERR_LENGTH_MISMATCH", "value": ferro_ta_ffi::FT_ERR_LENGTH_MISMATCH},
             {"name": "FT_ERR_PANIC", "value": ferro_ta_ffi::FT_ERR_PANIC},
         ],
+        "enums": enums,
         "functions": functions,
+        "scalars": scalars,
         "streams": streams,
     });
     println!(

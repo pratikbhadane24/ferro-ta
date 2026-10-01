@@ -21,6 +21,7 @@
 
 #![deny(unsafe_op_in_unsafe_fn)]
 
+pub mod enums;
 mod macros;
 pub mod marshal;
 pub mod spec;
@@ -29,6 +30,7 @@ pub mod streaming;
 mod validation;
 
 pub mod indicators;
+pub mod scalars;
 
 pub use indicators::cycle::*;
 pub use indicators::extended::*;
@@ -46,6 +48,9 @@ pub use indicators::regime::*;
 pub use indicators::statistic::*;
 pub use indicators::volatility::*;
 pub use indicators::volume::*;
+pub use scalars::futures::*;
+pub use scalars::options::*;
+pub use scalars::sizing::*;
 pub use status::*;
 pub use streaming::*;
 
@@ -59,4 +64,11 @@ pub fn all_specs() -> impl Iterator<Item = &'static spec::FnSpec> {
 /// Signature metadata for every streaming (opaque handle) export.
 pub fn all_stream_specs() -> impl Iterator<Item = &'static spec::StreamSpec> {
     streaming::STREAM_SPECS.iter()
+}
+
+/// Signature metadata for every scalar export.
+pub fn all_scalar_specs() -> impl Iterator<Item = &'static spec::ScalarSpec> {
+    scalars::MODULE_SCALAR_SPECS
+        .iter()
+        .flat_map(|specs| specs.iter())
 }

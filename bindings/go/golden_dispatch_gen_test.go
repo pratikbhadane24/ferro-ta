@@ -923,6 +923,106 @@ var goldenFunctions = map[string]func(map[string][]float64, map[string]float64) 
 	},
 }
 
+// goldenScalars maps each scalar C export to its Go wrapper.
+var goldenScalars = map[string]func(map[string]float64) (map[string]any, error){
+	"ft_black_scholes_price": func(p map[string]float64) (map[string]any, error) {
+		value, err := BlackScholesPrice(p["spot"], p["strike"], p["rate"], p["dividend_yield"], p["time_to_expiry"], p["volatility"], OptionKind(p["kind"]))
+		return map[string]any{"out_value": value}, err
+	},
+	"ft_black_76_price": func(p map[string]float64) (map[string]any, error) {
+		value, err := Black76Price(p["forward"], p["strike"], p["rate"], p["time_to_expiry"], p["volatility"], OptionKind(p["kind"]))
+		return map[string]any{"out_value": value}, err
+	},
+	"ft_black_scholes_greeks": func(p map[string]float64) (map[string]any, error) {
+		delta, gamma, vega, theta, rho, err := BlackScholesGreeks(p["spot"], p["strike"], p["rate"], p["dividend_yield"], p["time_to_expiry"], p["volatility"], OptionKind(p["kind"]))
+		return map[string]any{"out_delta": delta, "out_gamma": gamma, "out_vega": vega, "out_theta": theta, "out_rho": rho}, err
+	},
+	"ft_black_76_greeks": func(p map[string]float64) (map[string]any, error) {
+		delta, gamma, vega, theta, rho, err := Black76Greeks(p["forward"], p["strike"], p["rate"], p["time_to_expiry"], p["volatility"], OptionKind(p["kind"]))
+		return map[string]any{"out_delta": delta, "out_gamma": gamma, "out_vega": vega, "out_theta": theta, "out_rho": rho}, err
+	},
+	"ft_black_scholes_extended_greeks": func(p map[string]float64) (map[string]any, error) {
+		vanna, volga, charm, speed, color, err := BlackScholesExtendedGreeks(p["spot"], p["strike"], p["rate"], p["dividend_yield"], p["time_to_expiry"], p["volatility"], OptionKind(p["kind"]))
+		return map[string]any{"out_vanna": vanna, "out_volga": volga, "out_charm": charm, "out_speed": speed, "out_color": color}, err
+	},
+	"ft_american_price_baw": func(p map[string]float64) (map[string]any, error) {
+		value, err := AmericanPriceBaw(p["spot"], p["strike"], p["rate"], p["carry"], p["time_to_expiry"], p["volatility"], OptionKind(p["kind"]))
+		return map[string]any{"out_value": value}, err
+	},
+	"ft_early_exercise_premium": func(p map[string]float64) (map[string]any, error) {
+		value, err := EarlyExercisePremium(p["spot"], p["strike"], p["rate"], p["carry"], p["time_to_expiry"], p["volatility"], OptionKind(p["kind"]))
+		return map[string]any{"out_value": value}, err
+	},
+	"ft_digital_price": func(p map[string]float64) (map[string]any, error) {
+		value, err := DigitalPrice(p["spot"], p["strike"], p["rate"], p["carry"], p["time_to_expiry"], p["volatility"], OptionKind(p["option_kind"]), DigitalKind(p["digital_kind"]))
+		return map[string]any{"out_value": value}, err
+	},
+	"ft_digital_greeks": func(p map[string]float64) (map[string]any, error) {
+		delta, gamma, vega, err := DigitalGreeks(p["spot"], p["strike"], p["rate"], p["carry"], p["time_to_expiry"], p["volatility"], OptionKind(p["option_kind"]), DigitalKind(p["digital_kind"]))
+		return map[string]any{"out_delta": delta, "out_gamma": gamma, "out_vega": vega}, err
+	},
+	"ft_put_call_parity_deviation": func(p map[string]float64) (map[string]any, error) {
+		value, err := PutCallParityDeviation(p["call_price"], p["put_price"], p["spot"], p["strike"], p["rate"], p["carry"], p["time_to_expiry"])
+		return map[string]any{"out_value": value}, err
+	},
+	"ft_expected_move": func(p map[string]float64) (map[string]any, error) {
+		lower, upper, err := ExpectedMove(p["spot"], p["iv"], p["days_to_expiry"], p["trading_days_per_year"])
+		return map[string]any{"out_lower": lower, "out_upper": upper}, err
+	},
+	"ft_implied_volatility": func(p map[string]float64) (map[string]any, error) {
+		value, err := ImpliedVolatility(p["target_price"], PricingModel(p["model"]), p["underlying"], p["strike"], p["rate"], p["carry"], p["time_to_expiry"], OptionKind(p["kind"]), p["initial_guess"], p["tolerance"], int(p["max_iterations"]))
+		return map[string]any{"out_value": value}, err
+	},
+	"ft_price_lower_bound": func(p map[string]float64) (map[string]any, error) {
+		value, err := PriceLowerBound(PricingModel(p["model"]), p["underlying"], p["strike"], p["rate"], p["carry"], p["time_to_expiry"], OptionKind(p["kind"]))
+		return map[string]any{"out_value": value}, err
+	},
+	"ft_price_upper_bound": func(p map[string]float64) (map[string]any, error) {
+		value, err := PriceUpperBound(PricingModel(p["model"]), p["underlying"], p["strike"], p["rate"], p["carry"], p["time_to_expiry"], OptionKind(p["kind"]))
+		return map[string]any{"out_value": value}, err
+	},
+	"ft_basis": func(p map[string]float64) (map[string]any, error) {
+		value, err := Basis(p["spot"], p["future"])
+		return map[string]any{"out_value": value}, err
+	},
+	"ft_annualized_basis": func(p map[string]float64) (map[string]any, error) {
+		value, err := AnnualizedBasis(p["spot"], p["future"], p["time_to_expiry"])
+		return map[string]any{"out_value": value}, err
+	},
+	"ft_implied_carry_rate": func(p map[string]float64) (map[string]any, error) {
+		value, err := ImpliedCarryRate(p["spot"], p["future"], p["time_to_expiry"])
+		return map[string]any{"out_value": value}, err
+	},
+	"ft_carry_spread": func(p map[string]float64) (map[string]any, error) {
+		value, err := CarrySpread(p["spot"], p["future"], p["rate"], p["time_to_expiry"])
+		return map[string]any{"out_value": value}, err
+	},
+	"ft_roll_yield": func(p map[string]float64) (map[string]any, error) {
+		value, err := RollYield(p["front_price"], p["next_price"], p["time_to_expiry"])
+		return map[string]any{"out_value": value}, err
+	},
+	"ft_synthetic_forward": func(p map[string]float64) (map[string]any, error) {
+		value, err := SyntheticForward(p["call_price"], p["put_price"], p["strike"], p["rate"], p["time_to_expiry"])
+		return map[string]any{"out_value": value}, err
+	},
+	"ft_synthetic_spot": func(p map[string]float64) (map[string]any, error) {
+		value, err := SyntheticSpot(p["call_price"], p["put_price"], p["strike"], p["rate"], p["carry"], p["time_to_expiry"])
+		return map[string]any{"out_value": value}, err
+	},
+	"ft_parity_gap": func(p map[string]float64) (map[string]any, error) {
+		value, err := ParityGap(p["call_price"], p["put_price"], p["spot"], p["strike"], p["rate"], p["carry"], p["time_to_expiry"])
+		return map[string]any{"out_value": value}, err
+	},
+	"ft_kelly_fraction": func(p map[string]float64) (map[string]any, error) {
+		value, err := KellyFraction(p["win_rate"], p["avg_win"], p["avg_loss"])
+		return map[string]any{"out_value": value}, err
+	},
+	"ft_half_kelly_fraction": func(p map[string]float64) (map[string]any, error) {
+		value, err := HalfKellyFraction(p["win_rate"], p["avg_win"], p["avg_loss"])
+		return map[string]any{"out_value": value}, err
+	},
+}
+
 // goldenStreams builds each streaming wrapper for golden replay.
 var goldenStreams = map[string]func(map[string]float64) (goldenStepper, error){
 	"sma": func(p map[string]float64) (goldenStepper, error) {

@@ -41,7 +41,9 @@ impl Param<i64> for usize {
         let min = match kind {
             ParamKind::Period { min } => min,
             ParamKind::Count => 0,
-            ParamKind::MaType | ParamKind::Float => unreachable!("not an integer period"),
+            ParamKind::MaType | ParamKind::Float | ParamKind::Enum(_) => {
+                unreachable!("not an integer period")
+            }
         };
         if raw < min {
             return Err(Status::InvalidParam);
@@ -125,6 +127,38 @@ impl_write_tuple!(A a pa, B b pb, C c pc);
 impl_write_tuple!(A a pa, B b pb, C c pc, D d pd);
 impl_write_tuple!(A a pa, B b pb, C c pc, D d pd, E e pe);
 
+/// Write a scalar result (single value or tuple) through output pointers.
+pub trait WriteScalars<P> {
+    /// # Safety
+    /// Every pointer in `ptrs` must be valid for one write.
+    unsafe fn write_to(self, ptrs: P);
+}
+
+impl WriteScalars<(*mut f64,)> for f64 {
+    unsafe fn write_to(self, ptrs: (*mut f64,)) {
+        // SAFETY: valid for one write per caller contract.
+        unsafe { ptrs.0.write(self) };
+    }
+}
+
+macro_rules! impl_write_scalars {
+    ($($t:ident $v:ident $p:ident),+) => {
+        impl<$($t),+> WriteScalars<($(*mut $t,)+)> for ($($t,)+) {
+            unsafe fn write_to(self, ptrs: ($(*mut $t,)+)) {
+                let ($($v,)+) = self;
+                let ($($p,)+) = ptrs;
+                // SAFETY: each pointer valid for one write per caller contract.
+                $( unsafe { $p.write($v) }; )+
+            }
+        }
+    };
+}
+
+impl_write_scalars!(A a pa, B b pb);
+impl_write_scalars!(A a pa, B b pb, C c pc);
+impl_write_scalars!(A a pa, B b pb, C c pc, D d pd);
+impl_write_scalars!(A a pa, B b pb, C c pc, D d pd, E e pe);
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -133,8 +167,13 @@ mod tests {
     fn length_mismatch_is_internal_error_and_writes_nothing() {
         let mut a = [7.0; 4];
         let mut b = [7.0; 4];
-        let result =
-            unsafe { (vec![1.0; 4], vec![2.0; 3]).write_to((a.as_mut_ptr(), b.as_mut_ptr()), 4) };
+        let result = unsafe {
+            WriteOutputs::write_to(
+                (vec![1.0; 4], vec![2.0; 3]),
+                (a.as_mut_ptr(), b.as_mut_ptr()),
+                4,
+            )
+        };
         assert_eq!(result, Err(Status::Internal));
         assert_eq!(a, [7.0; 4], "first output must stay untouched");
         assert_eq!(b, [7.0; 4]);
@@ -143,7 +182,7 @@ mod tests {
     #[test]
     fn single_output_length_mismatch() {
         let mut a = [7.0; 4];
-        let result = unsafe { vec![1.0; 5].write_to((a.as_mut_ptr(),), 4) };
+        let result = unsafe { WriteOutputs::write_to(vec![1.0; 5], (a.as_mut_ptr(),), 4) };
         assert_eq!(result, Err(Status::Internal));
         assert_eq!(a, [7.0; 4]);
     }

@@ -1,4 +1,48 @@
 {
+  "enums": [
+    {
+      "c_prefix": "FT_OPTION",
+      "name": "OptionKind",
+      "values": [
+        {
+          "name": "CALL",
+          "value": 0
+        },
+        {
+          "name": "PUT",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "c_prefix": "FT_DIGITAL",
+      "name": "DigitalKind",
+      "values": [
+        {
+          "name": "CASH_OR_NOTHING",
+          "value": 0
+        },
+        {
+          "name": "ASSET_OR_NOTHING",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "c_prefix": "FT_MODEL",
+      "name": "PricingModel",
+      "values": [
+        {
+          "name": "BLACK_SCHOLES",
+          "value": 0
+        },
+        {
+          "name": "BLACK_76",
+          "value": 1
+        }
+      ]
+    }
+  ],
   "functions": [
     {
       "doc": "Compute Bollinger Bands, returning `(upper, middle, lower)`.",
@@ -6122,6 +6166,1127 @@
         }
       ],
       "requires": ""
+    }
+  ],
+  "scalars": [
+    {
+      "doc": "Black-Scholes-Merton price with continuous carry/dividend yield.",
+      "group": "options",
+      "name": "ft_black_scholes_price",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_value"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "spot"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "strike"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "rate"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "dividend_yield"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "time_to_expiry"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "volatility"
+        },
+        {
+          "c_type": "int32_t",
+          "enum": "OptionKind",
+          "kind": "enum",
+          "name": "kind"
+        }
+      ]
+    },
+    {
+      "doc": "Black-76 price using the forward price as the underlying input.",
+      "group": "options",
+      "name": "ft_black_76_price",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_value"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "forward"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "strike"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "rate"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "time_to_expiry"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "volatility"
+        },
+        {
+          "c_type": "int32_t",
+          "enum": "OptionKind",
+          "kind": "enum",
+          "name": "kind"
+        }
+      ]
+    },
+    {
+      "doc": "Black-Scholes-Merton Greeks.",
+      "group": "options",
+      "name": "ft_black_scholes_greeks",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_delta"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_gamma"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_vega"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_theta"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_rho"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "spot"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "strike"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "rate"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "dividend_yield"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "time_to_expiry"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "volatility"
+        },
+        {
+          "c_type": "int32_t",
+          "enum": "OptionKind",
+          "kind": "enum",
+          "name": "kind"
+        }
+      ]
+    },
+    {
+      "doc": "Black-76 Greeks with respect to the forward.",
+      "group": "options",
+      "name": "ft_black_76_greeks",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_delta"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_gamma"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_vega"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_theta"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_rho"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "forward"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "strike"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "rate"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "time_to_expiry"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "volatility"
+        },
+        {
+          "c_type": "int32_t",
+          "enum": "OptionKind",
+          "kind": "enum",
+          "name": "kind"
+        }
+      ]
+    },
+    {
+      "doc": "Extended Greeks under Black-Scholes-Merton (closed-form).",
+      "group": "options",
+      "name": "ft_black_scholes_extended_greeks",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_vanna"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_volga"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_charm"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_speed"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_color"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "spot"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "strike"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "rate"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "dividend_yield"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "time_to_expiry"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "volatility"
+        },
+        {
+          "c_type": "int32_t",
+          "enum": "OptionKind",
+          "kind": "enum",
+          "name": "kind"
+        }
+      ]
+    },
+    {
+      "doc": "American option price using the Barone-Adesi-Whaley (1987) quadratic approximation.",
+      "group": "options",
+      "name": "ft_american_price_baw",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_value"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "spot"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "strike"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "rate"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "carry"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "time_to_expiry"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "volatility"
+        },
+        {
+          "c_type": "int32_t",
+          "enum": "OptionKind",
+          "kind": "enum",
+          "name": "kind"
+        }
+      ]
+    },
+    {
+      "doc": "Early exercise premium = american_price - european_bsm_price.",
+      "group": "options",
+      "name": "ft_early_exercise_premium",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_value"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "spot"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "strike"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "rate"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "carry"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "time_to_expiry"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "volatility"
+        },
+        {
+          "c_type": "int32_t",
+          "enum": "OptionKind",
+          "kind": "enum",
+          "name": "kind"
+        }
+      ]
+    },
+    {
+      "doc": "Price a digital (binary) option under BSM.",
+      "group": "options",
+      "name": "ft_digital_price",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_value"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "spot"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "strike"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "rate"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "carry"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "time_to_expiry"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "volatility"
+        },
+        {
+          "c_type": "int32_t",
+          "enum": "OptionKind",
+          "kind": "enum",
+          "name": "option_kind"
+        },
+        {
+          "c_type": "int32_t",
+          "enum": "DigitalKind",
+          "kind": "enum",
+          "name": "digital_kind"
+        }
+      ]
+    },
+    {
+      "doc": "Compute numerical delta, gamma, and vega for a digital option.",
+      "group": "options",
+      "name": "ft_digital_greeks",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_delta"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_gamma"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_vega"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "spot"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "strike"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "rate"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "carry"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "time_to_expiry"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "volatility"
+        },
+        {
+          "c_type": "int32_t",
+          "enum": "OptionKind",
+          "kind": "enum",
+          "name": "option_kind"
+        },
+        {
+          "c_type": "int32_t",
+          "enum": "DigitalKind",
+          "kind": "enum",
+          "name": "digital_kind"
+        }
+      ]
+    },
+    {
+      "doc": "Put-call parity deviation: `C - P - (S·e^{-q·T} - K·e^{-r·T})`.",
+      "group": "options",
+      "name": "ft_put_call_parity_deviation",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_value"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "call_price"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "put_price"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "spot"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "strike"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "rate"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "carry"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "time_to_expiry"
+        }
+      ]
+    },
+    {
+      "doc": "Expected ±1σ move over `days_to_expiry` calendar days.",
+      "group": "options",
+      "name": "ft_expected_move",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_lower"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_upper"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "spot"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "iv"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "days_to_expiry"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "trading_days_per_year"
+        }
+      ]
+    },
+    {
+      "doc": "Solve implied volatility with guarded Newton iterations and bisection fallback.",
+      "group": "options",
+      "name": "ft_implied_volatility",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_value"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "target_price"
+        },
+        {
+          "c_type": "int32_t",
+          "enum": "PricingModel",
+          "kind": "enum",
+          "name": "model"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "underlying"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "strike"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "rate"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "carry"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "time_to_expiry"
+        },
+        {
+          "c_type": "int32_t",
+          "enum": "OptionKind",
+          "kind": "enum",
+          "name": "kind"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "initial_guess"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "tolerance"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "count",
+          "min": 0,
+          "name": "max_iterations"
+        }
+      ]
+    },
+    {
+      "doc": "Lower no-arbitrage bound for the option price.",
+      "group": "options",
+      "name": "ft_price_lower_bound",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_value"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int32_t",
+          "enum": "PricingModel",
+          "kind": "enum",
+          "name": "model"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "underlying"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "strike"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "rate"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "carry"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "time_to_expiry"
+        },
+        {
+          "c_type": "int32_t",
+          "enum": "OptionKind",
+          "kind": "enum",
+          "name": "kind"
+        }
+      ]
+    },
+    {
+      "doc": "Upper no-arbitrage bound for the option price.",
+      "group": "options",
+      "name": "ft_price_upper_bound",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_value"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int32_t",
+          "enum": "PricingModel",
+          "kind": "enum",
+          "name": "model"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "underlying"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "strike"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "rate"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "carry"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "time_to_expiry"
+        },
+        {
+          "c_type": "int32_t",
+          "enum": "OptionKind",
+          "kind": "enum",
+          "name": "kind"
+        }
+      ]
+    },
+    {
+      "doc": "Futures basis: futures - spot.",
+      "group": "futures",
+      "name": "ft_basis",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_value"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "spot"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "future"
+        }
+      ]
+    },
+    {
+      "doc": "Annualized simple basis return.",
+      "group": "futures",
+      "name": "ft_annualized_basis",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_value"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "spot"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "future"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "time_to_expiry"
+        }
+      ]
+    },
+    {
+      "doc": "Implied continuously compounded carry rate.",
+      "group": "futures",
+      "name": "ft_implied_carry_rate",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_value"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "spot"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "future"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "time_to_expiry"
+        }
+      ]
+    },
+    {
+      "doc": "Carry spread relative to the risk-free rate.",
+      "group": "futures",
+      "name": "ft_carry_spread",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_value"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "spot"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "future"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "rate"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "time_to_expiry"
+        }
+      ]
+    },
+    {
+      "doc": "Annualized roll yield from front and next prices.",
+      "group": "futures",
+      "name": "ft_roll_yield",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_value"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "front_price"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "next_price"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "time_to_expiry"
+        }
+      ]
+    },
+    {
+      "doc": "Synthetic forward price from call/put parity.",
+      "group": "futures",
+      "name": "ft_synthetic_forward",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_value"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "call_price"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "put_price"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "strike"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "rate"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "time_to_expiry"
+        }
+      ]
+    },
+    {
+      "doc": "Synthetic spot price implied by call/put parity with continuous carry.",
+      "group": "futures",
+      "name": "ft_synthetic_spot",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_value"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "call_price"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "put_price"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "strike"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "rate"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "carry"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "time_to_expiry"
+        }
+      ]
+    },
+    {
+      "doc": "Put-call parity residual. Zero means the inputs are parity-consistent.",
+      "group": "futures",
+      "name": "ft_parity_gap",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_value"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "call_price"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "put_price"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "spot"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "strike"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "rate"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "carry"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "time_to_expiry"
+        }
+      ]
+    },
+    {
+      "doc": "Compute the Kelly fraction: f = win_rate - (1 - win_rate) * (|avg_loss| / avg_win), clamped to [0, 1].",
+      "group": "sizing",
+      "name": "ft_kelly_fraction",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_value"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "win_rate"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "avg_win"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "avg_loss"
+        }
+      ]
+    },
+    {
+      "doc": "Half-Kelly fraction (conservative position sizing).",
+      "group": "sizing",
+      "name": "ft_half_kelly_fraction",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_value"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "win_rate"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "avg_win"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "avg_loss"
+        }
+      ]
     }
   ],
   "status_codes": [

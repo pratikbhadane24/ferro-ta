@@ -15,8 +15,21 @@ pub enum ParamKind {
     Count,
     /// `int32_t` moving-average type, `0..=8`.
     MaType,
-    /// `double`, passed through unchanged.
+    /// `double`, must be finite.
     Float,
+    /// `int32_t` value of a C enum (see [`EnumSpec`]).
+    Enum(&'static EnumSpec),
+}
+
+/// A C enum: `#define <c_prefix>_<NAME> <value>` in the header and a typed
+/// constant set in each language binding.
+#[derive(Debug, PartialEq, Eq)]
+pub struct EnumSpec {
+    /// Type name in bindings (`OptionKind`).
+    pub name: &'static str,
+    /// Prefix of the C constants (`FT_OPTION` -> `FT_OPTION_CALL`).
+    pub c_prefix: &'static str,
+    pub values: &'static [(&'static str, i32)],
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -87,5 +100,16 @@ pub struct StreamSpec {
     /// Scalar `double` inputs to `update`.
     pub inputs: &'static [&'static str],
     /// Scalar outputs written by `update` through pointers.
+    pub outputs: &'static [OutputSpec],
+}
+
+/// One scalar export: `ft_x(params..., outputs...)` with every output a single
+/// value written through a pointer (struct results are flattened).
+#[derive(Debug, Clone, Copy)]
+pub struct ScalarSpec {
+    pub name: &'static str,
+    pub group: &'static str,
+    pub doc: &'static str,
+    pub params: &'static [ParamSpec],
     pub outputs: &'static [OutputSpec],
 }

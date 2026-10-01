@@ -45,6 +45,15 @@ macro_rules! ffi_cty {
     (float) => {
         f64
     };
+    (option_kind) => {
+        i32
+    };
+    (digital_kind) => {
+        i32
+    };
+    (pricing_model) => {
+        i32
+    };
 }
 
 /// Core-side (Rust) type of a param kind.
@@ -62,6 +71,15 @@ macro_rules! ffi_rty {
     };
     (float) => {
         f64
+    };
+    (option_kind) => {
+        ferro_ta_core::options::OptionKind
+    };
+    (digital_kind) => {
+        ferro_ta_core::options::digital::DigitalKind
+    };
+    (pricing_model) => {
+        ferro_ta_core::options::PricingModel
     };
 }
 
@@ -82,6 +100,15 @@ macro_rules! ffi_kind {
     };
     (float) => {
         $crate::spec::ParamKind::Float
+    };
+    (option_kind) => {
+        $crate::spec::ParamKind::Enum(&$crate::enums::OPTION_KIND)
+    };
+    (digital_kind) => {
+        $crate::spec::ParamKind::Enum(&$crate::enums::DIGITAL_KIND)
+    };
+    (pricing_model) => {
+        $crate::spec::ParamKind::Enum(&$crate::enums::PRICING_MODEL)
     };
 }
 
@@ -161,6 +188,85 @@ macro_rules! ffi_exports {
                     doc: concat!($($doc, "\n",)*),
                     requires: concat!("", $(stringify!($requires))?),
                     inputs: &[$(stringify!($input)),+],
+                    params: &[$(
+                        $crate::spec::ParamSpec {
+                            name: stringify!($param),
+                            kind: $crate::ffi_kind!($kind $($min)?),
+                        }
+                    ),*],
+                    outputs: &[$(
+                        $crate::spec::OutputSpec {
+                            name: stringify!($out),
+                            elem: $crate::ffi_elem!($elem),
+                        }
+                    ),+],
+                }
+            ),+
+        ];
+    };
+}
+
+/// `ffi_scalar_exports!` — scalar-in / scalar-out C exports.
+///
+/// ```ignore
+/// ffi_scalar_exports! {
+///     group: "futures",
+///     /// Futures basis: futures - spot.
+///     ft_basis(spot: float, future: float) -> [out_value: f64]
+///         = futures::basis::basis(spot, future);
+/// }
+/// ```
+///
+/// expands to `int32_t ft_basis(double spot, double future, double *out_value);`.
+/// The body is any expression over the (validated, converted) params; it may
+/// flatten a struct into a tuple or use `?` on a `Result<_, Status>`.
+/// Enum param kinds: `option_kind`, `digital_kind`, `pricing_model`.
+#[macro_export]
+macro_rules! ffi_scalar_exports {
+    (
+        group: $group:literal,
+        $(
+            $(#[doc = $doc:literal])*
+            $name:ident ( $($param:ident : $kind:ident $($min:literal)?),* )
+                -> [ $($out:ident : $elem:ident),+ ] = $body:expr;
+        )+
+    ) => {
+        $(
+            $(#[doc = $doc])*
+            ///
+            /// # Safety
+            /// Each output pointer must be valid for one write.
+            #[no_mangle]
+            pub unsafe extern "C" fn $name(
+                $($param: $crate::ffi_cty!($kind),)*
+                $($out: *mut $elem,)+
+            ) -> i32 {
+                $crate::status::guard(|| {
+                    $(
+                        let $param: $crate::ffi_rty!($kind) = $crate::marshal::Param::from_raw(
+                            $param,
+                            $crate::ffi_kind!($kind $($min)?),
+                        )?;
+                    )*
+                    if $( $out.is_null() )||+ {
+                        return Err($crate::status::Status::NullPtr);
+                    }
+                    #[allow(clippy::redundant_closure_call)]
+                    let result = $body;
+                    // SAFETY: outputs checked non-null; one write each per contract.
+                    unsafe { $crate::marshal::WriteScalars::write_to(result, ($($out,)+)) };
+                    Ok(())
+                })
+            }
+        )+
+
+        /// Signature metadata for every scalar export in this module.
+        pub(crate) const SCALAR_SPECS: &[$crate::spec::ScalarSpec] = &[
+            $(
+                $crate::spec::ScalarSpec {
+                    name: stringify!($name),
+                    group: $group,
+                    doc: concat!($($doc, "\n",)*),
                     params: &[$(
                         $crate::spec::ParamSpec {
                             name: stringify!($param),
