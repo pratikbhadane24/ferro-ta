@@ -4,8 +4,8 @@ This document describes the internal layout of **ferro-ta** — how the Rust
 core and language bindings are organised, how they communicate, and what each
 component is responsible for.
 
-**Rule:** `ferro_ta_core` owns algorithms. Python, WASM, and Flutter only
-marshal inputs and call that crate. They do not reimplement indicators.
+**Rule:** `ferro_ta_core` owns algorithms. Python, WASM, Flutter, and the C ABI
+(`ferro_ta_ffi`, used by Go and C/C++) only marshal inputs and call that crate. They do not reimplement indicators.
 
 ---
 
@@ -26,9 +26,13 @@ ferro-ta/
 │   └── validation.rs            # Shared parameter validation helpers
 │
 ├── crates/
-│   └── ferro_ta_core/            # Single compute engine (pure Rust, no PyO3)
-│       ├── src/                 # Indicators, streaming, options, backtest
-│       └── benches/             # Rust criterion benchmarks
+│   ├── ferro_ta_core/            # Single compute engine (pure Rust, no PyO3)
+│   │   ├── src/                 # Indicators, streaming, options, backtest
+│   │   └── benches/             # Rust criterion benchmarks
+│   └── ferro_ta_ffi/             # Stable C ABI over the core (Go, C/C++, future C-ABI langs)
+│       ├── src/                 # ffi_exports! / ffi_scalar_exports! / ffi_streams! declarations
+│       ├── include/ferro_ta.h   # Generated C header
+│       └── ffi_spec.json        # Generated signature table (drives all wrappers)
 │
 ├── python/
 │   └── ferro_ta/                 # Python package
@@ -44,6 +48,7 @@ ferro-ta/
 ├── fuzz/                        # cargo-fuzz targets (fuzz_sma, fuzz_rsi, …)
 ├── wasm/                        # wasm-pack / wasm-bindgen binding (uses ferro_ta_core)
 ├── flutter/                     # flutter_rust_bridge package (uses ferro_ta_core)
+├── bindings/go/                 # Go module (cgo over crates/ferro_ta_ffi; *_gen.go generated)
 ├── benchmarks/                  # Python pytest-benchmark benchmarks
 ├── docs/                        # Sphinx documentation source
 └── tests/                       # Python pytest test suite
@@ -60,9 +65,18 @@ The root PyO3 crate depends on `ferro_ta_core` (see the root `Cargo.toml`).
 ferro_ta_core          algorithms, &[f64] in / Vec<f64> out
     ├── ferro_ta       PyO3 marshalling (src/) → Python
     ├── ferro-ta-wasm  wasm-bindgen marshalling (wasm/) → JS
-    └── ferro_ta       flutter_rust_bridge (flutter/rust) → Dart
-                       Flutter web reuses ferro-ta-wasm
+    ├── ferro_ta       flutter_rust_bridge (flutter/rust) → Dart
+    │                  Flutter web reuses ferro-ta-wasm
+    └── ferro_ta_ffi   C ABI (crates/ferro_ta_ffi) → ferro_ta.h
+            ├── Go     cgo (bindings/go), wrappers generated from ffi_spec.json
+            └── C/C++  header + static/shared libraries
 ```
+
+The C ABI crate declares each export once (`ffi_exports!`, `ffi_scalar_exports!`,
+`ffi_streams!`); the same macros record a signature table that
+`dump_spec` writes to `ffi_spec.json`. `scripts/build_ffi_bindings.py` turns
+that file into `ferro_ta.h` and the Go wrappers, so adding a C-ABI language
+means adding one renderer under `scripts/ffi_codegen/`.
 
 ### 1. `crates/ferro_ta_core/` — Pure Rust library
 
@@ -71,7 +85,7 @@ ferro_ta_core          algorithms, &[f64] in / Vec<f64> out
 | Crate type     | `lib` (not a language extension)                                  |
 | PyO3 / numpy   | No — pure Rust, no Python dependency                              |
 | Depends on     | `std` plus optional `multiversion` / `serde`                      |
-| Used by        | Python, WASM, Flutter, fuzz targets, and crates.io consumers      |
+| Used by        | Python, WASM, Flutter, the C ABI, fuzz, and crates.io consumers   |
 
 `ferro_ta_core` is the only place indicator math belongs.
 

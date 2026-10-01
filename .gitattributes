@@ -1,0 +1,11 @@
+# Go sources must keep LF endings on every platform: gofmt treats CRLF as
+# unformatted, and Windows runners check out with core.autocrlf=true.
+*.go text eol=lf
+bindings/go/go.mod text eol=lf
+
+# Generated C ABI artifacts are compared byte-for-byte by
+# `scripts/build_ffi_bindings.py --check`; keep them LF everywhere.
+crates/ferro_ta_ffi/include/ferro_ta.h text eol=lf
+bindings/go/include/ferro_ta.h text eol=lf
+crates/ferro_ta_ffi/ffi_spec.json text eol=lf
+tests/fixtures/golden/ffi_golden.json text eol=lf

@@ -1,0 +1,20 @@
+[package]
+name = "ferro_ta_ffi"
+version = "1.3.1"
+edition = "2021"
+description = "Stable C ABI over ferro_ta_core: the shared foundation for Go, C/C++, C#, JVM and other FFI bindings"
+license = "MIT"
+repository = "https://github.com/pratikbhadane24/ferro-ta"
+publish = false
+
+[lib]
+name = "ferro_ta_ffi"
+# staticlib: Go (cgo) links it statically. cdylib: P/Invoke, Panama, Ruby FFI.
+# rlib: lets the crate's own integration tests call the extern "C" functions.
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[dependencies]
+ferro_ta_core = { path = "../ferro_ta_core", version = "1.3.1" }
+
+[dev-dependencies]
+serde_json = "1.0"

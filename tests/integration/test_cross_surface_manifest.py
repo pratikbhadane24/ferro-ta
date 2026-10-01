@@ -84,3 +84,17 @@ def test_normalized_coverage_includes_shared_indicators() -> None:
     support_matrix = (ROOT / "docs" / "support_matrix.rst").read_text(encoding="utf-8")
     for snippet in support_matrix_count_snippets(counts):
         assert snippet in support_matrix, snippet
+
+
+def test_go_column_tracks_the_c_abi_spec() -> None:
+    manifest = build_manifest(ROOT, include_runtime_metadata=False)
+    rows = {row["key"]: row for row in manifest["coverage"]["rows"]}
+
+    for name in ("SMA", "BBANDS", "CDLDOJI", "StreamingSMA", "black_scholes_price"):
+        assert rows[canonical_key(name)]["go"], f"{name} should be exported to Go"
+
+    go_surface = manifest["surfaces"]["c_abi_go"]
+    assert go_surface["export_count"] == len(go_surface["exports"]) > 250
+    assert manifest["coverage"]["counts"]["go_count"] == sum(
+        1 for row in manifest["coverage"]["rows"] if row["go"]
+    )

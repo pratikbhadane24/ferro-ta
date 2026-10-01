@@ -1,7 +1,7 @@
 # ferro-ta development Makefile
 # Usage: make <target>
 
-.PHONY: help dev build test lint typecheck fmt docs clean bench version audit prepush hooks flutter flutter-gen
+.PHONY: help dev build test lint typecheck fmt docs clean bench version audit prepush hooks flutter flutter-gen ffi-gen go-lib go c-smoke ffi-check
 
 # Default target
 help:
@@ -17,6 +17,11 @@ help:
 	@echo "  make bench      Run Rust criterion benchmarks (ferro_ta_core)"
 	@echo "  make flutter    Verify the Flutter binding (fresh wrappers + core parity)"
 	@echo "  make flutter-gen Regenerate Flutter api wrappers + flutter_rust_bridge glue"
+	@echo "  make ffi-gen    Regenerate ffi_spec.json, ferro_ta.h and the Go wrappers"
+	@echo "  make go-lib     Build the C ABI static library into bindings/go/lib/<host>"
+	@echo "  make go         Verify the Go binding (fresh wrappers, vet, race tests)"
+	@echo "  make ffi-check  Full C ABI + Go gate (tests, clippy, fmt, fresh codegen, C, Go)"
+	@echo "  make c-smoke    Compile + run the C smoke test against ferro_ta.h"
 	@echo "  make version    Bump tracked version strings (set VERSION=X.Y.Z)"
 	@echo "  make audit      Run cargo-audit + pip-audit"
 	@echo "  make prepush    Run the local pre-push CI gate (set CHECKS='version rust_fmt' to scope it)"
@@ -64,6 +69,41 @@ flutter-gen:
 flutter:
 	python3 scripts/build_flutter_bridge.py --check
 	cd flutter/rust && RUSTFLAGS="" cargo build && RUSTFLAGS="" cargo test
+
+# Regenerate the C ABI spec, the C header and the Go wrappers.
+ffi-gen:
+	python3 scripts/build_ffi_bindings.py
+
+# Build the C ABI static archive for this host into the Go module's lib/ dir
+# (release tags ship these prebuilt; on main, lib/ is gitignored).
+GO_HOST := $(shell go env GOOS 2>/dev/null)_$(shell go env GOARCH 2>/dev/null)
+go-lib:
+	@test "$(GO_HOST)" != "_" || { echo "go not found on PATH"; exit 1; }
+	cargo build -p ferro_ta_ffi --release
+	mkdir -p bindings/go/lib/$(GO_HOST)
+	cp target/release/libferro_ta_ffi.a bindings/go/lib/$(GO_HOST)/
+
+# Verify the Go binding: generated code is fresh and gofmt-clean, then vet + race tests.
+go: go-lib
+	python3 scripts/build_ffi_bindings.py --check
+	out=$$(gofmt -l bindings/go) && test -z "$$out"
+	cd bindings/go && go vet ./... && FERRO_TA_REQUIRE_GOLDEN=1 go test -race ./...
+
+# Everything the C ABI and its bindings must pass before a commit.
+ffi-check:
+	cargo fmt -p ferro_ta_ffi --check
+	cargo clippy -p ferro_ta_ffi --all-targets -- -D warnings
+	cargo test -p ferro_ta_ffi
+	$(MAKE) c-smoke
+	$(MAKE) go
+
+# Prove the generated header compiles with strict warnings and links from C.
+c-smoke:
+	cargo build -p ferro_ta_ffi --release
+	$(CC) -std=c99 -Wall -Wextra -Werror -pedantic -Icrates/ferro_ta_ffi/include \
+		crates/ferro_ta_ffi/tests/c_smoke/main.c target/release/libferro_ta_ffi.a -lm \
+		-o target/release/c_smoke
+	./target/release/c_smoke
 
 version:
 	@test -n "$(VERSION)" || (echo "Usage: make version VERSION=X.Y.Z" && exit 1)

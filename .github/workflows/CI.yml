@@ -48,6 +48,8 @@ jobs:
             exit 1
           fi
           echo "OK: versions match ($CARGO_VERSION)"
+      - name: Check every tracked version carrier (incl. C ABI crate and Go module)
+        run: python3 scripts/bump_version.py --check
 
   # -------------------------------------------------------------------------
   # Modularized CI suites.
@@ -69,6 +71,10 @@ jobs:
   flutter:
     name: Flutter binding
     uses: ./.github/workflows/ci-flutter.yml
+
+  go:
+    name: C ABI and Go binding
+    uses: ./.github/workflows/ci-go.yml
 
   docs:
     name: Documentation
@@ -110,6 +116,7 @@ jobs:
       - python-suite
       - wasm
       - flutter
+      - go
       - docs
     if: always()
     steps:
@@ -410,7 +417,7 @@ jobs:
           pip install dist/*.whl
 
       - name: Generate Python SBOM (CycloneDX via anchore/sbom-action)
-        uses: anchore/sbom-action@v0.24.0
+        uses: anchore/sbom-action@v0.24.2
         with:
           artifact-name: ferro-ta-python-sbom.spdx.json
           output-file: ferro-ta-python-sbom.spdx.json

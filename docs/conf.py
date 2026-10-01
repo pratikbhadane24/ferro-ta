@@ -60,10 +60,14 @@ extensions = [
     "sphinx.ext.intersphinx",
 ]
 
+# Each project is fetched live first; the checked-in copy in _intersphinx/ is a
+# fallback, so an outage of an external docs site (which `-W` would otherwise
+# turn into a failed build) cannot break CI. Refresh the copies occasionally
+# with: curl -sfL -o docs/_intersphinx/<name>.inv <url>/objects.inv
 intersphinx_mapping = {
-    "python": ("https://docs.python.org/3", None),
-    "numpy": ("https://numpy.org/doc/stable", None),
-    "pandas": ("https://pandas.pydata.org/docs", None),
+    "python": ("https://docs.python.org/3", (None, "_intersphinx/python.inv")),
+    "numpy": ("https://numpy.org/doc/stable", (None, "_intersphinx/numpy.inv")),
+    "pandas": ("https://pandas.pydata.org/docs", (None, "_intersphinx/pandas.inv")),
 }
 
 templates_path = ["_templates"]

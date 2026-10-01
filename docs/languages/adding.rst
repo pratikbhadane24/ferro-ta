@@ -20,7 +20,14 @@ does not.
 
 Document which style you chose, and why:
 
-- Direct FFI to ``ferro_ta_core`` (PyO3, UniFFI, cbindgen, napi-rs, …)
+- **C-ABI languages (preferred for anything with a C FFI: C#, JVM/Panama,
+  Ruby, Swift, Zig, …)**: wrap ``crates/ferro_ta_ffi``. Add a renderer module
+  under ``scripts/ffi_codegen/`` that turns ``ffi_spec.json`` into wrappers
+  (see ``go.py``), wire it into ``scripts/build_ffi_bindings.py`` so
+  ``--check`` covers it, and replay ``tests/fixtures/golden/ffi_golden.json``
+  through the new wrappers. New core functions are exposed once, in
+  ``ferro_ta_ffi``, and every C-ABI language picks them up by regenerating.
+- Direct FFI to ``ferro_ta_core`` (PyO3, UniFFI, napi-rs, …)
 - WASM interop (reuse ``ferro-ta-wasm``, like Flutter web)
 - Generated from an existing binding's signatures (like
   ``scripts/build_flutter_bridge.py`` from WASM) — still must call core, not

@@ -11,6 +11,8 @@ and Flutter. `ferro_ta_core` is the Rust core; the other packages wrap it.
 | Rust | `ferro_ta_core` | crates.io | `cargo add ferro_ta_core` |
 | JavaScript | `ferro-ta-wasm` | npm | Node + browser builds |
 | Flutter / Dart | `ferro_ta` | pub.dev | Prebuilt natives; web reuses npm |
+| Go | `github.com/pratikbhadane24/ferro-ta/bindings/go` | Go module proxy (git tags `bindings/go/vX.Y.Z`) | Prebuilt static archives: linux/darwin amd64+arm64, windows amd64; cgo required |
+| C / C++ | `ferro_ta.h` + `ferro_ta_ffi` | GitHub Release assets | Static + shared libraries per platform (MSVC on Windows) |
 
 ## Python versions
 
@@ -44,6 +46,20 @@ environments can build from source.
 > **Note:** Python 3.14+ is not yet tested.  Set
 > `PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1` to attempt a build on a newer
 > interpreter and report any issues.
+
+## Go module and C libraries (`ferro_ta_ffi`)
+
+Go and C/C++ use the shared C ABI crate `crates/ferro_ta_ffi`. On each release,
+`go-publish.yml` builds portable static archives (no `target-cpu=native`) for
+`linux_amd64`, `linux_arm64` (glibc, built on Ubuntu 22.04), `darwin_amd64`,
+`darwin_arm64` (macOS 11+) and `windows_amd64` (MinGW, since cgo uses gcc). They
+are committed only onto the Go module tag `bindings/go/vX.Y.Z`, never to
+`main`, so `go get` works without a Rust toolchain. The same release gets one
+C/C++ archive per platform, including an MSVC build for Windows.
+
+Other platforms (e.g. linux/musl, freebsd) can build from source with
+`make go-lib`. See [`docs/languages/go.rst`](docs/languages/go.rst) and
+[`docs/languages/c.rst`](docs/languages/c.rst).
 
 ## Flutter natives (pub.dev package `ferro_ta`)
 

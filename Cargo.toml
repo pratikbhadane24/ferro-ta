@@ -1,5 +1,5 @@
 [workspace]
-members = [".", "crates/ferro_ta_core"]
+members = [".", "crates/ferro_ta_core", "crates/ferro_ta_ffi"]
 exclude = ["fuzz"]
 resolver = "2"
 

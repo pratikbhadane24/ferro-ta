@@ -2,7 +2,7 @@
 
 .. list-table:: Coverage counts
    :header-rows: 1
-   :widths: 20 12 12 12 12 16
+   :widths: 16 10 10 10 10 14 14
 
    * - Rows
      - Core
@@ -10,16 +10,18 @@
      - WASM
      - Flutter
      - Flutter excluded
-   * - 382
+     - C / Go
+   * - 384
      - 360
      - 247
      - 344
      - 194
      - 50
+     - 259
 
 .. list-table:: Cross-language indicator coverage
    :header-rows: 1
-   :widths: 22 16 10 10 10 12
+   :widths: 22 16 10 10 10 12 10
 
    * - Name
      - Category
@@ -27,10 +29,12 @@
      - Python
      - WASM
      - Flutter
+     - C / Go
    * - ``ac``
      - extended
      - yes
      - —
+     - yes
      - yes
      - yes
    * - ``ACOS``
@@ -39,8 +43,10 @@
      - yes
      - yes
      - —
+     - —
    * - ``AD``
      - volume
+     - yes
      - yes
      - yes
      - yes
@@ -51,8 +57,10 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``ADOSC``
      - volume
+     - yes
      - yes
      - yes
      - yes
@@ -63,14 +71,17 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``adx_all``
      - momentum
      - yes
      - —
      - yes
      - yes
+     - —
    * - ``ADXR``
      - momentum
+     - yes
      - yes
      - yes
      - yes
@@ -81,28 +92,33 @@
      - —
      - yes
      - excluded
+     - —
    * - ``aggregate_ticks``
      - aggregation
      - yes
      - yes
      - yes
      - yes
+     - —
    * - ``aggregate_time_bars``
      - aggregation
      - yes
      - —
      - yes
      - excluded
+     - —
    * - ``aggregate_volume_bars_ticks``
      - aggregation
      - yes
      - —
      - yes
      - yes
+     - —
    * - ``AlertEvent``
      - alerts
      - —
      - yes
+     - —
      - —
      - —
    * - ``AlertManager``
@@ -111,8 +127,10 @@
      - yes
      - —
      - —
+     - —
    * - ``ALLIGATOR``
      - overlap
+     - yes
      - yes
      - yes
      - yes
@@ -123,22 +141,26 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``american_price``
      - other
      - —
      - —
      - yes
      - excluded
+     - —
    * - ``american_price_baw``
      - options
      - yes
      - —
      - —
      - —
+     - yes
    * - ``annualized_basis``
      - futures
      - yes
      - —
+     - yes
      - yes
      - yes
    * - ``ao``
@@ -147,8 +169,10 @@
      - —
      - yes
      - yes
+     - yes
    * - ``APO``
      - momentum
+     - yes
      - yes
      - yes
      - yes
@@ -159,8 +183,10 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``AROONOSC``
      - momentum
+     - yes
      - yes
      - yes
      - yes
@@ -171,11 +197,13 @@
      - yes
      - yes
      - —
+     - —
    * - ``ATAN``
      - math_ops
      - yes
      - yes
      - yes
+     - —
      - —
    * - ``atm_index``
      - options
@@ -183,14 +211,17 @@
      - —
      - yes
      - excluded
+     - —
    * - ``atm_iv``
      - options
      - yes
      - —
      - yes
      - yes
+     - —
    * - ``ATR``
      - volatility
+     - yes
      - yes
      - yes
      - yes
@@ -201,10 +232,12 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``back_adjusted_continuous``
      - futures
      - yes
      - —
+     - yes
      - yes
      - yes
    * - ``backtest_core``
@@ -213,9 +246,11 @@
      - —
      - yes
      - excluded
+     - —
    * - ``backtest_multi_asset_core``
      - backtest
      - yes
+     - —
      - —
      - —
      - —
@@ -225,9 +260,11 @@
      - —
      - yes
      - excluded
+     - —
    * - ``backtest_ohlcv_core``
      - backtest
      - yes
+     - —
      - —
      - —
      - —
@@ -237,16 +274,19 @@
      - —
      - —
      - —
+     - yes
    * - ``batch_adx``
      - batch
      - yes
      - —
      - yes
      - —
+     - —
    * - ``batch_apply``
      - batch
      - —
      - yes
+     - —
      - —
      - —
    * - ``batch_atr``
@@ -255,10 +295,12 @@
      - —
      - yes
      - —
+     - —
    * - ``BATCH_DTW``
      - statistic
      - —
      - yes
+     - —
      - —
      - —
    * - ``batch_ema``
@@ -267,11 +309,13 @@
      - yes
      - yes
      - —
+     - —
    * - ``batch_rsi``
      - batch
      - yes
      - yes
      - yes
+     - —
      - —
    * - ``batch_sma``
      - batch
@@ -279,14 +323,17 @@
      - yes
      - yes
      - —
+     - —
    * - ``batch_stoch``
      - batch
      - yes
      - —
      - yes
      - —
+     - —
    * - ``BBANDS``
      - overlap
+     - yes
      - yes
      - yes
      - yes
@@ -297,8 +344,10 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``BBWIDTH``
      - volatility
+     - yes
      - yes
      - yes
      - yes
@@ -309,44 +358,52 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``beta_full``
      - portfolio
      - yes
      - —
      - yes
      - yes
+     - —
    * - ``black_76_greeks``
      - options
      - yes
      - —
      - yes
      - excluded
+     - yes
    * - ``black_76_price``
      - options
      - yes
      - —
      - yes
      - excluded
+     - yes
    * - ``black_scholes_extended_greeks``
      - options
      - yes
      - —
      - —
      - —
+     - yes
    * - ``black_scholes_greeks``
      - options
      - yes
      - —
      - yes
      - excluded
+     - yes
    * - ``black_scholes_price``
      - options
      - yes
      - —
      - yes
      - excluded
+     - yes
    * - ``BOP``
      - momentum
+     - yes
      - yes
      - yes
      - yes
@@ -357,20 +414,24 @@
      - —
      - yes
      - excluded
+     - —
    * - ``calendar_spreads``
      - futures
      - yes
      - —
      - yes
      - yes
+     - —
    * - ``carry_spread``
      - futures
      - yes
      - —
      - yes
      - yes
+     - yes
    * - ``CCI``
      - momentum
+     - yes
      - yes
      - yes
      - yes
@@ -381,380 +442,444 @@
      - —
      - —
      - —
+     - —
    * - ``CDL2CROWS``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDL3BLACKCROWS``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDL3INSIDE``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDL3LINESTRIKE``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDL3OUTSIDE``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDL3STARSINSOUTH``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDL3WHITESOLDIERS``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLABANDONEDBABY``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLADVANCEBLOCK``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLBELTHOLD``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLBREAKAWAY``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLCLOSINGMARUBOZU``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLCONCEALBABYSWALL``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLCOUNTERATTACK``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLDARKCLOUDCOVER``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLDOJI``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLDOJISTAR``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLDRAGONFLYDOJI``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLENGULFING``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLEVENINGDOJISTAR``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLEVENINGSTAR``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLGAPSIDESIDEWHITE``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLGRAVESTONEDOJI``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLHAMMER``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLHANGINGMAN``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLHARAMI``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLHARAMICROSS``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLHIGHWAVE``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLHIKKAKE``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLHIKKAKEMOD``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLHOMINGPIGEON``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLIDENTICAL3CROWS``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLINNECK``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLINVERTEDHAMMER``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLKICKING``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLKICKINGBYLENGTH``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLLADDERBOTTOM``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLLONGLEGGEDDOJI``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLLONGLINE``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLMARUBOZU``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLMATCHINGLOW``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLMATHOLD``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLMORNINGDOJISTAR``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLMORNINGSTAR``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLONNECK``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLPIERCING``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLRICKSHAWMAN``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLRISEFALL3METHODS``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLSEPARATINGLINES``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLSHOOTINGSTAR``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLSHORTLINE``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLSPINNINGTOP``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLSTALLEDPATTERN``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLSTICKSANDWICH``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLTAKURI``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLTASUKIGAP``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLTHRUSTING``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLTRISTAR``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLUNIQUE3RIVER``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLUPSIDEGAP2CROWS``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CDLXSIDEGAP3METHODS``
      - pattern
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``CEIL``
      - math_ops
      - yes
      - yes
      - yes
      - —
+     - —
    * - ``CHAIKIN_VOL``
      - volatility
+     - yes
      - yes
      - yes
      - yes
@@ -765,8 +890,10 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``CHANDELIER_EXIT``
      - extended
+     - yes
      - yes
      - yes
      - yes
@@ -777,8 +904,10 @@
      - —
      - yes
      - yes
+     - —
    * - ``check_cross``
      - alerts
+     - yes
      - yes
      - yes
      - yes
@@ -789,14 +918,17 @@
      - yes
      - yes
      - yes
+     - —
    * - ``cho``
      - extended
      - yes
      - —
      - yes
      - yes
+     - yes
    * - ``CHOPPINESS_INDEX``
      - extended
+     - yes
      - yes
      - yes
      - yes
@@ -807,8 +939,10 @@
      - —
      - yes
      - yes
+     - yes
    * - ``CMF``
      - volume
+     - yes
      - yes
      - yes
      - yes
@@ -819,15 +953,18 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``collect_alert_bars``
      - alerts
      - yes
      - yes
      - yes
      - —
+     - —
    * - ``commission_fraction``
      - backtest
      - yes
+     - —
      - —
      - —
      - —
@@ -837,10 +974,12 @@
      - —
      - yes
      - —
+     - —
    * - ``compose``
      - signals
      - —
      - yes
+     - —
      - —
      - —
    * - ``compose_rank``
@@ -849,15 +988,18 @@
      - —
      - yes
      - —
+     - —
    * - ``compose_weighted``
      - portfolio
      - yes
      - —
      - yes
      - —
+     - —
    * - ``compute_ht_core``
      - cycle
      - yes
+     - —
      - —
      - —
      - —
@@ -867,15 +1009,18 @@
      - yes
      - —
      - —
+     - —
    * - ``compute_performance_metrics``
      - backtest
      - yes
      - —
      - yes
      - excluded
+     - —
    * - ``compute_performance_metrics_with_positions``
      - backtest
      - yes
+     - —
      - —
      - —
      - —
@@ -885,14 +1030,17 @@
      - yes
      - yes
      - excluded
+     - —
    * - ``coppock``
      - extended
      - yes
      - —
      - yes
      - yes
+     - yes
    * - ``CORREL``
      - statistic
+     - yes
      - yes
      - yes
      - yes
@@ -903,11 +1051,13 @@
      - yes
      - yes
      - —
+     - —
    * - ``COS``
      - math_ops
      - yes
      - yes
      - yes
+     - —
      - —
    * - ``COSH``
      - math_ops
@@ -915,26 +1065,31 @@
      - yes
      - yes
      - —
+     - —
    * - ``cross``
      - utils
      - yes
      - —
      - yes
      - yes
+     - —
    * - ``crossover``
      - utils
      - yes
      - —
      - yes
      - yes
+     - —
    * - ``crossunder``
      - utils
      - yes
      - —
      - yes
      - yes
+     - —
    * - ``CRSI``
      - momentum
+     - yes
      - yes
      - yes
      - yes
@@ -945,14 +1100,17 @@
      - —
      - yes
      - yes
+     - —
    * - ``curve_summary``
      - futures
      - yes
      - —
      - yes
      - excluded
+     - —
    * - ``DEMA``
      - overlap
+     - yes
      - yes
      - yes
      - yes
@@ -963,20 +1121,24 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``digital_greeks``
      - options
      - yes
      - —
      - yes
      - excluded
+     - yes
    * - ``digital_price``
      - options
      - yes
      - —
      - yes
      - excluded
+     - yes
    * - ``DIV``
      - math_ops
+     - yes
      - yes
      - yes
      - yes
@@ -987,8 +1149,10 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``DONCHIAN``
      - extended
+     - yes
      - yes
      - yes
      - yes
@@ -999,16 +1163,19 @@
      - —
      - yes
      - yes
+     - yes
    * - ``drawdown``
      - portfolio
      - yes
      - yes
      - yes
      - excluded
+     - —
    * - ``DTW``
      - statistic
      - —
      - yes
+     - —
      - —
      - —
    * - ``DTW_DISTANCE``
@@ -1017,14 +1184,17 @@
      - yes
      - yes
      - excluded
+     - —
    * - ``dtw_path``
      - statistic
      - yes
      - —
      - —
      - —
+     - —
    * - ``DX``
      - momentum
+     - yes
      - yes
      - yes
      - yes
@@ -1035,8 +1205,10 @@
      - —
      - yes
      - excluded
+     - yes
    * - ``ELDER_RAY``
      - momentum
+     - yes
      - yes
      - yes
      - yes
@@ -1047,8 +1219,10 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``EMV``
      - volume
+     - yes
      - yes
      - yes
      - yes
@@ -1059,33 +1233,39 @@
      - yes
      - yes
      - —
+     - —
    * - ``expected_move``
      - options
      - yes
      - —
      - yes
      - excluded
+     - yes
    * - ``exrem``
      - utils
      - yes
      - —
      - yes
      - yes
+     - —
    * - ``extended_greeks``
      - other
      - —
      - —
      - yes
      - excluded
+     - —
    * - ``extract_trades``
      - attribution
      - yes
      - —
      - yes
      - yes
+     - —
    * - ``extract_trades_ohlcv``
      - backtest
      - yes
+     - —
      - —
      - —
      - —
@@ -1095,14 +1275,17 @@
      - —
      - yes
      - yes
+     - —
    * - ``feature_matrix``
      - features
      - —
      - yes
      - —
      - —
+     - —
    * - ``FISHER``
      - momentum
+     - yes
      - yes
      - yes
      - yes
@@ -1113,14 +1296,17 @@
      - —
      - yes
      - yes
+     - —
    * - ``FLOOR``
      - math_ops
      - yes
      - yes
      - yes
      - —
+     - —
    * - ``FORCE_INDEX``
      - volume
+     - yes
      - yes
      - yes
      - yes
@@ -1131,8 +1317,10 @@
      - —
      - yes
      - yes
+     - yes
    * - ``FRAMA``
      - overlap
+     - yes
      - yes
      - yes
      - yes
@@ -1143,16 +1331,19 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``futures_basis``
      - other
      - —
      - —
      - yes
      - yes
+     - —
    * - ``garman_klass_vol``
      - options
      - yes
      - —
+     - yes
      - yes
      - yes
    * - ``gator``
@@ -1161,20 +1352,24 @@
      - —
      - yes
      - yes
+     - yes
    * - ``half_kelly_fraction``
      - backtest
      - yes
      - —
      - yes
      - excluded
+     - yes
    * - ``highest``
      - utils
      - yes
      - —
      - yes
      - yes
+     - —
    * - ``HISTORICAL_VOLATILITY``
      - volatility
+     - yes
      - yes
      - yes
      - yes
@@ -1185,8 +1380,10 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``HT_DCPHASE``
      - cycle
+     - yes
      - yes
      - yes
      - yes
@@ -1197,8 +1394,10 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``HT_SINE``
      - cycle
+     - yes
      - yes
      - yes
      - yes
@@ -1209,14 +1408,17 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``HT_TRENDMODE``
      - cycle
      - yes
      - yes
      - yes
      - excluded
+     - yes
    * - ``HULL_MA``
      - extended
+     - yes
      - yes
      - yes
      - yes
@@ -1227,10 +1429,12 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``implied_carry_rate``
      - futures
      - yes
      - —
+     - yes
      - yes
      - yes
    * - ``implied_volatility``
@@ -1239,10 +1443,12 @@
      - —
      - yes
      - excluded
+     - yes
    * - ``iv_percentile``
      - options
      - yes
      - —
+     - yes
      - yes
      - yes
    * - ``iv_rank``
@@ -1251,14 +1457,17 @@
      - —
      - yes
      - yes
+     - yes
    * - ``iv_zscore``
      - options
      - yes
      - —
      - yes
      - yes
+     - yes
    * - ``KAMA``
      - overlap
+     - yes
      - yes
      - yes
      - yes
@@ -1269,14 +1478,17 @@
      - —
      - —
      - —
+     - —
    * - ``kelly_fraction``
      - backtest
      - yes
      - —
      - yes
      - excluded
+     - yes
    * - ``KELTNER_CHANNELS``
      - extended
+     - yes
      - yes
      - yes
      - yes
@@ -1287,8 +1499,10 @@
      - —
      - yes
      - yes
+     - yes
    * - ``KVO``
      - volume
+     - yes
      - yes
      - yes
      - yes
@@ -1299,9 +1513,11 @@
      - —
      - yes
      - excluded
+     - —
    * - ``lcg_index``
      - backtest
      - yes
+     - —
      - —
      - —
      - —
@@ -1311,14 +1527,17 @@
      - —
      - —
      - —
+     - —
    * - ``linear_interpolate``
      - options
      - yes
      - —
      - yes
      - yes
+     - —
    * - ``LINEARREG``
      - statistic
+     - yes
      - yes
      - yes
      - yes
@@ -1329,8 +1548,10 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``LINEARREG_INTERCEPT``
      - statistic
+     - yes
      - yes
      - yes
      - yes
@@ -1341,11 +1562,13 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``LN``
      - math_ops
      - yes
      - yes
      - yes
+     - —
      - —
    * - ``LOG10``
      - math_ops
@@ -1353,14 +1576,17 @@
      - yes
      - yes
      - —
+     - —
    * - ``lowest``
      - utils
      - yes
      - —
      - yes
      - yes
+     - —
    * - ``MA``
      - overlap
+     - yes
      - yes
      - yes
      - yes
@@ -1371,14 +1597,17 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``macd_crossover_signals``
      - backtest
      - yes
      - —
      - yes
      - excluded
+     - —
    * - ``MACDEXT``
      - overlap
+     - yes
      - yes
      - yes
      - yes
@@ -1389,8 +1618,10 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``MA_ENVELOPES``
      - overlap
+     - yes
      - yes
      - yes
      - yes
@@ -1401,8 +1632,10 @@
      - —
      - yes
      - excluded
+     - —
    * - ``MAMA``
      - overlap
+     - yes
      - yes
      - yes
      - yes
@@ -1413,8 +1646,10 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``MAVP``
      - overlap
+     - yes
      - yes
      - yes
      - yes
@@ -1425,14 +1660,17 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``MAXINDEX``
      - math_ops
      - yes
      - yes
      - yes
      - excluded
+     - yes
    * - ``MCGINLEY``
      - overlap
+     - yes
      - yes
      - yes
      - yes
@@ -1443,8 +1681,10 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``MEDIAN_BANDS``
      - statistic
+     - yes
      - yes
      - yes
      - yes
@@ -1455,8 +1695,10 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``MFI``
      - momentum
+     - yes
      - yes
      - yes
      - yes
@@ -1467,8 +1709,10 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``MIDPRICE``
      - overlap
+     - yes
      - yes
      - yes
      - yes
@@ -1479,14 +1723,17 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``MININDEX``
      - math_ops
      - yes
      - yes
      - yes
      - excluded
+     - yes
    * - ``MINUS_DI``
      - momentum
+     - yes
      - yes
      - yes
      - yes
@@ -1497,8 +1744,10 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``MODE``
      - statistic
+     - yes
      - yes
      - yes
      - yes
@@ -1509,26 +1758,31 @@
      - —
      - —
      - —
+     - —
    * - ``model_greeks``
      - options
      - yes
      - —
      - yes
      - excluded
+     - —
    * - ``model_price``
      - options
      - yes
      - —
      - yes
      - excluded
+     - —
    * - ``model_theta``
      - options
      - yes
      - —
      - yes
      - excluded
+     - —
    * - ``MOM``
      - momentum
+     - yes
      - yes
      - yes
      - yes
@@ -1539,14 +1793,17 @@
      - —
      - yes
      - —
+     - —
    * - ``monthly_contribution``
      - attribution
      - yes
      - —
      - yes
      - excluded
+     - —
    * - ``MULT``
      - math_ops
+     - yes
      - yes
      - yes
      - yes
@@ -1557,14 +1814,17 @@
      - yes
      - —
      - —
+     - —
    * - ``nan_to_num``
      - backtest
      - yes
      - —
      - —
      - —
+     - —
    * - ``NATR``
      - volatility
+     - yes
      - yes
      - yes
      - yes
@@ -1575,8 +1835,10 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``NVI_WITH_EMA``
      - volume
+     - yes
      - yes
      - yes
      - yes
@@ -1587,8 +1849,10 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``OBV_SMOOTHED``
      - volume
+     - yes
      - yes
      - yes
      - yes
@@ -1599,10 +1863,12 @@
      - —
      - yes
      - excluded
+     - —
    * - ``parity_gap``
      - futures
      - yes
      - —
+     - yes
      - yes
      - yes
    * - ``parkinson_vol``
@@ -1611,9 +1877,11 @@
      - —
      - yes
      - yes
+     - yes
    * - ``pdf``
      - options
      - yes
+     - —
      - —
      - —
      - —
@@ -1623,8 +1891,10 @@
      - yes
      - yes
      - yes
+     - —
    * - ``PLUS_DI``
      - momentum
+     - yes
      - yes
      - yes
      - yes
@@ -1635,10 +1905,12 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``po``
      - extended
      - yes
      - —
+     - yes
      - yes
      - yes
    * - ``portfolio_volatility``
@@ -1647,8 +1919,10 @@
      - yes
      - yes
      - —
+     - —
    * - ``PPO``
      - momentum
+     - yes
      - yes
      - yes
      - yes
@@ -1659,20 +1933,24 @@
      - —
      - yes
      - excluded
+     - yes
    * - ``price_upper_bound``
      - options
      - yes
      - —
      - yes
      - excluded
+     - yes
    * - ``put_call_parity_deviation``
      - options
      - yes
      - —
      - yes
      - yes
+     - yes
    * - ``PVI``
      - volume
+     - yes
      - yes
      - yes
      - yes
@@ -1683,8 +1961,10 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``PVT``
      - volume
+     - yes
      - yes
      - yes
      - yes
@@ -1695,10 +1975,12 @@
      - —
      - yes
      - yes
+     - —
    * - ``rank_signals``
      - signals
      - —
      - yes
+     - —
      - —
      - —
    * - ``rank_values``
@@ -1707,10 +1989,12 @@
      - —
      - yes
      - yes
+     - yes
    * - ``ratio``
      - portfolio
      - yes
      - —
+     - yes
      - yes
      - yes
    * - ``ratio_adjusted_continuous``
@@ -1719,14 +2003,17 @@
      - —
      - yes
      - yes
+     - yes
    * - ``regime``
      - regime
      - —
      - yes
      - —
      - —
+     - —
    * - ``regime_adx``
      - regime
+     - yes
      - yes
      - yes
      - yes
@@ -1737,10 +2024,12 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``relative_strength``
      - portfolio
      - yes
      - —
+     - yes
      - yes
      - yes
    * - ``resample``
@@ -1749,15 +2038,18 @@
      - yes
      - —
      - —
+     - —
    * - ``resample_continuous``
      - crypto
      - —
      - yes
      - —
      - —
+     - —
    * - ``resolve_commission_model``
      - backtest
      - yes
+     - —
      - —
      - —
      - —
@@ -1767,8 +2059,10 @@
      - —
      - yes
      - yes
+     - —
    * - ``ROC``
      - momentum
+     - yes
      - yes
      - yes
      - yes
@@ -1779,8 +2073,10 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``ROCR``
      - momentum
+     - yes
      - yes
      - yes
      - yes
@@ -1791,10 +2087,12 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``rogers_satchell_vol``
      - options
      - yes
      - —
+     - yes
      - yes
      - yes
    * - ``rolling_beta``
@@ -1803,8 +2101,10 @@
      - —
      - yes
      - yes
+     - yes
    * - ``rolling_variance_break``
      - regime
+     - yes
      - yes
      - yes
      - yes
@@ -1815,8 +2115,10 @@
      - —
      - yes
      - yes
+     - yes
    * - ``RSI``
      - momentum
+     - yes
      - yes
      - yes
      - yes
@@ -1827,9 +2129,11 @@
      - —
      - yes
      - yes
+     - yes
    * - ``run_close_indicators``
      - batch
      - yes
+     - —
      - —
      - —
      - —
@@ -1839,14 +2143,17 @@
      - —
      - —
      - —
+     - —
    * - ``rvi``
      - extended
      - yes
      - —
      - yes
      - yes
+     - yes
    * - ``RVOL``
      - volume
+     - yes
      - yes
      - yes
      - yes
@@ -1857,8 +2164,10 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``SAR``
      - overlap
+     - yes
      - yes
      - yes
      - yes
@@ -1869,10 +2178,12 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``screen``
      - signals
      - —
      - yes
+     - —
      - —
      - —
    * - ``select_strike_by_delta``
@@ -1881,29 +2192,34 @@
      - —
      - yes
      - excluded
+     - —
    * - ``select_strike_by_offset``
      - options
      - yes
      - —
      - yes
      - excluded
+     - —
    * - ``session_boundaries``
      - crypto
      - yes
      - yes
      - yes
      - excluded
+     - —
    * - ``signal_attribution``
      - attribution
      - yes
      - —
      - yes
      - excluded
+     - —
    * - ``SIN``
      - math_ops
      - yes
      - yes
      - yes
+     - —
      - —
    * - ``single_asset_backtest``
      - backtest
@@ -1911,14 +2227,31 @@
      - —
      - yes
      - yes
+     - —
    * - ``SINH``
      - math_ops
      - yes
      - yes
      - yes
      - —
+     - —
+   * - ``sliding_max``
+     - other
+     - —
+     - —
+     - —
+     - —
+     - yes
+   * - ``sliding_min``
+     - other
+     - —
+     - —
+     - —
+     - —
+     - yes
    * - ``SMA``
      - overlap
+     - yes
      - yes
      - yes
      - yes
@@ -1929,16 +2262,19 @@
      - —
      - yes
      - excluded
+     - —
    * - ``smile_metrics``
      - options
      - yes
      - —
      - yes
      - excluded
+     - —
    * - ``spread``
      - portfolio
      - yes
      - —
+     - yes
      - yes
      - yes
    * - ``SQRT``
@@ -1947,8 +2283,10 @@
      - yes
      - yes
      - —
+     - —
    * - ``STARC``
      - volatility
+     - yes
      - yes
      - yes
      - yes
@@ -1959,8 +2297,10 @@
      - —
      - yes
      - yes
+     - yes
    * - ``STDDEV``
      - statistic
+     - yes
      - yes
      - yes
      - yes
@@ -1971,8 +2311,10 @@
      - —
      - yes
      - —
+     - —
    * - ``STOCH``
      - momentum
+     - yes
      - yes
      - yes
      - yes
@@ -1983,8 +2325,10 @@
      - yes
      - yes
      - excluded
+     - yes
    * - ``STOCHRSI``
      - momentum
+     - yes
      - yes
      - yes
      - yes
@@ -1995,9 +2339,11 @@
      - —
      - yes
      - excluded
+     - —
    * - ``strategy_value_dense``
      - options
      - yes
+     - —
      - —
      - —
      - —
@@ -2007,68 +2353,80 @@
      - —
      - yes
      - excluded
+     - —
    * - ``StreamingATR``
      - streaming
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``StreamingBBands``
      - streaming
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``StreamingEMA``
      - streaming
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``StreamingMACD``
      - streaming
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``StreamingRSI``
      - streaming
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``StreamingSMA``
      - streaming
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``StreamingStoch``
      - streaming
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``StreamingSupertrend``
      - streaming
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``StreamingVWAP``
      - streaming
      - yes
      - yes
      - yes
      - —
+     - yes
    * - ``structural_breaks``
      - regime
      - —
      - yes
      - —
      - —
+     - —
    * - ``SUB``
      - math_ops
+     - yes
      - yes
      - yes
      - yes
@@ -2079,16 +2437,19 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``SUPERTREND``
      - extended
      - yes
      - yes
      - yes
      - excluded
+     - yes
    * - ``synthetic_forward``
      - futures
      - yes
      - —
+     - yes
      - yes
      - yes
    * - ``synthetic_spot``
@@ -2097,8 +2458,10 @@
      - —
      - yes
      - yes
+     - yes
    * - ``T3``
      - overlap
+     - yes
      - yes
      - yes
      - yes
@@ -2109,14 +2472,17 @@
      - yes
      - yes
      - —
+     - —
    * - ``TANH``
      - math_ops
      - yes
      - yes
      - yes
      - —
+     - —
    * - ``TEMA``
      - overlap
+     - yes
      - yes
      - yes
      - yes
@@ -2127,10 +2493,12 @@
      - —
      - yes
      - yes
+     - —
    * - ``TickAggregator``
      - aggregation
      - —
      - yes
+     - —
      - —
      - —
    * - ``top_n_indices``
@@ -2139,14 +2507,17 @@
      - —
      - yes
      - excluded
+     - —
    * - ``trade_stats``
      - attribution
      - yes
      - —
      - yes
      - —
+     - —
    * - ``TRANGE``
      - momentum
+     - yes
      - yes
      - yes
      - yes
@@ -2157,14 +2528,17 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``trim_overlap``
      - chunked
      - yes
      - —
      - yes
      - yes
+     - —
    * - ``TRIX``
      - momentum
+     - yes
      - yes
      - yes
      - yes
@@ -2175,14 +2549,17 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``tsi``
      - extended
      - yes
      - —
      - yes
      - yes
+     - yes
    * - ``TYPPRICE``
      - price_transform
+     - yes
      - yes
      - yes
      - yes
@@ -2193,8 +2570,10 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``ULTOSC``
      - momentum
+     - yes
      - yes
      - yes
      - yes
@@ -2205,14 +2584,17 @@
      - —
      - —
      - —
+     - —
    * - ``valuewhen``
      - utils
      - yes
      - —
      - yes
      - yes
+     - —
    * - ``VAR``
      - statistic
+     - yes
      - yes
      - yes
      - yes
@@ -2223,14 +2605,17 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``vol_cone``
      - options
      - yes
      - —
      - yes
      - excluded
+     - —
    * - ``VOLOSC``
      - volume
+     - yes
      - yes
      - yes
      - yes
@@ -2241,14 +2626,17 @@
      - yes
      - yes
      - yes
+     - —
    * - ``vortex``
      - extended
      - yes
      - —
      - yes
      - yes
+     - yes
    * - ``VROC``
      - volume
+     - yes
      - yes
      - yes
      - yes
@@ -2259,8 +2647,10 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``VWMA``
      - extended
+     - yes
      - yes
      - yes
      - yes
@@ -2271,8 +2661,10 @@
      - —
      - yes
      - excluded
+     - —
    * - ``WCLPRICE``
      - price_transform
+     - yes
      - yes
      - yes
      - yes
@@ -2283,8 +2675,10 @@
      - —
      - yes
      - yes
+     - yes
    * - ``WILLIAMS_FRACTALS``
      - extended
+     - yes
      - yes
      - yes
      - yes
@@ -2295,8 +2689,10 @@
      - yes
      - yes
      - yes
+     - yes
    * - ``WMA``
      - overlap
+     - yes
      - yes
      - yes
      - yes
@@ -2307,8 +2703,10 @@
      - —
      - yes
      - yes
+     - yes
    * - ``ZLEMA``
      - overlap
+     - yes
      - yes
      - yes
      - yes
@@ -2317,5 +2715,6 @@
      - portfolio
      - yes
      - —
+     - yes
      - yes
      - yes

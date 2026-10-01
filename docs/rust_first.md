@@ -6,8 +6,8 @@
 > out of scope.
 
 Python is one interface layer — validation, type dispatch, pandas/polars
-wrapping — not *the* interface layer. WASM and Flutter are peer bindings over
-the same crate.
+wrapping — not *the* interface layer. WASM, Flutter, and the C ABI
+(`ferro_ta_ffi`, used by Go and C/C++) are peer bindings over the same crate.
 
 See [docs/languages/adding.rst](languages/adding.rst) for the new-language
 checklist.
@@ -40,6 +40,8 @@ Language bindings (thin)                   ferro_ta_core (thick)
 python/ferro_ta/*.py  + src/*.rs  ────▶   crates/ferro_ta_core/src/*.rs
 wasm/src/lib.rs                   ────▶   same functions, &[f64] API
 flutter/rust/src/api/*.rs         ────▶   generated wrappers, still core
+crates/ferro_ta_ffi/src/*.rs      ────▶   C ABI declarations, still core
+bindings/go/*_gen.go              ────▶   generated from ffi_spec.json via the C ABI
 
 Python wrappers map onto the same core by category, for example:
 ferro_ta/indicators/overlap.py ─▶ src/overlap/*.rs      ────▶ overlap.rs

@@ -1,0 +1,100 @@
+name: C ABI and Go binding
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+env:
+  # A moved or missing golden fixture must fail CI, not skip the golden suites.
+  FERRO_TA_REQUIRE_GOLDEN: "1"
+  # Portable binaries: override `target-cpu=native` from .cargo/config.toml and
+  # rely on runtime SIMD dispatch, matching every other build job in this repo.
+  RUSTFLAGS: ""
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Generated artifacts (ffi_spec.json, ferro_ta.h, Go wrappers) must match the
+  # Rust source, and the C ABI crate's own tests must pass.
+  # ---------------------------------------------------------------------------
+  ffi:
+    name: C ABI (tests, codegen freshness, C smoke)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Test ferro_ta_ffi
+        run: cargo test -p ferro_ta_ffi
+      - name: Check generated C header and Go wrappers are up to date
+        run: python3 scripts/build_ffi_bindings.py --check
+      - name: C smoke test (strict C99, links the static library)
+        run: make c-smoke
+      - name: C++ header compiles
+        run: |
+          printf '#include "ferro_ta.h"\nint main(){return ft_sma(nullptr,0,3,nullptr);}\n' \
+            | g++ -std=c++17 -Wall -Wextra -Werror -x c++ -fsyntax-only \
+                -Icrates/ferro_ta_ffi/include -
+
+  # ---------------------------------------------------------------------------
+  # Go binding on every OS cgo users run. Windows links the MinGW (-gnu)
+  # archive because cgo drives gcc, not MSVC.
+  # ---------------------------------------------------------------------------
+  go:
+    name: Go ${{ matrix.go }} (${{ matrix.os }}, ${{ matrix.goarch }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest, go: stable, target: x86_64-unknown-linux-gnu, goarch: amd64, race: true }
+          - { os: ubuntu-latest, go: "1.22", target: x86_64-unknown-linux-gnu, goarch: amd64, race: false }
+          - { os: ubuntu-24.04-arm, go: stable, target: aarch64-unknown-linux-gnu, goarch: arm64, race: true }
+          - { os: macos-latest, go: stable, target: aarch64-apple-darwin, goarch: arm64, race: true }
+          # Intel macOS archive + LDFLAGS, run under Rosetta on the arm64 runner.
+          - { os: macos-latest, go: stable, target: x86_64-apple-darwin, goarch: amd64, race: false }
+          - { os: windows-latest, go: stable, target: x86_64-pc-windows-gnu, goarch: amd64, race: false }
+    defaults:
+      run:
+        shell: bash
+    env:
+      GOARCH: ${{ matrix.goarch }}
+      CGO_ENABLED: "1"
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+      - uses: actions/setup-go@v6
+        with:
+          go-version: ${{ matrix.go }}
+          cache-dependency-path: bindings/go/go.mod
+      - name: Build static library
+        run: |
+          cargo build -p ferro_ta_ffi --release --target ${{ matrix.target }}
+          # Log what the archive needs at link time; cgo.go's LDFLAGS must cover it.
+          cargo rustc -q -p ferro_ta_ffi --release --target ${{ matrix.target }} --lib \
+            --crate-type staticlib -- --print native-static-libs 2>&1 | grep native-static-libs
+          dest="bindings/go/lib/$(go env GOOS)_$(go env GOARCH)"
+          mkdir -p "$dest"
+          cp "target/${{ matrix.target }}/release/libferro_ta_ffi.a" "$dest/"
+      - name: gofmt
+        if: matrix.go == 'stable'
+        run: |
+          out=$(gofmt -l bindings/go)
+          test -z "$out" || { echo "gofmt needed: $out"; exit 1; }
+      - name: go vet
+        working-directory: bindings/go
+        run: go vet ./...
+      - name: go test
+        working-directory: bindings/go
+        run: go test ${{ matrix.race && '-race' || '' }} -count=1 ./...

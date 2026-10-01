@@ -4,7 +4,7 @@
 
 ## Rust-core technical analysis with first-class language bindings
 
-**ferro-ta is a Rust-core technical analysis library with first-class bindings for Python, Rust, JavaScript (WASM), and Flutter.**
+**ferro-ta is a Rust-core technical analysis library with first-class bindings for Python, Rust, JavaScript (WASM), Flutter, and Go, plus a C API.**
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/pratikbhadane24/ferro-ta/HEAD?labpath=examples%2Fquickstart.ipynb)
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/pratikbhadane24/ferro-ta/blob/main/examples/quickstart.ipynb)
@@ -14,9 +14,9 @@
 
 ---
 
-> ferro-ta is a Rust-core technical analysis library with first-class bindings for Python, Rust, JavaScript (WASM), and Flutter.
+> ferro-ta is a Rust-core technical analysis library with first-class bindings for Python, Rust, JavaScript (WASM), Flutter, and Go, plus a C API.
 
-Python, JavaScript (WASM), and Flutter wrap [`ferro_ta_core`](crates/ferro_ta_core); Rust uses that crate directly. New languages may only wrap the core — reimplementing indicators is out of scope. See [Adding a language](docs/languages/adding.rst).
+Python, JavaScript (WASM), Flutter, and Go wrap [`ferro_ta_core`](crates/ferro_ta_core); Rust uses that crate directly. Go and C/C++ go through one shared C ABI crate, [`ferro_ta_ffi`](crates/ferro_ta_ffi), that future C-ABI languages build on. New languages may only wrap the core — reimplementing indicators is out of scope. See [Adding a language](docs/languages/adding.rst).
 
 Python is the most complete *ergonomic* surface (TA-Lib names, pandas/polars, Sphinx autodoc). It is not the only product.
 
@@ -25,7 +25,7 @@ Python is the most complete *ergonomic* surface (TA-Lib names, pandas/polars, Sp
 | | TA-Lib | ferro-ta |
 |---|---|---|
 | **Core** | C implementations | Pure Rust [`ferro_ta_core`](crates/ferro_ta_core) |
-| **Languages** | C API plus community wrappers | First-class Python, Rust, JavaScript (WASM), and Flutter |
+| **Languages** | C API plus community wrappers | First-class Python, Rust, JavaScript (WASM), Flutter, and Go, plus a C API |
 | **API shape** | `talib.SMA(close, 20)` | Same indicators in each language (`SMA`, `sma`, `overlap::sma`) |
 | **Installation** | Often requires a native/system toolchain | Pre-built packages on supported targets |
 | **Scope** | Technical indicators | Technical indicators first; other tooling is optional |
@@ -38,6 +38,8 @@ Python is the most complete *ergonomic* surface (TA-Lib names, pandas/polars, Sp
 | Rust | crates.io `ferro_ta_core` | `cargo add ferro_ta_core` |
 | JavaScript | npm `ferro-ta-wasm` | `npm install ferro-ta-wasm` |
 | Flutter / Dart | pub.dev `ferro_ta` | `flutter pub add ferro_ta` |
+| Go | `github.com/pratikbhadane24/ferro-ta/bindings/go` | `go get github.com/pratikbhadane24/ferro-ta/bindings/go` |
+| C / C++ | GitHub Release assets | `ferro_ta.h` + static/shared library per platform |
 
 Python extras:
 
@@ -50,7 +52,7 @@ pip install "ferro-ta[mcp]"      # MCP server for agent/tool clients
 pip install "ferro-ta[all]"      # most optional extras (excluding gpu)
 ```
 
-Language guides: [Python](docs/languages/python.rst) · [Rust](docs/languages/rust.rst) · [WASM](docs/languages/wasm.rst) · [Flutter](docs/languages/flutter.rst)
+Language guides: [Python](docs/languages/python.rst) · [Rust](docs/languages/rust.rst) · [WASM](docs/languages/wasm.rst) · [Flutter](docs/languages/flutter.rst) · [Go](docs/languages/go.rst) · [C / C++](docs/languages/c.rst)
 
 ## Quick start
 
@@ -115,6 +117,20 @@ Future<void> main() async {
 }
 ```
 
+### Go
+
+```go
+import ferrota "github.com/pratikbhadane24/ferro-ta/bindings/go"
+
+sma, err := ferrota.Sma(close, 20)
+macd, signal, hist, err := ferrota.Macd(close, 12, 26, 9)
+upper, middle, lower, err := ferrota.Bbands(close, 20, 2, 2, ferrota.MATypeSMA)
+
+rsi, _ := ferrota.NewStreamRsi(14) // bar-by-bar
+defer rsi.Close()
+value, err := rsi.Update(lastPrice)
+```
+
 ## Benchmark evidence
 
 The latest checked-in TA-Lib comparison artifact uses contiguous `float64`
@@ -137,11 +153,12 @@ See the benchmark methodology and artifacts:
 - 240+ indicators over a shared Rust core, including adaptive moving averages, volume oscillators,
   and signal utilities (`ALMA`, `VIDYA`, `KVO`, `VORTEX`, `CROSSOVER`, and related).
 - The extended catalog is bound on every surface: 360 core symbols, 247 Python names, 344 WASM
-  exports, and 194 generated Flutter wrappers. See [docs/languages/coverage](docs/languages/coverage.rst)
+  exports, 194 generated Flutter wrappers, and 262 C ABI / Go exports. See [docs/languages/coverage](docs/languages/coverage.rst)
   for the per-indicator table.
 - Batch and streaming APIs for multi-series and bar-by-bar workloads.
 - Python extras: NumPy-first execution with pandas and polars adapters, type stubs, and Sphinx autodoc.
-- Pre-built artifacts: Python wheels, crates.io, npm, and Flutter natives (web reuses WASM).
+- Pre-built artifacts: Python wheels, crates.io, npm, Flutter natives (web reuses WASM), a Go
+  module with prebuilt static archives, and C/C++ libraries on each GitHub Release.
 - Reproducible benchmarks instead of blanket speed claims.
 
 Adjacent surfaces — derivatives analytics, MCP, GPU helpers, plugins, and agent wrappers — remain opt-in. See [docs/adjacent_tooling.rst](docs/adjacent_tooling.rst).

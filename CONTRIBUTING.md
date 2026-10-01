@@ -258,7 +258,11 @@ and [docs/languages/adding.rst](docs/languages/adding.rst).
 4. Expose the same symbol on WASM (`wasm/src/lib.rs`) and regenerate Flutter
    (`python3 scripts/build_flutter_bridge.py`) when the indicator is in the
    shared core set.
-5. Refresh `python3 scripts/build_api_manifest.py`.
+5. Expose it on the C ABI with one `ffi_exports!` / `ffi_scalar_exports!` line
+   in `crates/ferro_ta_ffi/src/`, then run `make ffi-gen` (regenerates
+   `ferro_ta.h`, `ffi_spec.json` and the Go wrappers) and
+   `python3 scripts/build_golden_fixtures.py`. `make ffi-check` is the gate.
+6. Refresh `python3 scripts/build_api_manifest.py`.
 
 Category paths (Python + PyO3 wrappers):
 
@@ -271,13 +275,15 @@ Each PyO3 module has a `pub fn register(m: &Bound<'_, PyModule>) -> PyResult<()>
 
 ## Language bindings
 
-Rust is the core surface (`ferro_ta_core`). Python, JavaScript (WASM), and
-Flutter are peer wrappers over it. A **new** language may only wrap that
+Rust is the core surface (`ferro_ta_core`). Python, JavaScript (WASM),
+Flutter, and Go are peer wrappers over it; Go and C/C++ go through the C ABI
+crate `crates/ferro_ta_ffi`. Languages with a C FFI (C#, JVM, Ruby, …) should
+build on that crate by adding a renderer under `scripts/ffi_codegen/`. A **new** language may only wrap that
 crate (FFI, wasm-bindgen, UniFFI, flutter_rust_bridge, napi-rs, …).
 Reimplementing indicators in the new language is out of scope.
 
 The full checklist is [docs/languages/adding.rst](docs/languages/adding.rst).
-CI already gates Python, WASM, and Flutter; a new binding needs
+CI already gates Python, WASM, Flutter, and the C ABI/Go; a new binding needs
 `.github/workflows/ci-<lang>.yml` wired into `CI.yml`.
 
 ---

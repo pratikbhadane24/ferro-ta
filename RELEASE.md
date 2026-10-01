@@ -14,6 +14,7 @@ For the packaging and release overview, see [PACKAGING.md](PACKAGING.md).
 | **PyPI**    | CI job `publish` using PyPI Trusted Publishing (OIDC) |
 | **npm (WASM)** | Workflow `wasm-publish`|
 | **crates.io** | CI job `publish-cratesio` |
+| **Go module + C/C++ libraries** | Workflow `go-publish` (on the GitHub Release): builds portable static archives per platform, commits them onto a detached commit tagged `bindings/go/vX.Y.Z` (never `main`), uploads `ferro_ta-<version>-<platform>.tar.gz` C/C++ assets to the release, then runs `go get` on Linux/macOS/Windows. Rehearse with `workflow_dispatch` (dry run by default). |
 | **pub.dev (Flutter)** | Workflow `flutter-publish` using pub.dev automated publishing (OIDC). **Triggered by the `vX.Y.Z` tag push, not by the GitHub Release** — pub.dev rejects publishes that are not tag-triggered. |
 
 PyPI releases are expected to include:
@@ -87,6 +88,8 @@ Files covered by the bump script:
 | `wasm/package.json` | Package version |
 | `flutter/pubspec.yaml` | pub.dev package version |
 | `flutter/rust/Cargo.toml` | Flutter bridge crate version |
+| `crates/ferro_ta_ffi/Cargo.toml` | C ABI crate version (and its `ferro_ta_core` dependency) |
+| `bindings/go/version_gen.go` | Go module `Version` (generated; `bump_version.py` also regenerates `ferro_ta.h` and `ffi_spec.json`) |
 | `conda/meta.yaml` | Conda recipe version |
 | `docs/changelog.rst` | Tracked-version note on the docs changelog page |
 | `docs/support_matrix.rst` | Tracked-version note on the support matrix page |
@@ -137,6 +140,7 @@ Also update the docs-facing release surfaces for the same version:
 git add Cargo.toml Cargo.lock pyproject.toml CHANGELOG.md \
     crates/ferro_ta_core/Cargo.toml crates/ferro_ta_core/README.md \
     wasm/Cargo.toml wasm/package.json flutter/pubspec.yaml flutter/rust/Cargo.toml \
+    crates/ferro_ta_ffi bindings/go \
     conda/meta.yaml docs/changelog.rst docs/support_matrix.rst
 git commit -m "chore: release v0.2.0"
 git push origin main
@@ -158,7 +162,7 @@ git push origin v0.2.0
 Pushing the tag immediately starts **two** workflows:
 
 - `release.yml` — creates the GitHub Release (which then triggers the PyPI, npm,
-  and crates.io publishes).
+  crates.io, and Go module / C library publishes).
 - `flutter-publish.yml` — builds the native libraries and publishes to pub.dev.
   This one hangs off the **tag push itself**, because pub.dev rejects automated
   publishing from a run that was not tag-triggered. The tag must match the
@@ -183,7 +187,7 @@ uses Trusted Publishing via GitHub OIDC, so no `PYPI_API_TOKEN` secret is used.
 
 ## Step 7 — Monitor CI and verify PyPI
 
-1. Watch the **Actions** tab: the release wheel jobs, `build-sdist`, `publish` (PyPI), `publish-cratesio` (crates.io), the **wasm-publish** workflow (npm), and the **flutter-publish** workflow (pub.dev).
+1. Watch the **Actions** tab: the release wheel jobs, `build-sdist`, `publish` (PyPI), `publish-cratesio` (crates.io), the **wasm-publish** workflow (npm), the **go-publish** workflow (Go module tag + C/C++ assets), and the **flutter-publish** workflow (pub.dev).
 2. After the `publish` job succeeds, verify the package is live:
 
 ```bash
