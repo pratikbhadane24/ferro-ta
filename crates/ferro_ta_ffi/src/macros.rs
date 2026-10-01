@@ -138,8 +138,7 @@ macro_rules! ffi_exports {
                     $( let $input = unsafe { $crate::marshal::input($input, len)? }; )+
                     let result = ferro_ta_core::$($path)::+($($input,)+ $($param,)*);
                     // SAFETY: outputs checked non-null above; valid for `len` writes per contract.
-                    unsafe { $crate::marshal::WriteOutputs::write_to(result, ($($out,)+), len) };
-                    Ok(())
+                    unsafe { $crate::marshal::WriteOutputs::write_to(result, ($($out,)+), len) }
                 })
             }
         )+

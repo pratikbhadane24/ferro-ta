@@ -68,6 +68,11 @@ impl Param<f64> for f64 {
 
 /// Copy a core result into caller-allocated output buffers.
 ///
+/// Every output's length is checked against `len` before anything is written,
+/// so a core function returning a different length (a core bug) yields
+/// `Status::Internal` with the caller's buffers untouched, never a partially
+/// initialised buffer reported as success.
+///
 /// `std::ptr::copy` (memmove semantics) is used rather than
 /// `copy_nonoverlapping` so callers may pass an input buffer as the output
 /// (in-place computation): inputs are no longer borrowed once the core
@@ -75,33 +80,41 @@ impl Param<f64> for f64 {
 pub trait WriteOutputs<P> {
     /// # Safety
     /// Each pointer in `ptrs` must be valid for `len` writes (or `len == 0`).
-    unsafe fn write_to(self, ptrs: P, len: usize);
+    unsafe fn write_to(self, ptrs: P, len: usize) -> Result<(), Status>;
 }
 
 /// # Safety
-/// `dst` must be valid for `len` writes (or `len == 0`).
-unsafe fn copy_out<T: Copy>(src: &[T], dst: *mut T, len: usize) {
-    debug_assert_eq!(src.len(), len, "core returned a different length");
-    let n = src.len().min(len);
-    if n > 0 {
-        // SAFETY: `dst` valid for `len >= n` writes per caller contract.
-        unsafe { std::ptr::copy(src.as_ptr(), dst, n) };
+/// `dst` must be valid for `src.len()` writes.
+unsafe fn copy_out<T: Copy>(src: &[T], dst: *mut T) {
+    if !src.is_empty() {
+        // SAFETY: `dst` valid for `src.len()` writes per caller contract.
+        unsafe { std::ptr::copy(src.as_ptr(), dst, src.len()) };
     }
 }
 
 impl<A: Copy> WriteOutputs<(*mut A,)> for Vec<A> {
-    unsafe fn write_to(self, ptrs: (*mut A,), len: usize) {
-        unsafe { copy_out(&self, ptrs.0, len) };
+    unsafe fn write_to(self, ptrs: (*mut A,), len: usize) -> Result<(), Status> {
+        if self.len() != len {
+            return Err(Status::Internal);
+        }
+        // SAFETY: length verified; pointer validity per caller contract.
+        unsafe { copy_out(&self, ptrs.0) };
+        Ok(())
     }
 }
 
 macro_rules! impl_write_tuple {
     ($($t:ident $v:ident $p:ident),+) => {
         impl<$($t: Copy),+> WriteOutputs<($(*mut $t,)+)> for ($(Vec<$t>,)+) {
-            unsafe fn write_to(self, ptrs: ($(*mut $t,)+), len: usize) {
+            unsafe fn write_to(self, ptrs: ($(*mut $t,)+), len: usize) -> Result<(), Status> {
                 let ($($v,)+) = self;
                 let ($($p,)+) = ptrs;
-                $( unsafe { copy_out(&$v, $p, len) }; )+
+                if $( $v.len() != len )||+ {
+                    return Err(Status::Internal);
+                }
+                // SAFETY: lengths verified; pointer validity per caller contract.
+                $( unsafe { copy_out(&$v, $p) }; )+
+                Ok(())
             }
         }
     };
@@ -111,3 +124,28 @@ impl_write_tuple!(A a pa, B b pb);
 impl_write_tuple!(A a pa, B b pb, C c pc);
 impl_write_tuple!(A a pa, B b pb, C c pc, D d pd);
 impl_write_tuple!(A a pa, B b pb, C c pc, D d pd, E e pe);
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn length_mismatch_is_internal_error_and_writes_nothing() {
+        let mut a = [7.0; 4];
+        let mut b = [7.0; 4];
+        let result = unsafe {
+            (vec![1.0; 4], vec![2.0; 3]).write_to((a.as_mut_ptr(), b.as_mut_ptr()), 4)
+        };
+        assert_eq!(result, Err(Status::Internal));
+        assert_eq!(a, [7.0; 4], "first output must stay untouched");
+        assert_eq!(b, [7.0; 4]);
+    }
+
+    #[test]
+    fn single_output_length_mismatch() {
+        let mut a = [7.0; 4];
+        let result = unsafe { vec![1.0; 5].write_to((a.as_mut_ptr(),), 4) };
+        assert_eq!(result, Err(Status::Internal));
+        assert_eq!(a, [7.0; 4]);
+    }
+}

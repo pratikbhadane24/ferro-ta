@@ -1,7 +1,7 @@
 # ferro-ta development Makefile
 # Usage: make <target>
 
-.PHONY: help dev build test lint typecheck fmt docs clean bench version audit prepush hooks flutter flutter-gen ffi-gen go-lib go
+.PHONY: help dev build test lint typecheck fmt docs clean bench version audit prepush hooks flutter flutter-gen ffi-gen go-lib go c-smoke
 
 # Default target
 help:
@@ -20,6 +20,7 @@ help:
 	@echo "  make ffi-gen    Regenerate ffi_spec.json, ferro_ta.h and the Go wrappers"
 	@echo "  make go-lib     Build the C ABI static library into bindings/go/lib/<host>"
 	@echo "  make go         Verify the Go binding (fresh wrappers, vet, race tests)"
+	@echo "  make c-smoke    Compile + run the C smoke test against ferro_ta.h"
 	@echo "  make version    Bump tracked version strings (set VERSION=X.Y.Z)"
 	@echo "  make audit      Run cargo-audit + pip-audit"
 	@echo "  make prepush    Run the local pre-push CI gate (set CHECKS='version rust_fmt' to scope it)"
@@ -84,6 +85,14 @@ go-lib:
 go: go-lib
 	python3 scripts/build_ffi_bindings.py --check
 	cd bindings/go && go vet ./... && go test -race ./...
+
+# Prove the generated header compiles with strict warnings and links from C.
+c-smoke:
+	cargo build -p ferro_ta_ffi --release
+	$(CC) -std=c99 -Wall -Wextra -Werror -pedantic -Icrates/ferro_ta_ffi/include \
+		crates/ferro_ta_ffi/tests/c_smoke/main.c target/release/libferro_ta_ffi.a -lm \
+		-o target/release/c_smoke
+	./target/release/c_smoke
 
 version:
 	@test -n "$(VERSION)" || (echo "Usage: make version VERSION=X.Y.Z" && exit 1)

@@ -16,7 +16,8 @@ pub const FT_ERR_INVALID_PARAM: i32 = 2;
 /// Input arrays differ in length. The C ABI takes one shared `len`, so this is
 /// only produced by language wrappers that accept separately sized arrays.
 pub const FT_ERR_LENGTH_MISMATCH: i32 = 3;
-/// The Rust core panicked. The panic was contained; outputs are unspecified.
+/// Internal error: the Rust core panicked (the panic was contained) or broke
+/// an ABI invariant such as output length. Outputs are unspecified.
 pub const FT_ERR_PANIC: i32 = 4;
 
 /// Internal error type; converted to an `i32` status at the ABI boundary.
@@ -24,6 +25,8 @@ pub const FT_ERR_PANIC: i32 = 4;
 pub enum Status {
     NullPtr,
     InvalidParam,
+    /// A core invariant was violated (e.g. output length != input length).
+    Internal,
 }
 
 impl Status {
@@ -31,6 +34,7 @@ impl Status {
         match self {
             Status::NullPtr => FT_ERR_NULL_PTR,
             Status::InvalidParam => FT_ERR_INVALID_PARAM,
+            Status::Internal => FT_ERR_PANIC,
         }
     }
 }
@@ -55,7 +59,7 @@ pub extern "C" fn ft_status_message(code: i32) -> *const c_char {
         FT_ERR_NULL_PTR => b"null pointer argument\0",
         FT_ERR_INVALID_PARAM => b"invalid parameter\0",
         FT_ERR_LENGTH_MISMATCH => b"input arrays must have the same length\0",
-        FT_ERR_PANIC => b"internal error (panic in ferro_ta_core)\0",
+        FT_ERR_PANIC => b"internal error in ferro_ta_core\0",
         _ => b"unknown status code\0",
     };
     msg.as_ptr().cast()
