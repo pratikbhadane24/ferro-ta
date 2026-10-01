@@ -250,3 +250,50 @@ fn every_spec_name_is_unique_and_prefixed() {
         seen.len()
     );
 }
+
+#[test]
+fn non_finite_float_params_are_invalid() {
+    let close = series(32);
+    let n = close.len();
+    let (mut up, mut mid, mut lo) = (vec![7.0; n], vec![7.0; n], vec![7.0; n]);
+    for bad in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {
+        let status = unsafe {
+            ft_bbands(
+                close.as_ptr(),
+                n,
+                20,
+                bad,
+                2.0,
+                0,
+                up.as_mut_ptr(),
+                mid.as_mut_ptr(),
+                lo.as_mut_ptr(),
+            )
+        };
+        assert_eq!(status, FT_ERR_INVALID_PARAM, "nbdevup={bad}");
+    }
+    assert!(up.iter().chain(&mid).chain(&lo).all(|v| *v == 7.0));
+}
+
+#[test]
+fn finite_edge_float_params_are_accepted() {
+    let close = series(32);
+    let n = close.len();
+    let (mut up, mut mid, mut lo) = (vec![0.0; n], vec![0.0; n], vec![0.0; n]);
+    for ok in [0.0, -1.5, f64::MAX] {
+        let status = unsafe {
+            ft_bbands(
+                close.as_ptr(),
+                n,
+                20,
+                ok,
+                ok,
+                0,
+                up.as_mut_ptr(),
+                mid.as_mut_ptr(),
+                lo.as_mut_ptr(),
+            )
+        };
+        assert_eq!(status, FT_OK, "nbdev={ok}");
+    }
+}
