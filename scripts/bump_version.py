@@ -12,6 +12,8 @@ from __future__ import annotations
 
 import argparse
 import re
+import subprocess
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -106,6 +108,24 @@ CARRIERS = [
         r"\g<1>{version}\g<3>",
     ),
     VersionCarrier(
+        "ffi_cargo",
+        ROOT / "crates" / "ferro_ta_ffi" / "Cargo.toml",
+        r'(?m)^(version = ")([^"]+)(")$',
+        r"\g<1>{version}\g<3>",
+    ),
+    VersionCarrier(
+        "ffi_core_dep",
+        ROOT / "crates" / "ferro_ta_ffi" / "Cargo.toml",
+        r'(ferro_ta_core = \{ path = "\.\./ferro_ta_core", version = ")([^"]+)("[^}]*\})',
+        r"\g<1>{version}\g<3>",
+    ),
+    VersionCarrier(
+        "go_module",
+        ROOT / "bindings" / "go" / "version_gen.go",
+        r'(?m)^(const Version = ")([^"]+)(")$',
+        r"\g<1>{version}\g<3>",
+    ),
+    VersionCarrier(
         "conda",
         ROOT / "conda" / "meta.yaml",
         r'({% set version = ")([^"]+)(" %})',
@@ -164,7 +184,21 @@ def _set_version(version: str) -> int:
             print(f" - {path.relative_to(ROOT)}")
     else:
         print(f"No changes needed. All tracked files already use {version}.")
+    if FFI_CARGO in changed_paths:
+        return _regenerate_ffi_bindings()
     return 0
+
+
+FFI_CARGO = ROOT / "crates" / "ferro_ta_ffi" / "Cargo.toml"
+
+
+def _regenerate_ffi_bindings() -> int:
+    """The C header, ffi_spec.json and Go files embed the version; regenerate them."""
+    script = ROOT / "scripts" / "build_ffi_bindings.py"
+    result = subprocess.run([sys.executable, str(script)], cwd=ROOT)
+    if result.returncode != 0:
+        print("ERROR: regenerating FFI bindings failed; run `make ffi-gen` manually.")
+    return result.returncode
 
 
 def main() -> int:
