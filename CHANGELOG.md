@@ -33,6 +33,19 @@ and the project uses [Semantic Versioning](https://semver.org/).
   `make ffi-gen`, `make go-lib`, `make go`, `make c-smoke`, `make ffi-check`.
 - API manifest / coverage table gains a "C / Go" column.
 
+### Changed
+
+- Dependencies: `multiversion` 0.8 → 0.9 (golden fixtures byte-identical),
+  `serde` 1.0.229, `anchore/sbom-action` 0.24.2; dev tooling minimums raised to
+  `pytest` 9.1.1, `pytest-cov` 7.1.0, `ruff` 0.16.6, `matplotlib` 3.10.9.
+  `mcp` stays `<2`: mcp 2.x renamed `FastMCP` and would break `ferro_ta.mcp`.
+
+### Fixed
+
+- `uv.lock`: `urllib3` 2.8.0 and `virtualenv` 21.14.2 for pip-audit advisories.
+- Docs build no longer fails when an external intersphinx inventory is
+  unreachable (checked-in fallbacks in `docs/_intersphinx/`).
+
 ## [1.3.1] — 2026-09-21
 
 ### Fixed
