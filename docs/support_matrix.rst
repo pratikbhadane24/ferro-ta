@@ -95,8 +95,9 @@ Module status
 Language bindings
 -----------------
 
-``ferro_ta_core`` is the Rust core API. Python, JavaScript/WASM, and Flutter
-are first-class wrappers over it. The counts below are a snapshot of the
+``ferro_ta_core`` is the Rust core API. Python, JavaScript/WASM, Flutter, and
+Go are first-class wrappers over it; Go (and C/C++) go through the shared C ABI
+crate ``ferro_ta_ffi``. The counts below are a snapshot of the
 generated :doc:`languages/coverage` table and must be refreshed with
 ``python3 scripts/build_api_manifest.py``.
 
@@ -125,6 +126,17 @@ generated :doc:`languages/coverage` table and must be refreshed with
      - flutter_rust_bridge over core; prebuilt natives for Android, iOS,
        macOS, Windows, and Linux. Flutter web reuses ``ferro-ta-wasm``.
        131 names are present on all four surfaces.
+   * - Go
+     - Go module ``github.com/pratikbhadane24/ferro-ta/bindings/go``
+     - 259 C ABI / Go exports
+     - cgo over the ``ferro_ta_ffi`` C ABI; prebuilt static archives for
+       Linux and macOS (amd64/arm64) and Windows (amd64), so ``go get`` needs
+       no Rust toolchain. Includes option pricing and streaming indicators.
+   * - C / C++
+     - GitHub Release assets (``ferro_ta.h`` + libraries)
+     - Same surface as Go
+     - Generated header; static and shared libraries per platform (MSVC
+       build on Windows).
 
 Do not claim full parity from this page — use :doc:`languages/coverage`.
 

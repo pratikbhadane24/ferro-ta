@@ -8145,6 +8145,273 @@
         "vol_cone",
         "walk_forward_indices"
       ]
+    },
+    "c_abi_go": {
+      "export_count": 262,
+      "exports": [
+        "StreamingATR",
+        "StreamingBBANDS",
+        "StreamingEMA",
+        "StreamingMACD",
+        "StreamingRSI",
+        "StreamingSMA",
+        "StreamingSTOCH",
+        "StreamingSUPERTREND",
+        "StreamingVWAP",
+        "ac",
+        "ad",
+        "add",
+        "adosc",
+        "adx",
+        "adxr",
+        "alligator",
+        "alma",
+        "american_price_baw",
+        "annualized_basis",
+        "ao",
+        "apo",
+        "aroon",
+        "aroonosc",
+        "atr",
+        "avgprice",
+        "back_adjusted_continuous",
+        "basis",
+        "bbands",
+        "bbpercent",
+        "bbwidth",
+        "beta",
+        "black_76_greeks",
+        "black_76_price",
+        "black_scholes_extended_greeks",
+        "black_scholes_greeks",
+        "black_scholes_price",
+        "bop",
+        "carry_spread",
+        "cci",
+        "cdl2crows",
+        "cdl3blackcrows",
+        "cdl3inside",
+        "cdl3linestrike",
+        "cdl3outside",
+        "cdl3starsinsouth",
+        "cdl3whitesoldiers",
+        "cdlabandonedbaby",
+        "cdladvanceblock",
+        "cdlbelthold",
+        "cdlbreakaway",
+        "cdlclosingmarubozu",
+        "cdlconcealbabyswall",
+        "cdlcounterattack",
+        "cdldarkcloudcover",
+        "cdldoji",
+        "cdldojistar",
+        "cdldragonflydoji",
+        "cdlengulfing",
+        "cdleveningdojistar",
+        "cdleveningstar",
+        "cdlgapsidesidewhite",
+        "cdlgravestonedoji",
+        "cdlhammer",
+        "cdlhangingman",
+        "cdlharami",
+        "cdlharamicross",
+        "cdlhighwave",
+        "cdlhikkake",
+        "cdlhikkakemod",
+        "cdlhomingpigeon",
+        "cdlidentical3crows",
+        "cdlinneck",
+        "cdlinvertedhammer",
+        "cdlkicking",
+        "cdlkickingbylength",
+        "cdlladderbottom",
+        "cdllongleggeddoji",
+        "cdllongline",
+        "cdlmarubozu",
+        "cdlmatchinglow",
+        "cdlmathold",
+        "cdlmorningdojistar",
+        "cdlmorningstar",
+        "cdlonneck",
+        "cdlpiercing",
+        "cdlrickshawman",
+        "cdlrisefall3methods",
+        "cdlseparatinglines",
+        "cdlshootingstar",
+        "cdlshortline",
+        "cdlspinningtop",
+        "cdlstalledpattern",
+        "cdlsticksandwich",
+        "cdltakuri",
+        "cdltasukigap",
+        "cdlthrusting",
+        "cdltristar",
+        "cdlunique3river",
+        "cdlupsidegap2crows",
+        "cdlxsidegap3methods",
+        "chaikin_vol",
+        "chande_kroll_stop",
+        "chandelier_exit",
+        "check_cross",
+        "cho",
+        "choppiness_index",
+        "close_to_close_vol",
+        "cmf",
+        "cmo",
+        "coppock",
+        "correl",
+        "crsi",
+        "dema",
+        "detect_breaks_cusum",
+        "digital_greeks",
+        "digital_price",
+        "div",
+        "dmi",
+        "donchian",
+        "dpo",
+        "dx",
+        "early_exercise_premium",
+        "elder_ray",
+        "ema",
+        "emv",
+        "expected_move",
+        "fisher",
+        "force_index",
+        "forward_fill_nan",
+        "frama",
+        "funding_cumulative_pnl",
+        "garman_klass_vol",
+        "gator",
+        "half_kelly_fraction",
+        "historical_volatility",
+        "ht_dcperiod",
+        "ht_dcphase",
+        "ht_phasor",
+        "ht_sine",
+        "ht_trendline",
+        "ht_trendmode",
+        "hull_ma",
+        "ichimoku",
+        "implied_carry_rate",
+        "implied_volatility",
+        "iv_percentile",
+        "iv_rank",
+        "iv_zscore",
+        "kama",
+        "kelly_fraction",
+        "keltner_channels",
+        "kst",
+        "kvo",
+        "linearreg",
+        "linearreg_angle",
+        "linearreg_intercept",
+        "linearreg_slope",
+        "ma",
+        "ma_envelopes",
+        "macd",
+        "macdext",
+        "macdfix",
+        "mama",
+        "mass",
+        "mavp",
+        "max",
+        "mcginley",
+        "median",
+        "median_bands",
+        "medprice",
+        "mfi",
+        "midpoint",
+        "midprice",
+        "min",
+        "minus_di",
+        "minus_dm",
+        "mode",
+        "mom",
+        "mult",
+        "natr",
+        "nvi",
+        "nvi_with_ema",
+        "obv",
+        "obv_smoothed",
+        "parity_gap",
+        "parkinson_vol",
+        "plus_di",
+        "plus_dm",
+        "po",
+        "ppo",
+        "price_lower_bound",
+        "price_upper_bound",
+        "put_call_parity_deviation",
+        "pvi",
+        "pvi_with_signal",
+        "pvt",
+        "rank_values",
+        "ratio",
+        "ratio_adjusted_continuous",
+        "regime_adx",
+        "regime_combined",
+        "relative_strength",
+        "roc",
+        "rocp",
+        "rocr",
+        "rocr100",
+        "rogers_satchell_vol",
+        "roll_yield",
+        "rolling_beta",
+        "rolling_max",
+        "rolling_maxindex",
+        "rolling_min",
+        "rolling_minindex",
+        "rolling_sum",
+        "rolling_variance_break",
+        "rsi",
+        "rsi_threshold_signals",
+        "rvi",
+        "rvol",
+        "rwi",
+        "sar",
+        "sarext",
+        "sliding_max",
+        "sliding_min",
+        "sma",
+        "spread",
+        "starc",
+        "stc",
+        "stddev",
+        "stoch",
+        "stochf",
+        "stochrsi",
+        "sub",
+        "sum",
+        "supertrend",
+        "synthetic_forward",
+        "synthetic_spot",
+        "t3",
+        "tema",
+        "trange",
+        "trima",
+        "trix",
+        "tsf",
+        "tsi",
+        "typprice",
+        "ulcer_index",
+        "ultosc",
+        "var",
+        "vidya",
+        "volosc",
+        "vortex",
+        "vroc",
+        "vwap",
+        "vwma",
+        "wclprice",
+        "weighted_continuous",
+        "williams_fractals",
+        "willr",
+        "wma",
+        "yang_zhang_vol",
+        "zlema",
+        "zscore_series"
+      ]
     }
   },
   "parity_summary": {
@@ -8697,12 +8964,13 @@
   },
   "coverage": {
     "counts": {
-      "row_count": 382,
+      "row_count": 384,
       "core_count": 360,
       "python_count": 247,
       "wasm_count": 344,
       "flutter_count": 194,
       "flutter_excluded_count": 50,
+      "go_count": 259,
       "common_python_wasm_count": 231,
       "common_all_four_count": 131
     },
@@ -8716,10 +8984,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": null,
         "core_name": "ac",
         "wasm_name": "ac",
-        "flutter_name": "ac"
+        "flutter_name": "ac",
+        "go_name": "ac"
       },
       {
         "key": "acos",
@@ -8730,10 +9000,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": "ACOS",
         "core_name": "math_acos",
         "wasm_name": "transform_acos",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "ad",
@@ -8744,10 +9016,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "AD",
         "core_name": "ad",
         "wasm_name": "ad",
-        "flutter_name": "ad"
+        "flutter_name": "ad",
+        "go_name": "ad"
       },
       {
         "key": "add",
@@ -8758,10 +9032,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "ADD",
         "core_name": "add",
         "wasm_name": "math_add",
-        "flutter_name": "math_add"
+        "flutter_name": "math_add",
+        "go_name": "add"
       },
       {
         "key": "adosc",
@@ -8772,10 +9048,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "ADOSC",
         "core_name": "adosc",
         "wasm_name": "adosc",
-        "flutter_name": "adosc"
+        "flutter_name": "adosc",
+        "go_name": "adosc"
       },
       {
         "key": "adx",
@@ -8786,10 +9064,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "ADX",
         "core_name": "adx",
         "wasm_name": "adx",
-        "flutter_name": "adx"
+        "flutter_name": "adx",
+        "go_name": "adx"
       },
       {
         "key": "adxall",
@@ -8800,10 +9080,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "adx_all",
         "wasm_name": "adx_all",
-        "flutter_name": "adx_all"
+        "flutter_name": "adx_all",
+        "go_name": null
       },
       {
         "key": "adxr",
@@ -8814,10 +9096,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "ADXR",
         "core_name": "adxr",
         "wasm_name": "adxr",
-        "flutter_name": "adxr"
+        "flutter_name": "adxr",
+        "go_name": "adxr"
       },
       {
         "key": "aggregategreeksdense",
@@ -8828,10 +9112,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": false,
         "python_name": null,
         "core_name": "aggregate_greeks_dense",
         "wasm_name": "aggregate_greeks_dense",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "aggregateticks",
@@ -8842,10 +9128,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": false,
         "python_name": "aggregate_ticks",
         "core_name": "aggregate_tick_bars",
         "wasm_name": "aggregate_tick_bars",
-        "flutter_name": "aggregate_tick_bars"
+        "flutter_name": "aggregate_tick_bars",
+        "go_name": null
       },
       {
         "key": "aggregatetimebars",
@@ -8856,10 +9144,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": false,
         "python_name": null,
         "core_name": "aggregate_time_bars",
         "wasm_name": "aggregate_time_bars",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "aggregatevolumebarsticks",
@@ -8870,10 +9160,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "aggregate_volume_bars_ticks",
         "wasm_name": "aggregate_volume_bars_ticks",
-        "flutter_name": "aggregate_volume_bars_ticks"
+        "flutter_name": "aggregate_volume_bars_ticks",
+        "go_name": null
       },
       {
         "key": "alertevent",
@@ -8884,10 +9176,12 @@
         "wasm": false,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": "AlertEvent",
         "core_name": null,
         "wasm_name": null,
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "alertmanager",
@@ -8898,10 +9192,12 @@
         "wasm": false,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": "AlertManager",
         "core_name": null,
         "wasm_name": null,
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "alligator",
@@ -8912,10 +9208,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "ALLIGATOR",
         "core_name": "alligator",
         "wasm_name": "alligator",
-        "flutter_name": "alligator"
+        "flutter_name": "alligator",
+        "go_name": "alligator"
       },
       {
         "key": "alma",
@@ -8926,10 +9224,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "ALMA",
         "core_name": "alma",
         "wasm_name": "alma",
-        "flutter_name": "alma"
+        "flutter_name": "alma",
+        "go_name": "alma"
       },
       {
         "key": "americanprice",
@@ -8940,10 +9240,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": false,
         "python_name": null,
         "core_name": null,
         "wasm_name": "american_price",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "americanpricebaw",
@@ -8954,10 +9256,12 @@
         "wasm": false,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": null,
         "core_name": "american_price_baw",
         "wasm_name": null,
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "american_price_baw"
       },
       {
         "key": "annualizedbasis",
@@ -8968,10 +9272,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": null,
         "core_name": "annualized_basis",
         "wasm_name": "annualized_basis",
-        "flutter_name": "annualized_basis"
+        "flutter_name": "annualized_basis",
+        "go_name": "annualized_basis"
       },
       {
         "key": "ao",
@@ -8982,10 +9288,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": null,
         "core_name": "ao",
         "wasm_name": "ao",
-        "flutter_name": "ao"
+        "flutter_name": "ao",
+        "go_name": "ao"
       },
       {
         "key": "apo",
@@ -8996,10 +9304,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "APO",
         "core_name": "apo",
         "wasm_name": "apo",
-        "flutter_name": "apo"
+        "flutter_name": "apo",
+        "go_name": "apo"
       },
       {
         "key": "aroon",
@@ -9010,10 +9320,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "AROON",
         "core_name": "aroon",
         "wasm_name": "aroon",
-        "flutter_name": "aroon"
+        "flutter_name": "aroon",
+        "go_name": "aroon"
       },
       {
         "key": "aroonosc",
@@ -9024,10 +9336,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "AROONOSC",
         "core_name": "aroonosc",
         "wasm_name": "aroonosc",
-        "flutter_name": "aroonosc"
+        "flutter_name": "aroonosc",
+        "go_name": "aroonosc"
       },
       {
         "key": "asin",
@@ -9038,10 +9352,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": "ASIN",
         "core_name": "math_asin",
         "wasm_name": "transform_asin",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "atan",
@@ -9052,10 +9368,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": "ATAN",
         "core_name": "math_atan",
         "wasm_name": "transform_atan",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "atmindex",
@@ -9066,10 +9384,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": false,
         "python_name": null,
         "core_name": "atm_index",
         "wasm_name": "atm_index",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "atmiv",
@@ -9080,10 +9400,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "atm_iv",
         "wasm_name": "atm_iv",
-        "flutter_name": "atm_iv"
+        "flutter_name": "atm_iv",
+        "go_name": null
       },
       {
         "key": "atr",
@@ -9094,10 +9416,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "ATR",
         "core_name": "atr",
         "wasm_name": "atr",
-        "flutter_name": "atr"
+        "flutter_name": "atr",
+        "go_name": "atr"
       },
       {
         "key": "avgprice",
@@ -9108,10 +9432,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "AVGPRICE",
         "core_name": "avgprice",
         "wasm_name": "avgprice",
-        "flutter_name": "avgprice"
+        "flutter_name": "avgprice",
+        "go_name": "avgprice"
       },
       {
         "key": "backadjustedcontinuous",
@@ -9122,10 +9448,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": null,
         "core_name": "back_adjusted_continuous",
         "wasm_name": "back_adjusted_continuous",
-        "flutter_name": "back_adjusted_continuous"
+        "flutter_name": "back_adjusted_continuous",
+        "go_name": "back_adjusted_continuous"
       },
       {
         "key": "backtestcore",
@@ -9136,10 +9464,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": false,
         "python_name": null,
         "core_name": "backtest_core",
         "wasm_name": "backtest_core",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "backtestmultiassetcore",
@@ -9150,10 +9480,12 @@
         "wasm": false,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "backtest_multi_asset_core",
         "wasm_name": null,
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "backtestohlcv",
@@ -9164,10 +9496,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": false,
         "python_name": null,
         "core_name": null,
         "wasm_name": "backtest_ohlcv",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "backtestohlcvcore",
@@ -9178,10 +9512,12 @@
         "wasm": false,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "backtest_ohlcv_core",
         "wasm_name": null,
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "basis",
@@ -9192,10 +9528,12 @@
         "wasm": false,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": null,
         "core_name": "basis",
         "wasm_name": null,
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "basis"
       },
       {
         "key": "batchadx",
@@ -9206,10 +9544,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "batch_adx",
         "wasm_name": "batch_adx",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "batchapply",
@@ -9220,10 +9560,12 @@
         "wasm": false,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": "batch_apply",
         "core_name": null,
         "wasm_name": null,
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "batchatr",
@@ -9234,10 +9576,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "batch_atr",
         "wasm_name": "batch_atr",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "batchdtw",
@@ -9248,10 +9592,12 @@
         "wasm": false,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": "BATCH_DTW",
         "core_name": null,
         "wasm_name": null,
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "batchema",
@@ -9262,10 +9608,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": "batch_ema",
         "core_name": "batch_ema",
         "wasm_name": "batch_ema",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "batchrsi",
@@ -9276,10 +9624,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": "batch_rsi",
         "core_name": "batch_rsi",
         "wasm_name": "batch_rsi",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "batchsma",
@@ -9290,10 +9640,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": "batch_sma",
         "core_name": "batch_sma",
         "wasm_name": "batch_sma",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "batchstoch",
@@ -9304,10 +9656,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "batch_stoch",
         "wasm_name": "batch_stoch",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "bbands",
@@ -9318,10 +9672,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "BBANDS",
         "core_name": "bbands",
         "wasm_name": "bbands",
-        "flutter_name": "bbands"
+        "flutter_name": "bbands",
+        "go_name": "bbands"
       },
       {
         "key": "bbpercent",
@@ -9332,10 +9688,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "BBPERCENT",
         "core_name": "bbpercent",
         "wasm_name": "bbpercent",
-        "flutter_name": "bbpercent"
+        "flutter_name": "bbpercent",
+        "go_name": "bbpercent"
       },
       {
         "key": "bbwidth",
@@ -9346,10 +9704,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "BBWIDTH",
         "core_name": "bbwidth",
         "wasm_name": "bbwidth",
-        "flutter_name": "bbwidth"
+        "flutter_name": "bbwidth",
+        "go_name": "bbwidth"
       },
       {
         "key": "beta",
@@ -9360,10 +9720,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "BETA",
         "core_name": "beta",
         "wasm_name": "beta_rolling",
-        "flutter_name": "beta_rolling"
+        "flutter_name": "beta_rolling",
+        "go_name": "beta"
       },
       {
         "key": "betafull",
@@ -9374,10 +9736,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "beta_full",
         "wasm_name": "beta_full",
-        "flutter_name": "beta_full"
+        "flutter_name": "beta_full",
+        "go_name": null
       },
       {
         "key": "black76greeks",
@@ -9388,10 +9752,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": true,
         "python_name": null,
         "core_name": "black_76_greeks",
         "wasm_name": "black_76_greeks",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "black_76_greeks"
       },
       {
         "key": "black76price",
@@ -9402,10 +9768,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": true,
         "python_name": null,
         "core_name": "black_76_price",
         "wasm_name": "black_76_price",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "black_76_price"
       },
       {
         "key": "blackscholesextendedgreeks",
@@ -9416,10 +9784,12 @@
         "wasm": false,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": null,
         "core_name": "black_scholes_extended_greeks",
         "wasm_name": null,
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "black_scholes_extended_greeks"
       },
       {
         "key": "blackscholesgreeks",
@@ -9430,10 +9800,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": true,
         "python_name": null,
         "core_name": "black_scholes_greeks",
         "wasm_name": "black_scholes_greeks",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "black_scholes_greeks"
       },
       {
         "key": "blackscholesprice",
@@ -9444,10 +9816,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": true,
         "python_name": null,
         "core_name": "black_scholes_price",
         "wasm_name": "black_scholes_price",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "black_scholes_price"
       },
       {
         "key": "bop",
@@ -9458,10 +9832,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "BOP",
         "core_name": "bop",
         "wasm_name": "bop",
-        "flutter_name": "bop"
+        "flutter_name": "bop",
+        "go_name": "bop"
       },
       {
         "key": "bottomnindices",
@@ -9472,10 +9848,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": false,
         "python_name": null,
         "core_name": "bottom_n_indices",
         "wasm_name": "bottom_n_indices",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "calendarspreads",
@@ -9486,10 +9864,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "calendar_spreads",
         "wasm_name": "calendar_spreads",
-        "flutter_name": "calendar_spreads"
+        "flutter_name": "calendar_spreads",
+        "go_name": null
       },
       {
         "key": "carryspread",
@@ -9500,10 +9880,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": null,
         "core_name": "carry_spread",
         "wasm_name": "carry_spread",
-        "flutter_name": "carry_spread"
+        "flutter_name": "carry_spread",
+        "go_name": "carry_spread"
       },
       {
         "key": "cci",
@@ -9514,10 +9896,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CCI",
         "core_name": "cci",
         "wasm_name": "cci",
-        "flutter_name": "cci"
+        "flutter_name": "cci",
+        "go_name": "cci"
       },
       {
         "key": "cdf",
@@ -9528,10 +9912,12 @@
         "wasm": false,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "cdf",
         "wasm_name": null,
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "cdl2crows",
@@ -9542,10 +9928,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDL2CROWS",
         "core_name": "cdl2crows",
         "wasm_name": "cdl2crows",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdl2crows"
       },
       {
         "key": "cdl3blackcrows",
@@ -9556,10 +9944,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDL3BLACKCROWS",
         "core_name": "cdl3blackcrows",
         "wasm_name": "cdl3blackcrows",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdl3blackcrows"
       },
       {
         "key": "cdl3inside",
@@ -9570,10 +9960,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDL3INSIDE",
         "core_name": "cdl3inside",
         "wasm_name": "cdl3inside",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdl3inside"
       },
       {
         "key": "cdl3linestrike",
@@ -9584,10 +9976,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDL3LINESTRIKE",
         "core_name": "cdl3linestrike",
         "wasm_name": "cdl3linestrike",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdl3linestrike"
       },
       {
         "key": "cdl3outside",
@@ -9598,10 +9992,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDL3OUTSIDE",
         "core_name": "cdl3outside",
         "wasm_name": "cdl3outside",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdl3outside"
       },
       {
         "key": "cdl3starsinsouth",
@@ -9612,10 +10008,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDL3STARSINSOUTH",
         "core_name": "cdl3starsinsouth",
         "wasm_name": "cdl3starsinsouth",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdl3starsinsouth"
       },
       {
         "key": "cdl3whitesoldiers",
@@ -9626,10 +10024,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDL3WHITESOLDIERS",
         "core_name": "cdl3whitesoldiers",
         "wasm_name": "cdl3whitesoldiers",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdl3whitesoldiers"
       },
       {
         "key": "cdlabandonedbaby",
@@ -9640,10 +10040,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLABANDONEDBABY",
         "core_name": "cdlabandonedbaby",
         "wasm_name": "cdlabandonedbaby",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdlabandonedbaby"
       },
       {
         "key": "cdladvanceblock",
@@ -9654,10 +10056,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLADVANCEBLOCK",
         "core_name": "cdladvanceblock",
         "wasm_name": "cdladvanceblock",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdladvanceblock"
       },
       {
         "key": "cdlbelthold",
@@ -9668,10 +10072,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLBELTHOLD",
         "core_name": "cdlbelthold",
         "wasm_name": "cdlbelthold",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdlbelthold"
       },
       {
         "key": "cdlbreakaway",
@@ -9682,10 +10088,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLBREAKAWAY",
         "core_name": "cdlbreakaway",
         "wasm_name": "cdlbreakaway",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdlbreakaway"
       },
       {
         "key": "cdlclosingmarubozu",
@@ -9696,10 +10104,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLCLOSINGMARUBOZU",
         "core_name": "cdlclosingmarubozu",
         "wasm_name": "cdlclosingmarubozu",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdlclosingmarubozu"
       },
       {
         "key": "cdlconcealbabyswall",
@@ -9710,10 +10120,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLCONCEALBABYSWALL",
         "core_name": "cdlconcealbabyswall",
         "wasm_name": "cdlconcealbabyswall",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdlconcealbabyswall"
       },
       {
         "key": "cdlcounterattack",
@@ -9724,10 +10136,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLCOUNTERATTACK",
         "core_name": "cdlcounterattack",
         "wasm_name": "cdlcounterattack",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdlcounterattack"
       },
       {
         "key": "cdldarkcloudcover",
@@ -9738,10 +10152,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLDARKCLOUDCOVER",
         "core_name": "cdldarkcloudcover",
         "wasm_name": "cdldarkcloudcover",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdldarkcloudcover"
       },
       {
         "key": "cdldoji",
@@ -9752,10 +10168,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLDOJI",
         "core_name": "cdldoji",
         "wasm_name": "cdldoji",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdldoji"
       },
       {
         "key": "cdldojistar",
@@ -9766,10 +10184,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLDOJISTAR",
         "core_name": "cdldojistar",
         "wasm_name": "cdldojistar",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdldojistar"
       },
       {
         "key": "cdldragonflydoji",
@@ -9780,10 +10200,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLDRAGONFLYDOJI",
         "core_name": "cdldragonflydoji",
         "wasm_name": "cdldragonflydoji",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdldragonflydoji"
       },
       {
         "key": "cdlengulfing",
@@ -9794,10 +10216,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLENGULFING",
         "core_name": "cdlengulfing",
         "wasm_name": "cdlengulfing",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdlengulfing"
       },
       {
         "key": "cdleveningdojistar",
@@ -9808,10 +10232,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLEVENINGDOJISTAR",
         "core_name": "cdleveningdojistar",
         "wasm_name": "cdleveningdojistar",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdleveningdojistar"
       },
       {
         "key": "cdleveningstar",
@@ -9822,10 +10248,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLEVENINGSTAR",
         "core_name": "cdleveningstar",
         "wasm_name": "cdleveningstar",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdleveningstar"
       },
       {
         "key": "cdlgapsidesidewhite",
@@ -9836,10 +10264,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLGAPSIDESIDEWHITE",
         "core_name": "cdlgapsidesidewhite",
         "wasm_name": "cdlgapsidesidewhite",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdlgapsidesidewhite"
       },
       {
         "key": "cdlgravestonedoji",
@@ -9850,10 +10280,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLGRAVESTONEDOJI",
         "core_name": "cdlgravestonedoji",
         "wasm_name": "cdlgravestonedoji",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdlgravestonedoji"
       },
       {
         "key": "cdlhammer",
@@ -9864,10 +10296,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLHAMMER",
         "core_name": "cdlhammer",
         "wasm_name": "cdlhammer",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdlhammer"
       },
       {
         "key": "cdlhangingman",
@@ -9878,10 +10312,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLHANGINGMAN",
         "core_name": "cdlhangingman",
         "wasm_name": "cdlhangingman",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdlhangingman"
       },
       {
         "key": "cdlharami",
@@ -9892,10 +10328,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLHARAMI",
         "core_name": "cdlharami",
         "wasm_name": "cdlharami",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdlharami"
       },
       {
         "key": "cdlharamicross",
@@ -9906,10 +10344,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLHARAMICROSS",
         "core_name": "cdlharamicross",
         "wasm_name": "cdlharamicross",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdlharamicross"
       },
       {
         "key": "cdlhighwave",
@@ -9920,10 +10360,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLHIGHWAVE",
         "core_name": "cdlhighwave",
         "wasm_name": "cdlhighwave",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdlhighwave"
       },
       {
         "key": "cdlhikkake",
@@ -9934,10 +10376,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLHIKKAKE",
         "core_name": "cdlhikkake",
         "wasm_name": "cdlhikkake",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdlhikkake"
       },
       {
         "key": "cdlhikkakemod",
@@ -9948,10 +10392,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLHIKKAKEMOD",
         "core_name": "cdlhikkakemod",
         "wasm_name": "cdlhikkakemod",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdlhikkakemod"
       },
       {
         "key": "cdlhomingpigeon",
@@ -9962,10 +10408,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLHOMINGPIGEON",
         "core_name": "cdlhomingpigeon",
         "wasm_name": "cdlhomingpigeon",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdlhomingpigeon"
       },
       {
         "key": "cdlidentical3crows",
@@ -9976,10 +10424,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLIDENTICAL3CROWS",
         "core_name": "cdlidentical3crows",
         "wasm_name": "cdlidentical3crows",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdlidentical3crows"
       },
       {
         "key": "cdlinneck",
@@ -9990,10 +10440,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLINNECK",
         "core_name": "cdlinneck",
         "wasm_name": "cdlinneck",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdlinneck"
       },
       {
         "key": "cdlinvertedhammer",
@@ -10004,10 +10456,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLINVERTEDHAMMER",
         "core_name": "cdlinvertedhammer",
         "wasm_name": "cdlinvertedhammer",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdlinvertedhammer"
       },
       {
         "key": "cdlkicking",
@@ -10018,10 +10472,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLKICKING",
         "core_name": "cdlkicking",
         "wasm_name": "cdlkicking",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdlkicking"
       },
       {
         "key": "cdlkickingbylength",
@@ -10032,10 +10488,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLKICKINGBYLENGTH",
         "core_name": "cdlkickingbylength",
         "wasm_name": "cdlkickingbylength",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdlkickingbylength"
       },
       {
         "key": "cdlladderbottom",
@@ -10046,10 +10504,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLLADDERBOTTOM",
         "core_name": "cdlladderbottom",
         "wasm_name": "cdlladderbottom",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdlladderbottom"
       },
       {
         "key": "cdllongleggeddoji",
@@ -10060,10 +10520,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLLONGLEGGEDDOJI",
         "core_name": "cdllongleggeddoji",
         "wasm_name": "cdllongleggeddoji",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdllongleggeddoji"
       },
       {
         "key": "cdllongline",
@@ -10074,10 +10536,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLLONGLINE",
         "core_name": "cdllongline",
         "wasm_name": "cdllongline",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdllongline"
       },
       {
         "key": "cdlmarubozu",
@@ -10088,10 +10552,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLMARUBOZU",
         "core_name": "cdlmarubozu",
         "wasm_name": "cdlmarubozu",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdlmarubozu"
       },
       {
         "key": "cdlmatchinglow",
@@ -10102,10 +10568,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLMATCHINGLOW",
         "core_name": "cdlmatchinglow",
         "wasm_name": "cdlmatchinglow",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdlmatchinglow"
       },
       {
         "key": "cdlmathold",
@@ -10116,10 +10584,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLMATHOLD",
         "core_name": "cdlmathold",
         "wasm_name": "cdlmathold",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdlmathold"
       },
       {
         "key": "cdlmorningdojistar",
@@ -10130,10 +10600,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLMORNINGDOJISTAR",
         "core_name": "cdlmorningdojistar",
         "wasm_name": "cdlmorningdojistar",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdlmorningdojistar"
       },
       {
         "key": "cdlmorningstar",
@@ -10144,10 +10616,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLMORNINGSTAR",
         "core_name": "cdlmorningstar",
         "wasm_name": "cdlmorningstar",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdlmorningstar"
       },
       {
         "key": "cdlonneck",
@@ -10158,10 +10632,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLONNECK",
         "core_name": "cdlonneck",
         "wasm_name": "cdlonneck",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdlonneck"
       },
       {
         "key": "cdlpiercing",
@@ -10172,10 +10648,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLPIERCING",
         "core_name": "cdlpiercing",
         "wasm_name": "cdlpiercing",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdlpiercing"
       },
       {
         "key": "cdlrickshawman",
@@ -10186,10 +10664,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLRICKSHAWMAN",
         "core_name": "cdlrickshawman",
         "wasm_name": "cdlrickshawman",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdlrickshawman"
       },
       {
         "key": "cdlrisefall3methods",
@@ -10200,10 +10680,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLRISEFALL3METHODS",
         "core_name": "cdlrisefall3methods",
         "wasm_name": "cdlrisefall3methods",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdlrisefall3methods"
       },
       {
         "key": "cdlseparatinglines",
@@ -10214,10 +10696,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLSEPARATINGLINES",
         "core_name": "cdlseparatinglines",
         "wasm_name": "cdlseparatinglines",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdlseparatinglines"
       },
       {
         "key": "cdlshootingstar",
@@ -10228,10 +10712,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLSHOOTINGSTAR",
         "core_name": "cdlshootingstar",
         "wasm_name": "cdlshootingstar",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdlshootingstar"
       },
       {
         "key": "cdlshortline",
@@ -10242,10 +10728,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLSHORTLINE",
         "core_name": "cdlshortline",
         "wasm_name": "cdlshortline",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdlshortline"
       },
       {
         "key": "cdlspinningtop",
@@ -10256,10 +10744,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLSPINNINGTOP",
         "core_name": "cdlspinningtop",
         "wasm_name": "cdlspinningtop",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdlspinningtop"
       },
       {
         "key": "cdlstalledpattern",
@@ -10270,10 +10760,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLSTALLEDPATTERN",
         "core_name": "cdlstalledpattern",
         "wasm_name": "cdlstalledpattern",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdlstalledpattern"
       },
       {
         "key": "cdlsticksandwich",
@@ -10284,10 +10776,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLSTICKSANDWICH",
         "core_name": "cdlsticksandwich",
         "wasm_name": "cdlsticksandwich",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdlsticksandwich"
       },
       {
         "key": "cdltakuri",
@@ -10298,10 +10792,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLTAKURI",
         "core_name": "cdltakuri",
         "wasm_name": "cdltakuri",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdltakuri"
       },
       {
         "key": "cdltasukigap",
@@ -10312,10 +10808,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLTASUKIGAP",
         "core_name": "cdltasukigap",
         "wasm_name": "cdltasukigap",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdltasukigap"
       },
       {
         "key": "cdlthrusting",
@@ -10326,10 +10824,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLTHRUSTING",
         "core_name": "cdlthrusting",
         "wasm_name": "cdlthrusting",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdlthrusting"
       },
       {
         "key": "cdltristar",
@@ -10340,10 +10840,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLTRISTAR",
         "core_name": "cdltristar",
         "wasm_name": "cdltristar",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdltristar"
       },
       {
         "key": "cdlunique3river",
@@ -10354,10 +10856,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLUNIQUE3RIVER",
         "core_name": "cdlunique3river",
         "wasm_name": "cdlunique3river",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdlunique3river"
       },
       {
         "key": "cdlupsidegap2crows",
@@ -10368,10 +10872,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLUPSIDEGAP2CROWS",
         "core_name": "cdlupsidegap2crows",
         "wasm_name": "cdlupsidegap2crows",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdlupsidegap2crows"
       },
       {
         "key": "cdlxsidegap3methods",
@@ -10382,10 +10888,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CDLXSIDEGAP3METHODS",
         "core_name": "cdlxsidegap3methods",
         "wasm_name": "cdlxsidegap3methods",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "cdlxsidegap3methods"
       },
       {
         "key": "ceil",
@@ -10396,10 +10904,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": "CEIL",
         "core_name": "math_ceil",
         "wasm_name": "transform_ceil",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "chaikinvol",
@@ -10410,10 +10920,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CHAIKIN_VOL",
         "core_name": "chaikin_vol",
         "wasm_name": "chaikin_vol",
-        "flutter_name": "chaikin_vol"
+        "flutter_name": "chaikin_vol",
+        "go_name": "chaikin_vol"
       },
       {
         "key": "chandekrollstop",
@@ -10424,10 +10936,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CHANDE_KROLL_STOP",
         "core_name": "chande_kroll_stop",
         "wasm_name": "chande_kroll_stop",
-        "flutter_name": "chande_kroll_stop"
+        "flutter_name": "chande_kroll_stop",
+        "go_name": "chande_kroll_stop"
       },
       {
         "key": "chandelierexit",
@@ -10438,10 +10952,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CHANDELIER_EXIT",
         "core_name": "chandelier_exit",
         "wasm_name": "chandelier_exit",
-        "flutter_name": "chandelier_exit"
+        "flutter_name": "chandelier_exit",
+        "go_name": "chandelier_exit"
       },
       {
         "key": "change",
@@ -10452,10 +10968,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "change",
         "wasm_name": "change",
-        "flutter_name": "change"
+        "flutter_name": "change",
+        "go_name": null
       },
       {
         "key": "checkcross",
@@ -10466,10 +10984,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "check_cross",
         "core_name": "check_cross",
         "wasm_name": "check_cross",
-        "flutter_name": "check_cross"
+        "flutter_name": "check_cross",
+        "go_name": "check_cross"
       },
       {
         "key": "checkthreshold",
@@ -10480,10 +11000,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": false,
         "python_name": "check_threshold",
         "core_name": "check_threshold",
         "wasm_name": "check_threshold",
-        "flutter_name": "check_threshold"
+        "flutter_name": "check_threshold",
+        "go_name": null
       },
       {
         "key": "cho",
@@ -10494,10 +11016,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": null,
         "core_name": "cho",
         "wasm_name": "cho",
-        "flutter_name": "cho"
+        "flutter_name": "cho",
+        "go_name": "cho"
       },
       {
         "key": "choppinessindex",
@@ -10508,10 +11032,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CHOPPINESS_INDEX",
         "core_name": "choppiness_index",
         "wasm_name": "choppiness_index",
-        "flutter_name": "choppiness_index"
+        "flutter_name": "choppiness_index",
+        "go_name": "choppiness_index"
       },
       {
         "key": "closetoclosevol",
@@ -10522,10 +11048,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": null,
         "core_name": "close_to_close_vol",
         "wasm_name": "close_to_close_vol",
-        "flutter_name": "close_to_close_vol"
+        "flutter_name": "close_to_close_vol",
+        "go_name": "close_to_close_vol"
       },
       {
         "key": "cmf",
@@ -10536,10 +11064,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CMF",
         "core_name": "cmf",
         "wasm_name": "cmf",
-        "flutter_name": "cmf"
+        "flutter_name": "cmf",
+        "go_name": "cmf"
       },
       {
         "key": "cmo",
@@ -10550,10 +11080,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CMO",
         "core_name": "cmo",
         "wasm_name": "cmo",
-        "flutter_name": "cmo"
+        "flutter_name": "cmo",
+        "go_name": "cmo"
       },
       {
         "key": "collectalertbars",
@@ -10564,10 +11096,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": "collect_alert_bars",
         "core_name": "collect_alert_bars",
         "wasm_name": "collect_alert_bars",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "commissionfraction",
@@ -10578,10 +11112,12 @@
         "wasm": false,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "commission_fraction",
         "wasm_name": null,
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "commissionmodel",
@@ -10592,10 +11128,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": null,
         "wasm_name": "CommissionModel",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "compose",
@@ -10606,10 +11144,12 @@
         "wasm": false,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": "compose",
         "core_name": null,
         "wasm_name": null,
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "composerank",
@@ -10620,10 +11160,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "compose_rank",
         "wasm_name": "compose_rank",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "composeweighted",
@@ -10634,10 +11176,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "compose_weighted",
         "wasm_name": "compose_weighted",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "computehtcore",
@@ -10648,10 +11192,12 @@
         "wasm": false,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "compute_ht_core",
         "wasm_name": null,
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "computemany",
@@ -10662,10 +11208,12 @@
         "wasm": false,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": "compute_many",
         "core_name": null,
         "wasm_name": null,
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "computeperformancemetrics",
@@ -10676,10 +11224,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": false,
         "python_name": null,
         "core_name": "compute_performance_metrics",
         "wasm_name": "compute_performance_metrics",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "computeperformancemetricswithpositions",
@@ -10690,10 +11240,12 @@
         "wasm": false,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "compute_performance_metrics_with_positions",
         "wasm_name": null,
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "continuousbarlabels",
@@ -10704,10 +11256,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": false,
         "python_name": "continuous_bar_labels",
         "core_name": "continuous_bar_labels",
         "wasm_name": "continuous_bar_labels",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "coppock",
@@ -10718,10 +11272,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": null,
         "core_name": "coppock",
         "wasm_name": "coppock",
-        "flutter_name": "coppock"
+        "flutter_name": "coppock",
+        "go_name": "coppock"
       },
       {
         "key": "correl",
@@ -10732,10 +11288,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CORREL",
         "core_name": "correl",
         "wasm_name": "correl",
-        "flutter_name": "correl"
+        "flutter_name": "correl",
+        "go_name": "correl"
       },
       {
         "key": "correlationmatrix",
@@ -10746,10 +11304,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": "correlation_matrix",
         "core_name": "correlation_matrix",
         "wasm_name": "correlation_matrix",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "cos",
@@ -10760,10 +11320,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": "COS",
         "core_name": "math_cos",
         "wasm_name": "transform_cos",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "cosh",
@@ -10774,10 +11336,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": "COSH",
         "core_name": "math_cosh",
         "wasm_name": "transform_cosh",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "cross",
@@ -10788,10 +11352,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "cross",
         "wasm_name": "cross",
-        "flutter_name": "cross"
+        "flutter_name": "cross",
+        "go_name": null
       },
       {
         "key": "crossover",
@@ -10802,10 +11368,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "crossover",
         "wasm_name": "crossover",
-        "flutter_name": "crossover"
+        "flutter_name": "crossover",
+        "go_name": null
       },
       {
         "key": "crossunder",
@@ -10816,10 +11384,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "crossunder",
         "wasm_name": "crossunder",
-        "flutter_name": "crossunder"
+        "flutter_name": "crossunder",
+        "go_name": null
       },
       {
         "key": "crsi",
@@ -10830,10 +11400,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "CRSI",
         "core_name": "crsi",
         "wasm_name": "crsi",
-        "flutter_name": "crsi"
+        "flutter_name": "crsi",
+        "go_name": "crsi"
       },
       {
         "key": "curveslope",
@@ -10844,10 +11416,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "curve_slope",
         "wasm_name": "curve_slope",
-        "flutter_name": "curve_slope"
+        "flutter_name": "curve_slope",
+        "go_name": null
       },
       {
         "key": "curvesummary",
@@ -10858,10 +11432,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": false,
         "python_name": null,
         "core_name": "curve_summary",
         "wasm_name": "curve_summary",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "dema",
@@ -10872,10 +11448,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "DEMA",
         "core_name": "dema",
         "wasm_name": "dema",
-        "flutter_name": "dema"
+        "flutter_name": "dema",
+        "go_name": "dema"
       },
       {
         "key": "detectbreakscusum",
@@ -10886,10 +11464,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "detect_breaks_cusum",
         "core_name": "detect_breaks_cusum",
         "wasm_name": "detect_breaks_cusum",
-        "flutter_name": "detect_breaks_cusum"
+        "flutter_name": "detect_breaks_cusum",
+        "go_name": "detect_breaks_cusum"
       },
       {
         "key": "digitalgreeks",
@@ -10900,10 +11480,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": true,
         "python_name": null,
         "core_name": "digital_greeks",
         "wasm_name": "digital_greeks",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "digital_greeks"
       },
       {
         "key": "digitalprice",
@@ -10914,10 +11496,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": true,
         "python_name": null,
         "core_name": "digital_price",
         "wasm_name": "digital_price",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "digital_price"
       },
       {
         "key": "div",
@@ -10928,10 +11512,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "DIV",
         "core_name": "div",
         "wasm_name": "math_div",
-        "flutter_name": "math_div"
+        "flutter_name": "math_div",
+        "go_name": "div"
       },
       {
         "key": "dmi",
@@ -10942,10 +11528,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "DMI",
         "core_name": "dmi",
         "wasm_name": "dmi",
-        "flutter_name": "dmi"
+        "flutter_name": "dmi",
+        "go_name": "dmi"
       },
       {
         "key": "donchian",
@@ -10956,10 +11544,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "DONCHIAN",
         "core_name": "donchian",
         "wasm_name": "donchian",
-        "flutter_name": "donchian"
+        "flutter_name": "donchian",
+        "go_name": "donchian"
       },
       {
         "key": "dpo",
@@ -10970,10 +11560,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": null,
         "core_name": "dpo",
         "wasm_name": "dpo",
-        "flutter_name": "dpo"
+        "flutter_name": "dpo",
+        "go_name": "dpo"
       },
       {
         "key": "drawdown",
@@ -10984,10 +11576,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": false,
         "python_name": "drawdown",
         "core_name": "drawdown_series",
         "wasm_name": "drawdown_series",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "dtw",
@@ -10998,10 +11592,12 @@
         "wasm": false,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": "DTW",
         "core_name": null,
         "wasm_name": null,
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "dtwdistance",
@@ -11012,10 +11608,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": false,
         "python_name": "DTW_DISTANCE",
         "core_name": "dtw_distance",
         "wasm_name": "dtw_distance",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "dtwpath",
@@ -11026,10 +11624,12 @@
         "wasm": false,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "dtw_path",
         "wasm_name": null,
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "dx",
@@ -11040,10 +11640,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "DX",
         "core_name": "dx",
         "wasm_name": "dx",
-        "flutter_name": "dx"
+        "flutter_name": "dx",
+        "go_name": "dx"
       },
       {
         "key": "earlyexercisepremium",
@@ -11054,10 +11656,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": true,
         "python_name": null,
         "core_name": "early_exercise_premium",
         "wasm_name": "early_exercise_premium",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "early_exercise_premium"
       },
       {
         "key": "elderray",
@@ -11068,10 +11672,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "ELDER_RAY",
         "core_name": "elder_ray",
         "wasm_name": "elder_ray",
-        "flutter_name": "elder_ray"
+        "flutter_name": "elder_ray",
+        "go_name": "elder_ray"
       },
       {
         "key": "ema",
@@ -11082,10 +11688,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "EMA",
         "core_name": "ema",
         "wasm_name": "ema",
-        "flutter_name": "ema"
+        "flutter_name": "ema",
+        "go_name": "ema"
       },
       {
         "key": "emv",
@@ -11096,10 +11704,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "EMV",
         "core_name": "emv",
         "wasm_name": "emv",
-        "flutter_name": "emv"
+        "flutter_name": "emv",
+        "go_name": "emv"
       },
       {
         "key": "exp",
@@ -11110,10 +11720,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": "EXP",
         "core_name": "math_exp",
         "wasm_name": "transform_exp",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "expectedmove",
@@ -11124,10 +11736,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": true,
         "python_name": null,
         "core_name": "expected_move",
         "wasm_name": "expected_move",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "expected_move"
       },
       {
         "key": "exrem",
@@ -11138,10 +11752,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "exrem",
         "wasm_name": "exrem",
-        "flutter_name": "exrem"
+        "flutter_name": "exrem",
+        "go_name": null
       },
       {
         "key": "extendedgreeks",
@@ -11152,10 +11768,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": false,
         "python_name": null,
         "core_name": null,
         "wasm_name": "extended_greeks",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "extracttrades",
@@ -11166,10 +11784,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "extract_trades",
         "wasm_name": "extract_trades",
-        "flutter_name": "extract_trades"
+        "flutter_name": "extract_trades",
+        "go_name": null
       },
       {
         "key": "extracttradesohlcv",
@@ -11180,10 +11800,12 @@
         "wasm": false,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "extract_trades_ohlcv",
         "wasm_name": null,
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "falling",
@@ -11194,10 +11816,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "falling",
         "wasm_name": "falling",
-        "flutter_name": "falling"
+        "flutter_name": "falling",
+        "go_name": null
       },
       {
         "key": "featurematrix",
@@ -11208,10 +11832,12 @@
         "wasm": false,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": "feature_matrix",
         "core_name": null,
         "wasm_name": null,
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "fisher",
@@ -11222,10 +11848,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "FISHER",
         "core_name": "fisher",
         "wasm_name": "fisher",
-        "flutter_name": "fisher"
+        "flutter_name": "fisher",
+        "go_name": "fisher"
       },
       {
         "key": "flip",
@@ -11236,10 +11864,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "flip",
         "wasm_name": "flip",
-        "flutter_name": "flip"
+        "flutter_name": "flip",
+        "go_name": null
       },
       {
         "key": "floor",
@@ -11250,10 +11880,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": "FLOOR",
         "core_name": "math_floor",
         "wasm_name": "transform_floor",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "forceindex",
@@ -11264,10 +11896,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "FORCE_INDEX",
         "core_name": "force_index",
         "wasm_name": "force_index",
-        "flutter_name": "force_index"
+        "flutter_name": "force_index",
+        "go_name": "force_index"
       },
       {
         "key": "forwardfillnan",
@@ -11278,10 +11912,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": null,
         "core_name": "forward_fill_nan",
         "wasm_name": "forward_fill_nan",
-        "flutter_name": "forward_fill_nan"
+        "flutter_name": "forward_fill_nan",
+        "go_name": "forward_fill_nan"
       },
       {
         "key": "frama",
@@ -11292,10 +11928,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "FRAMA",
         "core_name": "frama",
         "wasm_name": "frama",
-        "flutter_name": "frama"
+        "flutter_name": "frama",
+        "go_name": "frama"
       },
       {
         "key": "fundingpnl",
@@ -11306,10 +11944,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "funding_pnl",
         "core_name": "funding_cumulative_pnl",
         "wasm_name": "funding_cumulative_pnl",
-        "flutter_name": "funding_cumulative_pnl"
+        "flutter_name": "funding_cumulative_pnl",
+        "go_name": "funding_cumulative_pnl"
       },
       {
         "key": "futuresbasis",
@@ -11320,10 +11960,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": null,
         "wasm_name": "futures_basis",
-        "flutter_name": "futures_basis"
+        "flutter_name": "futures_basis",
+        "go_name": null
       },
       {
         "key": "garmanklassvol",
@@ -11334,10 +11976,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": null,
         "core_name": "garman_klass_vol",
         "wasm_name": "garman_klass_vol",
-        "flutter_name": "garman_klass_vol"
+        "flutter_name": "garman_klass_vol",
+        "go_name": "garman_klass_vol"
       },
       {
         "key": "gator",
@@ -11348,10 +11992,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": null,
         "core_name": "gator",
         "wasm_name": "gator",
-        "flutter_name": "gator"
+        "flutter_name": "gator",
+        "go_name": "gator"
       },
       {
         "key": "halfkellyfraction",
@@ -11362,10 +12008,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": true,
         "python_name": null,
         "core_name": "half_kelly_fraction",
         "wasm_name": "half_kelly_fraction",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "half_kelly_fraction"
       },
       {
         "key": "highest",
@@ -11376,10 +12024,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "highest",
         "wasm_name": "highest",
-        "flutter_name": "highest"
+        "flutter_name": "highest",
+        "go_name": null
       },
       {
         "key": "historicalvolatility",
@@ -11390,10 +12040,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "HISTORICAL_VOLATILITY",
         "core_name": "historical_volatility",
         "wasm_name": "historical_volatility",
-        "flutter_name": "historical_volatility"
+        "flutter_name": "historical_volatility",
+        "go_name": "historical_volatility"
       },
       {
         "key": "htdcperiod",
@@ -11404,10 +12056,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "HT_DCPERIOD",
         "core_name": "ht_dcperiod",
         "wasm_name": "ht_dcperiod",
-        "flutter_name": "ht_dcperiod"
+        "flutter_name": "ht_dcperiod",
+        "go_name": "ht_dcperiod"
       },
       {
         "key": "htdcphase",
@@ -11418,10 +12072,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "HT_DCPHASE",
         "core_name": "ht_dcphase",
         "wasm_name": "ht_dcphase",
-        "flutter_name": "ht_dcphase"
+        "flutter_name": "ht_dcphase",
+        "go_name": "ht_dcphase"
       },
       {
         "key": "htphasor",
@@ -11432,10 +12088,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "HT_PHASOR",
         "core_name": "ht_phasor",
         "wasm_name": "ht_phasor",
-        "flutter_name": "ht_phasor"
+        "flutter_name": "ht_phasor",
+        "go_name": "ht_phasor"
       },
       {
         "key": "htsine",
@@ -11446,10 +12104,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "HT_SINE",
         "core_name": "ht_sine",
         "wasm_name": "ht_sine",
-        "flutter_name": "ht_sine"
+        "flutter_name": "ht_sine",
+        "go_name": "ht_sine"
       },
       {
         "key": "httrendline",
@@ -11460,10 +12120,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "HT_TRENDLINE",
         "core_name": "ht_trendline",
         "wasm_name": "ht_trendline",
-        "flutter_name": "ht_trendline"
+        "flutter_name": "ht_trendline",
+        "go_name": "ht_trendline"
       },
       {
         "key": "httrendmode",
@@ -11474,10 +12136,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": true,
         "python_name": "HT_TRENDMODE",
         "core_name": "ht_trendmode",
         "wasm_name": "ht_trendmode",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "ht_trendmode"
       },
       {
         "key": "hullma",
@@ -11488,10 +12152,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "HULL_MA",
         "core_name": "hull_ma",
         "wasm_name": "hull_ma",
-        "flutter_name": "hull_ma"
+        "flutter_name": "hull_ma",
+        "go_name": "hull_ma"
       },
       {
         "key": "ichimoku",
@@ -11502,10 +12168,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "ICHIMOKU",
         "core_name": "ichimoku",
         "wasm_name": "ichimoku",
-        "flutter_name": "ichimoku"
+        "flutter_name": "ichimoku",
+        "go_name": "ichimoku"
       },
       {
         "key": "impliedcarryrate",
@@ -11516,10 +12184,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": null,
         "core_name": "implied_carry_rate",
         "wasm_name": "implied_carry_rate",
-        "flutter_name": "implied_carry_rate"
+        "flutter_name": "implied_carry_rate",
+        "go_name": "implied_carry_rate"
       },
       {
         "key": "impliedvolatility",
@@ -11530,10 +12200,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": true,
         "python_name": null,
         "core_name": "implied_volatility",
         "wasm_name": "implied_volatility",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "implied_volatility"
       },
       {
         "key": "ivpercentile",
@@ -11544,10 +12216,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": null,
         "core_name": "iv_percentile",
         "wasm_name": "iv_percentile",
-        "flutter_name": "iv_percentile"
+        "flutter_name": "iv_percentile",
+        "go_name": "iv_percentile"
       },
       {
         "key": "ivrank",
@@ -11558,10 +12232,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": null,
         "core_name": "iv_rank",
         "wasm_name": "iv_rank",
-        "flutter_name": "iv_rank"
+        "flutter_name": "iv_rank",
+        "go_name": "iv_rank"
       },
       {
         "key": "ivzscore",
@@ -11572,10 +12248,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": null,
         "core_name": "iv_zscore",
         "wasm_name": "iv_zscore",
-        "flutter_name": "iv_zscore"
+        "flutter_name": "iv_zscore",
+        "go_name": "iv_zscore"
       },
       {
         "key": "kama",
@@ -11586,10 +12264,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "KAMA",
         "core_name": "kama",
         "wasm_name": "kama",
-        "flutter_name": "kama"
+        "flutter_name": "kama",
+        "go_name": "kama"
       },
       {
         "key": "kellyformula",
@@ -11600,10 +12280,12 @@
         "wasm": false,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "kelly_formula",
         "wasm_name": null,
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "kellyfraction",
@@ -11614,10 +12296,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": true,
         "python_name": null,
         "core_name": "kelly_fraction",
         "wasm_name": "kelly_fraction",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "kelly_fraction"
       },
       {
         "key": "keltnerchannels",
@@ -11628,10 +12312,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "KELTNER_CHANNELS",
         "core_name": "keltner_channels",
         "wasm_name": "keltner_channels",
-        "flutter_name": "keltner_channels"
+        "flutter_name": "keltner_channels",
+        "go_name": "keltner_channels"
       },
       {
         "key": "kst",
@@ -11642,10 +12328,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": null,
         "core_name": "kst",
         "wasm_name": "kst",
-        "flutter_name": "kst"
+        "flutter_name": "kst",
+        "go_name": "kst"
       },
       {
         "key": "kvo",
@@ -11656,10 +12344,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "KVO",
         "core_name": "kvo",
         "wasm_name": "kvo",
-        "flutter_name": "kvo"
+        "flutter_name": "kvo",
+        "go_name": "kvo"
       },
       {
         "key": "labelmoneyness",
@@ -11670,10 +12360,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": false,
         "python_name": null,
         "core_name": "label_moneyness",
         "wasm_name": "label_moneyness",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "lcgindex",
@@ -11684,10 +12376,12 @@
         "wasm": false,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "lcg_index",
         "wasm_name": null,
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "lcgnext",
@@ -11698,10 +12392,12 @@
         "wasm": false,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "lcg_next",
         "wasm_name": null,
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "linearinterpolate",
@@ -11712,10 +12408,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "linear_interpolate",
         "wasm_name": "linear_interpolate",
-        "flutter_name": "linear_interpolate"
+        "flutter_name": "linear_interpolate",
+        "go_name": null
       },
       {
         "key": "linearreg",
@@ -11726,10 +12424,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "LINEARREG",
         "core_name": "linearreg",
         "wasm_name": "linearreg",
-        "flutter_name": "linearreg"
+        "flutter_name": "linearreg",
+        "go_name": "linearreg"
       },
       {
         "key": "linearregangle",
@@ -11740,10 +12440,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "LINEARREG_ANGLE",
         "core_name": "linearreg_angle",
         "wasm_name": "linearreg_angle",
-        "flutter_name": "linearreg_angle"
+        "flutter_name": "linearreg_angle",
+        "go_name": "linearreg_angle"
       },
       {
         "key": "linearregintercept",
@@ -11754,10 +12456,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "LINEARREG_INTERCEPT",
         "core_name": "linearreg_intercept",
         "wasm_name": "linearreg_intercept",
-        "flutter_name": "linearreg_intercept"
+        "flutter_name": "linearreg_intercept",
+        "go_name": "linearreg_intercept"
       },
       {
         "key": "linearregslope",
@@ -11768,10 +12472,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "LINEARREG_SLOPE",
         "core_name": "linearreg_slope",
         "wasm_name": "linearreg_slope",
-        "flutter_name": "linearreg_slope"
+        "flutter_name": "linearreg_slope",
+        "go_name": "linearreg_slope"
       },
       {
         "key": "ln",
@@ -11782,10 +12488,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": "LN",
         "core_name": "math_ln",
         "wasm_name": "transform_ln",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "log10",
@@ -11796,10 +12504,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": "LOG10",
         "core_name": "math_log10",
         "wasm_name": "transform_log10",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "lowest",
@@ -11810,10 +12520,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "lowest",
         "wasm_name": "lowest",
-        "flutter_name": "lowest"
+        "flutter_name": "lowest",
+        "go_name": null
       },
       {
         "key": "ma",
@@ -11824,10 +12536,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "MA",
         "core_name": "ma",
         "wasm_name": "ma",
-        "flutter_name": "ma"
+        "flutter_name": "ma",
+        "go_name": "ma"
       },
       {
         "key": "macd",
@@ -11838,10 +12552,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "MACD",
         "core_name": "macd",
         "wasm_name": "macd",
-        "flutter_name": "macd"
+        "flutter_name": "macd",
+        "go_name": "macd"
       },
       {
         "key": "macdcrossoversignals",
@@ -11852,10 +12568,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": false,
         "python_name": null,
         "core_name": "macd_crossover_signals",
         "wasm_name": "macd_crossover_signals",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "macdext",
@@ -11866,10 +12584,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "MACDEXT",
         "core_name": "macdext",
         "wasm_name": "macdext",
-        "flutter_name": "macdext"
+        "flutter_name": "macdext",
+        "go_name": "macdext"
       },
       {
         "key": "macdfix",
@@ -11880,10 +12600,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "MACDFIX",
         "core_name": "macdfix",
         "wasm_name": "macdfix",
-        "flutter_name": "macdfix"
+        "flutter_name": "macdfix",
+        "go_name": "macdfix"
       },
       {
         "key": "maenvelopes",
@@ -11894,10 +12616,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "MA_ENVELOPES",
         "core_name": "ma_envelopes",
         "wasm_name": "ma_envelopes",
-        "flutter_name": "ma_envelopes"
+        "flutter_name": "ma_envelopes",
+        "go_name": "ma_envelopes"
       },
       {
         "key": "makechunkranges",
@@ -11908,10 +12632,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": false,
         "python_name": null,
         "core_name": "make_chunk_ranges",
         "wasm_name": "make_chunk_ranges",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "mama",
@@ -11922,10 +12648,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "MAMA",
         "core_name": "mama",
         "wasm_name": "mama",
-        "flutter_name": "mama"
+        "flutter_name": "mama",
+        "go_name": "mama"
       },
       {
         "key": "mass",
@@ -11936,10 +12664,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "MASS",
         "core_name": "mass",
         "wasm_name": "mass",
-        "flutter_name": "mass"
+        "flutter_name": "mass",
+        "go_name": "mass"
       },
       {
         "key": "mavp",
@@ -11950,10 +12680,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "MAVP",
         "core_name": "mavp",
         "wasm_name": "mavp",
-        "flutter_name": "mavp"
+        "flutter_name": "mavp",
+        "go_name": "mavp"
       },
       {
         "key": "max",
@@ -11964,10 +12696,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "MAX",
         "core_name": "max",
         "wasm_name": "rolling_max",
-        "flutter_name": "rolling_max"
+        "flutter_name": "rolling_max",
+        "go_name": "max"
       },
       {
         "key": "maxindex",
@@ -11978,10 +12712,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": true,
         "python_name": "MAXINDEX",
         "core_name": "rolling_maxindex",
         "wasm_name": "rolling_maxindex",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "rolling_maxindex"
       },
       {
         "key": "mcginley",
@@ -11992,10 +12728,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "MCGINLEY",
         "core_name": "mcginley",
         "wasm_name": "mcginley",
-        "flutter_name": "mcginley"
+        "flutter_name": "mcginley",
+        "go_name": "mcginley"
       },
       {
         "key": "median",
@@ -12006,10 +12744,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "MEDIAN",
         "core_name": "median",
         "wasm_name": "median",
-        "flutter_name": "median"
+        "flutter_name": "median",
+        "go_name": "median"
       },
       {
         "key": "medianbands",
@@ -12020,10 +12760,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "MEDIAN_BANDS",
         "core_name": "median_bands",
         "wasm_name": "median_bands",
-        "flutter_name": "median_bands"
+        "flutter_name": "median_bands",
+        "go_name": "median_bands"
       },
       {
         "key": "medprice",
@@ -12034,10 +12776,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "MEDPRICE",
         "core_name": "medprice",
         "wasm_name": "medprice",
-        "flutter_name": "medprice"
+        "flutter_name": "medprice",
+        "go_name": "medprice"
       },
       {
         "key": "mfi",
@@ -12048,10 +12792,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "MFI",
         "core_name": "mfi",
         "wasm_name": "mfi",
-        "flutter_name": "mfi"
+        "flutter_name": "mfi",
+        "go_name": "mfi"
       },
       {
         "key": "midpoint",
@@ -12062,10 +12808,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "MIDPOINT",
         "core_name": "midpoint",
         "wasm_name": "midpoint",
-        "flutter_name": "midpoint"
+        "flutter_name": "midpoint",
+        "go_name": "midpoint"
       },
       {
         "key": "midprice",
@@ -12076,10 +12824,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "MIDPRICE",
         "core_name": "midprice",
         "wasm_name": "midprice",
-        "flutter_name": "midprice"
+        "flutter_name": "midprice",
+        "go_name": "midprice"
       },
       {
         "key": "min",
@@ -12090,10 +12840,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "MIN",
         "core_name": "min",
         "wasm_name": "rolling_min",
-        "flutter_name": "rolling_min"
+        "flutter_name": "rolling_min",
+        "go_name": "min"
       },
       {
         "key": "minindex",
@@ -12104,10 +12856,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": true,
         "python_name": "MININDEX",
         "core_name": "rolling_minindex",
         "wasm_name": "rolling_minindex",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "rolling_minindex"
       },
       {
         "key": "minusdi",
@@ -12118,10 +12872,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "MINUS_DI",
         "core_name": "minus_di",
         "wasm_name": "minus_di",
-        "flutter_name": "minus_di"
+        "flutter_name": "minus_di",
+        "go_name": "minus_di"
       },
       {
         "key": "minusdm",
@@ -12132,10 +12888,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "MINUS_DM",
         "core_name": "minus_dm",
         "wasm_name": "minus_dm",
-        "flutter_name": "minus_dm"
+        "flutter_name": "minus_dm",
+        "go_name": "minus_dm"
       },
       {
         "key": "mode",
@@ -12146,10 +12904,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "MODE",
         "core_name": "mode",
         "wasm_name": "mode",
-        "flutter_name": "mode"
+        "flutter_name": "mode",
+        "go_name": "mode"
       },
       {
         "key": "modelextendedgreeks",
@@ -12160,10 +12920,12 @@
         "wasm": false,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "model_extended_greeks",
         "wasm_name": null,
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "modelgreeks",
@@ -12174,10 +12936,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": false,
         "python_name": null,
         "core_name": "model_greeks",
         "wasm_name": "model_greeks",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "modelprice",
@@ -12188,10 +12952,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": false,
         "python_name": null,
         "core_name": "model_price",
         "wasm_name": "model_price",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "modeltheta",
@@ -12202,10 +12968,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": false,
         "python_name": null,
         "core_name": "model_theta",
         "wasm_name": "model_theta",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "mom",
@@ -12216,10 +12984,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "MOM",
         "core_name": "mom",
         "wasm_name": "mom",
-        "flutter_name": "mom"
+        "flutter_name": "mom",
+        "go_name": "mom"
       },
       {
         "key": "montecarlobootstrap",
@@ -12230,10 +13000,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "monte_carlo_bootstrap",
         "wasm_name": "monte_carlo_bootstrap",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "monthlycontribution",
@@ -12244,10 +13016,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": false,
         "python_name": null,
         "core_name": "monthly_contribution",
         "wasm_name": "monthly_contribution",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "mult",
@@ -12258,10 +13032,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "MULT",
         "core_name": "mult",
         "wasm_name": "math_mult",
-        "flutter_name": "math_mult"
+        "flutter_name": "math_mult",
+        "go_name": "mult"
       },
       {
         "key": "multitimeframe",
@@ -12272,10 +13048,12 @@
         "wasm": false,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": "multi_timeframe",
         "core_name": null,
         "wasm_name": null,
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "nantonum",
@@ -12286,10 +13064,12 @@
         "wasm": false,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "nan_to_num",
         "wasm_name": null,
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "natr",
@@ -12300,10 +13080,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "NATR",
         "core_name": "natr",
         "wasm_name": "natr",
-        "flutter_name": "natr"
+        "flutter_name": "natr",
+        "go_name": "natr"
       },
       {
         "key": "nvi",
@@ -12314,10 +13096,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "NVI",
         "core_name": "nvi",
         "wasm_name": "nvi",
-        "flutter_name": "nvi"
+        "flutter_name": "nvi",
+        "go_name": "nvi"
       },
       {
         "key": "nviwithema",
@@ -12328,10 +13112,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "NVI_WITH_EMA",
         "core_name": "nvi_with_ema",
         "wasm_name": "nvi_with_ema",
-        "flutter_name": "nvi_with_ema"
+        "flutter_name": "nvi_with_ema",
+        "go_name": "nvi_with_ema"
       },
       {
         "key": "obv",
@@ -12342,10 +13128,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "OBV",
         "core_name": "obv",
         "wasm_name": "obv",
-        "flutter_name": "obv"
+        "flutter_name": "obv",
+        "go_name": "obv"
       },
       {
         "key": "obvsmoothed",
@@ -12356,10 +13144,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "OBV_SMOOTHED",
         "core_name": "obv_smoothed",
         "wasm_name": "obv_smoothed",
-        "flutter_name": "obv_smoothed"
+        "flutter_name": "obv_smoothed",
+        "go_name": "obv_smoothed"
       },
       {
         "key": "ohlcvagg",
@@ -12370,10 +13160,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": false,
         "python_name": null,
         "core_name": "ohlcv_agg",
         "wasm_name": "ohlcv_agg",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "paritygap",
@@ -12384,10 +13176,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": null,
         "core_name": "parity_gap",
         "wasm_name": "parity_gap",
-        "flutter_name": "parity_gap"
+        "flutter_name": "parity_gap",
+        "go_name": "parity_gap"
       },
       {
         "key": "parkinsonvol",
@@ -12398,10 +13192,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": null,
         "core_name": "parkinson_vol",
         "wasm_name": "parkinson_vol",
-        "flutter_name": "parkinson_vol"
+        "flutter_name": "parkinson_vol",
+        "go_name": "parkinson_vol"
       },
       {
         "key": "pdf",
@@ -12412,10 +13208,12 @@
         "wasm": false,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "pdf",
         "wasm_name": null,
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "pivotpoints",
@@ -12426,10 +13224,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": false,
         "python_name": "PIVOT_POINTS",
         "core_name": "pivot_points",
         "wasm_name": "pivot_points",
-        "flutter_name": "pivot_points"
+        "flutter_name": "pivot_points",
+        "go_name": null
       },
       {
         "key": "plusdi",
@@ -12440,10 +13240,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "PLUS_DI",
         "core_name": "plus_di",
         "wasm_name": "plus_di",
-        "flutter_name": "plus_di"
+        "flutter_name": "plus_di",
+        "go_name": "plus_di"
       },
       {
         "key": "plusdm",
@@ -12454,10 +13256,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "PLUS_DM",
         "core_name": "plus_dm",
         "wasm_name": "plus_dm",
-        "flutter_name": "plus_dm"
+        "flutter_name": "plus_dm",
+        "go_name": "plus_dm"
       },
       {
         "key": "po",
@@ -12468,10 +13272,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": null,
         "core_name": "po",
         "wasm_name": "po",
-        "flutter_name": "po"
+        "flutter_name": "po",
+        "go_name": "po"
       },
       {
         "key": "portfoliovolatility",
@@ -12482,10 +13288,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": "portfolio_volatility",
         "core_name": "portfolio_volatility",
         "wasm_name": "portfolio_volatility",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "ppo",
@@ -12496,10 +13304,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "PPO",
         "core_name": "ppo",
         "wasm_name": "ppo",
-        "flutter_name": "ppo"
+        "flutter_name": "ppo",
+        "go_name": "ppo"
       },
       {
         "key": "pricelowerbound",
@@ -12510,10 +13320,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": true,
         "python_name": null,
         "core_name": "price_lower_bound",
         "wasm_name": "price_lower_bound",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "price_lower_bound"
       },
       {
         "key": "priceupperbound",
@@ -12524,10 +13336,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": true,
         "python_name": null,
         "core_name": "price_upper_bound",
         "wasm_name": "price_upper_bound",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "price_upper_bound"
       },
       {
         "key": "putcallparitydeviation",
@@ -12538,10 +13352,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": null,
         "core_name": "put_call_parity_deviation",
         "wasm_name": "put_call_parity_deviation",
-        "flutter_name": "put_call_parity_deviation"
+        "flutter_name": "put_call_parity_deviation",
+        "go_name": "put_call_parity_deviation"
       },
       {
         "key": "pvi",
@@ -12552,10 +13368,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "PVI",
         "core_name": "pvi",
         "wasm_name": "pvi",
-        "flutter_name": "pvi"
+        "flutter_name": "pvi",
+        "go_name": "pvi"
       },
       {
         "key": "pviwithsignal",
@@ -12566,10 +13384,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "PVI_WITH_SIGNAL",
         "core_name": "pvi_with_signal",
         "wasm_name": "pvi_with_signal",
-        "flutter_name": "pvi_with_signal"
+        "flutter_name": "pvi_with_signal",
+        "go_name": "pvi_with_signal"
       },
       {
         "key": "pvt",
@@ -12580,10 +13400,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "PVT",
         "core_name": "pvt",
         "wasm_name": "pvt",
-        "flutter_name": "pvt"
+        "flutter_name": "pvt",
+        "go_name": "pvt"
       },
       {
         "key": "rankseries",
@@ -12594,10 +13416,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": null,
         "wasm_name": "rank_series",
-        "flutter_name": "rank_series"
+        "flutter_name": "rank_series",
+        "go_name": null
       },
       {
         "key": "ranksignals",
@@ -12608,10 +13432,12 @@
         "wasm": false,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": "rank_signals",
         "core_name": null,
         "wasm_name": null,
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "rankvalues",
@@ -12622,10 +13448,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": null,
         "core_name": "rank_values",
         "wasm_name": "rank_values",
-        "flutter_name": "rank_values"
+        "flutter_name": "rank_values",
+        "go_name": "rank_values"
       },
       {
         "key": "ratio",
@@ -12636,10 +13464,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": null,
         "core_name": "ratio",
         "wasm_name": "ratio",
-        "flutter_name": "ratio"
+        "flutter_name": "ratio",
+        "go_name": "ratio"
       },
       {
         "key": "ratioadjustedcontinuous",
@@ -12650,10 +13480,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": null,
         "core_name": "ratio_adjusted_continuous",
         "wasm_name": "ratio_adjusted_continuous",
-        "flutter_name": "ratio_adjusted_continuous"
+        "flutter_name": "ratio_adjusted_continuous",
+        "go_name": "ratio_adjusted_continuous"
       },
       {
         "key": "regime",
@@ -12664,10 +13496,12 @@
         "wasm": false,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": "regime",
         "core_name": null,
         "wasm_name": null,
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "regimeadx",
@@ -12678,10 +13512,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "regime_adx",
         "core_name": "regime_adx",
         "wasm_name": "regime_adx",
-        "flutter_name": "regime_adx"
+        "flutter_name": "regime_adx",
+        "go_name": "regime_adx"
       },
       {
         "key": "regimecombined",
@@ -12692,10 +13528,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "regime_combined",
         "core_name": "regime_combined",
         "wasm_name": "regime_combined",
-        "flutter_name": "regime_combined"
+        "flutter_name": "regime_combined",
+        "go_name": "regime_combined"
       },
       {
         "key": "relativestrength",
@@ -12706,10 +13544,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": null,
         "core_name": "relative_strength",
         "wasm_name": "relative_strength",
-        "flutter_name": "relative_strength"
+        "flutter_name": "relative_strength",
+        "go_name": "relative_strength"
       },
       {
         "key": "resample",
@@ -12720,10 +13560,12 @@
         "wasm": false,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": "resample",
         "core_name": null,
         "wasm_name": null,
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "resamplecontinuous",
@@ -12734,10 +13576,12 @@
         "wasm": false,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": "resample_continuous",
         "core_name": null,
         "wasm_name": null,
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "resolvecommissionmodel",
@@ -12748,10 +13592,12 @@
         "wasm": false,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "resolve_commission_model",
         "wasm_name": null,
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "rising",
@@ -12762,10 +13608,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "rising",
         "wasm_name": "rising",
-        "flutter_name": "rising"
+        "flutter_name": "rising",
+        "go_name": null
       },
       {
         "key": "roc",
@@ -12776,10 +13624,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "ROC",
         "core_name": "roc",
         "wasm_name": "roc",
-        "flutter_name": "roc"
+        "flutter_name": "roc",
+        "go_name": "roc"
       },
       {
         "key": "rocp",
@@ -12790,10 +13640,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "ROCP",
         "core_name": "rocp",
         "wasm_name": "rocp",
-        "flutter_name": "rocp"
+        "flutter_name": "rocp",
+        "go_name": "rocp"
       },
       {
         "key": "rocr",
@@ -12804,10 +13656,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "ROCR",
         "core_name": "rocr",
         "wasm_name": "rocr",
-        "flutter_name": "rocr"
+        "flutter_name": "rocr",
+        "go_name": "rocr"
       },
       {
         "key": "rocr100",
@@ -12818,10 +13672,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "ROCR100",
         "core_name": "rocr100",
         "wasm_name": "rocr100",
-        "flutter_name": "rocr100"
+        "flutter_name": "rocr100",
+        "go_name": "rocr100"
       },
       {
         "key": "rogerssatchellvol",
@@ -12832,10 +13688,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": null,
         "core_name": "rogers_satchell_vol",
         "wasm_name": "rogers_satchell_vol",
-        "flutter_name": "rogers_satchell_vol"
+        "flutter_name": "rogers_satchell_vol",
+        "go_name": "rogers_satchell_vol"
       },
       {
         "key": "rollingbeta",
@@ -12846,10 +13704,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": null,
         "core_name": "rolling_beta",
         "wasm_name": "rolling_beta",
-        "flutter_name": "rolling_beta"
+        "flutter_name": "rolling_beta",
+        "go_name": "rolling_beta"
       },
       {
         "key": "rollingvariancebreak",
@@ -12860,10 +13720,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "rolling_variance_break",
         "core_name": "rolling_variance_break",
         "wasm_name": "rolling_variance_break",
-        "flutter_name": "rolling_variance_break"
+        "flutter_name": "rolling_variance_break",
+        "go_name": "rolling_variance_break"
       },
       {
         "key": "rollyield",
@@ -12874,10 +13736,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": null,
         "core_name": "roll_yield",
         "wasm_name": "roll_yield",
-        "flutter_name": "roll_yield"
+        "flutter_name": "roll_yield",
+        "go_name": "roll_yield"
       },
       {
         "key": "rsi",
@@ -12888,10 +13752,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "RSI",
         "core_name": "rsi",
         "wasm_name": "rsi",
-        "flutter_name": "rsi"
+        "flutter_name": "rsi",
+        "go_name": "rsi"
       },
       {
         "key": "rsithresholdsignals",
@@ -12902,10 +13768,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": null,
         "core_name": "rsi_threshold_signals",
         "wasm_name": "rsi_threshold_signals",
-        "flutter_name": "rsi_threshold_signals"
+        "flutter_name": "rsi_threshold_signals",
+        "go_name": "rsi_threshold_signals"
       },
       {
         "key": "runcloseindicators",
@@ -12916,10 +13784,12 @@
         "wasm": false,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "run_close_indicators",
         "wasm_name": null,
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "runhlcindicators",
@@ -12930,10 +13800,12 @@
         "wasm": false,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "run_hlc_indicators",
         "wasm_name": null,
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "rvi",
@@ -12944,10 +13816,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": null,
         "core_name": "rvi",
         "wasm_name": "rvi",
-        "flutter_name": "rvi"
+        "flutter_name": "rvi",
+        "go_name": "rvi"
       },
       {
         "key": "rvol",
@@ -12958,10 +13832,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "RVOL",
         "core_name": "rvol",
         "wasm_name": "rvol",
-        "flutter_name": "rvol"
+        "flutter_name": "rvol",
+        "go_name": "rvol"
       },
       {
         "key": "rwi",
@@ -12972,10 +13848,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "RWI",
         "core_name": "rwi",
         "wasm_name": "rwi",
-        "flutter_name": "rwi"
+        "flutter_name": "rwi",
+        "go_name": "rwi"
       },
       {
         "key": "sar",
@@ -12986,10 +13864,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "SAR",
         "core_name": "sar",
         "wasm_name": "sar",
-        "flutter_name": "sar"
+        "flutter_name": "sar",
+        "go_name": "sar"
       },
       {
         "key": "sarext",
@@ -13000,10 +13880,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "SAREXT",
         "core_name": "sarext",
         "wasm_name": "sarext",
-        "flutter_name": "sarext"
+        "flutter_name": "sarext",
+        "go_name": "sarext"
       },
       {
         "key": "screen",
@@ -13014,10 +13896,12 @@
         "wasm": false,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": "screen",
         "core_name": null,
         "wasm_name": null,
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "selectstrikebydelta",
@@ -13028,10 +13912,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": false,
         "python_name": null,
         "core_name": "select_strike_by_delta",
         "wasm_name": "select_strike_by_delta",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "selectstrikebyoffset",
@@ -13042,10 +13928,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": false,
         "python_name": null,
         "core_name": "select_strike_by_offset",
         "wasm_name": "select_strike_by_offset",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "sessionboundaries",
@@ -13056,10 +13944,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": false,
         "python_name": "session_boundaries",
         "core_name": "mark_session_boundaries",
         "wasm_name": "mark_session_boundaries",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "signalattribution",
@@ -13070,10 +13960,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": false,
         "python_name": null,
         "core_name": "signal_attribution",
         "wasm_name": "signal_attribution",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "sin",
@@ -13084,10 +13976,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": "SIN",
         "core_name": "math_sin",
         "wasm_name": "transform_sin",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "singleassetbacktest",
@@ -13098,10 +13992,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "single_asset_backtest",
         "wasm_name": "single_asset_backtest",
-        "flutter_name": "single_asset_backtest"
+        "flutter_name": "single_asset_backtest",
+        "go_name": null
       },
       {
         "key": "sinh",
@@ -13112,10 +14008,44 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": "SINH",
         "core_name": "math_sinh",
         "wasm_name": "transform_sinh",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
+      },
+      {
+        "key": "slidingmax",
+        "name": "sliding_max",
+        "category": "other",
+        "core": false,
+        "python": false,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": null,
+        "core_name": null,
+        "wasm_name": null,
+        "flutter_name": null,
+        "go_name": "sliding_max"
+      },
+      {
+        "key": "slidingmin",
+        "name": "sliding_min",
+        "category": "other",
+        "core": false,
+        "python": false,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": null,
+        "core_name": null,
+        "wasm_name": null,
+        "flutter_name": null,
+        "go_name": "sliding_min"
       },
       {
         "key": "sma",
@@ -13126,10 +14056,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "SMA",
         "core_name": "sma",
         "wasm_name": "sma",
-        "flutter_name": "sma"
+        "flutter_name": "sma",
+        "go_name": "sma"
       },
       {
         "key": "smacrossoversignals",
@@ -13140,10 +14072,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": false,
         "python_name": null,
         "core_name": "sma_crossover_signals",
         "wasm_name": "sma_crossover_signals",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "smilemetrics",
@@ -13154,10 +14088,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": false,
         "python_name": null,
         "core_name": "smile_metrics",
         "wasm_name": "smile_metrics",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "spread",
@@ -13168,10 +14104,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": null,
         "core_name": "spread",
         "wasm_name": "spread",
-        "flutter_name": "spread"
+        "flutter_name": "spread",
+        "go_name": "spread"
       },
       {
         "key": "sqrt",
@@ -13182,10 +14120,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": "SQRT",
         "core_name": "math_sqrt",
         "wasm_name": "transform_sqrt",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "starc",
@@ -13196,10 +14136,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "STARC",
         "core_name": "starc",
         "wasm_name": "starc",
-        "flutter_name": "starc"
+        "flutter_name": "starc",
+        "go_name": "starc"
       },
       {
         "key": "stc",
@@ -13210,10 +14152,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": null,
         "core_name": "stc",
         "wasm_name": "stc",
-        "flutter_name": "stc"
+        "flutter_name": "stc",
+        "go_name": "stc"
       },
       {
         "key": "stddev",
@@ -13224,10 +14168,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "STDDEV",
         "core_name": "stddev",
         "wasm_name": "stddev",
-        "flutter_name": "stddev"
+        "flutter_name": "stddev",
+        "go_name": "stddev"
       },
       {
         "key": "stitchchunks",
@@ -13238,10 +14184,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "stitch_chunks",
         "wasm_name": "stitch_chunks",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "stoch",
@@ -13252,10 +14200,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "STOCH",
         "core_name": "stoch",
         "wasm_name": "stoch",
-        "flutter_name": "stoch"
+        "flutter_name": "stoch",
+        "go_name": "stoch"
       },
       {
         "key": "stochf",
@@ -13266,10 +14216,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": true,
         "python_name": "STOCHF",
         "core_name": "stochf",
         "wasm_name": "stochf",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "stochf"
       },
       {
         "key": "stochrsi",
@@ -13280,10 +14232,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "STOCHRSI",
         "core_name": "stochrsi",
         "wasm_name": "stochrsi",
-        "flutter_name": "stochrsi"
+        "flutter_name": "stochrsi",
+        "go_name": "stochrsi"
       },
       {
         "key": "strategypayoffdense",
@@ -13294,10 +14248,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": false,
         "python_name": null,
         "core_name": "strategy_payoff_dense",
         "wasm_name": "strategy_payoff_dense",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "strategyvaluedense",
@@ -13308,10 +14264,12 @@
         "wasm": false,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "strategy_value_dense",
         "wasm_name": null,
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "strategyvaluegrid",
@@ -13322,10 +14280,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": false,
         "python_name": null,
         "core_name": "strategy_value_grid",
         "wasm_name": "strategy_value_grid",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "streamingatr",
@@ -13336,10 +14296,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "StreamingATR",
         "core_name": "StreamingATR",
         "wasm_name": "WasmStreamingATR",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "StreamingATR"
       },
       {
         "key": "streamingbbands",
@@ -13350,10 +14312,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "StreamingBBands",
         "core_name": "StreamingBBands",
         "wasm_name": "WasmStreamingBBands",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "StreamingBBANDS"
       },
       {
         "key": "streamingema",
@@ -13364,10 +14328,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "StreamingEMA",
         "core_name": "StreamingEMA",
         "wasm_name": "WasmStreamingEMA",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "StreamingEMA"
       },
       {
         "key": "streamingmacd",
@@ -13378,10 +14344,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "StreamingMACD",
         "core_name": "StreamingMACD",
         "wasm_name": "WasmStreamingMACD",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "StreamingMACD"
       },
       {
         "key": "streamingrsi",
@@ -13392,10 +14360,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "StreamingRSI",
         "core_name": "StreamingRSI",
         "wasm_name": "WasmStreamingRSI",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "StreamingRSI"
       },
       {
         "key": "streamingsma",
@@ -13406,10 +14376,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "StreamingSMA",
         "core_name": "StreamingSMA",
         "wasm_name": "WasmStreamingSMA",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "StreamingSMA"
       },
       {
         "key": "streamingstoch",
@@ -13420,10 +14392,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "StreamingStoch",
         "core_name": "StreamingStoch",
         "wasm_name": "WasmStreamingStoch",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "StreamingSTOCH"
       },
       {
         "key": "streamingsupertrend",
@@ -13434,10 +14408,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "StreamingSupertrend",
         "core_name": "StreamingSupertrend",
         "wasm_name": "WasmStreamingSupertrend",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "StreamingSUPERTREND"
       },
       {
         "key": "streamingvwap",
@@ -13448,10 +14424,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "StreamingVWAP",
         "core_name": "StreamingVWAP",
         "wasm_name": "WasmStreamingVWAP",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "StreamingVWAP"
       },
       {
         "key": "structuralbreaks",
@@ -13462,10 +14440,12 @@
         "wasm": false,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": "structural_breaks",
         "core_name": null,
         "wasm_name": null,
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "sub",
@@ -13476,10 +14456,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "SUB",
         "core_name": "sub",
         "wasm_name": "math_sub",
-        "flutter_name": "math_sub"
+        "flutter_name": "math_sub",
+        "go_name": "sub"
       },
       {
         "key": "sum",
@@ -13490,10 +14472,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "SUM",
         "core_name": "sum",
         "wasm_name": "rolling_sum",
-        "flutter_name": "rolling_sum"
+        "flutter_name": "rolling_sum",
+        "go_name": "rolling_sum"
       },
       {
         "key": "supertrend",
@@ -13504,10 +14488,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": true,
         "python_name": "SUPERTREND",
         "core_name": "supertrend",
         "wasm_name": "supertrend",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": "supertrend"
       },
       {
         "key": "syntheticforward",
@@ -13518,10 +14504,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": null,
         "core_name": "synthetic_forward",
         "wasm_name": "synthetic_forward",
-        "flutter_name": "synthetic_forward"
+        "flutter_name": "synthetic_forward",
+        "go_name": "synthetic_forward"
       },
       {
         "key": "syntheticspot",
@@ -13532,10 +14520,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": null,
         "core_name": "synthetic_spot",
         "wasm_name": "synthetic_spot",
-        "flutter_name": "synthetic_spot"
+        "flutter_name": "synthetic_spot",
+        "go_name": "synthetic_spot"
       },
       {
         "key": "t3",
@@ -13546,10 +14536,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "T3",
         "core_name": "t3",
         "wasm_name": "t3",
-        "flutter_name": "t3"
+        "flutter_name": "t3",
+        "go_name": "t3"
       },
       {
         "key": "tan",
@@ -13560,10 +14552,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": "TAN",
         "core_name": "math_tan",
         "wasm_name": "transform_tan",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "tanh",
@@ -13574,10 +14568,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": "TANH",
         "core_name": "math_tanh",
         "wasm_name": "transform_tanh",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "tema",
@@ -13588,10 +14584,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "TEMA",
         "core_name": "tema",
         "wasm_name": "tema",
-        "flutter_name": "tema"
+        "flutter_name": "tema",
+        "go_name": "tema"
       },
       {
         "key": "termstructureslope",
@@ -13602,10 +14600,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "term_structure_slope",
         "wasm_name": "term_structure_slope",
-        "flutter_name": "term_structure_slope"
+        "flutter_name": "term_structure_slope",
+        "go_name": null
       },
       {
         "key": "tickaggregator",
@@ -13616,10 +14616,12 @@
         "wasm": false,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": "TickAggregator",
         "core_name": null,
         "wasm_name": null,
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "topnindices",
@@ -13630,10 +14632,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": false,
         "python_name": null,
         "core_name": "top_n_indices",
         "wasm_name": "top_n_indices",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "tradestats",
@@ -13644,10 +14648,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "trade_stats",
         "wasm_name": "trade_stats",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "trange",
@@ -13658,10 +14664,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "TRANGE",
         "core_name": "trange",
         "wasm_name": "trange",
-        "flutter_name": "trange"
+        "flutter_name": "trange",
+        "go_name": "trange"
       },
       {
         "key": "trima",
@@ -13672,10 +14680,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "TRIMA",
         "core_name": "trima",
         "wasm_name": "trima",
-        "flutter_name": "trima"
+        "flutter_name": "trima",
+        "go_name": "trima"
       },
       {
         "key": "trimoverlap",
@@ -13686,10 +14696,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "trim_overlap",
         "wasm_name": "trim_overlap",
-        "flutter_name": "trim_overlap"
+        "flutter_name": "trim_overlap",
+        "go_name": null
       },
       {
         "key": "trix",
@@ -13700,10 +14712,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "TRIX",
         "core_name": "trix",
         "wasm_name": "trix_indicator",
-        "flutter_name": "trix_indicator"
+        "flutter_name": "trix_indicator",
+        "go_name": "trix"
       },
       {
         "key": "tsf",
@@ -13714,10 +14728,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "TSF",
         "core_name": "tsf",
         "wasm_name": "tsf",
-        "flutter_name": "tsf"
+        "flutter_name": "tsf",
+        "go_name": "tsf"
       },
       {
         "key": "tsi",
@@ -13728,10 +14744,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": null,
         "core_name": "tsi",
         "wasm_name": "tsi",
-        "flutter_name": "tsi"
+        "flutter_name": "tsi",
+        "go_name": "tsi"
       },
       {
         "key": "typprice",
@@ -13742,10 +14760,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "TYPPRICE",
         "core_name": "typprice",
         "wasm_name": "typprice",
-        "flutter_name": "typprice"
+        "flutter_name": "typprice",
+        "go_name": "typprice"
       },
       {
         "key": "ulcerindex",
@@ -13756,10 +14776,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "ULCER_INDEX",
         "core_name": "ulcer_index",
         "wasm_name": "ulcer_index",
-        "flutter_name": "ulcer_index"
+        "flutter_name": "ulcer_index",
+        "go_name": "ulcer_index"
       },
       {
         "key": "ultosc",
@@ -13770,10 +14792,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "ULTOSC",
         "core_name": "ultosc",
         "wasm_name": "ultosc",
-        "flutter_name": "ultosc"
+        "flutter_name": "ultosc",
+        "go_name": "ultosc"
       },
       {
         "key": "validateohlc",
@@ -13784,10 +14808,12 @@
         "wasm": false,
         "flutter": false,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "validate_ohlc",
         "wasm_name": null,
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "valuewhen",
@@ -13798,10 +14824,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": false,
         "python_name": null,
         "core_name": "valuewhen",
         "wasm_name": "valuewhen",
-        "flutter_name": "valuewhen"
+        "flutter_name": "valuewhen",
+        "go_name": null
       },
       {
         "key": "var",
@@ -13812,10 +14840,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "VAR",
         "core_name": "var",
         "wasm_name": "var",
-        "flutter_name": "var"
+        "flutter_name": "var",
+        "go_name": "var"
       },
       {
         "key": "vidya",
@@ -13826,10 +14856,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "VIDYA",
         "core_name": "vidya",
         "wasm_name": "vidya",
-        "flutter_name": "vidya"
+        "flutter_name": "vidya",
+        "go_name": "vidya"
       },
       {
         "key": "volcone",
@@ -13840,10 +14872,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": false,
         "python_name": null,
         "core_name": "vol_cone",
         "wasm_name": "vol_cone",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "volosc",
@@ -13854,10 +14888,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "VOLOSC",
         "core_name": "volosc",
         "wasm_name": "volosc",
-        "flutter_name": "volosc"
+        "flutter_name": "volosc",
+        "go_name": "volosc"
       },
       {
         "key": "volumebars",
@@ -13868,10 +14904,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": false,
         "python_name": "volume_bars",
         "core_name": "volume_bars",
         "wasm_name": "volume_bars",
-        "flutter_name": "volume_bars"
+        "flutter_name": "volume_bars",
+        "go_name": null
       },
       {
         "key": "vortex",
@@ -13882,10 +14920,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": null,
         "core_name": "vortex",
         "wasm_name": "vortex",
-        "flutter_name": "vortex"
+        "flutter_name": "vortex",
+        "go_name": "vortex"
       },
       {
         "key": "vroc",
@@ -13896,10 +14936,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "VROC",
         "core_name": "vroc",
         "wasm_name": "vroc",
-        "flutter_name": "vroc"
+        "flutter_name": "vroc",
+        "go_name": "vroc"
       },
       {
         "key": "vwap",
@@ -13910,10 +14952,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "VWAP",
         "core_name": "vwap",
         "wasm_name": "vwap",
-        "flutter_name": "vwap"
+        "flutter_name": "vwap",
+        "go_name": "vwap"
       },
       {
         "key": "vwma",
@@ -13924,10 +14968,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "VWMA",
         "core_name": "vwma",
         "wasm_name": "vwma",
-        "flutter_name": "vwma"
+        "flutter_name": "vwma",
+        "go_name": "vwma"
       },
       {
         "key": "walkforwardindices",
@@ -13938,10 +14984,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
+        "go": false,
         "python_name": null,
         "core_name": "walk_forward_indices",
         "wasm_name": "walk_forward_indices",
-        "flutter_name": null
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "wclprice",
@@ -13952,10 +15000,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "WCLPRICE",
         "core_name": "wclprice",
         "wasm_name": "wclprice",
-        "flutter_name": "wclprice"
+        "flutter_name": "wclprice",
+        "go_name": "wclprice"
       },
       {
         "key": "weightedcontinuous",
@@ -13966,10 +15016,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": null,
         "core_name": "weighted_continuous",
         "wasm_name": "weighted_continuous",
-        "flutter_name": "weighted_continuous"
+        "flutter_name": "weighted_continuous",
+        "go_name": "weighted_continuous"
       },
       {
         "key": "williamsfractals",
@@ -13980,10 +15032,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "WILLIAMS_FRACTALS",
         "core_name": "williams_fractals",
         "wasm_name": "williams_fractals",
-        "flutter_name": "williams_fractals"
+        "flutter_name": "williams_fractals",
+        "go_name": "williams_fractals"
       },
       {
         "key": "willr",
@@ -13994,10 +15048,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "WILLR",
         "core_name": "willr",
         "wasm_name": "willr",
-        "flutter_name": "willr"
+        "flutter_name": "willr",
+        "go_name": "willr"
       },
       {
         "key": "wma",
@@ -14008,10 +15064,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "WMA",
         "core_name": "wma",
         "wasm_name": "wma",
-        "flutter_name": "wma"
+        "flutter_name": "wma",
+        "go_name": "wma"
       },
       {
         "key": "yangzhangvol",
@@ -14022,10 +15080,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": null,
         "core_name": "yang_zhang_vol",
         "wasm_name": "yang_zhang_vol",
-        "flutter_name": "yang_zhang_vol"
+        "flutter_name": "yang_zhang_vol",
+        "go_name": "yang_zhang_vol"
       },
       {
         "key": "zlema",
@@ -14036,10 +15096,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": "ZLEMA",
         "core_name": "zlema",
         "wasm_name": "zlema",
-        "flutter_name": "zlema"
+        "flutter_name": "zlema",
+        "go_name": "zlema"
       },
       {
         "key": "zscoreseries",
@@ -14050,10 +15112,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
+        "go": true,
         "python_name": null,
         "core_name": "zscore_series",
         "wasm_name": "zscore_series",
-        "flutter_name": "zscore_series"
+        "flutter_name": "zscore_series",
+        "go_name": "zscore_series"
       }
     ]
   }

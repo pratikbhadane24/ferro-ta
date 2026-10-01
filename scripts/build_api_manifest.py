@@ -366,6 +366,22 @@ def _extract_flutter_exports(root: Path) -> list[str]:
     return sorted(_TOPLEVEL_PUB_FN_RE.findall(text))
 
 
+def _extract_ffi_exports(root: Path) -> list[str]:
+    """C ABI exports (wrapped 1:1 by the Go module), from ``ffi_spec.json``.
+
+    ``ft_sma`` maps to ``sma``; streaming handle ``sma`` maps to
+    ``StreamingSMA`` so it lines up with the core/Python streaming rows.
+    """
+    spec_path = root / "crates" / "ferro_ta_ffi" / "ffi_spec.json"
+    if not spec_path.exists():
+        return []
+    spec = json.loads(spec_path.read_text(encoding="utf-8"))
+    names = [fn["name"].removeprefix("ft_") for fn in spec["functions"]]
+    names += [fn["name"].removeprefix("ft_") for fn in spec.get("scalars", [])]
+    names += [f"Streaming{stream['name'].upper()}" for stream in spec["streams"]]
+    return sorted(names)
+
+
 def _safe_git_head(root: Path) -> str | None:
     try:
         completed = subprocess.run(
@@ -397,6 +413,7 @@ def _build_coverage_rows(
     wasm_exports: list[str],
     flutter_exports: list[str],
     flutter_excluded: list[str],
+    go_exports: list[str],
 ) -> list[dict[str, Any]]:
     python_by_key = _index_by_canonical([entry["name"] for entry in python_indicators])
     python_category = {
@@ -419,6 +436,7 @@ def _build_coverage_rows(
     wasm_by_key = _index_by_canonical(wasm_exports)
     flutter_by_key = _index_by_canonical(flutter_exports)
     excluded_by_key = _index_by_canonical(flutter_excluded)
+    go_by_key = _index_by_canonical(go_exports)
 
     keys = sorted(
         set(python_by_key)
@@ -426,6 +444,7 @@ def _build_coverage_rows(
         | set(wasm_by_key)
         | set(flutter_by_key)
         | set(excluded_by_key)
+        | set(go_by_key)
     )
 
     rows: list[dict[str, Any]] = []
@@ -435,12 +454,14 @@ def _build_coverage_rows(
         wasm_name = wasm_by_key.get(key)
         flutter_name = flutter_by_key.get(key)
         excluded_name = excluded_by_key.get(key)
+        go_name = go_by_key.get(key)
         display = (
             python_name
             or core_name
             or wasm_name
             or flutter_name
             or excluded_name
+            or go_name
             or key
         )
         category = python_category.get(key) or core_category.get(key) or "other"
@@ -455,10 +476,12 @@ def _build_coverage_rows(
                 "wasm": wasm_name is not None,
                 "flutter": flutter_name is not None,
                 "flutter_excluded": flutter_excluded_flag,
+                "go": go_name is not None,
                 "python_name": python_name,
                 "core_name": core_name,
                 "wasm_name": wasm_name,
                 "flutter_name": flutter_name,
+                "go_name": go_name,
             }
         )
     return rows
@@ -472,6 +495,7 @@ def _coverage_counts(rows: list[dict[str, Any]]) -> dict[str, int]:
         "wasm_count": sum(1 for row in rows if row["wasm"]),
         "flutter_count": sum(1 for row in rows if row["flutter"]),
         "flutter_excluded_count": sum(1 for row in rows if row["flutter_excluded"]),
+        "go_count": sum(1 for row in rows if row["go"]),
         "common_python_wasm_count": sum(
             1 for row in rows if row["python"] and row["wasm"]
         ),
@@ -493,6 +517,7 @@ def support_matrix_count_snippets(counts: dict[str, int]) -> list[str]:
         f"{counts['flutter_excluded_count']} ``MANUAL_EXCLUDE``",
         f"{counts['common_python_wasm_count']} names shared with Python",
         f"{counts['common_all_four_count']} names are present on all four",
+        f"{counts['go_count']} C ABI / Go exports",
     ]
 
 
@@ -515,7 +540,7 @@ def render_coverage_rst(manifest: dict[str, Any]) -> str:
         "",
         ".. list-table:: Coverage counts",
         "   :header-rows: 1",
-        "   :widths: 20 12 12 12 12 16",
+        "   :widths: 16 10 10 10 10 14 14",
         "",
         "   * - Rows",
         "     - Core",
@@ -523,16 +548,18 @@ def render_coverage_rst(manifest: dict[str, Any]) -> str:
         "     - WASM",
         "     - Flutter",
         "     - Flutter excluded",
+        "     - C / Go",
         f"   * - {counts['row_count']}",
         f"     - {counts['core_count']}",
         f"     - {counts['python_count']}",
         f"     - {counts['wasm_count']}",
         f"     - {counts['flutter_count']}",
         f"     - {counts['flutter_excluded_count']}",
+        f"     - {counts['go_count']}",
         "",
         ".. list-table:: Cross-language indicator coverage",
         "   :header-rows: 1",
-        "   :widths: 22 16 10 10 10 12",
+        "   :widths: 22 16 10 10 10 12 10",
         "",
         "   * - Name",
         "     - Category",
@@ -540,6 +567,7 @@ def render_coverage_rst(manifest: dict[str, Any]) -> str:
         "     - Python",
         "     - WASM",
         "     - Flutter",
+        "     - C / Go",
     ]
     for row in rows:
         flutter_cell = _cell(row["flutter"], row["flutter_excluded"])
@@ -551,6 +579,7 @@ def render_coverage_rst(manifest: dict[str, Any]) -> str:
                 f"     - {_cell(row['python'])}",
                 f"     - {_cell(row['wasm'])}",
                 f"     - {flutter_cell}",
+                f"     - {_cell(row['go'])}",
             ]
         )
     lines.append("")
@@ -566,6 +595,7 @@ def build_manifest(
     wasm_exports = _extract_wasm_exports(root)
     flutter_exports = _extract_flutter_exports(root)
     flutter_excluded = _load_flutter_manual_exclude(root)
+    go_exports = _extract_ffi_exports(root)
 
     python_indicator_names = {entry["name"] for entry in python_api["indicators"]}
     python_indicator_names_lc = {name.lower() for name in python_indicator_names}
@@ -580,6 +610,7 @@ def build_manifest(
         wasm_exports,
         flutter_exports,
         flutter_excluded,
+        go_exports,
     )
     python_keys = {canonical_key(name) for name in python_indicator_names}
     wasm_keys = {canonical_key(name) for name in wasm_exports}
@@ -601,6 +632,10 @@ def build_manifest(
                 "exports": flutter_exports,
                 "manual_exclude_count": len(flutter_excluded),
                 "manual_exclude": flutter_excluded,
+            },
+            "c_abi_go": {
+                "export_count": len(go_exports),
+                "exports": go_exports,
             },
         },
         "parity_summary": {

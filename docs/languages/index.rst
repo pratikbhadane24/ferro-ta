@@ -2,8 +2,9 @@ Languages
 =========
 
 ferro-ta is one library: ``ferro_ta_core`` holds every indicator algorithm.
-Rust exposes that crate directly; Python, JavaScript (WASM), and Flutter wrap
-it.
+Rust exposes that crate directly; Python, JavaScript (WASM), Flutter, and Go
+wrap it. Go and C/C++ share one C ABI crate, ``ferro_ta_ffi``, which future
+C-ABI languages (C#, JVM, Ruby, ...) build on.
 
 .. list-table::
    :header-rows: 1
@@ -29,6 +30,14 @@ it.
      - pub.dev ``ferro_ta``
      - flutter_rust_bridge → core; web reuses WASM
      - :doc:`flutter`
+   * - Go
+     - ``github.com/pratikbhadane24/ferro-ta/bindings/go``
+     - cgo → ``ferro_ta_ffi`` C ABI → core
+     - :doc:`go`
+   * - C / C++
+     - GitHub Release assets
+     - ``ferro_ta.h`` → ``ferro_ta_ffi`` → core
+     - :doc:`c`
 
 Python keeps the richest *ergonomic* surface (TA-Lib names, pandas/polars,
 Sphinx autodoc). Indicator coverage is not identical on every binding — check
@@ -48,5 +57,7 @@ new language is out of scope. See :doc:`adding`.
    rust
    wasm
    flutter
+   go
+   c
    coverage
    adding

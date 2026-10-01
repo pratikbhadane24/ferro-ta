@@ -9,6 +9,28 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- **Go binding** (`github.com/pratikbhadane24/ferro-ta/bindings/go`): 229 array
+  functions (all TA indicators and candle patterns plus IV, realized-vol,
+  regime, portfolio and utility series), 24 scalar functions (Black-Scholes /
+  Black-76 prices and greeks, American BAW, digitals, implied volatility,
+  futures basis/carry, Kelly sizing) and 9 streaming indicators. Typed errors
+  (`errors.Is`), `MAType`/`OptionKind`/`DigitalKind`/`PricingModel` constants,
+  concurrency-safe streaming types. Release tags ship prebuilt static archives
+  for linux/darwin amd64+arm64 and windows amd64, so `go get` needs no Rust.
+- **C ABI crate `ferro_ta_ffi`** and generated header `ferro_ta.h`: the shared
+  foundation for Go, C/C++ and future C-ABI languages. Status-code errors,
+  caller-allocated outputs, contained panics, validated periods (`int64`),
+  enums and finite float params. Each release attaches C/C++ archives per
+  platform (MSVC build on Windows).
+- `ffi_spec.json` signature table, `scripts/build_ffi_bindings.py` codegen
+  (`--check` in CI) and language-neutral golden fixtures
+  (`tests/fixtures/golden/ffi_golden.json`) replayed by every C-ABI binding.
+- `ci-go.yml` (Linux/macOS/Windows, Go 1.22 + stable) and `go-publish.yml`;
+  `make ffi-gen`, `make go-lib`, `make go`, `make c-smoke`, `make ffi-check`.
+- API manifest / coverage table gains a "C / Go" column.
+
 ## [1.3.1] — 2026-09-21
 
 ### Fixed
