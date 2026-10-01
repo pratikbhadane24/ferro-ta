@@ -16,7 +16,7 @@ name = "ferro_ta_core"
 crate-type = ["lib"]
 
 [dependencies]
-multiversion = { version = "0.8", optional = true }
+multiversion = { version = "0.9", optional = true }
 serde = { version = "1.0", features = ["derive"], optional = true }
 serde_json = { version = "1.0", optional = true }
 
