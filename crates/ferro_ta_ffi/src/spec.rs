@@ -61,3 +61,29 @@ pub struct FnSpec {
     pub params: &'static [ParamSpec],
     pub outputs: &'static [OutputSpec],
 }
+
+/// One streaming (stateful, bar-by-bar) indicator exposed as an opaque handle:
+///
+/// ```c
+/// int32_t ft_stream_x_new(params..., FtStreamX **out_handle);
+/// int32_t ft_stream_x_update(FtStreamX *h, inputs..., outputs...);
+/// int32_t ft_stream_x_reset(FtStreamX *h);
+/// void    ft_stream_x_free(FtStreamX *h);
+/// ```
+#[derive(Debug, Clone, Copy)]
+pub struct StreamSpec {
+    /// Short name (`sma`, `bbands`, ...).
+    pub name: &'static str,
+    /// Opaque C handle type name (`FtStreamSma`).
+    pub handle: &'static str,
+    pub doc: &'static str,
+    pub new_fn: &'static str,
+    pub update_fn: &'static str,
+    pub reset_fn: &'static str,
+    pub free_fn: &'static str,
+    pub params: &'static [ParamSpec],
+    /// Scalar `double` inputs to `update`.
+    pub inputs: &'static [&'static str],
+    /// Scalar outputs written by `update` through pointers.
+    pub outputs: &'static [OutputSpec],
+}

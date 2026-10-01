@@ -25,6 +25,7 @@ mod macros;
 pub mod marshal;
 pub mod spec;
 pub mod status;
+pub mod streaming;
 mod validation;
 
 pub mod indicators;
@@ -41,10 +42,16 @@ pub use indicators::statistic::*;
 pub use indicators::volatility::*;
 pub use indicators::volume::*;
 pub use status::*;
+pub use streaming::*;
 
 /// Signature metadata for every array export.
 pub fn all_specs() -> impl Iterator<Item = &'static spec::FnSpec> {
     indicators::MODULE_SPECS
         .iter()
         .flat_map(|specs| specs.iter())
+}
+
+/// Signature metadata for every streaming (opaque handle) export.
+pub fn all_stream_specs() -> impl Iterator<Item = &'static spec::StreamSpec> {
+    streaming::STREAM_SPECS.iter()
 }
