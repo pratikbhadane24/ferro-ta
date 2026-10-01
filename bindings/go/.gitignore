@@ -1,0 +1,2 @@
+# Prebuilt native archives: only committed on bindings/go/vX.Y.Z release tags.
+lib/

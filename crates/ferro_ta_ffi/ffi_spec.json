@@ -1,0 +1,5643 @@
+{
+  "functions": [
+    {
+      "doc": "Compute Bollinger Bands, returning `(upper, middle, lower)`.",
+      "group": "overlap",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_bbands",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_upper"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_middle"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_lower"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "nbdevup"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "nbdevdn"
+        },
+        {
+          "c_type": "int32_t",
+          "kind": "matype",
+          "max": 8,
+          "min": 0,
+          "name": "matype"
+        }
+      ]
+    },
+    {
+      "doc": "MACD with fixed 12/26 periods.",
+      "group": "overlap",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_macdfix",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_macd"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_signal"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_hist"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "signalperiod"
+        }
+      ]
+    },
+    {
+      "doc": "MACD with configurable MA types for fast/slow/signal.",
+      "group": "overlap",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_macdext",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_macd"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_signal"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_hist"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "fastperiod"
+        },
+        {
+          "c_type": "int32_t",
+          "kind": "matype",
+          "max": 8,
+          "min": 0,
+          "name": "fastmatype"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "slowperiod"
+        },
+        {
+          "c_type": "int32_t",
+          "kind": "matype",
+          "max": 8,
+          "min": 0,
+          "name": "slowmatype"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "signalperiod"
+        },
+        {
+          "c_type": "int32_t",
+          "kind": "matype",
+          "max": 8,
+          "min": 0,
+          "name": "signalmatype"
+        }
+      ]
+    },
+    {
+      "doc": "Generic Moving Average. matype: 0=SMA, 1=EMA, 2=WMA, 3=DEMA, 4=TEMA,",
+      "group": "overlap",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_ma",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "int32_t",
+          "kind": "matype",
+          "max": 8,
+          "min": 0,
+          "name": "matype"
+        }
+      ]
+    },
+    {
+      "doc": "Moving Average with Variable Period per bar.",
+      "group": "overlap",
+      "inputs": [
+        "close",
+        "periods"
+      ],
+      "name": "ft_mavp",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "minperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "maxperiod"
+        },
+        {
+          "c_type": "int32_t",
+          "kind": "matype",
+          "max": 8,
+          "min": 0,
+          "name": "matype"
+        }
+      ]
+    },
+    {
+      "doc": "Compute the Exponential Moving Average (EMA).",
+      "group": "overlap",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_ema",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Double Exponential Moving Average: `2*EMA - EMA(EMA)`.",
+      "group": "overlap",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_dema",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Triple Exponential Moving Average: `3*EMA - 3*EMA(EMA) + EMA(EMA(EMA))`.",
+      "group": "overlap",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_tema",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Tillson T3: 6 cascaded SMA-seeded EMAs with volume factor.",
+      "group": "overlap",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_t3",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "vfactor"
+        }
+      ]
+    },
+    {
+      "doc": "Kaufman Adaptive Moving Average (TA-Lib).",
+      "group": "overlap",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_kama",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Compute the Moving Average Convergence/Divergence (MACD).",
+      "group": "overlap",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_macd",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_macd"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_signal"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_hist"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "fastperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "slowperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "signalperiod"
+        }
+      ]
+    },
+    {
+      "doc": "MESA Adaptive Moving Average. Returns `(mama, fama)`.",
+      "group": "overlap",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_mama",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_mama"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_fama"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "fastlimit"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "slowlimit"
+        }
+      ]
+    },
+    {
+      "doc": "Midpoint: `(max(close) + min(close)) / 2` over rolling window.",
+      "group": "overlap",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_midpoint",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "MidPrice: `(highest_high + lowest_low) / 2` over rolling window.",
+      "group": "overlap",
+      "inputs": [
+        "high",
+        "low"
+      ],
+      "name": "ft_midprice",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Parabolic SAR.",
+      "group": "overlap",
+      "inputs": [
+        "high",
+        "low"
+      ],
+      "name": "ft_sar",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "acceleration"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "maximum"
+        }
+      ]
+    },
+    {
+      "doc": "Parabolic SAR Extended with configurable acceleration factors.",
+      "group": "overlap",
+      "inputs": [
+        "high",
+        "low"
+      ],
+      "name": "ft_sarext",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "startvalue"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "offsetonreverse"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "accelerationinitlong"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "accelerationlong"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "accelerationmaxlong"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "accelerationinitshort"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "accelerationshort"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "accelerationmaxshort"
+        }
+      ]
+    },
+    {
+      "doc": "Compute the Simple Moving Average (SMA) over a rolling window.",
+      "group": "overlap",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_sma",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Triangular Moving Average (triangle-weighted).",
+      "group": "overlap",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_trima",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Compute the Weighted Moving Average (WMA).",
+      "group": "overlap",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_wma",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Compute the Plus Directional Movement (+DM), Wilder smoothed.",
+      "group": "momentum",
+      "inputs": [
+        "high",
+        "low"
+      ],
+      "name": "ft_plus_dm",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Compute the Minus Directional Movement (-DM), Wilder smoothed.",
+      "group": "momentum",
+      "inputs": [
+        "high",
+        "low"
+      ],
+      "name": "ft_minus_dm",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Compute the Plus Directional Indicator (+DI), Wilder smoothed.",
+      "group": "momentum",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_plus_di",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Compute the Minus Directional Indicator (-DI), Wilder smoothed.",
+      "group": "momentum",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_minus_di",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Compute the Directional Movement Index (DX).",
+      "group": "momentum",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_dx",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Compute the Average Directional Movement Index (ADX).",
+      "group": "momentum",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_adx",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Compute the ADX Rating (ADXR).",
+      "group": "momentum",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_adxr",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Aroon indicator. Returns `(aroon_down, aroon_up)`.",
+      "group": "momentum",
+      "inputs": [
+        "high",
+        "low"
+      ],
+      "name": "ft_aroon",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_aroondown"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_aroonup"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Aroon Oscillator: `aroon_up - aroon_down`.",
+      "group": "momentum",
+      "inputs": [
+        "high",
+        "low"
+      ],
+      "name": "ft_aroonosc",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Absolute Price Oscillator: `fast MA - slow MA`.",
+      "group": "momentum",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_apo",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "fastperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "slowperiod"
+        },
+        {
+          "c_type": "int32_t",
+          "kind": "matype",
+          "max": 8,
+          "min": 0,
+          "name": "matype"
+        }
+      ]
+    },
+    {
+      "doc": "Percentage Price Oscillator: `(fast MA - slow MA) / slow MA * 100`.",
+      "group": "momentum",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_ppo",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_ppo"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_signal"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_hist"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "fastperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "slowperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "signalperiod"
+        },
+        {
+          "c_type": "int32_t",
+          "kind": "matype",
+          "max": 8,
+          "min": 0,
+          "name": "matype"
+        }
+      ]
+    },
+    {
+      "doc": "TRIX: 1-period rate of change of triple-smoothed EMA.",
+      "group": "momentum",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_trix",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Williams %R: `-100 * (HH - close) / (HH - LL)` over the window.",
+      "group": "momentum",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_willr",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Commodity Channel Index: `(tp - SMA(tp)) / (0.015 * MAD)`.",
+      "group": "momentum",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cci",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Balance of Power: `(close - open) / (high - low)`.",
+      "group": "momentum",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_bop",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Compute the Momentum indicator: `close[i] - close[i - timeperiod]`.",
+      "group": "momentum",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_mom",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Rate of Change: `(close[i] - close[i-p]) / close[i-p] * 100`.",
+      "group": "momentum",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_roc",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Rate of Change Percentage: `(close[i] - close[i-p]) / close[i-p]`.",
+      "group": "momentum",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_rocp",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Rate of Change Ratio: `close[i] / close[i-p]`.",
+      "group": "momentum",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_rocr",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Rate of Change Ratio x 100: `close[i] / close[i-p] * 100`.",
+      "group": "momentum",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_rocr100",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Compute the Relative Strength Index (RSI).",
+      "group": "momentum",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_rsi",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Chande Momentum Oscillator: `100 * (gains - losses) / (gains + losses)`.",
+      "group": "momentum",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_cmo",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Compute the Stochastic Oscillator (TA-Lib compatible).",
+      "group": "momentum",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_stoch",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_slowk"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_slowd"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "fastk_period"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "slowk_period"
+        },
+        {
+          "c_type": "int32_t",
+          "kind": "matype",
+          "max": 8,
+          "min": 0,
+          "name": "slowk_matype"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "slowd_period"
+        },
+        {
+          "c_type": "int32_t",
+          "kind": "matype",
+          "max": 8,
+          "min": 0,
+          "name": "slowd_matype"
+        }
+      ]
+    },
+    {
+      "doc": "Fast Stochastic. Returns `(fastk, fastd)`.",
+      "group": "momentum",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_stochf",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_fastk"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_fastd"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "fastk_period"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "fastd_period"
+        },
+        {
+          "c_type": "int32_t",
+          "kind": "matype",
+          "max": 8,
+          "min": 0,
+          "name": "fastd_matype"
+        }
+      ]
+    },
+    {
+      "doc": "Stochastic RSI. Returns `(fastk, fastd)`.",
+      "group": "momentum",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_stochrsi",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_fastk"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_fastd"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "fastk_period"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "fastd_period"
+        },
+        {
+          "c_type": "int32_t",
+          "kind": "matype",
+          "max": 8,
+          "min": 0,
+          "name": "fastd_matype"
+        }
+      ]
+    },
+    {
+      "doc": "Ultimate Oscillator: weighted average of buying pressure over three periods.",
+      "group": "momentum",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_ultosc",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod1"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod2"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod3"
+        }
+      ]
+    },
+    {
+      "doc": "Compute the Average True Range (ATR), Wilder smoothed (TA-Lib compatible).",
+      "group": "volatility",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_atr",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Compute the True Range for each bar.",
+      "group": "volatility",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_trange",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Normalized Average True Range: `ATR / close * 100`.",
+      "group": "volatility",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_natr",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Compute On-Balance Volume (OBV).",
+      "group": "volume",
+      "inputs": [
+        "close",
+        "volume"
+      ],
+      "name": "ft_obv",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Compute the Money Flow Index (MFI).",
+      "group": "volume",
+      "inputs": [
+        "high",
+        "low",
+        "close",
+        "volume"
+      ],
+      "name": "ft_mfi",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Chaikin Accumulation/Distribution Line.",
+      "group": "volume",
+      "inputs": [
+        "high",
+        "low",
+        "close",
+        "volume"
+      ],
+      "name": "ft_ad",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Chaikin A/D Oscillator: fast EMA of AD minus slow EMA of AD.",
+      "group": "volume",
+      "inputs": [
+        "high",
+        "low",
+        "close",
+        "volume"
+      ],
+      "name": "ft_adosc",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "fastperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "slowperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Hilbert Transform Instantaneous Trendline (Ehlers).",
+      "group": "cycle",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_ht_trendline",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Hilbert Transform Dominant Cycle Period in bars.",
+      "group": "cycle",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_ht_dcperiod",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Hilbert Transform Dominant Cycle Phase in degrees.",
+      "group": "cycle",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_ht_dcphase",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Hilbert Transform Phasor components. Returns `(inphase, quadrature)`.",
+      "group": "cycle",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_ht_phasor",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_inphase"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_quadrature"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Hilbert Transform SineWave. Returns `(sine, leadsine)` where leadsine",
+      "group": "cycle",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_ht_sine",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_sine"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_leadsine"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Hilbert Transform Trend vs Cycle Mode: 1 = trending, 0 = cycling.",
+      "group": "cycle",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_ht_trendmode",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Compute the rolling population standard deviation, scaled by `nbdev`.",
+      "group": "statistic",
+      "inputs": [
+        "real"
+      ],
+      "name": "ft_stddev",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "nbdev"
+        }
+      ]
+    },
+    {
+      "doc": "Rolling population variance, scaled by `nbdev**2`.",
+      "group": "statistic",
+      "inputs": [
+        "real"
+      ],
+      "name": "ft_var",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "nbdev"
+        }
+      ]
+    },
+    {
+      "doc": "Linear regression fitted value at the last point of the window.",
+      "group": "statistic",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_linearreg",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Slope of the rolling linear regression line.",
+      "group": "statistic",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_linearreg_slope",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Intercept of the rolling linear regression line.",
+      "group": "statistic",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_linearreg_intercept",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Angle of the regression line in degrees.",
+      "group": "statistic",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_linearreg_angle",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Time Series Forecast: linear regression extrapolated one period ahead.",
+      "group": "statistic",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_tsf",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Rolling beta: regression of real1 daily returns on real0 daily returns.",
+      "group": "statistic",
+      "inputs": [
+        "real0",
+        "real1"
+      ],
+      "name": "ft_beta",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Rolling Pearson correlation coefficient between two series.",
+      "group": "statistic",
+      "inputs": [
+        "real0",
+        "real1"
+      ],
+      "name": "ft_correl",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Compute the rolling sum over `timeperiod` bars.",
+      "group": "math",
+      "inputs": [
+        "real"
+      ],
+      "name": "ft_sum",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Compute the rolling maximum over `timeperiod` bars.",
+      "group": "math",
+      "inputs": [
+        "real"
+      ],
+      "name": "ft_max",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Compute the rolling minimum over `timeperiod` bars.",
+      "group": "math",
+      "inputs": [
+        "real"
+      ],
+      "name": "ft_min",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Compute the sliding maximum over `timeperiod` bars in O(n) time.",
+      "group": "math",
+      "inputs": [
+        "real"
+      ],
+      "name": "ft_sliding_max",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Compute the sliding minimum over `timeperiod` bars in O(n) time.",
+      "group": "math",
+      "inputs": [
+        "real"
+      ],
+      "name": "ft_sliding_min",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Element-wise addition of two arrays.",
+      "group": "math",
+      "inputs": [
+        "a",
+        "b"
+      ],
+      "name": "ft_add",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Element-wise subtraction of two arrays.",
+      "group": "math",
+      "inputs": [
+        "a",
+        "b"
+      ],
+      "name": "ft_sub",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Element-wise multiplication of two arrays.",
+      "group": "math",
+      "inputs": [
+        "a",
+        "b"
+      ],
+      "name": "ft_mult",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Element-wise division of two arrays (NaN where b=0).",
+      "group": "math",
+      "inputs": [
+        "a",
+        "b"
+      ],
+      "name": "ft_div",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Rolling sum over `timeperiod` bars using an O(n) sliding window.",
+      "group": "math_ops",
+      "inputs": [
+        "real"
+      ],
+      "name": "ft_rolling_sum",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Rolling maximum over `timeperiod` bars (O(n) monotonic deque).",
+      "group": "math_ops",
+      "inputs": [
+        "real"
+      ],
+      "name": "ft_rolling_max",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Rolling minimum over `timeperiod` bars (O(n) monotonic deque).",
+      "group": "math_ops",
+      "inputs": [
+        "real"
+      ],
+      "name": "ft_rolling_min",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Index of rolling maximum over `timeperiod` bars.",
+      "group": "math_ops",
+      "inputs": [
+        "real"
+      ],
+      "name": "ft_rolling_maxindex",
+      "outputs": [
+        {
+          "c_type": "int64_t",
+          "elem": "i64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Index of rolling minimum over `timeperiod` bars.",
+      "group": "math_ops",
+      "inputs": [
+        "real"
+      ],
+      "name": "ft_rolling_minindex",
+      "outputs": [
+        {
+          "c_type": "int64_t",
+          "elem": "i64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Average Price: (open + high + low + close) / 4.",
+      "group": "price_transform",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_avgprice",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Median Price: (high + low) / 2.",
+      "group": "price_transform",
+      "inputs": [
+        "high",
+        "low"
+      ],
+      "name": "ft_medprice",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Typical Price: (high + low + close) / 3.",
+      "group": "price_transform",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_typprice",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Weighted Close Price: (high + low + close * 2) / 4.",
+      "group": "price_transform",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_wclprice",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Two Crows (bearish)",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdl2crows",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Three Black Crows (bearish)",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdl3blackcrows",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Three Inside Up/Down",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdl3inside",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Three-Line Strike",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdl3linestrike",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Three Outside Up/Down",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdl3outside",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Three Stars In The South (bullish)",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdl3starsinsouth",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Three Advancing White Soldiers (bullish)",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdl3whitesoldiers",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Abandoned Baby",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdlabandonedbaby",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Advance Block (bearish)",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdladvanceblock",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Belt-hold",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdlbelthold",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Breakaway",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdlbreakaway",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Closing Marubozu",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdlclosingmarubozu",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Concealing Baby Swallow (bullish)",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdlconcealbabyswall",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Counterattack",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdlcounterattack",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Dark Cloud Cover (bearish)",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdldarkcloudcover",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Doji",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdldoji",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Doji Star",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdldojistar",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Dragonfly Doji (bullish)",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdldragonflydoji",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Engulfing",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdlengulfing",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Evening Doji Star (bearish)",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdleveningdojistar",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Evening Star (bearish)",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdleveningstar",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Up/Down-gap side-by-side white lines",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdlgapsidesidewhite",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Gravestone Doji (bearish)",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdlgravestonedoji",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Hammer (bullish)",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdlhammer",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Hanging Man (bearish)",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdlhangingman",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Harami",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdlharami",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Harami Cross",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdlharamicross",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "High-Wave Candle",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdlhighwave",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Hikkake Pattern",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdlhikkake",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Modified Hikkake Pattern",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdlhikkakemod",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Homing Pigeon (bullish)",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdlhomingpigeon",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Identical Three Crows (bearish)",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdlidentical3crows",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "In-Neck Pattern (bearish)",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdlinneck",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Inverted Hammer (bullish)",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdlinvertedhammer",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Kicking",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdlkicking",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Kicking — bull/bear determined by longer of the two marubozu",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdlkickingbylength",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Ladder Bottom (bullish)",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdlladderbottom",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Long Legged Doji",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdllongleggeddoji",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Long Line Candle",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdllongline",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Marubozu",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdlmarubozu",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Matching Low (bullish)",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdlmatchinglow",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Mat Hold (bullish)",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdlmathold",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Morning Doji Star (bullish)",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdlmorningdojistar",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Morning Star (bullish)",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdlmorningstar",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "On-Neck Pattern (bearish)",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdlonneck",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Piercing Pattern (bullish)",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdlpiercing",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Rickshaw Man",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdlrickshawman",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Rising/Falling Three Methods",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdlrisefall3methods",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Separating Lines",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdlseparatinglines",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Shooting Star (bearish)",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdlshootingstar",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Short Line Candle",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdlshortline",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Spinning Top",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdlspinningtop",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Stalled Pattern (bearish)",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdlstalledpattern",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Stick Sandwich (bullish)",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdlsticksandwich",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Takuri (Dragonfly Doji with very long lower shadow)",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdltakuri",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Tasuki Gap",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdltasukigap",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Thrusting Pattern (bearish)",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdlthrusting",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Tristar Pattern",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdltristar",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Unique 3 River (bullish)",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdlunique3river",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Upside Gap Two Crows (bearish)",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdlupsidegap2crows",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Upside/Downside Gap Three Methods",
+      "group": "pattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_cdlxsidegap3methods",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "ATR-based Supertrend indicator.",
+      "group": "extended",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_supertrend",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_line"
+        },
+        {
+          "c_type": "int8_t",
+          "elem": "i8",
+          "name": "out_direction"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "multiplier"
+        }
+      ]
+    },
+    {
+      "doc": "Donchian Channels — rolling highest high / lowest low.",
+      "group": "extended",
+      "inputs": [
+        "high",
+        "low"
+      ],
+      "name": "ft_donchian",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_upper"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_middle"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_lower"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Keltner Channels — EMA +/- (multiplier x ATR).",
+      "group": "extended",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_keltner_channels",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_upper"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_middle"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_lower"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "atr_period"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "multiplier"
+        }
+      ]
+    },
+    {
+      "doc": "Chandelier Exit — ATR-based trailing stop levels.",
+      "group": "extended",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_chandelier_exit",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_long_exit"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_short_exit"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "multiplier"
+        }
+      ]
+    },
+    {
+      "doc": "Choppiness Index — measures market choppiness vs trending.",
+      "group": "extended",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_choppiness_index",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Hull Moving Average (HMA).",
+      "group": "extended",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_hull_ma",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Directional Movement Index as `(PLUS_DI, MINUS_DI, ADX)`.",
+      "group": "extended",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_dmi",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_plus_di"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_minus_di"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_adx"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Williams Fractals: local swing high / swing low with `timeperiod` bars",
+      "group": "extended",
+      "inputs": [
+        "high",
+        "low"
+      ],
+      "name": "ft_williams_fractals",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_up"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_down"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Random Walk Index (Poulos): max over lookbacks `2..=timeperiod` of",
+      "group": "extended",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_rwi",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_rwi_high"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_rwi_low"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 2,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "# Returns",
+      "group": "extended",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_ichimoku",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_tenkan"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_kijun"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_senkou_a"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_senkou_b"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_chikou"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "tenkan_period"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "kijun_period"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "senkou_b_period"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "count",
+          "min": 0,
+          "name": "displacement"
+        }
+      ]
+    },
+    {
+      "doc": "Elder Ray Index: bull power and bear power versus an EMA of close.",
+      "group": "extended",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_elder_ray",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_bull"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_bear"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Ehlers Fisher Transform of median price, plus a 1-bar trigger.",
+      "group": "extended",
+      "inputs": [
+        "high",
+        "low"
+      ],
+      "name": "ft_fisher",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_fisher"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_signal"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Connors RSI: average of price RSI, streak RSI, and percent rank of ROC.",
+      "group": "extended",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_crsi",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "streakperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "rankperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Awesome Oscillator: `SMA(median, fast) − SMA(median, slow)`.",
+      "group": "extended",
+      "inputs": [
+        "high",
+        "low"
+      ],
+      "name": "ft_ao",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "fastperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "slowperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Accelerator Oscillator: `AO − SMA(AO, timeperiod)`.",
+      "group": "extended",
+      "inputs": [
+        "high",
+        "low"
+      ],
+      "name": "ft_ac",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "fastperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "slowperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Price Oscillator (SMA): `SMA(close, fast) − SMA(close, slow)`.",
+      "group": "extended",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_po",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "fastperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "slowperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Detrended Price Oscillator: `close[i − shift] − SMA(close, timeperiod)`,",
+      "group": "extended",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_dpo",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Relative Vigor Index and its 4-bar weighted signal.",
+      "group": "extended",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_rvi",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_rvi"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_signal"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Chaikin Oscillator — same math as [`volume::adosc`].",
+      "group": "extended",
+      "inputs": [
+        "high",
+        "low",
+        "close",
+        "volume"
+      ],
+      "name": "ft_cho",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "fastperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "slowperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Know Sure Thing: weighted sum of four ROC SMAs, plus a signal SMA.",
+      "group": "extended",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_kst",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_kst"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_signal"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "roc1"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "roc2"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "roc3"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "roc4"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "sma1"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "sma2"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "sma3"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "sma4"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "signalperiod"
+        }
+      ]
+    },
+    {
+      "doc": "True Strength Index and an EMA signal of that series.",
+      "group": "extended",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_tsi",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_tsi"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_signal"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "longperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "shortperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "signalperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Vortex Indicator: `+VI` and `−VI` over `timeperiod`.",
+      "group": "extended",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_vortex",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_plus_vi"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_minus_vi"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Schaff Trend Cycle: stochastic of MACD, double-smoothed (`d1`, `d2`).",
+      "group": "extended",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_stc",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "fastperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "slowperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "cycleperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "d1"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "d2"
+        }
+      ]
+    },
+    {
+      "doc": "Gator Oscillator from the Alligator jaw / teeth / lips.",
+      "group": "extended",
+      "inputs": [
+        "high",
+        "low"
+      ],
+      "name": "ft_gator",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_upper"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_lower"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "jaw_period"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "count",
+          "min": 0,
+          "name": "jaw_shift"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "teeth_period"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "count",
+          "min": 0,
+          "name": "teeth_shift"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "lips_period"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "count",
+          "min": 0,
+          "name": "lips_shift"
+        }
+      ]
+    },
+    {
+      "doc": "Coppock Curve: `WMA(ROC(roc1) + ROC(roc2), wma_period)`.",
+      "group": "extended",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_coppock",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "wma_period"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "roc1"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "roc2"
+        }
+      ]
+    },
+    {
+      "doc": "Rolling median of `real` over `timeperiod`.",
+      "group": "extended",
+      "inputs": [
+        "real"
+      ],
+      "name": "ft_median",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Median bands: rolling median of `(high + low) / 2`, ATR envelopes, and an",
+      "group": "extended",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_median_bands",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_median"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_upper"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_lower"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_median_ema"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "atr_period"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "multiplier"
+        }
+      ]
+    },
+    {
+      "doc": "Rolling mode via equal-width discretization of each window.",
+      "group": "extended",
+      "inputs": [
+        "real"
+      ],
+      "name": "ft_mode",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "bins"
+        }
+      ]
+    },
+    {
+      "doc": "Arnaud Legoux Moving Average.",
+      "group": "extended",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_alma",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "offset"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "sigma"
+        }
+      ]
+    },
+    {
+      "doc": "Zero-lag exponential moving average.",
+      "group": "extended",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_zlema",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Fractal Adaptive Moving Average (Ehlers).",
+      "group": "extended",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_frama",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 2,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "McGinley Dynamic.",
+      "group": "extended",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_mcginley",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Variable Index Dynamic Average (Chande).",
+      "group": "extended",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_vidya",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "cmo_period"
+        }
+      ]
+    },
+    {
+      "doc": "Bill Williams Alligator (jaw / teeth / lips).",
+      "group": "extended",
+      "inputs": [
+        "high",
+        "low"
+      ],
+      "name": "ft_alligator",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_jaw"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_teeth"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_lips"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "jaw_period"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "count",
+          "min": 0,
+          "name": "jaw_shift"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "teeth_period"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "count",
+          "min": 0,
+          "name": "teeth_shift"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "lips_period"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "count",
+          "min": 0,
+          "name": "lips_shift"
+        }
+      ]
+    },
+    {
+      "doc": "Moving-average envelopes: `MA * (1 ± percent / 100)`.",
+      "group": "extended",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_ma_envelopes",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_upper"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_middle"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_lower"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "percent"
+        },
+        {
+          "c_type": "int32_t",
+          "kind": "matype",
+          "max": 8,
+          "min": 0,
+          "name": "matype"
+        }
+      ]
+    },
+    {
+      "doc": "Chande Kroll Stop.",
+      "group": "extended",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_chande_kroll_stop",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_long_stop"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_short_stop"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "multiplier"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "stop_period"
+        }
+      ]
+    },
+    {
+      "doc": "Chaikin Volatility: rate of change of an EMA of the high–low range.",
+      "group": "extended",
+      "inputs": [
+        "high",
+        "low"
+      ],
+      "name": "ft_chaikin_vol",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "rocperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Mass Index: rolling sum of the single/double EMA ratio of the high–low range.",
+      "group": "extended",
+      "inputs": [
+        "high",
+        "low"
+      ],
+      "name": "ft_mass",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "sumperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Bollinger %B: `(close - lower) / (upper - lower)` from [`overlap::bbands`].",
+      "group": "extended",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_bbpercent",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "nbdevup"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "nbdevdn"
+        }
+      ]
+    },
+    {
+      "doc": "Bollinger Bandwidth: `(upper - lower) / middle` from [`overlap::bbands`].",
+      "group": "extended",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_bbwidth",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "nbdevup"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "nbdevdn"
+        }
+      ]
+    },
+    {
+      "doc": "Close-to-close historical volatility, annualized and in percent.",
+      "group": "extended",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_historical_volatility",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "annual"
+        }
+      ]
+    },
+    {
+      "doc": "Ulcer Index: RMS of percent drawdowns versus the rolling highest close.",
+      "group": "extended",
+      "inputs": [
+        "close"
+      ],
+      "name": "ft_ulcer_index",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Stoller Average Range Channels: SMA of close ± `multiplier * ATR`.",
+      "group": "extended",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "ft_starc",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_upper"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_middle"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_lower"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "atr_period"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "multiplier"
+        }
+      ]
+    },
+    {
+      "doc": "On-Balance Volume smoothed with [`overlap::ma`].",
+      "group": "extended",
+      "inputs": [
+        "close",
+        "volume"
+      ],
+      "name": "ft_obv_smoothed",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "int32_t",
+          "kind": "matype",
+          "max": 8,
+          "min": 0,
+          "name": "matype"
+        }
+      ]
+    },
+    {
+      "doc": "Chaikin Money Flow: rolling sum of CLV × volume over rolling volume.",
+      "group": "extended",
+      "inputs": [
+        "high",
+        "low",
+        "close",
+        "volume"
+      ],
+      "name": "ft_cmf",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Ease of Movement, then SMA.",
+      "group": "extended",
+      "inputs": [
+        "high",
+        "low",
+        "volume"
+      ],
+      "name": "ft_emv",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "scale"
+        }
+      ]
+    },
+    {
+      "doc": "Force Index: `(close - close[1]) * volume`, optionally EMA-smoothed.",
+      "group": "extended",
+      "inputs": [
+        "close",
+        "volume"
+      ],
+      "name": "ft_force_index",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Negative Volume Index, seeded at 1000.",
+      "group": "extended",
+      "inputs": [
+        "close",
+        "volume"
+      ],
+      "name": "ft_nvi",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "NVI plus an EMA signal of that series.",
+      "group": "extended",
+      "inputs": [
+        "close",
+        "volume"
+      ],
+      "name": "ft_nvi_with_ema",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_nvi"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_signal"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Positive Volume Index, seeded at 1000.",
+      "group": "extended",
+      "inputs": [
+        "close",
+        "volume"
+      ],
+      "name": "ft_pvi",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "PVI plus a moving-average signal (`matype` matches `MA`, `0`-`8`).",
+      "group": "extended",
+      "inputs": [
+        "close",
+        "volume"
+      ],
+      "name": "ft_pvi_with_signal",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_pvi"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_signal"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "int32_t",
+          "kind": "matype",
+          "max": 8,
+          "min": 0,
+          "name": "matype"
+        }
+      ]
+    },
+    {
+      "doc": "Volume oscillator: `100 * (SMA(vol, fast) - SMA(vol, slow)) / SMA(vol, slow)`.",
+      "group": "extended",
+      "inputs": [
+        "volume"
+      ],
+      "name": "ft_volosc",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "fastperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "slowperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Volume rate of change: `100 * (volume - volume[timeperiod]) / volume[timeperiod]`.",
+      "group": "extended",
+      "inputs": [
+        "volume"
+      ],
+      "name": "ft_vroc",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Klinger Volume Oscillator and its EMA signal.",
+      "group": "extended",
+      "inputs": [
+        "high",
+        "low",
+        "close",
+        "volume"
+      ],
+      "name": "ft_kvo",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_kvo"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_signal"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "fastperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "slowperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "signalperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Price Volume Trend: cumulative `volume * (close - close[1]) / close[1]`.",
+      "group": "extended",
+      "inputs": [
+        "close",
+        "volume"
+      ],
+      "name": "ft_pvt",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Relative volume: `volume / SMA(volume, timeperiod)`.",
+      "group": "extended",
+      "inputs": [
+        "volume"
+      ],
+      "name": "ft_rvol",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Volume Weighted Average Price (cumulative or rolling).",
+      "group": "extended",
+      "inputs": [
+        "high",
+        "low",
+        "close",
+        "volume"
+      ],
+      "name": "ft_vwap",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    },
+    {
+      "doc": "Volume Weighted Moving Average.",
+      "group": "extended",
+      "inputs": [
+        "close",
+        "volume"
+      ],
+      "name": "ft_vwma",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ]
+    }
+  ],
+  "status_codes": [
+    {
+      "name": "FT_OK",
+      "value": 0
+    },
+    {
+      "name": "FT_ERR_NULL_PTR",
+      "value": 1
+    },
+    {
+      "name": "FT_ERR_INVALID_PARAM",
+      "value": 2
+    },
+    {
+      "name": "FT_ERR_LENGTH_MISMATCH",
+      "value": 3
+    },
+    {
+      "name": "FT_ERR_PANIC",
+      "value": 4
+    }
+  ],
+  "streams": [
+    {
+      "doc": "Streaming simple moving average.",
+      "free_fn": "ft_stream_sma_free",
+      "handle": "FtStreamSma",
+      "inputs": [
+        "value"
+      ],
+      "name": "sma",
+      "new_fn": "ft_stream_sma_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "period"
+        }
+      ],
+      "reset_fn": "ft_stream_sma_reset",
+      "update_fn": "ft_stream_sma_update"
+    },
+    {
+      "doc": "Streaming exponential moving average (SMA-seeded, TA-Lib compatible).",
+      "free_fn": "ft_stream_ema_free",
+      "handle": "FtStreamEma",
+      "inputs": [
+        "value"
+      ],
+      "name": "ema",
+      "new_fn": "ft_stream_ema_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "period"
+        }
+      ],
+      "reset_fn": "ft_stream_ema_reset",
+      "update_fn": "ft_stream_ema_update"
+    },
+    {
+      "doc": "Streaming RSI (Wilder smoothing).",
+      "free_fn": "ft_stream_rsi_free",
+      "handle": "FtStreamRsi",
+      "inputs": [
+        "value"
+      ],
+      "name": "rsi",
+      "new_fn": "ft_stream_rsi_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "period"
+        }
+      ],
+      "reset_fn": "ft_stream_rsi_reset",
+      "update_fn": "ft_stream_rsi_update"
+    },
+    {
+      "doc": "Streaming average true range.",
+      "free_fn": "ft_stream_atr_free",
+      "handle": "FtStreamAtr",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "atr",
+      "new_fn": "ft_stream_atr_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "period"
+        }
+      ],
+      "reset_fn": "ft_stream_atr_reset",
+      "update_fn": "ft_stream_atr_update"
+    },
+    {
+      "doc": "Streaming Bollinger Bands.",
+      "free_fn": "ft_stream_bbands_free",
+      "handle": "FtStreamBbands",
+      "inputs": [
+        "value"
+      ],
+      "name": "bbands",
+      "new_fn": "ft_stream_bbands_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_upper"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_middle"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_lower"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "period"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "nbdevup"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "nbdevdn"
+        }
+      ],
+      "reset_fn": "ft_stream_bbands_reset",
+      "update_fn": "ft_stream_bbands_update"
+    },
+    {
+      "doc": "Streaming MACD. Requires `fastperiod < slowperiod`.",
+      "free_fn": "ft_stream_macd_free",
+      "handle": "FtStreamMacd",
+      "inputs": [
+        "value"
+      ],
+      "name": "macd",
+      "new_fn": "ft_stream_macd_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_macd"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_signal"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_hist"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "fastperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "slowperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "signalperiod"
+        }
+      ],
+      "reset_fn": "ft_stream_macd_reset",
+      "update_fn": "ft_stream_macd_update"
+    },
+    {
+      "doc": "Streaming slow stochastic.",
+      "free_fn": "ft_stream_stoch_free",
+      "handle": "FtStreamStoch",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "stoch",
+      "new_fn": "ft_stream_stoch_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_slowk"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_slowd"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "fastk_period"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "slowk_period"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "slowd_period"
+        }
+      ],
+      "reset_fn": "ft_stream_stoch_reset",
+      "update_fn": "ft_stream_stoch_update"
+    },
+    {
+      "doc": "Streaming cumulative VWAP (session-anchored; `reset` starts a new session).",
+      "free_fn": "ft_stream_vwap_free",
+      "handle": "FtStreamVwap",
+      "inputs": [
+        "high",
+        "low",
+        "close",
+        "volume"
+      ],
+      "name": "vwap",
+      "new_fn": "ft_stream_vwap_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "reset_fn": "ft_stream_vwap_reset",
+      "update_fn": "ft_stream_vwap_update"
+    },
+    {
+      "doc": "Streaming Supertrend. `out_direction` is 1 (up) / -1 (down), 0 in warm-up.",
+      "free_fn": "ft_stream_supertrend_free",
+      "handle": "FtStreamSupertrend",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "name": "supertrend",
+      "new_fn": "ft_stream_supertrend_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_line"
+        },
+        {
+          "c_type": "int8_t",
+          "elem": "i8",
+          "name": "out_direction"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "period"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "multiplier"
+        }
+      ],
+      "reset_fn": "ft_stream_supertrend_reset",
+      "update_fn": "ft_stream_supertrend_update"
+    }
+  ],
+  "version": "1.3.1"
+}
