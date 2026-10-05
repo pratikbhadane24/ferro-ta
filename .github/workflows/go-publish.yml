@@ -153,7 +153,7 @@ jobs:
             echo "missing static ($static) or shared ($shared) library for $ID"; exit 1
           fi
           (cd stage/c && tar czf "$pkg.tar.gz" "$pkg" && rm -rf "$pkg")
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         if: matrix.test
         with:
           go-version: stable
@@ -262,7 +262,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version: stable
           cache: false
