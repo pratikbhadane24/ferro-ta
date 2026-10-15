@@ -132,8 +132,9 @@ impl AtrState {
             self.seeded = true;
             return self.atr;
         }
+        // Same `* (1 / p)` form as batch `atr`, so the two stay bit-identical.
         let p = self.period as f64;
-        self.atr = (self.atr * (p - 1.0) + tr) / p;
+        self.atr = (self.atr * (p - 1.0) + tr) * (1.0 / p);
         self.atr
     }
 

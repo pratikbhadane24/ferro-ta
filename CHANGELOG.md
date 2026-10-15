@@ -17,6 +17,14 @@ and the project uses [Semantic Versioning](https://semver.org/).
   arm64). wasm builds now use unfused multiply-add; native builds keep
   `mul_add` and are bit-for-bit unchanged. wasm EMA values may differ from
   native in the last ulp.
+- **ATR / NATR faster (all targets; ~1.4x measured on WASM)**: Wilder smoothing now multiplies
+  by a hoisted `1 / p` instead of dividing inside the serial dependency chain,
+  the same transform `rsi`/`cmo` already use (WASM, 1M bars: 5.3 ms → 3.7 ms).
+  Batch and streaming ATR change together and stay bit-identical; values
+  differ from the division form by ≤1e-11 relative, inside the `atol = 1e-8`
+  TA-Lib gate.
+- **WASM input copy skips a zero-fill pass**: `Float64Array` inputs are copied
+  straight into uninitialised capacity (small, ~3–5% on cheap indicators).
 - **WASM release profile `opt-level = 3`** (was `"s"`): 3–10% faster across
   indicators. Size trade-off: `.wasm` 528 KB → 706 KB raw, 180 KB → 205 KB
   gzipped.
