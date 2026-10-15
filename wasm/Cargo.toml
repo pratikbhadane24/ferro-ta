@@ -19,5 +19,5 @@ ferro_ta_core = { path = "../crates/ferro_ta_core", default-features = false }
 wasm-bindgen-test = "0.3"
 
 [profile.release]
-opt-level = "s"   # optimise for size in WASM
+opt-level = 3     # speed over size: ~3-10% faster, +14% gzipped .wasm
 lto = true
