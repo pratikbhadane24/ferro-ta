@@ -9,6 +9,18 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Performance
+
+- **WASM EMA ~6x faster** (and DEMA/TEMA/TRIX/T3/PPO, which build on it):
+  wasm32 has no scalar f64 FMA instruction, so the EMA recurrence's `mul_add`
+  lowered to a software `fma` routine (15.3 ms → 2.5 ms per 1M bars, Node 25
+  arm64). wasm builds now use unfused multiply-add; native builds keep
+  `mul_add` and are bit-for-bit unchanged. wasm EMA values may differ from
+  native in the last ulp.
+- **WASM release profile `opt-level = 3`** (was `"s"`): 3–10% faster across
+  indicators. Size trade-off: `.wasm` 528 KB → 706 KB raw, 180 KB → 205 KB
+  gzipped.
+
 ## [1.4.0] — 2026-10-01
 
 ### Added
