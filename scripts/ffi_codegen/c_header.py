@@ -14,6 +14,48 @@ def c_doc(doc: str, indent: str = "") -> list[str]:
     return lines
 
 
+# Hand-written in crates/ferro_ta_ffi/src/bars.rs: timestamped input and an
+# optional struct output don't fit the generated stream shape.
+BAR_BUILDER_BLOCK = """/* ---- bar builder ----------------------------------------------------- */
+
+/* ft_bar_builder_on_tick status codes (int32_t). */
+#define FT_TICK_ACCEPTED 0
+#define FT_TICK_LATE 1
+#define FT_TICK_DUPLICATE 2
+#define FT_TICK_OUT_OF_SESSION 3
+#define FT_TICK_INVALID 4
+
+/** One OHLCV bar covering [start_ms, end_ms) in UTC epoch milliseconds. */
+typedef struct FtBar {
+    int64_t start_ms;
+    int64_t end_ms;
+    double open;
+    double high;
+    double low;
+    double close;
+    double volume;
+    uint32_t ticks;
+} FtBar;
+
+/**
+ * Session-aligned tick -> bar builder: bars start at session_open + k*interval
+ * (last bar cut at session_close); gaps produce no bars. Session times are
+ * seconds after local midnight; local = UTC + utc_offset_secs.
+ * Requires: 0 < interval_secs <= 86400; 0 <= session_open_secs <
+ * session_close_secs <= 86400; |utc_offset_secs| <= 50400.
+ */
+typedef struct FtBarBuilder FtBarBuilder;
+int32_t ft_bar_builder_new(int64_t interval_secs, int64_t session_open_secs, int64_t session_close_secs, int64_t utc_offset_secs, FtBarBuilder **out_handle);
+/** Feed a tick; *out_status is FT_TICK_*; *out_closed is 1 with *out_bar set when it closed a bar. */
+int32_t ft_bar_builder_on_tick(FtBarBuilder *handle, int64_t ts_ms, double price, double qty, int32_t *out_status, int32_t *out_closed, FtBar *out_bar);
+/** Close the forming bar once now_ms reaches its end; *out_closed is 1 with *out_bar set if so. */
+int32_t ft_bar_builder_on_time(FtBarBuilder *handle, int64_t now_ms, int32_t *out_closed, FtBar *out_bar);
+/** The bar being built: *out_has is 1 with *out_bar set, else 0. */
+int32_t ft_bar_builder_forming(FtBarBuilder *handle, int32_t *out_has, FtBar *out_bar);
+int32_t ft_bar_builder_reset(FtBarBuilder *handle);
+void ft_bar_builder_free(FtBarBuilder *handle);"""
+
+
 def c_function(fn: dict) -> str:
     args = [f"const double *{name}" for name in fn["inputs"]]
     args.append("size_t len")
@@ -118,6 +160,7 @@ def render_header(spec: dict) -> str:
     out += ["", "/* ---- streaming " + "-" * 61 + " */"]
     for stream in spec["streams"]:
         out += ["", *c_stream(stream)]
+    out += ["", BAR_BUILDER_BLOCK]
     out += [
         "",
         "#ifdef __cplusplus",

@@ -8,9 +8,11 @@
 
 use std::collections::VecDeque;
 
+mod bars;
 mod conditions;
 mod live;
 mod option_greeks;
+pub use bars::{Bar, BarBuilder, BarSpec, TickStatus};
 pub use conditions::{StreamingCooldown, StreamingCross, StreamingStreak};
 pub use live::{Live, StreamValue, StreamingIndicator};
 pub use option_greeks::StreamingOptionGreeks;

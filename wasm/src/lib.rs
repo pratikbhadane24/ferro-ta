@@ -2785,6 +2785,102 @@ wasm_streaming_class! {
     getters(),
 }
 
+/// JS object for a bar: {startMs, endMs, open, high, low, close, volume, ticks}.
+fn bar_to_js(bar: ferro_ta_core::streaming::Bar) -> JsValue {
+    let obj = js_sys::Object::new();
+    let fields = [
+        ("startMs", bar.start_ms as f64),
+        ("endMs", bar.end_ms as f64),
+        ("open", bar.open),
+        ("high", bar.high),
+        ("low", bar.low),
+        ("close", bar.close),
+        ("volume", bar.volume),
+        ("ticks", f64::from(bar.ticks)),
+    ];
+    for (key, value) in fields {
+        // Setting a plain data property on a fresh Object cannot fail.
+        let _ = js_sys::Reflect::set(&obj, &JsValue::from_str(key), &JsValue::from_f64(value));
+    }
+    obj.into()
+}
+
+fn opt_bar_to_js(bar: Option<ferro_ta_core::streaming::Bar>) -> JsValue {
+    bar.map_or(JsValue::UNDEFINED, bar_to_js)
+}
+
+/// Session-aligned tick -> bar builder. Timestamps are UTC epoch milliseconds
+/// as JS numbers (`Date.now()`); session times are seconds after local
+/// midnight. Gaps produce no bars.
+#[wasm_bindgen]
+pub struct WasmBarBuilder {
+    inner: ferro_ta_core::streaming::BarBuilder,
+}
+
+#[wasm_bindgen]
+impl WasmBarBuilder {
+    #[wasm_bindgen(constructor)]
+    pub fn new(
+        interval_secs: i32,
+        session_open_secs: i32,
+        session_close_secs: i32,
+        utc_offset_secs: i32,
+    ) -> Result<WasmBarBuilder, JsError> {
+        let spec = ferro_ta_core::streaming::BarSpec {
+            interval_secs: i64::from(interval_secs),
+            session_open_secs: i64::from(session_open_secs),
+            session_close_secs: i64::from(session_close_secs),
+            utc_offset_secs: i64::from(utc_offset_secs),
+        };
+        let inner = ferro_ta_core::streaming::BarBuilder::new(spec)
+            .map_err(|e| JsError::new(&e.0))?;
+        Ok(Self { inner })
+    }
+
+    /// NSE preset: 09:15-15:30 IST.
+    pub fn nse(interval_secs: i32) -> Result<WasmBarBuilder, JsError> {
+        let inner = ferro_ta_core::streaming::BarBuilder::new(
+            ferro_ta_core::streaming::BarSpec::nse(i64::from(interval_secs)),
+        )
+        .map_err(|e| JsError::new(&e.0))?;
+        Ok(Self { inner })
+    }
+
+    /// Feed one tick; returns `{status, closed}` where `closed` is the bar
+    /// this tick closed (or undefined).
+    #[wasm_bindgen(js_name = onTick)]
+    pub fn on_tick(&mut self, ts_ms: f64, price: f64, qty: f64) -> JsValue {
+        let (status, closed) = if ts_ms.is_finite() {
+            self.inner.on_tick(ts_ms as i64, price, qty)
+        } else {
+            (ferro_ta_core::streaming::TickStatus::Invalid, None)
+        };
+        let obj = js_sys::Object::new();
+        let _ = js_sys::Reflect::set(&obj, &"status".into(), &status.as_str().into());
+        let _ = js_sys::Reflect::set(&obj, &"closed".into(), &opt_bar_to_js(closed));
+        obj.into()
+    }
+
+    /// Close the forming bar once `nowMs` reaches its end; returns it or undefined.
+    #[wasm_bindgen(js_name = onTime)]
+    pub fn on_time(&mut self, now_ms: f64) -> JsValue {
+        if !now_ms.is_finite() {
+            return JsValue::UNDEFINED;
+        }
+        opt_bar_to_js(self.inner.on_time(now_ms as i64))
+    }
+
+    /// The bar being built, or undefined.
+    #[wasm_bindgen(getter)]
+    pub fn forming(&self) -> JsValue {
+        opt_bar_to_js(self.inner.forming())
+    }
+
+    pub fn reset(&mut self) {
+        self.inner.reset();
+    }
+}
+
 // ===========================================================================
 // Batch Operations
 // ===========================================================================
@@ -5149,5 +5245,23 @@ mod tests {
         assert_eq!(out.length(), 6);
         assert!((out.get(0).as_f64().unwrap() - 0.25).abs() < 1e-8);
         assert_eq!(s.count(), 1);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_bar_builder_closes_on_boundary() {
+        let ist = |h: i64, m: i64| (20_377 * 86_400_000 + (h * 60 + m) * 60_000 - 19_800_000) as f64;
+        let mut b = WasmBarBuilder::nse(300).unwrap();
+        let first = b.on_tick(ist(9, 16), 100.0, 1.0);
+        let status = js_sys::Reflect::get(&first, &"status".into()).unwrap();
+        assert_eq!(status.as_string().as_deref(), Some("accepted"));
+        let next = b.on_tick(ist(9, 20), 101.0, 1.0);
+        let closed = js_sys::Reflect::get(&next, &"closed".into()).unwrap();
+        let end = js_sys::Reflect::get(&closed, &"endMs".into()).unwrap();
+        assert_eq!(end.as_f64(), Some(ist(9, 20)));
+        let late = b.on_tick(f64::NAN, 1.0, 1.0);
+        let status = js_sys::Reflect::get(&late, &"status".into()).unwrap();
+        assert_eq!(status.as_string().as_deref(), Some("invalid"));
+        assert!(b.on_time(ist(9, 24)).is_undefined());
+        assert!(!b.on_time(ist(9, 25)).is_undefined());
     }
 }

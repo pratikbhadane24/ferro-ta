@@ -11,10 +11,10 @@
      - Flutter
      - Flutter excluded
      - C / Go
-   * - 388
+   * - 390
      - 364
-     - 251
-     - 348
+     - 253
+     - 349
      - 194
      - 50
      - 263
@@ -266,6 +266,20 @@
      - yes
      - —
      - —
+     - —
+     - —
+   * - ``Bar``
+     - streaming
+     - —
+     - yes
+     - —
+     - —
+     - —
+   * - ``BarBuilder``
+     - streaming
+     - —
+     - yes
+     - yes
      - —
      - —
    * - ``basis``

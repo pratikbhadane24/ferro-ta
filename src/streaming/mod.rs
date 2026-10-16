@@ -9,11 +9,13 @@ use pyo3::prelude::*;
 
 use ferro_ta_core::streaming as core;
 
+mod bars;
+
 // ---------------------------------------------------------------------------
 // Helper: convert core StreamingError to PyValueError
 // ---------------------------------------------------------------------------
 
-fn to_py_err(e: core::StreamingError) -> PyErr {
+pub(crate) fn to_py_err(e: core::StreamingError) -> PyErr {
     PyValueError::new_err(e.0)
 }
 
@@ -271,5 +273,7 @@ pub fn register(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<StreamingStreak>()?;
     m.add_class::<StreamingCooldown>()?;
     m.add_class::<StreamingOptionGreeks>()?;
+    m.add_class::<bars::BarBuilder>()?;
+    m.add_class::<bars::Bar>()?;
     Ok(())
 }

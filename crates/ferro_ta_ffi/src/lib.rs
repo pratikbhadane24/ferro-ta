@@ -21,6 +21,7 @@
 
 #![deny(unsafe_op_in_unsafe_fn)]
 
+pub mod bars;
 pub mod enums;
 mod macros;
 pub mod marshal;
@@ -32,6 +33,7 @@ mod validation;
 pub mod indicators;
 pub mod scalars;
 
+pub use bars::*;
 pub use indicators::cycle::*;
 pub use indicators::extended::*;
 pub use indicators::futures::*;
