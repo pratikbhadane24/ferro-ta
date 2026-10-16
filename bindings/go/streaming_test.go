@@ -155,3 +155,36 @@ func TestStreamPeekAfterClose(t *testing.T) {
 		t.Fatalf("got %v", err)
 	}
 }
+
+func TestStreamCrossWithCooldown(t *testing.T) {
+	cross, err := NewStreamCross(0.5)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer cross.Close()
+	var got []int8
+	for _, d := range []float64{-1, 0.2, -0.2, 0.3, 0.6, 0.1, 0.7} {
+		v, err := cross.Update(d, 0)
+		if err != nil {
+			t.Fatal(err)
+		}
+		got = append(got, v)
+	}
+	want := []int8{0, 0, 0, 0, 1, 0, 0}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Fatalf("events %v, want %v", got, want)
+		}
+	}
+	cd, err := NewStreamCooldown(1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer cd.Close()
+	for i, want := range []int8{1, 0, -1} {
+		in := []float64{1, 1, -1}[i]
+		if v, _ := cd.Update(in); v != want {
+			t.Fatalf("cooldown step %d: %v want %v", i, v, want)
+		}
+	}
+}

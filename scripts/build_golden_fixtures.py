@@ -109,10 +109,13 @@ INPUT_COLUMNS = {
     "position_size": "position",
     "funding_rate": "funding",
     "values": "gappy",
+    "condition": "condition",
+    "signal": "position",
 }
 
 # Period-like params whose relationships matter (fast < slow, etc.).
 PERIOD_VALUES = {
+    "n": 3,
     "fastperiod": 3,
     "slowperiod": 8,
     "signalperiod": 4,
@@ -154,6 +157,7 @@ DEFAULT_PERIOD = 5
 DEFAULT_COUNT = 2
 
 FLOAT_VALUES = {
+    "dead_band": 0.2,
     "nbdevup": 2.0,
     "nbdevdn": 2.0,
     "nbdev": 1.0,
@@ -210,7 +214,7 @@ FLOAT_VALUES = {
     "avg_loss": 1.0,
 }
 
-COUNT_VALUES = {"max_iterations": 100}
+COUNT_VALUES = {"max_iterations": 100, "bars": 3}
 
 C_SCALAR = {
     "int64_t": ctypes.c_int64,
@@ -273,6 +277,10 @@ def load_inputs() -> dict[str, list[float]]:
         sum(close[max(0, i - 4) : i + 1]) / (i - max(0, i - 4) + 1) for i in range(n)
     ]
     cols["position"] = [1.0 if (i // 10) % 2 == 0 else -1.0 for i in range(n)]
+    # 0/1 with real runs of both, so streak/condition streams are exercised.
+    cols["condition"] = [0.0] + [
+        1.0 if close[i] > close[i - 1] else 0.0 for i in range(1, n)
+    ]
     cols["funding"] = [0.0001 * math.sin(i * 0.5) for i in range(n)]
     cols["gappy"] = [math.nan if i % 7 in (0, 3) else c for i, c in enumerate(close)]
     return cols

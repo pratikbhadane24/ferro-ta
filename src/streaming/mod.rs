@@ -199,6 +199,36 @@ streaming_pyclass! {
     getters(period),
 }
 
+streaming_pyclass! {
+    /// Cross of `a` over `b` with a dead band — emits 1 (up), -1 (down), 0.
+    ///
+    /// Inside ``±dead_band`` the side is unchanged, so noise around the level
+    /// fires at most once per real crossing.
+    StreamingCross wraps core::StreamingCross,
+    new(dead_band: f64 = 0.0) => core::StreamingCross::new(dead_band),
+    update(a, b) -> i8,
+    repr(|ind| format!("StreamingCross(dead_band={})", ind.dead_band())),
+    getters(),
+}
+
+streaming_pyclass! {
+    /// "N bars in a row" — emits 1 while the run of non-zero inputs is >= n.
+    StreamingStreak wraps core::StreamingStreak,
+    new(n: usize) => core::StreamingStreak::new(n),
+    update(condition) -> i8,
+    repr(|ind| format!("StreamingStreak(n={})", ind.n())),
+    getters(n),
+}
+
+streaming_pyclass! {
+    /// Passes the first non-zero signal's sign, then mutes the next `bars` bars.
+    StreamingCooldown wraps core::StreamingCooldown,
+    new(bars: usize) => core::StreamingCooldown::new(bars),
+    update(signal) -> i8,
+    repr(|ind| format!("StreamingCooldown(bars={})", ind.bars())),
+    getters(bars),
+}
+
 // ---------------------------------------------------------------------------
 // register
 // ---------------------------------------------------------------------------
@@ -213,5 +243,8 @@ pub fn register(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<StreamingStoch>()?;
     m.add_class::<StreamingVWAP>()?;
     m.add_class::<StreamingSupertrend>()?;
+    m.add_class::<StreamingCross>()?;
+    m.add_class::<StreamingStreak>()?;
+    m.add_class::<StreamingCooldown>()?;
     Ok(())
 }

@@ -1467,6 +1467,37 @@ int32_t ft_stream_supertrend_peek(FtStreamSupertrend *handle, double high, doubl
 int32_t ft_stream_supertrend_reset(FtStreamSupertrend *handle);
 void ft_stream_supertrend_free(FtStreamSupertrend *handle);
 
+/**
+ * Dead-band cross of `a` over `b`: `out` is 1 (up), -1 (down) or 0.
+ * Inside `±dead_band` the side is unchanged, so noise fires at most once.
+ */
+typedef struct FtStreamCross FtStreamCross;
+int32_t ft_stream_cross_new(double dead_band, FtStreamCross **out_handle);
+int32_t ft_stream_cross_update(FtStreamCross *handle, double a, double b, int8_t *out);
+int32_t ft_stream_cross_peek(FtStreamCross *handle, double a, double b, int8_t *out);
+int32_t ft_stream_cross_reset(FtStreamCross *handle);
+void ft_stream_cross_free(FtStreamCross *handle);
+
+/**
+ * "N bars in a row": `out` is 1 while the run of non-zero inputs is >= n.
+ */
+typedef struct FtStreamStreak FtStreamStreak;
+int32_t ft_stream_streak_new(int64_t n, FtStreamStreak **out_handle);
+int32_t ft_stream_streak_update(FtStreamStreak *handle, double condition, int8_t *out);
+int32_t ft_stream_streak_peek(FtStreamStreak *handle, double condition, int8_t *out);
+int32_t ft_stream_streak_reset(FtStreamStreak *handle);
+void ft_stream_streak_free(FtStreamStreak *handle);
+
+/**
+ * Passes the first non-zero signal's sign, then mutes the next `bars` bars.
+ */
+typedef struct FtStreamCooldown FtStreamCooldown;
+int32_t ft_stream_cooldown_new(int64_t bars, FtStreamCooldown **out_handle);
+int32_t ft_stream_cooldown_update(FtStreamCooldown *handle, double signal, int8_t *out);
+int32_t ft_stream_cooldown_peek(FtStreamCooldown *handle, double signal, int8_t *out);
+int32_t ft_stream_cooldown_reset(FtStreamCooldown *handle);
+void ft_stream_cooldown_free(FtStreamCooldown *handle);
+
 #ifdef __cplusplus
 }  /* extern "C" */
 #endif

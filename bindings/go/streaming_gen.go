@@ -670,3 +670,226 @@ func (s *StreamSupertrend) Close() error {
 	}
 	return nil
 }
+
+// StreamCross is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Dead-band cross of `a` over `b`: `out` is 1 (up), -1 (down) or 0.
+// Inside `±dead_band` the side is unchanged, so noise fires at most once.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCross struct {
+	mu sync.Mutex
+	h  *C.FtStreamCross
+}
+
+// NewStreamCross creates a StreamCross.
+func NewStreamCross(deadBand float64) (*StreamCross, error) {
+	var h *C.FtStreamCross
+	if err := statusError("NewStreamCross", C.ft_stream_cross_new(C.double(deadBand), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCross{h: h}
+	runtime.SetFinalizer(s, (*StreamCross).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s) (NaN during warm-up).
+// A NaN/±inf input returns NaN and leaves state untouched.
+func (s *StreamCross) Update(a float64, b float64) (int8, error) {
+	var out int8
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCross.Update")
+	}
+	if err := statusError("StreamCross.Update", C.ft_stream_cross_update(s.h, C.double(a), C.double(b), (*C.int8_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCross) Peek(a float64, b float64) (int8, error) {
+	var out int8
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCross.Peek")
+	}
+	if err := statusError("StreamCross.Peek", C.ft_stream_cross_peek(s.h, C.double(a), C.double(b), (*C.int8_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCross) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCross.Reset")
+	}
+	return statusError("StreamCross.Reset", C.ft_stream_cross_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCross) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cross_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamStreak is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// "N bars in a row": `out` is 1 while the run of non-zero inputs is >= n.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamStreak struct {
+	mu sync.Mutex
+	h  *C.FtStreamStreak
+}
+
+// NewStreamStreak creates a StreamStreak.
+func NewStreamStreak(n_ int) (*StreamStreak, error) {
+	var h *C.FtStreamStreak
+	if err := statusError("NewStreamStreak", C.ft_stream_streak_new(C.int64_t(n_), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamStreak{h: h}
+	runtime.SetFinalizer(s, (*StreamStreak).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s) (NaN during warm-up).
+// A NaN/±inf input returns NaN and leaves state untouched.
+func (s *StreamStreak) Update(condition float64) (int8, error) {
+	var out int8
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamStreak.Update")
+	}
+	if err := statusError("StreamStreak.Update", C.ft_stream_streak_update(s.h, C.double(condition), (*C.int8_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamStreak) Peek(condition float64) (int8, error) {
+	var out int8
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamStreak.Peek")
+	}
+	if err := statusError("StreamStreak.Peek", C.ft_stream_streak_peek(s.h, C.double(condition), (*C.int8_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamStreak) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamStreak.Reset")
+	}
+	return statusError("StreamStreak.Reset", C.ft_stream_streak_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamStreak) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_streak_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCooldown is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Passes the first non-zero signal's sign, then mutes the next `bars` bars.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCooldown struct {
+	mu sync.Mutex
+	h  *C.FtStreamCooldown
+}
+
+// NewStreamCooldown creates a StreamCooldown.
+func NewStreamCooldown(bars int) (*StreamCooldown, error) {
+	var h *C.FtStreamCooldown
+	if err := statusError("NewStreamCooldown", C.ft_stream_cooldown_new(C.int64_t(bars), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCooldown{h: h}
+	runtime.SetFinalizer(s, (*StreamCooldown).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s) (NaN during warm-up).
+// A NaN/±inf input returns NaN and leaves state untouched.
+func (s *StreamCooldown) Update(signal float64) (int8, error) {
+	var out int8
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCooldown.Update")
+	}
+	if err := statusError("StreamCooldown.Update", C.ft_stream_cooldown_update(s.h, C.double(signal), (*C.int8_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCooldown) Peek(signal float64) (int8, error) {
+	var out int8
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCooldown.Peek")
+	}
+	if err := statusError("StreamCooldown.Peek", C.ft_stream_cooldown_peek(s.h, C.double(signal), (*C.int8_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCooldown) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCooldown.Reset")
+	}
+	return statusError("StreamCooldown.Reset", C.ft_stream_cooldown_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCooldown) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cooldown_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}

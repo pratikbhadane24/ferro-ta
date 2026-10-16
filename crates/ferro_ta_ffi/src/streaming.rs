@@ -9,8 +9,9 @@
 use crate::marshal::WriteScalars;
 use crate::status::Status;
 use ferro_ta_core::streaming::{
-    Live, StreamingATR, StreamingBBands, StreamingEMA, StreamingError, StreamingMACD, StreamingRSI,
-    StreamingSMA, StreamingStoch, StreamingSupertrend, StreamingVWAP,
+    Live, StreamingATR, StreamingBBands, StreamingCooldown, StreamingCross, StreamingEMA,
+    StreamingError, StreamingMACD, StreamingRSI, StreamingSMA, StreamingStoch, StreamingStreak,
+    StreamingSupertrend, StreamingVWAP,
 };
 
 /// Normalise core constructors (fallible or not) to `Result<T, Status>`.
@@ -253,5 +254,30 @@ ffi_streams! {
         ft_stream_supertrend_peek,
         ft_stream_supertrend_reset,
         ft_stream_supertrend_free,
+    }
+    /// Dead-band cross of `a` over `b`: `out` is 1 (up), -1 (down) or 0.
+    /// Inside `±dead_band` the side is unchanged, so noise fires at most once.
+    cross: StreamingCross as FtStreamCross {
+        ft_stream_cross_new(dead_band: float),
+        ft_stream_cross_update(a, b) -> [out: i8],
+        ft_stream_cross_peek,
+        ft_stream_cross_reset,
+        ft_stream_cross_free,
+    }
+    /// "N bars in a row": `out` is 1 while the run of non-zero inputs is >= n.
+    streak: StreamingStreak as FtStreamStreak {
+        ft_stream_streak_new(n: period),
+        ft_stream_streak_update(condition) -> [out: i8],
+        ft_stream_streak_peek,
+        ft_stream_streak_reset,
+        ft_stream_streak_free,
+    }
+    /// Passes the first non-zero signal's sign, then mutes the next `bars` bars.
+    cooldown: StreamingCooldown as FtStreamCooldown {
+        ft_stream_cooldown_new(bars: count),
+        ft_stream_cooldown_update(signal) -> [out: i8],
+        ft_stream_cooldown_peek,
+        ft_stream_cooldown_reset,
+        ft_stream_cooldown_free,
     }
 }

@@ -258,3 +258,36 @@ fn nan_input_is_skipped_not_poisoning() {
     assert_eq!(out, 2.0, "state continues as if the NaN never arrived");
     unsafe { ft_stream_sma_free(h) };
 }
+
+#[test]
+fn cross_stream_fires_once_inside_band() {
+    let mut h = ptr::null_mut();
+    assert_eq!(unsafe { ft_stream_cross_new(0.5, &mut h) }, FT_OK);
+    let mut events = Vec::new();
+    for d in [-1.0, 0.2, -0.2, 0.3, 0.6, 0.1, 0.7] {
+        let mut out = 9_i8;
+        assert_eq!(
+            unsafe { ft_stream_cross_update(h, d, 0.0, &mut out) },
+            FT_OK
+        );
+        events.push(out);
+    }
+    assert_eq!(events, vec![0, 0, 0, 0, 1, 0, 0]);
+    unsafe { ft_stream_cross_free(h) };
+}
+
+#[test]
+fn condition_streams_reject_bad_params() {
+    let mut h = ptr::null_mut();
+    assert_eq!(
+        unsafe { ft_stream_cross_new(-1.0, &mut h) },
+        FT_ERR_INVALID_PARAM
+    );
+    assert!(h.is_null());
+    let mut s = ptr::null_mut();
+    assert_eq!(
+        unsafe { ft_stream_streak_new(0, &mut s) },
+        FT_ERR_INVALID_PARAM
+    );
+    assert!(s.is_null());
+}

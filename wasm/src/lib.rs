@@ -2578,6 +2578,13 @@ impl IntoJsOutput for f64 {
     }
 }
 
+impl IntoJsOutput for i8 {
+    type Js = i8;
+    fn into_js(self) -> i8 {
+        self
+    }
+}
+
 impl IntoJsOutput for (f64, f64) {
     type Js = Array;
     fn into_js(self) -> Array {
@@ -2726,6 +2733,30 @@ wasm_streaming_class! {
         ferro_ta_core::streaming::StreamingSupertrend::new(period, multiplier),
     update(high, low, close) -> Array,
     getters(period),
+}
+
+wasm_streaming_class! {
+    /// Dead-band cross of `a` over `b`. Returns 1 (up), -1 (down) or 0.
+    WasmStreamingCross wraps StreamingCross,
+    new(dead_band: f64) => ferro_ta_core::streaming::StreamingCross::new(dead_band),
+    update(a, b) -> i8,
+    getters(),
+}
+
+wasm_streaming_class! {
+    /// "N bars in a row": returns 1 while the run of non-zero inputs is >= n.
+    WasmStreamingStreak wraps StreamingStreak,
+    new(n: usize) => ferro_ta_core::streaming::StreamingStreak::new(n),
+    update(condition) -> i8,
+    getters(n),
+}
+
+wasm_streaming_class! {
+    /// Passes the first non-zero signal's sign, then mutes the next `bars` bars.
+    WasmStreamingCooldown wraps StreamingCooldown,
+    new(bars: usize) => ferro_ta_core::streaming::StreamingCooldown::new(bars),
+    update(signal) -> i8,
+    getters(bars),
 }
 
 // ===========================================================================
@@ -5048,5 +5079,28 @@ mod tests {
         for i in 0..3 {
             assert_eq!(preview.get(i).as_f64(), got.get(i).as_f64());
         }
+    }
+
+    #[wasm_bindgen_test]
+    fn test_streaming_cross_fires_once_inside_band() {
+        let mut cross = WasmStreamingCross::new(0.5).unwrap();
+        let got: Vec<i8> = [-1.0, 0.2, -0.2, 0.6, 0.1, 0.7]
+            .iter()
+            .map(|&d| cross.update(d, 0.0))
+            .collect();
+        assert_eq!(got, vec![0, 0, 0, 1, 0, 0]);
+        assert_eq!(cross.peek(-1.0, 0.0), -1);
+        assert_eq!(cross.count(), 6);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_streaming_streak_and_cooldown() {
+        let mut streak = WasmStreamingStreak::new(2).unwrap();
+        assert_eq!(streak.update(1.0), 0);
+        assert_eq!(streak.update(1.0), 1);
+        let mut cooldown = WasmStreamingCooldown::new(1).unwrap();
+        assert_eq!(cooldown.update(1.0), 1);
+        assert_eq!(cooldown.update(1.0), 0);
+        assert_eq!(cooldown.update(-1.0), -1);
     }
 }

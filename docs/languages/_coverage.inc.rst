@@ -11,13 +11,13 @@
      - Flutter
      - Flutter excluded
      - C / Go
-   * - 384
-     - 360
-     - 247
-     - 344
+   * - 387
+     - 363
+     - 250
+     - 347
      - 194
      - 50
-     - 259
+     - 262
 
 .. list-table:: Cross-language indicator coverage
    :header-rows: 1
@@ -2368,6 +2368,20 @@
      - yes
      - —
      - yes
+   * - ``StreamingCooldown``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCross``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
    * - ``StreamingEMA``
      - streaming
      - yes
@@ -2397,6 +2411,13 @@
      - —
      - yes
    * - ``StreamingStoch``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingStreak``
      - streaming
      - yes
      - yes

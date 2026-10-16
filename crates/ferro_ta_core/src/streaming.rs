@@ -8,7 +8,9 @@
 
 use std::collections::VecDeque;
 
+mod conditions;
 mod live;
+pub use conditions::{StreamingCooldown, StreamingCross, StreamingStreak};
 pub use live::{Live, StreamValue, StreamingIndicator};
 
 // ---------------------------------------------------------------------------

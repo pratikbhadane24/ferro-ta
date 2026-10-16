@@ -37,6 +37,9 @@ StreamingMACD       — MACD line, signal, histogram
 StreamingStoch      — Slow Stochastic (slowk, slowd)
 StreamingVWAP       — Volume Weighted Average Price (cumulative)
 StreamingSupertrend — ATR-based Supertrend
+StreamingCross      — Dead-band cross of two series (1 / -1 / 0 events)
+StreamingStreak     — "N bars in a row" condition
+StreamingCooldown   — Mute repeat signals for N bars
 
 Rust backend
 ------------
@@ -54,11 +57,14 @@ from __future__ import annotations
 from ferro_ta._ferro_ta import (  # noqa: F401
     StreamingATR,
     StreamingBBands,
+    StreamingCooldown,
+    StreamingCross,
     StreamingEMA,
     StreamingMACD,
     StreamingRSI,
     StreamingSMA,
     StreamingStoch,
+    StreamingStreak,
     StreamingSupertrend,
     StreamingVWAP,
 )
@@ -73,4 +79,7 @@ __all__ = [
     "StreamingStoch",
     "StreamingVWAP",
     "StreamingSupertrend",
+    "StreamingCross",
+    "StreamingStreak",
+    "StreamingCooldown",
 ]

@@ -7634,6 +7634,90 @@
       "peek_fn": "ft_stream_supertrend_peek",
       "reset_fn": "ft_stream_supertrend_reset",
       "update_fn": "ft_stream_supertrend_update"
+    },
+    {
+      "doc": "Dead-band cross of `a` over `b`: `out` is 1 (up), -1 (down) or 0.\nInside `±dead_band` the side is unchanged, so noise fires at most once.",
+      "free_fn": "ft_stream_cross_free",
+      "handle": "FtStreamCross",
+      "inputs": [
+        "a",
+        "b"
+      ],
+      "name": "cross",
+      "new_fn": "ft_stream_cross_new",
+      "outputs": [
+        {
+          "c_type": "int8_t",
+          "elem": "i8",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "dead_band"
+        }
+      ],
+      "peek_fn": "ft_stream_cross_peek",
+      "reset_fn": "ft_stream_cross_reset",
+      "update_fn": "ft_stream_cross_update"
+    },
+    {
+      "doc": "\"N bars in a row\": `out` is 1 while the run of non-zero inputs is >= n.",
+      "free_fn": "ft_stream_streak_free",
+      "handle": "FtStreamStreak",
+      "inputs": [
+        "condition"
+      ],
+      "name": "streak",
+      "new_fn": "ft_stream_streak_new",
+      "outputs": [
+        {
+          "c_type": "int8_t",
+          "elem": "i8",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "n"
+        }
+      ],
+      "peek_fn": "ft_stream_streak_peek",
+      "reset_fn": "ft_stream_streak_reset",
+      "update_fn": "ft_stream_streak_update"
+    },
+    {
+      "doc": "Passes the first non-zero signal's sign, then mutes the next `bars` bars.",
+      "free_fn": "ft_stream_cooldown_free",
+      "handle": "FtStreamCooldown",
+      "inputs": [
+        "signal"
+      ],
+      "name": "cooldown",
+      "new_fn": "ft_stream_cooldown_new",
+      "outputs": [
+        {
+          "c_type": "int8_t",
+          "elem": "i8",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "count",
+          "min": 0,
+          "name": "bars"
+        }
+      ],
+      "peek_fn": "ft_stream_cooldown_peek",
+      "reset_fn": "ft_stream_cooldown_reset",
+      "update_fn": "ft_stream_cooldown_update"
     }
   ],
   "version": "1.4.0"

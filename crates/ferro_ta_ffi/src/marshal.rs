@@ -143,8 +143,8 @@ pub trait WriteScalars<P> {
     unsafe fn write_to(self, ptrs: P);
 }
 
-impl WriteScalars<(*mut f64,)> for f64 {
-    unsafe fn write_to(self, ptrs: (*mut f64,)) {
+impl<T> WriteScalars<(*mut T,)> for T {
+    unsafe fn write_to(self, ptrs: (*mut T,)) {
         // SAFETY: valid for one write per caller contract.
         unsafe { ptrs.0.write(self) };
     }

@@ -6,8 +6,9 @@
 //! bar replaces the previous preview. `closed = true` commits the bar.
 
 use super::{
-    StreamingATR, StreamingBBands, StreamingEMA, StreamingMACD, StreamingRSI, StreamingSMA,
-    StreamingStoch, StreamingSupertrend, StreamingVWAP,
+    StreamingATR, StreamingBBands, StreamingCooldown, StreamingCross, StreamingEMA, StreamingMACD,
+    StreamingRSI, StreamingSMA, StreamingStoch, StreamingStreak, StreamingSupertrend,
+    StreamingVWAP,
 };
 
 // ---------------------------------------------------------------------------
@@ -69,6 +70,19 @@ impl StreamValue for (f64, f64, f64, f64) {
     }
     fn nan() -> Self {
         (f64::NAN, f64::NAN, f64::NAN, f64::NAN)
+    }
+}
+
+/// Condition events (`StreamingCross` etc.): no NaN state; `0` = no event.
+impl StreamValue for i8 {
+    fn has_nan(&self) -> bool {
+        false
+    }
+    fn all_finite(&self) -> bool {
+        true
+    }
+    fn nan() -> Self {
+        0
     }
 }
 
@@ -176,6 +190,10 @@ impl_streaming_indicator!(
     f64,
     |s, (h, l, c, v)| s.update(h, l, c, v)
 );
+
+impl_streaming_indicator!(StreamingCross, (f64, f64), i8, |s, (a, b)| s.update(a, b));
+impl_streaming_indicator!(StreamingStreak, f64, i8, |s, v| s.update(v));
+impl_streaming_indicator!(StreamingCooldown, f64, i8, |s, v| s.update(v));
 
 // ---------------------------------------------------------------------------
 // Live — closed-bar commits, forming-bar previews, NaN guard
@@ -336,6 +354,9 @@ mod tests {
         assert_previews_are_pure(|| StreamingStoch::new(5, 3, 3).unwrap(), hlc);
         assert_previews_are_pure(|| StreamingSupertrend::new(7, 3.0).unwrap(), hlc);
         assert_previews_are_pure(StreamingVWAP::new, |b| b);
+        assert_previews_are_pure(|| StreamingCross::new(0.1).unwrap(), |b| (b.2, b.0 - 0.5));
+        assert_previews_are_pure(|| StreamingStreak::new(3).unwrap(), |b| b.2 - b.1 - 0.5);
+        assert_previews_are_pure(|| StreamingCooldown::new(2).unwrap(), |b| b.2 - 100.0);
     }
 
     #[test]

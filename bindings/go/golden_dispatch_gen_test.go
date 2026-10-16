@@ -1124,6 +1124,39 @@ var goldenStreams = map[string]func(map[string]float64) (goldenStepper, error){
 		}
 		return goldenStepper{step: step, close: s.Close}, nil
 	},
+	"cross": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCross(p["dead_band"])
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["a"], bar["b"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"streak": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamStreak(int(p["n"]))
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["condition"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cooldown": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCooldown(int(p["bars"]))
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["signal"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
 }
 
 // goldenParamNames lists each export's parameters, so a fixture whose
@@ -1392,4 +1425,7 @@ var goldenParamNames = []goldenParamList{
 	{"stoch", []string{"fastk_period", "slowk_period", "slowd_period"}},
 	{"vwap", []string{}},
 	{"supertrend", []string{"period", "multiplier"}},
+	{"cross", []string{"dead_band"}},
+	{"streak", []string{"n"}},
+	{"cooldown", []string{"bars"}},
 }
