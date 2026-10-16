@@ -3555,6 +3555,65 @@ pub fn half_kelly_fraction(win_rate: f64, avg_win: f64, avg_loss: f64) -> f64 {
     ferro_ta_core::backtest::half_kelly_fraction(win_rate, avg_win, avg_loss).unwrap_or(f64::NAN)
 }
 
+/// Probabilistic Sharpe Ratio of per-period returns vs a per-period benchmark Sharpe.
+/// Returns NaN on invalid input.
+#[wasm_bindgen]
+pub fn probabilistic_sharpe_ratio(returns: &Float64Array, benchmark_sharpe: f64) -> f64 {
+    ferro_ta_core::overfit::probabilistic_sharpe_ratio(&to_vec(returns), benchmark_sharpe)
+        .unwrap_or(f64::NAN)
+}
+
+/// Expected maximum per-period Sharpe of `n_trials` zero-skill trials. NaN on invalid input.
+#[wasm_bindgen]
+pub fn expected_max_sharpe(n_trials: usize, trial_sharpe_variance: f64) -> f64 {
+    ferro_ta_core::overfit::expected_max_sharpe(n_trials, trial_sharpe_variance).unwrap_or(f64::NAN)
+}
+
+/// Deflated Sharpe Ratio of the selected strategy's returns. NaN on invalid input.
+#[wasm_bindgen]
+pub fn deflated_sharpe_ratio(
+    returns: &Float64Array,
+    n_trials: usize,
+    trial_sharpe_variance: f64,
+) -> f64 {
+    ferro_ta_core::overfit::deflated_sharpe_ratio(&to_vec(returns), n_trials, trial_sharpe_variance)
+        .unwrap_or(f64::NAN)
+}
+
+/// Probability of Backtest Overfitting (CSCV) over a row-major
+/// `(n_bars, n_strategies)` returns matrix.
+/// Returns `[ [pbo], logits, is_sharpe, oos_sharpe, best_index ]` as Float64Arrays,
+/// or an empty Array on invalid input.
+#[wasm_bindgen]
+pub fn pbo_cscv(returns_flat: &Float64Array, n_strategies: usize, n_splits: usize) -> Array {
+    match ferro_ta_core::overfit::pbo_cscv(&to_vec(returns_flat), n_strategies, n_splits) {
+        Ok(res) => vecs_to_array_of_f64arr(vec![
+            vec![res.pbo],
+            res.logits,
+            res.is_sharpe,
+            res.oos_sharpe,
+            res.best_index.iter().map(|&i| i as f64).collect(),
+        ]),
+        Err(_) => Array::new(),
+    }
+}
+
+/// Purged/embargoed k-fold boundaries, flattened as
+/// `[train_left_end, test_start, test_end, train_right_start] * n_folds`.
+/// Empty on invalid input.
+#[wasm_bindgen]
+pub fn purged_kfold_indices(
+    n_bars: usize,
+    n_folds: usize,
+    purge_bars: usize,
+    embargo_bars: usize,
+) -> Float64Array {
+    match ferro_ta_core::overfit::purged_kfold_indices(n_bars, n_folds, purge_bars, embargo_bars) {
+        Ok(folds) => from_vec(folds.iter().flatten().map(|&v| v as f64).collect()),
+        Err(_) => from_vec(vec![]),
+    }
+}
+
 /// Compute performance metrics from strategy returns and equity.
 /// Returns Float64Array with 22 metrics in order:
 /// [total_return, cagr, annualized_vol, sharpe, sortino, calmar, max_drawdown,

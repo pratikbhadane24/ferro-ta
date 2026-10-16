@@ -2,6 +2,8 @@
 
 pub mod commission;
 pub mod currency;
+pub mod overfit;
+pub mod sweep;
 
 use commission::PyCommissionModel;
 use currency::PyCurrency;
@@ -813,6 +815,8 @@ pub fn register(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(walk_forward_indices, m)?)?;
     m.add_function(wrap_pyfunction!(kelly_fraction, m)?)?;
     m.add_function(wrap_pyfunction!(half_kelly_fraction, m)?)?;
+    m.add_function(wrap_pyfunction!(sweep::backtest_sweep_core, m)?)?;
+    overfit::register(m)?;
     m.add_class::<BacktestConfig>()?;
     m.add_class::<StreamingBacktest>()?;
     m.add_class::<PyCommissionModel>()?;

@@ -11,12 +11,12 @@
      - Flutter
      - Flutter excluded
      - C / Go
-   * - 384
-     - 360
+   * - 392
+     - 368
      - 247
-     - 344
+     - 349
      - 194
-     - 50
+     - 54
      - 259
 
 .. list-table:: Cross-language indicator coverage
@@ -1108,6 +1108,13 @@
      - yes
      - excluded
      - —
+   * - ``deflated_sharpe_ratio``
+     - overfit
+     - yes
+     - —
+     - yes
+     - excluded
+     - —
    * - ``DEMA``
      - overlap
      - yes
@@ -1233,6 +1240,13 @@
      - yes
      - yes
      - —
+     - —
+   * - ``expected_max_sharpe``
+     - overfit
+     - yes
+     - —
+     - yes
+     - excluded
      - —
    * - ``expected_move``
      - options
@@ -1444,6 +1458,13 @@
      - yes
      - excluded
      - yes
+   * - ``inv_cdf``
+     - options
+     - yes
+     - —
+     - —
+     - —
+     - —
    * - ``iv_percentile``
      - options
      - yes
@@ -1878,6 +1899,13 @@
      - yes
      - yes
      - yes
+   * - ``pbo_cscv``
+     - overfit
+     - yes
+     - —
+     - yes
+     - —
+     - —
    * - ``pdf``
      - options
      - yes
@@ -1941,6 +1969,20 @@
      - yes
      - excluded
      - yes
+   * - ``probabilistic_sharpe_ratio``
+     - overfit
+     - yes
+     - —
+     - yes
+     - excluded
+     - —
+   * - ``purged_kfold_indices``
+     - overfit
+     - yes
+     - —
+     - yes
+     - excluded
+     - —
    * - ``put_call_parity_deviation``
      - options
      - yes
@@ -2144,6 +2186,13 @@
      - —
      - —
      - —
+   * - ``run_sweep_combo``
+     - sweep
+     - yes
+     - —
+     - —
+     - —
+     - —
    * - ``rvi``
      - extended
      - yes
@@ -2206,6 +2255,13 @@
      - yes
      - yes
      - excluded
+     - —
+   * - ``sharpe_moments``
+     - overfit
+     - yes
+     - —
+     - —
+     - —
      - —
    * - ``signal_attribution``
      - attribution

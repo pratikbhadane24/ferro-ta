@@ -218,6 +218,48 @@ pub struct BacktestMetrics {
     pub information_ratio: Option<f64>,
 }
 
+impl BacktestMetrics {
+    /// Number of entries returned by [`BacktestMetrics::scalar_fields`].
+    pub const N_SCALAR_FIELDS: usize = 24;
+
+    /// The always-present (non-benchmark) metrics as `(name, value)` pairs,
+    /// in declaration order. Counts are widened to `f64`.
+    pub fn scalar_fields(&self) -> [(&'static str, f64); Self::N_SCALAR_FIELDS] {
+        [
+            ("total_return", self.total_return),
+            ("cagr", self.cagr),
+            ("annualized_vol", self.annualized_vol),
+            ("sharpe", self.sharpe),
+            ("sortino", self.sortino),
+            ("calmar", self.calmar),
+            ("max_drawdown", self.max_drawdown),
+            ("avg_drawdown", self.avg_drawdown),
+            (
+                "max_drawdown_duration_bars",
+                self.max_drawdown_duration_bars as f64,
+            ),
+            (
+                "avg_drawdown_duration_bars",
+                self.avg_drawdown_duration_bars,
+            ),
+            ("ulcer_index", self.ulcer_index),
+            ("omega_ratio", self.omega_ratio),
+            ("win_rate", self.win_rate),
+            ("profit_factor", self.profit_factor),
+            ("r_expectancy", self.r_expectancy),
+            ("avg_win", self.avg_win),
+            ("avg_loss", self.avg_loss),
+            ("tail_ratio", self.tail_ratio),
+            ("skewness", self.skewness),
+            ("kurtosis", self.kurtosis),
+            ("best_bar", self.best_bar),
+            ("worst_bar", self.worst_bar),
+            ("n_trades", self.n_trades as f64),
+            ("n_position_changes", self.n_position_changes as f64),
+        ]
+    }
+}
+
 /// Mutable state bundle for the OHLCV backtest loop.
 pub struct OhlcvState {
     pub current_pos: f64,

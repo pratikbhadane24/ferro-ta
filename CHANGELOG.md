@@ -9,6 +9,25 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- **Parallel parameter sweeps** — `ferro_ta.analysis.sweep.sweep(close,
+  strategy, param_grid)` backtests every combination (Cartesian dict or list
+  of dicts) in Rayon-parallel Rust with the GIL released. `SweepResult` keeps
+  the full `(n_bars, n_combos)` returns matrix plus 24 metrics per combo, with
+  `best_params()` (with `radius=` plateau-robust selection that prefers a
+  stable neighbourhood over an isolated spike), `pivot()` (heatmap-ready),
+  `to_frame()`,
+  `deflated_sharpe()` and `pbo()`. Each column matches `backtest()` exactly.
+- **Overfitting diagnostics** — new `ferro_ta.analysis.overfit` (Rust core
+  `ferro_ta_core::overfit`, also exported to WASM):
+  `probabilistic_sharpe_ratio`, `deflated_sharpe_ratio`,
+  `expected_max_sharpe`, `pbo` (Probability of Backtest Overfitting via
+  CSCV, up to 20 splits / 184 756 combinations using per-block sums), and
+  `purged_kfold` / `purged_kfold_indices` with purge and embargo gaps.
+- `ferro_ta_core::options::normal::inv_cdf` (Acklam, rel. error < 1.2e-9)
+  and `BacktestMetrics::scalar_fields()`.
+
 ### Performance
 
 - **WASM EMA ~6x faster** (and DEMA/TEMA/TRIX/T3/PPO, which build on it):

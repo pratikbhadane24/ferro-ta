@@ -114,15 +114,15 @@ generated :doc:`languages/coverage` table and must be refreshed with
      - TA-Lib-style API; abi3 wheels for CPython 3.10+.
    * - Rust
      - crates.io ``ferro_ta_core``
-     - 360 core symbols (functions + streaming types)
+     - 368 core symbols (functions + streaming types)
      - Direct ``&[f64]`` API; docs.rs ``ferro_ta_core``.
    * - WASM / Node
      - npm ``ferro-ta-wasm``
-     - 344 exports
+     - 349 exports
      - Node.js and browsers; 231 names shared with Python after normalization.
    * - Flutter / Dart
      - pub.dev ``ferro_ta``
-     - 194 generated wrappers; 50 ``MANUAL_EXCLUDE`` gaps
+     - 194 generated wrappers; 54 ``MANUAL_EXCLUDE`` gaps
      - flutter_rust_bridge over core; prebuilt natives for Android, iOS,
        macOS, Windows, and Linux. Flutter web reuses ``ferro-ta-wasm``.
        131 names are present on all four surfaces.
