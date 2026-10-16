@@ -33,10 +33,13 @@ pub fn atr(high: &[f64], low: &[f64], close: &[f64], timeperiod: usize) -> Vec<f
     }
     seed /= timeperiod as f64;
     result[timeperiod] = seed;
+    // Reciprocal hoisted out of the serial chain; see `momentum` module docs
+    // ("Wilder smoothing and the hoisted reciprocal") for the error bound.
     let p = timeperiod as f64;
+    let inv_p = 1.0 / p;
     for i in (timeperiod + 1)..n {
         let tr = true_range(high[i], low[i], close[i - 1]);
-        result[i] = (result[i - 1] * (p - 1.0) + tr) / p;
+        result[i] = (result[i - 1] * (p - 1.0) + tr) * inv_p;
     }
     result
 }
@@ -146,5 +149,61 @@ mod tests {
         let result = natr(&h, &l, &c, 3);
         assert!(result[2].is_nan());
         assert!(approx_eq(result[3], 2.0 / 13.0 * 100.0, 1e-12));
+    }
+    /// `atr` with the original `/ p` division form (TA-Lib's literal recurrence).
+    fn reference_atr_div(high: &[f64], low: &[f64], close: &[f64], timeperiod: usize) -> Vec<f64> {
+        let n = high.len();
+        let mut result = vec![f64::NAN; n];
+        if n <= timeperiod || timeperiod < 1 {
+            return result;
+        }
+        let mut seed = 0.0_f64;
+        for i in 1..=timeperiod {
+            seed += true_range(high[i], low[i], close[i - 1]);
+        }
+        result[timeperiod] = seed / timeperiod as f64;
+        let p = timeperiod as f64;
+        for i in (timeperiod + 1)..n {
+            let tr = true_range(high[i], low[i], close[i - 1]);
+            result[i] = (result[i - 1] * (p - 1.0) + tr) / p;
+        }
+        result
+    }
+
+    /// Same contraction argument as `momentum::rsi`'s hoist test: the
+    /// at-most-one-ulp-per-step gap between `* inv_p` and `/ p` decays rather
+    /// than accumulating, so 20k bars stay far inside the `atol = 1e-8` gate.
+    #[test]
+    fn wilder_reciprocal_hoist_stays_within_one_ulp_per_step() {
+        let n = 20_000;
+        let close: Vec<f64> = (0..n)
+            .map(|i| 100.0 + (i as f64 * 0.37).sin() * 5.0 + (i as f64 * 0.011).cos() * 20.0)
+            .collect();
+        let high: Vec<f64> = close
+            .iter()
+            .enumerate()
+            .map(|(i, c)| c + 0.5 + (i % 7) as f64 * 0.1)
+            .collect();
+        let low: Vec<f64> = close
+            .iter()
+            .enumerate()
+            .map(|(i, c)| c - 0.4 - (i % 5) as f64 * 0.1)
+            .collect();
+        for tp in [1, 2, 3, 14, 20, 64] {
+            let want = reference_atr_div(&high, &low, &close, tp);
+            let got = atr(&high, &low, &close, tp);
+            assert_eq!(got.len(), want.len(), "atr tp={tp}: length");
+            for i in 0..n {
+                assert_eq!(got[i].is_nan(), want[i].is_nan(), "atr tp={tp} [{i}]");
+                if !want[i].is_nan() {
+                    assert!(
+                        (got[i] - want[i]).abs() <= 1e-11 * want[i].abs().max(1.0),
+                        "atr tp={tp} [{i}]: {} vs {}",
+                        got[i],
+                        want[i]
+                    );
+                }
+            }
+        }
     }
 }

@@ -101,6 +101,8 @@ impl EmaState {
 #[derive(Clone, Debug)]
 pub(crate) struct AtrState {
     period: usize,
+    /// `1 / period`, cached so `update` multiplies instead of dividing.
+    inv_period: f64,
     prev_close: f64,
     tr_buf: Vec<f64>,
     atr: f64,
@@ -112,6 +114,7 @@ impl AtrState {
     pub fn new(period: usize) -> Self {
         Self {
             period,
+            inv_period: 1.0 / period as f64,
             prev_close: 0.0,
             tr_buf: Vec::with_capacity(period),
             atr: 0.0,
@@ -141,8 +144,9 @@ impl AtrState {
             self.tr_buf = Vec::new(); // dead after seeding; keeps clones cheap
             return self.atr;
         }
+        // Same `* (1 / p)` form as batch `atr`, so the two stay bit-identical.
         let p = self.period as f64;
-        self.atr = (self.atr * (p - 1.0) + tr) / p;
+        self.atr = (self.atr * (p - 1.0) + tr) * self.inv_period;
         self.atr
     }
 

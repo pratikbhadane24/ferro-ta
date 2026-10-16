@@ -41,11 +41,11 @@ use wasm_bindgen::prelude::*;
 // ---------------------------------------------------------------------------
 
 /// Copy a `Float64Array` into a `Vec<f64>`.
+///
+/// `Float64Array::to_vec` copies straight into uninitialised capacity, skipping
+/// the zero-fill pass that `vec![0.0; n]` + `copy_to` pays on every input.
 fn to_vec(arr: &Float64Array) -> Vec<f64> {
-    let n = arr.length() as usize;
-    let mut v = vec![0.0f64; n];
-    arr.copy_to(&mut v);
-    v
+    arr.to_vec()
 }
 
 /// Create a `Float64Array` from a `Vec<f64>`.

@@ -2,7 +2,7 @@
 //!
 //! # Wilder smoothing and the hoisted reciprocal
 //!
-//! `rsi` and `cmo` advance Wilder's average as
+//! `rsi`, `cmo` and `volatility::atr` advance Wilder's average as
 //! `avg = (avg * (p - 1) + x) * inv_p` with `inv_p = 1 / p` precomputed,
 //! rather than the textbook `(avg * (p - 1) + x) / p`. `p` is loop-invariant,
 //! but replacing a divide with a reciprocal multiply is not a transform LLVM

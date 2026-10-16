@@ -1,5 +1,23 @@
 //! Exponential moving averages and their compositions (EMA, DEMA, TEMA, T3).
 
+/// One EMA recurrence step: `prev * (1 - k) + x * k`.
+///
+/// Native targets fuse it with `mul_add` (one rounding, one instruction).
+/// wasm32 has no scalar f64 FMA instruction, so `mul_add` lowers to a software
+/// `fma` routine that measured ~7x slower per bar than the unfused form; wasm
+/// builds use plain multiply-add instead. Results differ by at most rounding.
+#[inline(always)]
+fn ema_step(prev: f64, x: f64, k: f64) -> f64 {
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        prev.mul_add(1.0 - k, x * k)
+    }
+    #[cfg(target_arch = "wasm32")]
+    {
+        prev * (1.0 - k) + x * k
+    }
+}
+
 /// Compute the Exponential Moving Average (EMA).
 ///
 /// The EMA is seeded with the SMA of the first `timeperiod` **finite** bars and
@@ -48,7 +66,7 @@ pub fn ema(close: &[f64], timeperiod: usize) -> Vec<f64> {
     result[start + timeperiod - 1] = seed;
     let mut prev = seed;
     for i in start + timeperiod..n {
-        prev = prev.mul_add(1.0 - k, close[i] * k);
+        prev = ema_step(prev, close[i], k);
         result[i] = prev;
     }
     result
@@ -106,7 +124,7 @@ pub(crate) fn ema_from_first_finite(input: &[f64], timeperiod: usize) -> Vec<f64
     result[seed_end - 1] = seed;
     let mut prev = seed;
     for i in seed_end..n {
-        prev = prev.mul_add(1.0 - k, input[i] * k);
+        prev = ema_step(prev, input[i], k);
         result[i] = prev;
     }
     result
