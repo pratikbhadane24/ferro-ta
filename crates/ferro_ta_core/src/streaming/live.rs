@@ -107,7 +107,10 @@ pub trait StreamingIndicator: Clone {
 }
 
 macro_rules! impl_streaming_indicator {
-    ($ty:ty, $input:ty, $output:ty, |$s:ident, $pat:pat_param| $call:expr) => {
+    (
+        $ty:ty, $input:ty, $output:ty, |$s:ident, $pat:pat_param| $call:expr
+        $(, peek = |$ps:ident, $ppat:pat_param| $peek:expr)? $(,)?
+    ) => {
         impl StreamingIndicator for $ty {
             type Input = $input;
             type Output = $output;
@@ -121,14 +124,35 @@ macro_rules! impl_streaming_indicator {
             fn reset(&mut self) {
                 <$ty>::reset(self)
             }
+
+            $(
+                /// Allocation-free override of the clone-based default.
+                fn peek(&self, input: $input) -> $output {
+                    let $ps = self;
+                    let $ppat = input;
+                    $peek
+                }
+            )?
         }
     };
 }
 
-impl_streaming_indicator!(StreamingSMA, f64, f64, |s, v| s.update(v));
+impl_streaming_indicator!(
+    StreamingSMA,
+    f64,
+    f64,
+    |s, v| s.update(v),
+    peek = |s, v| s.peek_value(v)
+);
 impl_streaming_indicator!(StreamingEMA, f64, f64, |s, v| s.update(v));
 impl_streaming_indicator!(StreamingRSI, f64, f64, |s, v| s.update(v));
-impl_streaming_indicator!(StreamingBBands, f64, (f64, f64, f64), |s, v| s.update(v));
+impl_streaming_indicator!(
+    StreamingBBands,
+    f64,
+    (f64, f64, f64),
+    |s, v| s.update(v),
+    peek = |s, v| s.peek_value(v)
+);
 impl_streaming_indicator!(StreamingMACD, f64, (f64, f64, f64), |s, v| s.update(v));
 impl_streaming_indicator!(StreamingATR, (f64, f64, f64), f64, |s, (h, l, c)| s
     .update(h, l, c));
@@ -136,7 +160,8 @@ impl_streaming_indicator!(
     StreamingStoch,
     (f64, f64, f64),
     (f64, f64),
-    |s, (h, l, c)| s.update(h, l, c)
+    |s, (h, l, c)| s.update(h, l, c),
+    peek = |s, (h, l, c)| s.peek_value(h, l, c)
 );
 impl_streaming_indicator!(StreamingSupertrend, (f64, f64, f64), (f64, i8), |s,
                                                                             (
@@ -385,6 +410,37 @@ mod tests {
         assert_eq!(live.count(), 2);
         for v in [3.0, 4.0, 5.0] {
             assert_eq!(live.update(v, true), reference.update(v));
+        }
+    }
+
+    /// The allocation-free `peek_value` overrides must be bit-identical to the
+    /// clone-and-update reference at every bar, warm-up included.
+    #[test]
+    fn peek_matches_clone_update_without_allocating() {
+        let data = bars(N_BARS);
+        let mut sma = StreamingSMA::new(10).unwrap();
+        let mut bb = StreamingBBands::new(20, 2.0, 1.5).unwrap();
+        let mut stoch = StreamingStoch::new(5, 3, 3).unwrap();
+        for (i, &(h, l, c, _)) in data.iter().enumerate() {
+            let probe = c + 0.37;
+            assert!(
+                same(sma.peek_value(probe), sma.clone().update(probe)),
+                "sma bar {i}"
+            );
+            assert!(
+                same(bb.peek_value(probe), bb.clone().update(probe)),
+                "bbands bar {i}"
+            );
+            assert!(
+                same(
+                    stoch.peek_value(h + 0.2, l - 0.2, probe),
+                    stoch.clone().update(h + 0.2, l - 0.2, probe)
+                ),
+                "stoch bar {i}"
+            );
+            sma.update(c);
+            bb.update(c);
+            stoch.update(h, l, c);
         }
     }
 }

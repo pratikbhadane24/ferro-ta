@@ -206,6 +206,23 @@ impl StreamingSMA {
         }
     }
 
+    /// Value `update(value)` would return, without changing state or
+    /// allocating (same arithmetic order, so bit-identical).
+    pub fn peek_value(&self, value: f64) -> f64 {
+        let mut sum = self.running_sum;
+        if self.buf.len() == self.period {
+            if let Some(&old) = self.buf.front() {
+                sum -= old;
+            }
+        }
+        sum += value;
+        if self.count + 1 < self.period {
+            f64::NAN
+        } else {
+            sum / self.period as f64
+        }
+    }
+
     /// Reset state to initial condition.
     pub fn reset(&mut self) {
         self.buf.clear();
@@ -447,6 +464,37 @@ impl StreamingBBands {
         )
     }
 
+    /// Value `update(value)` would return, without changing state or
+    /// allocating (same Welford steps on local copies, so bit-identical).
+    pub fn peek_value(&self, value: f64) -> (f64, f64, f64) {
+        let mut mean = self.mean;
+        let mut m2 = self.m2;
+        let mut len = self.buf.len();
+        if len == self.period {
+            let x_old = self.buf[0];
+            let count = self.period as f64;
+            let delta_old = x_old - mean;
+            mean -= delta_old / (count - 1.0);
+            let delta2_old = x_old - mean;
+            m2 -= delta_old * delta2_old;
+            len -= 1;
+        }
+        len += 1;
+        let count = len as f64;
+        let delta_new = value - mean;
+        mean += delta_new / count;
+        let delta2_new = value - mean;
+        m2 += delta_new * delta2_new;
+        if m2 < 0.0 {
+            m2 = 0.0;
+        }
+        if len < self.period {
+            return (f64::NAN, f64::NAN, f64::NAN);
+        }
+        let std = (m2 / count).sqrt();
+        (mean + self.nbdevup * std, mean, mean - self.nbdevdn * std)
+    }
+
     pub fn reset(&mut self) {
         self.buf.clear();
         self.mean = 0.0;
@@ -618,6 +666,62 @@ impl StreamingStoch {
         }
 
         let slowd = self.slowk_buf.iter().sum::<f64>() / self.slowd_period as f64;
+        (slowk, slowd)
+    }
+
+    /// Value `update(high, low, close)` would return, without changing state
+    /// or allocating: each window is read with its would-be-evicted front
+    /// skipped and the new value chained on, in the same fold order.
+    pub fn peek_value(&self, high: f64, low: f64, close: f64) -> (f64, f64) {
+        let skip_hl = usize::from(self.high_buf.len() == self.fastk_period);
+        if self.high_buf.len() - skip_hl + 1 < self.fastk_period {
+            return (f64::NAN, f64::NAN);
+        }
+        let max_h = self
+            .high_buf
+            .iter()
+            .skip(skip_hl)
+            .cloned()
+            .chain(std::iter::once(high))
+            .fold(f64::NEG_INFINITY, f64::max);
+        let min_l = self
+            .low_buf
+            .iter()
+            .skip(skip_hl)
+            .cloned()
+            .chain(std::iter::once(low))
+            .fold(f64::INFINITY, f64::min);
+        let fastk = if max_h != min_l {
+            100.0 * (close - min_l) / (max_h - min_l)
+        } else {
+            0.0
+        };
+
+        let skip_k = usize::from(self.fastk_buf.len() == self.slowk_period);
+        if self.fastk_buf.len() - skip_k + 1 < self.slowk_period {
+            return (f64::NAN, f64::NAN);
+        }
+        let slowk = self
+            .fastk_buf
+            .iter()
+            .skip(skip_k)
+            .cloned()
+            .chain(std::iter::once(fastk))
+            .sum::<f64>()
+            / self.slowk_period as f64;
+
+        let skip_d = usize::from(self.slowk_buf.len() == self.slowd_period);
+        if self.slowk_buf.len() - skip_d + 1 < self.slowd_period {
+            return (f64::NAN, f64::NAN);
+        }
+        let slowd = self
+            .slowk_buf
+            .iter()
+            .skip(skip_d)
+            .cloned()
+            .chain(std::iter::once(slowk))
+            .sum::<f64>()
+            / self.slowd_period as f64;
         (slowk, slowd)
     }
 
