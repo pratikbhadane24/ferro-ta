@@ -89,6 +89,9 @@ _CDL_WRAPPER_RE = re.compile(r"(?ms)cdl_wrapper!\((.*?)\)\s*;")
 _MATH_TRANSFORM_WRAPPER_RE = re.compile(
     r"(?m)^math_transform_wrapper!\(\s*([A-Za-z0-9_]+)\s*,"
 )
+_WASM_STREAMING_CLASS_RE = re.compile(
+    r"(?m)^\s+([A-Za-z0-9_]+)\s+wraps\s+[A-Za-z0-9_]+,"
+)
 _TOPLEVEL_PUB_FN_RE = re.compile(r"(?m)^pub\s+fn\s+([A-Za-z0-9_]+)\s*\(")
 _TOPLEVEL_PUB_STRUCT_RE = re.compile(r"(?m)^pub\s+struct\s+([A-Za-z0-9_]+)\b")
 _WASM_BINDGEN_TOPLEVEL_ITEM_RE = re.compile(
@@ -313,6 +316,7 @@ def _extract_wasm_exports(root: Path) -> list[str]:
         for block in _CDL_WRAPPER_RE.findall(text):
             exports.update(_IDENT_RE.findall(block))
         exports.update(_MATH_TRANSFORM_WRAPPER_RE.findall(text))
+        exports.update(_WASM_STREAMING_CLASS_RE.findall(text))
         if exports:
             return sorted(exports)
 

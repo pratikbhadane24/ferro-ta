@@ -91,8 +91,10 @@ const [macdLine, signal, hist] = macd(close, 3, 5, 2);
 // Streaming (bar-by-bar)
 const stream = new WasmStreamingSMA(3);
 for (const price of close) {
-  console.log('streaming SMA:', stream.update(price));
+  console.log('streaming SMA:', stream.update(price));   // commits the bar
 }
+// Forming bar: preview each tick without committing it
+console.log('live SMA:', stream.peek(101.5), 'bars:', stream.count, 'ready:', stream.isReady);
 ```
 
 ## Usage (Browser)

@@ -9,6 +9,24 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- **Live-bar streaming.** Every streaming indicator accepts
+  `update(..., closed=False)` (Python) / `peek(...)` (WASM) /
+  `ft_stream_*_peek` (C) / `Stream*.Peek` (Go) to preview the still-forming bar
+  without mutating state; committed output stays bit-identical.
+- Streaming introspection: `count` and `is_ready` (Python), `count` and
+  `isReady` (WASM). Python streaming classes support `copy.copy` /
+  `copy.deepcopy` snapshots.
+- Core: `StreamingIndicator` trait, `Live<T>` wrapper and `Clone`/`Debug` on
+  all streaming state structs.
+
+### Fixed
+
+- A NaN or ±inf input no longer poisons streaming state forever (SMA/BBands
+  running sums, EMA/RSI/ATR recursions, VWAP accumulators). Such ticks now return NaN
+  and are skipped — state, `count` and the last value are left untouched.
+
 ## [1.4.0] — 2026-10-01
 
 ### Added

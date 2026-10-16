@@ -34,6 +34,7 @@ def c_stream(stream: dict) -> list[str]:
         f"typedef struct {handle} {handle};",
         f"int32_t {stream['new_fn']}({', '.join(new_args)});",
         f"int32_t {stream['update_fn']}({', '.join(update_args)});",
+        f"int32_t {stream['peek_fn']}({', '.join(update_args)});",
         f"int32_t {stream['reset_fn']}({handle} *handle);",
         f"void {stream['free_fn']}({handle} *handle);",
     ]

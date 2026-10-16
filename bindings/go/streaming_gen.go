@@ -35,7 +35,8 @@ func NewStreamSma(period int) (*StreamSma, error) {
 	return s, nil
 }
 
-// Update feeds one bar and returns this bar's value(s) (NaN during warm-up).
+// Update commits one bar and returns its value(s) (NaN during warm-up).
+// A NaN/±inf input returns NaN and leaves state untouched.
 func (s *StreamSma) Update(value float64) (float64, error) {
 	var out float64
 	s.mu.Lock()
@@ -44,6 +45,21 @@ func (s *StreamSma) Update(value float64) (float64, error) {
 		return 0, closedError("StreamSma.Update")
 	}
 	if err := statusError("StreamSma.Update", C.ft_stream_sma_update(s.h, C.double(value), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamSma) Peek(value float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamSma.Peek")
+	}
+	if err := statusError("StreamSma.Peek", C.ft_stream_sma_peek(s.h, C.double(value), (*C.double)(unsafe.Pointer(&out)))); err != nil {
 		return 0, err
 	}
 	return out, nil
@@ -93,7 +109,8 @@ func NewStreamEma(period int) (*StreamEma, error) {
 	return s, nil
 }
 
-// Update feeds one bar and returns this bar's value(s) (NaN during warm-up).
+// Update commits one bar and returns its value(s) (NaN during warm-up).
+// A NaN/±inf input returns NaN and leaves state untouched.
 func (s *StreamEma) Update(value float64) (float64, error) {
 	var out float64
 	s.mu.Lock()
@@ -102,6 +119,21 @@ func (s *StreamEma) Update(value float64) (float64, error) {
 		return 0, closedError("StreamEma.Update")
 	}
 	if err := statusError("StreamEma.Update", C.ft_stream_ema_update(s.h, C.double(value), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamEma) Peek(value float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamEma.Peek")
+	}
+	if err := statusError("StreamEma.Peek", C.ft_stream_ema_peek(s.h, C.double(value), (*C.double)(unsafe.Pointer(&out)))); err != nil {
 		return 0, err
 	}
 	return out, nil
@@ -151,7 +183,8 @@ func NewStreamRsi(period int) (*StreamRsi, error) {
 	return s, nil
 }
 
-// Update feeds one bar and returns this bar's value(s) (NaN during warm-up).
+// Update commits one bar and returns its value(s) (NaN during warm-up).
+// A NaN/±inf input returns NaN and leaves state untouched.
 func (s *StreamRsi) Update(value float64) (float64, error) {
 	var out float64
 	s.mu.Lock()
@@ -160,6 +193,21 @@ func (s *StreamRsi) Update(value float64) (float64, error) {
 		return 0, closedError("StreamRsi.Update")
 	}
 	if err := statusError("StreamRsi.Update", C.ft_stream_rsi_update(s.h, C.double(value), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamRsi) Peek(value float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamRsi.Peek")
+	}
+	if err := statusError("StreamRsi.Peek", C.ft_stream_rsi_peek(s.h, C.double(value), (*C.double)(unsafe.Pointer(&out)))); err != nil {
 		return 0, err
 	}
 	return out, nil
@@ -209,7 +257,8 @@ func NewStreamAtr(period int) (*StreamAtr, error) {
 	return s, nil
 }
 
-// Update feeds one bar and returns this bar's value(s) (NaN during warm-up).
+// Update commits one bar and returns its value(s) (NaN during warm-up).
+// A NaN/±inf input returns NaN and leaves state untouched.
 func (s *StreamAtr) Update(high float64, low float64, close float64) (float64, error) {
 	var out float64
 	s.mu.Lock()
@@ -218,6 +267,21 @@ func (s *StreamAtr) Update(high float64, low float64, close float64) (float64, e
 		return 0, closedError("StreamAtr.Update")
 	}
 	if err := statusError("StreamAtr.Update", C.ft_stream_atr_update(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamAtr) Peek(high float64, low float64, close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamAtr.Peek")
+	}
+	if err := statusError("StreamAtr.Peek", C.ft_stream_atr_peek(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
 		return 0, err
 	}
 	return out, nil
@@ -267,7 +331,8 @@ func NewStreamBbands(period int, nbdevup float64, nbdevdn float64) (*StreamBband
 	return s, nil
 }
 
-// Update feeds one bar and returns this bar's value(s) (NaN during warm-up).
+// Update commits one bar and returns its value(s) (NaN during warm-up).
+// A NaN/±inf input returns NaN and leaves state untouched.
 func (s *StreamBbands) Update(value float64) (upper float64, middle float64, lower float64, err error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -275,6 +340,20 @@ func (s *StreamBbands) Update(value float64) (upper float64, middle float64, low
 		return 0, 0, 0, closedError("StreamBbands.Update")
 	}
 	if err := statusError("StreamBbands.Update", C.ft_stream_bbands_update(s.h, C.double(value), (*C.double)(unsafe.Pointer(&upper)), (*C.double)(unsafe.Pointer(&middle)), (*C.double)(unsafe.Pointer(&lower)))); err != nil {
+		return 0, 0, 0, err
+	}
+	return upper, middle, lower, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamBbands) Peek(value float64) (upper float64, middle float64, lower float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, 0, closedError("StreamBbands.Peek")
+	}
+	if err := statusError("StreamBbands.Peek", C.ft_stream_bbands_peek(s.h, C.double(value), (*C.double)(unsafe.Pointer(&upper)), (*C.double)(unsafe.Pointer(&middle)), (*C.double)(unsafe.Pointer(&lower)))); err != nil {
 		return 0, 0, 0, err
 	}
 	return upper, middle, lower, nil
@@ -324,7 +403,8 @@ func NewStreamMacd(fastperiod int, slowperiod int, signalperiod int) (*StreamMac
 	return s, nil
 }
 
-// Update feeds one bar and returns this bar's value(s) (NaN during warm-up).
+// Update commits one bar and returns its value(s) (NaN during warm-up).
+// A NaN/±inf input returns NaN and leaves state untouched.
 func (s *StreamMacd) Update(value float64) (macd float64, signal float64, hist float64, err error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -332,6 +412,20 @@ func (s *StreamMacd) Update(value float64) (macd float64, signal float64, hist f
 		return 0, 0, 0, closedError("StreamMacd.Update")
 	}
 	if err := statusError("StreamMacd.Update", C.ft_stream_macd_update(s.h, C.double(value), (*C.double)(unsafe.Pointer(&macd)), (*C.double)(unsafe.Pointer(&signal)), (*C.double)(unsafe.Pointer(&hist)))); err != nil {
+		return 0, 0, 0, err
+	}
+	return macd, signal, hist, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamMacd) Peek(value float64) (macd float64, signal float64, hist float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, 0, closedError("StreamMacd.Peek")
+	}
+	if err := statusError("StreamMacd.Peek", C.ft_stream_macd_peek(s.h, C.double(value), (*C.double)(unsafe.Pointer(&macd)), (*C.double)(unsafe.Pointer(&signal)), (*C.double)(unsafe.Pointer(&hist)))); err != nil {
 		return 0, 0, 0, err
 	}
 	return macd, signal, hist, nil
@@ -381,7 +475,8 @@ func NewStreamStoch(fastkPeriod int, slowkPeriod int, slowdPeriod int) (*StreamS
 	return s, nil
 }
 
-// Update feeds one bar and returns this bar's value(s) (NaN during warm-up).
+// Update commits one bar and returns its value(s) (NaN during warm-up).
+// A NaN/±inf input returns NaN and leaves state untouched.
 func (s *StreamStoch) Update(high float64, low float64, close float64) (slowk float64, slowd float64, err error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -389,6 +484,20 @@ func (s *StreamStoch) Update(high float64, low float64, close float64) (slowk fl
 		return 0, 0, closedError("StreamStoch.Update")
 	}
 	if err := statusError("StreamStoch.Update", C.ft_stream_stoch_update(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&slowk)), (*C.double)(unsafe.Pointer(&slowd)))); err != nil {
+		return 0, 0, err
+	}
+	return slowk, slowd, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamStoch) Peek(high float64, low float64, close float64) (slowk float64, slowd float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, closedError("StreamStoch.Peek")
+	}
+	if err := statusError("StreamStoch.Peek", C.ft_stream_stoch_peek(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&slowk)), (*C.double)(unsafe.Pointer(&slowd)))); err != nil {
 		return 0, 0, err
 	}
 	return slowk, slowd, nil
@@ -438,7 +547,8 @@ func NewStreamVwap() (*StreamVwap, error) {
 	return s, nil
 }
 
-// Update feeds one bar and returns this bar's value(s) (NaN during warm-up).
+// Update commits one bar and returns its value(s) (NaN during warm-up).
+// A NaN/±inf input returns NaN and leaves state untouched.
 func (s *StreamVwap) Update(high float64, low float64, close float64, volume float64) (float64, error) {
 	var out float64
 	s.mu.Lock()
@@ -447,6 +557,21 @@ func (s *StreamVwap) Update(high float64, low float64, close float64, volume flo
 		return 0, closedError("StreamVwap.Update")
 	}
 	if err := statusError("StreamVwap.Update", C.ft_stream_vwap_update(s.h, C.double(high), C.double(low), C.double(close), C.double(volume), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamVwap) Peek(high float64, low float64, close float64, volume float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamVwap.Peek")
+	}
+	if err := statusError("StreamVwap.Peek", C.ft_stream_vwap_peek(s.h, C.double(high), C.double(low), C.double(close), C.double(volume), (*C.double)(unsafe.Pointer(&out)))); err != nil {
 		return 0, err
 	}
 	return out, nil
@@ -496,7 +621,8 @@ func NewStreamSupertrend(period int, multiplier float64) (*StreamSupertrend, err
 	return s, nil
 }
 
-// Update feeds one bar and returns this bar's value(s) (NaN during warm-up).
+// Update commits one bar and returns its value(s) (NaN during warm-up).
+// A NaN/±inf input returns NaN and leaves state untouched.
 func (s *StreamSupertrend) Update(high float64, low float64, close float64) (line float64, direction int8, err error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -504,6 +630,20 @@ func (s *StreamSupertrend) Update(high float64, low float64, close float64) (lin
 		return 0, 0, closedError("StreamSupertrend.Update")
 	}
 	if err := statusError("StreamSupertrend.Update", C.ft_stream_supertrend_update(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&line)), (*C.int8_t)(unsafe.Pointer(&direction)))); err != nil {
+		return 0, 0, err
+	}
+	return line, direction, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamSupertrend) Peek(high float64, low float64, close float64) (line float64, direction int8, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, closedError("StreamSupertrend.Peek")
+	}
+	if err := statusError("StreamSupertrend.Peek", C.ft_stream_supertrend_peek(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&line)), (*C.int8_t)(unsafe.Pointer(&direction)))); err != nil {
 		return 0, 0, err
 	}
 	return line, direction, nil

@@ -1383,6 +1383,7 @@ int32_t ft_half_kelly_fraction(double win_rate, double avg_win, double avg_loss,
 typedef struct FtStreamSma FtStreamSma;
 int32_t ft_stream_sma_new(int64_t period, FtStreamSma **out_handle);
 int32_t ft_stream_sma_update(FtStreamSma *handle, double value, double *out);
+int32_t ft_stream_sma_peek(FtStreamSma *handle, double value, double *out);
 int32_t ft_stream_sma_reset(FtStreamSma *handle);
 void ft_stream_sma_free(FtStreamSma *handle);
 
@@ -1392,6 +1393,7 @@ void ft_stream_sma_free(FtStreamSma *handle);
 typedef struct FtStreamEma FtStreamEma;
 int32_t ft_stream_ema_new(int64_t period, FtStreamEma **out_handle);
 int32_t ft_stream_ema_update(FtStreamEma *handle, double value, double *out);
+int32_t ft_stream_ema_peek(FtStreamEma *handle, double value, double *out);
 int32_t ft_stream_ema_reset(FtStreamEma *handle);
 void ft_stream_ema_free(FtStreamEma *handle);
 
@@ -1401,6 +1403,7 @@ void ft_stream_ema_free(FtStreamEma *handle);
 typedef struct FtStreamRsi FtStreamRsi;
 int32_t ft_stream_rsi_new(int64_t period, FtStreamRsi **out_handle);
 int32_t ft_stream_rsi_update(FtStreamRsi *handle, double value, double *out);
+int32_t ft_stream_rsi_peek(FtStreamRsi *handle, double value, double *out);
 int32_t ft_stream_rsi_reset(FtStreamRsi *handle);
 void ft_stream_rsi_free(FtStreamRsi *handle);
 
@@ -1410,6 +1413,7 @@ void ft_stream_rsi_free(FtStreamRsi *handle);
 typedef struct FtStreamAtr FtStreamAtr;
 int32_t ft_stream_atr_new(int64_t period, FtStreamAtr **out_handle);
 int32_t ft_stream_atr_update(FtStreamAtr *handle, double high, double low, double close, double *out);
+int32_t ft_stream_atr_peek(FtStreamAtr *handle, double high, double low, double close, double *out);
 int32_t ft_stream_atr_reset(FtStreamAtr *handle);
 void ft_stream_atr_free(FtStreamAtr *handle);
 
@@ -1419,6 +1423,7 @@ void ft_stream_atr_free(FtStreamAtr *handle);
 typedef struct FtStreamBbands FtStreamBbands;
 int32_t ft_stream_bbands_new(int64_t period, double nbdevup, double nbdevdn, FtStreamBbands **out_handle);
 int32_t ft_stream_bbands_update(FtStreamBbands *handle, double value, double *out_upper, double *out_middle, double *out_lower);
+int32_t ft_stream_bbands_peek(FtStreamBbands *handle, double value, double *out_upper, double *out_middle, double *out_lower);
 int32_t ft_stream_bbands_reset(FtStreamBbands *handle);
 void ft_stream_bbands_free(FtStreamBbands *handle);
 
@@ -1428,6 +1433,7 @@ void ft_stream_bbands_free(FtStreamBbands *handle);
 typedef struct FtStreamMacd FtStreamMacd;
 int32_t ft_stream_macd_new(int64_t fastperiod, int64_t slowperiod, int64_t signalperiod, FtStreamMacd **out_handle);
 int32_t ft_stream_macd_update(FtStreamMacd *handle, double value, double *out_macd, double *out_signal, double *out_hist);
+int32_t ft_stream_macd_peek(FtStreamMacd *handle, double value, double *out_macd, double *out_signal, double *out_hist);
 int32_t ft_stream_macd_reset(FtStreamMacd *handle);
 void ft_stream_macd_free(FtStreamMacd *handle);
 
@@ -1437,6 +1443,7 @@ void ft_stream_macd_free(FtStreamMacd *handle);
 typedef struct FtStreamStoch FtStreamStoch;
 int32_t ft_stream_stoch_new(int64_t fastk_period, int64_t slowk_period, int64_t slowd_period, FtStreamStoch **out_handle);
 int32_t ft_stream_stoch_update(FtStreamStoch *handle, double high, double low, double close, double *out_slowk, double *out_slowd);
+int32_t ft_stream_stoch_peek(FtStreamStoch *handle, double high, double low, double close, double *out_slowk, double *out_slowd);
 int32_t ft_stream_stoch_reset(FtStreamStoch *handle);
 void ft_stream_stoch_free(FtStreamStoch *handle);
 
@@ -1446,6 +1453,7 @@ void ft_stream_stoch_free(FtStreamStoch *handle);
 typedef struct FtStreamVwap FtStreamVwap;
 int32_t ft_stream_vwap_new(FtStreamVwap **out_handle);
 int32_t ft_stream_vwap_update(FtStreamVwap *handle, double high, double low, double close, double volume, double *out);
+int32_t ft_stream_vwap_peek(FtStreamVwap *handle, double high, double low, double close, double volume, double *out);
 int32_t ft_stream_vwap_reset(FtStreamVwap *handle);
 void ft_stream_vwap_free(FtStreamVwap *handle);
 
@@ -1455,6 +1463,7 @@ void ft_stream_vwap_free(FtStreamVwap *handle);
 typedef struct FtStreamSupertrend FtStreamSupertrend;
 int32_t ft_stream_supertrend_new(int64_t period, double multiplier, FtStreamSupertrend **out_handle);
 int32_t ft_stream_supertrend_update(FtStreamSupertrend *handle, double high, double low, double close, double *out_line, int8_t *out_direction);
+int32_t ft_stream_supertrend_peek(FtStreamSupertrend *handle, double high, double low, double close, double *out_line, int8_t *out_direction);
 int32_t ft_stream_supertrend_reset(FtStreamSupertrend *handle);
 void ft_stream_supertrend_free(FtStreamSupertrend *handle);
 

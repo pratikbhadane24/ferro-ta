@@ -19,6 +19,13 @@ Usage
 13.0 → 12.0000
 14.0 → 13.0000
 
+Live bars
+---------
+``update(x)`` commits a closed bar; ``update(x, closed=False)`` previews the
+still-forming bar without changing state. ``count`` / ``is_ready`` report
+committed progress, ``copy.copy`` snapshots state, and NaN/±inf ticks are skipped
+(they return NaN without poisoning state).
+
 Available classes
 -----------------
 StreamingSMA        — Simple Moving Average
