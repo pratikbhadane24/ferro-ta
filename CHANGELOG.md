@@ -9,6 +9,17 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- OHLCV engine: a same-side position change (e.g. 0.5 → 1.0 from fractional
+  sizing) now charges commission on the traded amount instead of a full exit
+  plus re-entry. It also averages the entry price (used by stops) instead of
+  resetting it to the latest fill, keeps the trailing-stop anchor, and resizes
+  the margin requirement to the new position. Results change only for
+  fractional same-sign signal changes with commission, stops or leverage.
+  With ±1/0 signals the engine output is bit-identical to before (covered by
+  golden tests).
+
 ### Added
 
 - **Parallel parameter sweeps** — `ferro_ta.analysis.sweep.sweep(close,
@@ -25,6 +36,21 @@ and the project uses [Semantic Versioning](https://semver.org/).
   `expected_max_sharpe`, `pbo` (Probability of Backtest Overfitting via
   CSCV, up to 20 splits / 184 756 combinations using per-block sums), and
   `purged_kfold` / `purged_kfold_indices` with purge and embargo gaps.
+- **Sweeps run fully in Rust** for built-in strategies: `ferro_ta_core::sweep`
+  gains a `BuiltinStrategy` registry (`sma_crossover`, `rsi_30_70`,
+  `macd_crossover`), `sweep_builtin` / `sweep_signals`, and `grid::expand_grid` /
+  `grid::plateau_scores`. A new optional `parallel` (Rayon) core feature
+  provides the threading, enabled for the Python wheel. WASM exports
+  `sweep_builtin`, `sweep_signals`, `sweep_metric_names`, `expand_grid` and
+  `sweep_plateau_scores`. Combinations that break a strategy's constraints
+  (e.g. `fast >= slow`) are skipped.
+- **Execution realism** in the OHLCV engine: `max_participation` caps each
+  signal-driven fill at a fraction of bar volume, with partial fills carried
+  across bars. `slippage_atr_mult` / `slippage_atr_period` set slippage from
+  the previous bar's ATR. New `backtest_ohlcv_volume_core` (core), `volume=`
+  and the new keywords on the PyO3 `backtest_ohlcv_core`,
+  `BacktestEngine.with_volume_participation()` /
+  `.with_atr_slippage()`, and WASM `backtest_ohlcv_volume`.
 - `ferro_ta_core::options::normal::inv_cdf` (Acklam, rel. error < 1.2e-9)
   and `BacktestMetrics::scalar_fields()`.
 

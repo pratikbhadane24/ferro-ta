@@ -31,7 +31,12 @@ from typing import Any, Union
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
+from ferro_ta._ferro_ta import (
+    backtest_sweep_builtin_core as _rust_backtest_sweep_builtin_core,
+)
 from ferro_ta._ferro_ta import backtest_sweep_core as _rust_backtest_sweep_core
+from ferro_ta._ferro_ta import sweep_builtin_strategies as _rust_builtin_names
+from ferro_ta._ferro_ta import sweep_plateau_scores as _rust_plateau_scores
 from ferro_ta.analysis.backtest import _resolve_strategy
 from ferro_ta.analysis.overfit import (
     PBOResult,
@@ -44,6 +49,9 @@ from ferro_ta.analysis.overfit import (
 from ferro_ta.core.exceptions import FerroTAInputError, FerroTAValueError
 
 __all__ = ["ParamGrid", "SweepResult", "expand_grid", "sweep"]
+
+#: Strategy names whose whole sweep (signals included) runs in Rust.
+RUST_BUILTIN_STRATEGIES: frozenset[str] = frozenset(_rust_builtin_names())
 
 ParamGrid = Union[Mapping[str, Sequence[Any]], Sequence[Mapping[str, Any]]]
 
@@ -73,7 +81,7 @@ def expand_grid(param_grid: ParamGrid) -> tuple[dict[str, Any], ...]:
 class SweepResult:
     """Output of :func:`sweep`.
 
-    Attributes
+    Parameters
     ----------
     params : tuple[Mapping]
         Parameters of each combination (column order of ``returns``).
@@ -124,14 +132,15 @@ class SweepResult:
         Neighbours are combos within ``radius`` steps on *every* parameter
         axis (Chebyshev distance), including the combo itself.
         """
-        coords = self._grid_coordinates()
-        scores = np.full(len(values), np.nan)
-        for i, here in enumerate(coords):
-            near = np.max(np.abs(coords - here), axis=1) <= radius
-            window = values[near]
-            if not np.all(np.isnan(window)):
-                scores[i] = np.nanmean(window)
-        return scores
+        coords = np.ascontiguousarray(self._grid_coordinates())
+        return np.asarray(
+            _call_rust(
+                _rust_plateau_scores,
+                np.ascontiguousarray(values, dtype=np.float64),
+                coords,
+                int(radius),
+            )
+        )
 
     def best_index(
         self, metric: str = "sharpe", *, minimize: bool = False, radius: int = 0
@@ -253,9 +262,14 @@ def sweep(
     close : array-like
         Close prices.
     strategy : str or callable
-        Built-in strategy name (as accepted by
-        :func:`ferro_ta.analysis.backtest.backtest`) or
-        ``fn(close, **params) -> signals``.
+        Strategy name from :func:`ferro_ta.analysis.backtest.backtest`'s
+        registry, or ``fn(close, **params) -> signals``. Names in
+        :data:`RUST_BUILTIN_STRATEGIES` (``sma_crossover``, ``rsi_30_70``,
+        ``macd_crossover``) run entirely in Rust, signal generation included, and
+        silently **skip** combinations that violate their constraints
+        (e.g. ``fast >= slow``), so ``SweepResult.params`` lists only the
+        combinations that ran. Callables run once per combination in Python
+        and any exception they raise aborts the sweep.
     param_grid : mapping or sequence of mappings
         ``{"fast": [5, 10], "slow": [50, 100]}`` (Cartesian product) or an
         explicit list of parameter dicts.
@@ -270,11 +284,7 @@ def sweep(
     if c.ndim != 1 or len(c) < 2:
         raise FerroTAInputError("close must be 1-D with at least 2 bars")
     combos = expand_grid(param_grid)
-    signals = _build_signals(c, _resolve_strategy(strategy), combos)
-    returns_2d, raw_metrics = _call_rust(
-        _rust_backtest_sweep_core,
-        c,
-        signals,
+    costs = (
         float(commission_per_trade),
         float(slippage_bps),
         float(initial_capital),
@@ -282,8 +292,40 @@ def sweep(
         float(risk_free_rate),
         bool(parallel),
     )
+    if isinstance(strategy, str) and strategy in RUST_BUILTIN_STRATEGIES:
+        kept, returns_2d, raw_metrics = _call_rust(
+            _rust_backtest_sweep_builtin_core,
+            c,
+            strategy,
+            *_numeric_combos(combos),
+            *costs,
+        )
+        combos = tuple(combos[int(k)] for k in np.asarray(kept))
+    else:
+        signals = _build_signals(c, _resolve_strategy(strategy), combos)
+        returns_2d, raw_metrics = _call_rust(
+            _rust_backtest_sweep_core, c, signals, *costs
+        )
     return SweepResult(
         params=tuple(MappingProxyType(p) for p in combos),
         returns=_frozen(returns_2d),
         metrics=MappingProxyType({k: _frozen(v) for k, v in raw_metrics.items()}),
     )
+
+
+def _numeric_combos(
+    combos: tuple[dict[str, Any], ...],
+) -> tuple[list[str], NDArray[np.float64]]:
+    """``(names, matrix)`` for a built-in sweep; every combo needs the same keys."""
+    names = list(combos[0])
+    if any(list(p) != names for p in combos):
+        raise FerroTAValueError(
+            "built-in sweeps need every combination to set the same parameters"
+        )
+    try:
+        matrix = np.array([[p[n] for n in names] for p in combos], dtype=np.float64)
+    except (TypeError, ValueError) as exc:
+        raise FerroTAValueError(
+            f"built-in strategy parameters must be numeric: {exc}"
+        ) from exc
+    return names, matrix.reshape(len(combos), len(names))

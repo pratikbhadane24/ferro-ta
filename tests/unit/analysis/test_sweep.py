@@ -8,7 +8,12 @@ from ferro_ta._ferro_ta import compute_performance_metrics
 
 from ferro_ta.analysis.backtest import backtest, sma_crossover_strategy
 from ferro_ta.analysis.overfit import PBOResult
-from ferro_ta.analysis.sweep import SweepResult, expand_grid, sweep
+from ferro_ta.analysis.sweep import (
+    RUST_BUILTIN_STRATEGIES,
+    SweepResult,
+    expand_grid,
+    sweep,
+)
 from ferro_ta.core.exceptions import FerroTAInputError, FerroTAValueError
 
 GRID = {"fast": [5, 10, 20], "slow": [40, 80]}
@@ -212,3 +217,55 @@ class TestPlateauSelection:
         )
         with pytest.raises(FerroTAValueError):
             ragged.best_index(radius=1)
+
+
+class TestBuiltinRustPath:
+    def test_builtin_matches_python_callable_path(self, close):
+        grid = {"fast": [5, 10], "slow": [40, 80]}
+        rust = sweep(close, "sma_crossover", grid)
+        python = sweep(close, sma_crossover_strategy, grid)
+        np.testing.assert_array_equal(rust.returns, python.returns)
+        for k in rust.metrics:
+            np.testing.assert_array_equal(rust.metrics[k], python.metrics[k])
+
+    def test_invalid_combos_are_skipped(self, close):
+        res = sweep(close, "sma_crossover", {"fast": [5, 50], "slow": [20, 100]})
+        assert [dict(p) for p in res.params] == [
+            {"fast": 5, "slow": 20},
+            {"fast": 5, "slow": 100},
+            {"fast": 50, "slow": 100},
+        ]
+        assert res.returns.shape[1] == 3
+
+    @pytest.mark.parametrize(
+        ("strategy", "grid"),
+        [
+            ("rsi_30_70", {"timeperiod": [7, 14], "oversold": [20, 30]}),
+            ("macd_crossover", {"fastperiod": [8, 12], "slowperiod": [26]}),
+        ],
+    )
+    def test_other_builtins(self, close, strategy, grid):
+        from ferro_ta.analysis.backtest import _BUILTIN_STRATEGIES
+
+        rust = sweep(close, strategy, grid)
+        python = sweep(close, _BUILTIN_STRATEGIES[strategy], grid)
+        np.testing.assert_array_equal(rust.returns, python.returns)
+
+    def test_all_invalid_is_an_error(self, close):
+        with pytest.raises(FerroTAValueError, match="constraints"):
+            sweep(close, "sma_crossover", {"fast": [50], "slow": [10]})
+
+    def test_unknown_param_for_builtin(self, close):
+        with pytest.raises(FerroTAValueError, match="unknown parameter"):
+            sweep(close, "sma_crossover", {"fastperiod": [5]})
+
+    def test_builtin_needs_numeric_uniform_params(self, close):
+        with pytest.raises(FerroTAValueError, match="numeric"):
+            sweep(close, "sma_crossover", {"fast": ["five"]})
+        with pytest.raises(FerroTAValueError, match="same parameters"):
+            sweep(close, "sma_crossover", [{"fast": 5}, {"slow": 50}])
+
+    def test_python_only_registry_names_still_sweep(self, close):
+        res = sweep(close, "bb_mean_revert", {"timeperiod": [10, 20]})
+        assert res.n_trials == 2
+        assert "bb_mean_revert" not in RUST_BUILTIN_STRATEGIES

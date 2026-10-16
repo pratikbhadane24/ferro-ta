@@ -17,6 +17,7 @@ crate-type = ["lib"]
 
 [dependencies]
 multiversion = { version = "0.9", optional = true }
+rayon = { version = "1.10", optional = true }
 serde = { version = "1.0", features = ["derive"], optional = true }
 serde_json = { version = "1.0", optional = true }
 
@@ -41,3 +42,6 @@ harness = false
 default = ["simd"]
 simd = ["dep:multiversion"]
 serde = ["dep:serde", "dep:serde_json"]
+# Multi-threaded parameter sweeps (Rayon). Off by default so WASM and other
+# single-threaded targets build unchanged; native bindings enable it.
+parallel = ["dep:rayon"]

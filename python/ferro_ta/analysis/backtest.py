@@ -693,6 +693,11 @@ class BacktestEngine:
         self._max_asset_weight: float = 1.0
         self._max_gross_exposure: float = 0.0
         self._max_net_exposure: float = 0.0
+        # Execution realism (OHLCV engine only)
+        self._volume: Optional[NDArray] = None
+        self._max_participation: float = 0.0
+        self._slippage_atr_mult: float = 0.0
+        self._slippage_atr_period: int = 14
 
     def with_commission(self, rate: float) -> BacktestEngine:
         """Backward-compat: set a flat per-order fee (in base currency units)."""
@@ -830,6 +835,42 @@ class BacktestEngine:
         self._slippage_pct_range = float(pct)
         return self
 
+    def with_volume_participation(
+        self, volume: ArrayLike, max_participation: float
+    ) -> BacktestEngine:
+        """Cap each signal-driven fill at a fraction of bar volume (requires OHLCV).
+
+        A position change may trade at most ``max_participation * volume[i]``
+        shares on bar ``i``; the rest fills on later bars (partial fills).
+        Traded notional is approximated as ``|weight change| * initial_capital``.
+        Stop, margin-call and circuit-breaker exits always fill in full.
+
+        The cap reads the fill bar's own volume (participation over the bar);
+        pass ``np.roll(volume, 1)`` with a NaN first element for a strictly
+        causal cap. An untouched limit order cancels any unfilled remainder.
+        """
+        mp = float(max_participation)
+        if not (np.isfinite(mp) and mp > 0.0):
+            raise FerroTAValueError("max_participation must be finite and > 0")
+        self._volume = np.asarray(volume, dtype=np.float64)
+        self._max_participation = mp
+        return self
+
+    def with_atr_slippage(self, mult: float, period: int = 14) -> BacktestEngine:
+        """Slippage = ``mult * ATR(period)[i-1] / close[i-1]`` (requires OHLCV).
+
+        Volatility-aware alternative to fixed basis points; overrides
+        ``with_slippage`` / ``with_slippage_pct_range`` once ATR has warmed up
+        (they apply during the warm-up bars).
+        """
+        if not (np.isfinite(mult) and mult >= 0.0):
+            raise FerroTAValueError("ATR slippage mult must be finite and >= 0")
+        if int(period) < 1:
+            raise FerroTAValueError("ATR slippage period must be >= 1")
+        self._slippage_atr_mult = float(mult)
+        self._slippage_atr_period = int(period)
+        return self
+
     def with_breakeven_stop(self, pct: float) -> BacktestEngine:
         """Move stop to entry price once profit reaches *pct* fraction (e.g. 0.02 = 2%). 0 = disabled."""
         self._breakeven_pct = float(pct)
@@ -914,6 +955,13 @@ class BacktestEngine:
         use_ohlcv = (
             self._high is not None and self._low is not None and self._open is not None
         )
+        if not use_ohlcv and (
+            self._max_participation > 0 or self._slippage_atr_mult > 0
+        ):
+            raise FerroTAValueError(
+                "with_volume_participation / with_atr_slippage require OHLCV data "
+                "(call with_ohlcv first)"
+            )
 
         def _execute_run(sigs: NDArray) -> tuple:
             if use_ohlcv:
@@ -940,6 +988,10 @@ class BacktestEngine:
                     self._margin_call_pct,
                     self._daily_loss_limit,
                     self._total_loss_limit,
+                    volume=self._volume,
+                    max_participation=self._max_participation,
+                    slippage_atr_mult=self._slippage_atr_mult,
+                    slippage_atr_period=self._slippage_atr_period,
                 )
                 return (
                     np.asarray(pos),

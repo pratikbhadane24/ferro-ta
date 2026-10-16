@@ -133,6 +133,46 @@ All Sharpe ratios in ``overfit`` are per-period (not annualised). Sweep
 columns use exactly the same engine as ``backtest()``, so each column matches
 a single run bit-for-bit.
 
+**Everything runs in Rust.** With a built-in strategy name
+(``"sma_crossover"``, ``"rsi_30_70"``, ``"macd_crossover"``) the whole sweep
+(grid, signal generation, backtests, metrics) runs in
+``ferro_ta_core::sweep`` on a Rayon pool. Combinations that break a
+strategy's constraints (e.g. ``fast >= slow``) are skipped. The same core is
+exported to WASM (``sweep_builtin``, ``sweep_signals``, ``expand_grid``,
+``sweep_plateau_scores``) and is single-threaded there. Custom Python
+callables still generate their signals in Python, and their backtests run in
+Rust.
+
+.. _execution-realism:
+
+Execution realism
+-----------------
+
+The OHLCV engine can model capacity and volatility-dependent costs:
+
+.. code-block:: python
+
+    result = (
+        BacktestEngine()
+        .with_ohlcv(high=high, low=low, open_=open_)
+        .with_volume_participation(volume, max_participation=0.05)  # ≤5% of bar volume
+        .with_atr_slippage(0.1, period=14)       # slippage = 0.1 × ATR / price
+        .run(close, "sma_crossover")
+    )
+
+- **Volume participation** caps each signal-driven fill at
+  ``max_participation × volume[i]`` shares. The unfilled remainder carries
+  to later bars, so ``result.positions`` ramps toward the target. Scale-ins
+  average the entry price used by stops, and commission is charged on the
+  traded amount only. Stop, margin-call and circuit-breaker exits always
+  fill in full.
+- **ATR slippage** uses the *previous* bar's ATR, so there is no look-ahead.
+  During ATR warm-up it falls back to ``with_slippage`` /
+  ``with_slippage_pct_range``.
+
+Both are also on ``ferro_ta_core::backtest::backtest_ohlcv_volume_core`` and
+the WASM ``backtest_ohlcv_volume`` export.
+
 **Performance shape.** The signal → equity loop, commission and slippage
 application, all 23 metrics, trade extraction, the Monte Carlo bootstrap and the
 multi-asset run happen in Rust with the GIL released; ``backtest_core`` and

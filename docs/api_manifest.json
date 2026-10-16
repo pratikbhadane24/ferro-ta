@@ -5715,7 +5715,7 @@
       ]
     },
     "rust_core": {
-      "public_function_count": 371,
+      "public_function_count": 378,
       "functions": [
         {
           "module": "aggregation",
@@ -5780,6 +5780,11 @@
         {
           "module": "backtest",
           "function": "backtest_ohlcv_core",
+          "file": "backtest.rs"
+        },
+        {
+          "module": "backtest",
+          "function": "backtest_ohlcv_volume_core",
           "file": "backtest.rs"
         },
         {
@@ -7478,9 +7483,39 @@
           "file": "statistic.rs"
         },
         {
-          "module": "sweep",
+          "module": "sweep.grid",
+          "function": "expand_grid",
+          "file": "sweep/grid.rs"
+        },
+        {
+          "module": "sweep.grid",
+          "function": "grid_index",
+          "file": "sweep/grid.rs"
+        },
+        {
+          "module": "sweep.grid",
+          "function": "plateau_scores",
+          "file": "sweep/grid.rs"
+        },
+        {
+          "module": "sweep.mod",
+          "function": "metric_names",
+          "file": "sweep/mod.rs"
+        },
+        {
+          "module": "sweep.mod",
           "function": "run_sweep_combo",
-          "file": "sweep.rs"
+          "file": "sweep/mod.rs"
+        },
+        {
+          "module": "sweep.mod",
+          "function": "sweep_builtin",
+          "file": "sweep/mod.rs"
+        },
+        {
+          "module": "sweep.mod",
+          "function": "sweep_signals",
+          "file": "sweep/mod.rs"
         },
         {
           "module": "utils",
@@ -7586,7 +7621,7 @@
       ]
     },
     "wasm_node": {
-      "export_count": 349,
+      "export_count": 355,
       "exports": [
         "CommissionModel",
         "WasmStreamingATR",
@@ -7623,6 +7658,7 @@
         "back_adjusted_continuous",
         "backtest_core",
         "backtest_ohlcv",
+        "backtest_ohlcv_volume",
         "batch_adx",
         "batch_atr",
         "batch_ema",
@@ -7744,6 +7780,7 @@
         "elder_ray",
         "ema",
         "emv",
+        "expand_grid",
         "expected_max_sharpe",
         "expected_move",
         "exrem",
@@ -7887,6 +7924,10 @@
         "strategy_payoff_dense",
         "strategy_value_grid",
         "supertrend",
+        "sweep_builtin",
+        "sweep_metric_names",
+        "sweep_plateau_scores",
+        "sweep_signals",
         "synthetic_forward",
         "synthetic_spot",
         "t3",
@@ -8137,7 +8178,7 @@
         "zlema",
         "zscore_series"
       ],
-      "manual_exclude_count": 54,
+      "manual_exclude_count": 56,
       "manual_exclude": [
         "aggregate_greeks_dense",
         "aggregate_time_bars",
@@ -8159,6 +8200,7 @@
         "drawdown_series",
         "dtw_distance",
         "early_exercise_premium",
+        "expand_grid",
         "expected_max_sharpe",
         "expected_move",
         "extended_greeks",
@@ -8190,6 +8232,7 @@
         "strategy_payoff_dense",
         "strategy_value_grid",
         "supertrend",
+        "sweep_plateau_scores",
         "top_n_indices",
         "vol_cone",
         "walk_forward_indices"
@@ -8465,7 +8508,7 @@
   },
   "parity_summary": {
     "python_indicator_count": 247,
-    "wasm_export_count": 349,
+    "wasm_export_count": 355,
     "common_python_wasm_count": 192,
     "common_python_wasm": [
       "ad",
@@ -8733,6 +8776,7 @@
       "back_adjusted_continuous",
       "backtest_core",
       "backtest_ohlcv",
+      "backtest_ohlcv_volume",
       "batch_adx",
       "batch_atr",
       "batch_stoch",
@@ -8764,6 +8808,7 @@
       "dpo",
       "drawdown_series",
       "early_exercise_premium",
+      "expand_grid",
       "expected_max_sharpe",
       "expected_move",
       "exrem",
@@ -8837,6 +8882,10 @@
       "stitch_chunks",
       "strategy_payoff_dense",
       "strategy_value_grid",
+      "sweep_builtin",
+      "sweep_metric_names",
+      "sweep_plateau_scores",
+      "sweep_signals",
       "synthetic_forward",
       "synthetic_spot",
       "term_structure_slope",
@@ -8880,7 +8929,7 @@
   },
   "normalized_parity": {
     "python_indicator_count": 247,
-    "wasm_export_count": 349,
+    "wasm_export_count": 355,
     "common_python_wasm_count": 231,
     "python_only_vs_wasm": [
       "alertevent",
@@ -8914,6 +8963,7 @@
       "backadjustedcontinuous",
       "backtestcore",
       "backtestohlcv",
+      "backtestohlcvvolume",
       "batchadx",
       "batchatr",
       "batchstoch",
@@ -8943,6 +8993,7 @@
       "digitalprice",
       "dpo",
       "earlyexercisepremium",
+      "expandgrid",
       "expectedmaxsharpe",
       "expectedmove",
       "exrem",
@@ -9005,6 +9056,10 @@
       "stitchchunks",
       "strategypayoffdense",
       "strategyvaluegrid",
+      "sweepbuiltin",
+      "sweepmetricnames",
+      "sweepplateauscores",
+      "sweepsignals",
       "syntheticforward",
       "syntheticspot",
       "termstructureslope",
@@ -9023,12 +9078,12 @@
   },
   "coverage": {
     "counts": {
-      "row_count": 392,
-      "core_count": 368,
+      "row_count": 402,
+      "core_count": 375,
       "python_count": 247,
-      "wasm_count": 349,
+      "wasm_count": 355,
       "flutter_count": 194,
-      "flutter_excluded_count": 54,
+      "flutter_excluded_count": 56,
       "go_count": 259,
       "common_python_wasm_count": 231,
       "common_all_four_count": 131
@@ -9574,6 +9629,38 @@
         "go": false,
         "python_name": null,
         "core_name": "backtest_ohlcv_core",
+        "wasm_name": null,
+        "flutter_name": null,
+        "go_name": null
+      },
+      {
+        "key": "backtestohlcvvolume",
+        "name": "backtest_ohlcv_volume",
+        "category": "other",
+        "core": false,
+        "python": false,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": false,
+        "python_name": null,
+        "core_name": null,
+        "wasm_name": "backtest_ohlcv_volume",
+        "flutter_name": null,
+        "go_name": null
+      },
+      {
+        "key": "backtestohlcvvolumecore",
+        "name": "backtest_ohlcv_volume_core",
+        "category": "backtest",
+        "core": true,
+        "python": false,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": false,
+        "python_name": null,
+        "core_name": "backtest_ohlcv_volume_core",
         "wasm_name": null,
         "flutter_name": null,
         "go_name": null
@@ -11803,6 +11890,22 @@
         "go_name": null
       },
       {
+        "key": "expandgrid",
+        "name": "expand_grid",
+        "category": "sweep",
+        "core": true,
+        "python": false,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": true,
+        "go": false,
+        "python_name": null,
+        "core_name": "expand_grid",
+        "wasm_name": "expand_grid",
+        "flutter_name": null,
+        "go_name": null
+      },
+      {
         "key": "expectedmaxsharpe",
         "name": "expected_max_sharpe",
         "category": "overfit",
@@ -12089,6 +12192,22 @@
         "wasm_name": "gator",
         "flutter_name": "gator",
         "go_name": "gator"
+      },
+      {
+        "key": "gridindex",
+        "name": "grid_index",
+        "category": "sweep",
+        "core": true,
+        "python": false,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": false,
+        "python_name": null,
+        "core_name": "grid_index",
+        "wasm_name": null,
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "halfkellyfraction",
@@ -12891,6 +13010,22 @@
         "go_name": "medprice"
       },
       {
+        "key": "metricnames",
+        "name": "metric_names",
+        "category": "sweep",
+        "core": true,
+        "python": false,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": false,
+        "python_name": null,
+        "core_name": "metric_names",
+        "wasm_name": null,
+        "flutter_name": null,
+        "go_name": null
+      },
+      {
         "key": "mfi",
         "name": "MFI",
         "category": "momentum",
@@ -13352,6 +13487,22 @@
         "core_name": "pivot_points",
         "wasm_name": "pivot_points",
         "flutter_name": "pivot_points",
+        "go_name": null
+      },
+      {
+        "key": "plateauscores",
+        "name": "plateau_scores",
+        "category": "sweep",
+        "core": true,
+        "python": false,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": false,
+        "python_name": null,
+        "core_name": "plateau_scores",
+        "wasm_name": null,
+        "flutter_name": null,
         "go_name": null
       },
       {
@@ -14681,6 +14832,70 @@
         "wasm_name": "supertrend",
         "flutter_name": null,
         "go_name": "supertrend"
+      },
+      {
+        "key": "sweepbuiltin",
+        "name": "sweep_builtin",
+        "category": "sweep",
+        "core": true,
+        "python": false,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": false,
+        "python_name": null,
+        "core_name": "sweep_builtin",
+        "wasm_name": "sweep_builtin",
+        "flutter_name": null,
+        "go_name": null
+      },
+      {
+        "key": "sweepmetricnames",
+        "name": "sweep_metric_names",
+        "category": "other",
+        "core": false,
+        "python": false,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": false,
+        "python_name": null,
+        "core_name": null,
+        "wasm_name": "sweep_metric_names",
+        "flutter_name": null,
+        "go_name": null
+      },
+      {
+        "key": "sweepplateauscores",
+        "name": "sweep_plateau_scores",
+        "category": "other",
+        "core": false,
+        "python": false,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": true,
+        "go": false,
+        "python_name": null,
+        "core_name": null,
+        "wasm_name": "sweep_plateau_scores",
+        "flutter_name": null,
+        "go_name": null
+      },
+      {
+        "key": "sweepsignals",
+        "name": "sweep_signals",
+        "category": "sweep",
+        "core": true,
+        "python": false,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": false,
+        "python_name": null,
+        "core_name": "sweep_signals",
+        "wasm_name": "sweep_signals",
+        "flutter_name": null,
+        "go_name": null
       },
       {
         "key": "syntheticforward",

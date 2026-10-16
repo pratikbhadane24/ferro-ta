@@ -11,12 +11,12 @@
      - Flutter
      - Flutter excluded
      - C / Go
-   * - 392
-     - 368
+   * - 402
+     - 375
      - 247
-     - 349
+     - 355
      - 194
-     - 54
+     - 56
      - 259
 
 .. list-table:: Cross-language indicator coverage
@@ -262,6 +262,20 @@
      - excluded
      - —
    * - ``backtest_ohlcv_core``
+     - backtest
+     - yes
+     - —
+     - —
+     - —
+     - —
+   * - ``backtest_ohlcv_volume``
+     - other
+     - —
+     - —
+     - yes
+     - —
+     - —
+   * - ``backtest_ohlcv_volume_core``
      - backtest
      - yes
      - —
@@ -1241,6 +1255,13 @@
      - yes
      - —
      - —
+   * - ``expand_grid``
+     - sweep
+     - yes
+     - —
+     - yes
+     - excluded
+     - —
    * - ``expected_max_sharpe``
      - overfit
      - yes
@@ -1367,6 +1388,13 @@
      - yes
      - yes
      - yes
+   * - ``grid_index``
+     - sweep
+     - yes
+     - —
+     - —
+     - —
+     - —
    * - ``half_kelly_fraction``
      - backtest
      - yes
@@ -1717,6 +1745,13 @@
      - yes
      - yes
      - yes
+   * - ``metric_names``
+     - sweep
+     - yes
+     - —
+     - —
+     - —
+     - —
    * - ``MFI``
      - momentum
      - yes
@@ -1919,6 +1954,13 @@
      - yes
      - yes
      - yes
+     - —
+   * - ``plateau_scores``
+     - sweep
+     - yes
+     - —
+     - —
+     - —
      - —
    * - ``PLUS_DI``
      - momentum
@@ -2501,6 +2543,34 @@
      - yes
      - excluded
      - yes
+   * - ``sweep_builtin``
+     - sweep
+     - yes
+     - —
+     - yes
+     - —
+     - —
+   * - ``sweep_metric_names``
+     - other
+     - —
+     - —
+     - yes
+     - —
+     - —
+   * - ``sweep_plateau_scores``
+     - other
+     - —
+     - —
+     - yes
+     - excluded
+     - —
+   * - ``sweep_signals``
+     - sweep
+     - yes
+     - —
+     - yes
+     - —
+     - —
    * - ``synthetic_forward``
      - futures
      - yes

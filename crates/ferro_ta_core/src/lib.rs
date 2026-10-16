@@ -45,6 +45,7 @@ pub mod crypto;
 pub mod currency;
 pub mod cycle;
 pub mod extended;
+pub mod fill_model;
 pub mod futures;
 pub mod math;
 pub mod math_ops;

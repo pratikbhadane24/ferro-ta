@@ -171,7 +171,7 @@ class PBOResult:
 
     Immutable: arrays are read-only.
 
-    Attributes
+    Parameters
     ----------
     pbo : float
         Probability of Backtest Overfitting — fraction of combinations where
