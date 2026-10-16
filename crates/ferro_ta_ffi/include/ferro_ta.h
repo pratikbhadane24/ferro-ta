@@ -1498,6 +1498,18 @@ int32_t ft_stream_cooldown_peek(FtStreamCooldown *handle, double signal, int8_t 
 int32_t ft_stream_cooldown_reset(FtStreamCooldown *handle);
 void ft_stream_cooldown_free(FtStreamCooldown *handle);
 
+/**
+ * Live implied volatility and greeks for one option contract. The IV
+ * solver is seeded with the previous tick's IV; an unsolvable price
+ * (e.g. below intrinsic) writes NaN everywhere and keeps the seed.
+ */
+typedef struct FtStreamOptionGreeks FtStreamOptionGreeks;
+int32_t ft_stream_option_greeks_new(int32_t model, int32_t kind, double strike, double rate, double carry, FtStreamOptionGreeks **out_handle);
+int32_t ft_stream_option_greeks_update(FtStreamOptionGreeks *handle, double option_price, double underlying, double time_to_expiry, double *out_iv, double *out_delta, double *out_gamma, double *out_vega, double *out_theta, double *out_rho);
+int32_t ft_stream_option_greeks_peek(FtStreamOptionGreeks *handle, double option_price, double underlying, double time_to_expiry, double *out_iv, double *out_delta, double *out_gamma, double *out_vega, double *out_theta, double *out_rho);
+int32_t ft_stream_option_greeks_reset(FtStreamOptionGreeks *handle);
+void ft_stream_option_greeks_free(FtStreamOptionGreeks *handle);
+
 #ifdef __cplusplus
 }  /* extern "C" */
 #endif

@@ -135,6 +135,7 @@ impl_write_tuple!(A a pa, B b pb);
 impl_write_tuple!(A a pa, B b pb, C c pc);
 impl_write_tuple!(A a pa, B b pb, C c pc, D d pd);
 impl_write_tuple!(A a pa, B b pb, C c pc, D d pd, E e pe);
+impl_write_tuple!(A a pa, B b pb, C c pc, D d pd, E e pe, F f pf);
 
 /// Write a scalar result (single value or tuple) through output pointers.
 pub trait WriteScalars<P> {
@@ -167,6 +168,7 @@ impl_write_scalars!(A a pa, B b pb);
 impl_write_scalars!(A a pa, B b pb, C c pc);
 impl_write_scalars!(A a pa, B b pb, C c pc, D d pd);
 impl_write_scalars!(A a pa, B b pb, C c pc, D d pd, E e pe);
+impl_write_scalars!(A a pa, B b pb, C c pc, D d pd, E e pe, F f pf);
 
 #[cfg(test)]
 mod tests {

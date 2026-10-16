@@ -10,8 +10,8 @@ use crate::marshal::WriteScalars;
 use crate::status::Status;
 use ferro_ta_core::streaming::{
     Live, StreamingATR, StreamingBBands, StreamingCooldown, StreamingCross, StreamingEMA,
-    StreamingError, StreamingMACD, StreamingRSI, StreamingSMA, StreamingStoch, StreamingStreak,
-    StreamingSupertrend, StreamingVWAP,
+    StreamingError, StreamingMACD, StreamingOptionGreeks, StreamingRSI, StreamingSMA,
+    StreamingStoch, StreamingStreak, StreamingSupertrend, StreamingVWAP,
 };
 
 /// Normalise core constructors (fallible or not) to `Result<T, Status>`.
@@ -279,5 +279,28 @@ ffi_streams! {
         ft_stream_cooldown_peek,
         ft_stream_cooldown_reset,
         ft_stream_cooldown_free,
+    }
+    /// Live implied volatility and greeks for one option contract. The IV
+    /// solver is seeded with the previous tick's IV; an unsolvable price
+    /// (e.g. below intrinsic) writes NaN everywhere and keeps the seed.
+    option_greeks: StreamingOptionGreeks as FtStreamOptionGreeks {
+        ft_stream_option_greeks_new(
+            model: pricing_model,
+            kind: option_kind,
+            strike: float,
+            rate: float,
+            carry: float
+        ),
+        ft_stream_option_greeks_update(option_price, underlying, time_to_expiry) -> [
+            out_iv: f64,
+            out_delta: f64,
+            out_gamma: f64,
+            out_vega: f64,
+            out_theta: f64,
+            out_rho: f64
+        ],
+        ft_stream_option_greeks_peek,
+        ft_stream_option_greeks_reset,
+        ft_stream_option_greeks_free,
     }
 }

@@ -40,6 +40,7 @@ StreamingSupertrend — ATR-based Supertrend
 StreamingCross      — Dead-band cross of two series (1 / -1 / 0 events)
 StreamingStreak     — "N bars in a row" condition
 StreamingCooldown   — Mute repeat signals for N bars
+StreamingOptionGreeks — Live IV + greeks for one option contract
 
 Rust backend
 ------------
@@ -61,6 +62,7 @@ from ferro_ta._ferro_ta import (  # noqa: F401
     StreamingCross,
     StreamingEMA,
     StreamingMACD,
+    StreamingOptionGreeks,
     StreamingRSI,
     StreamingSMA,
     StreamingStoch,
@@ -82,4 +84,5 @@ __all__ = [
     "StreamingCross",
     "StreamingStreak",
     "StreamingCooldown",
+    "StreamingOptionGreeks",
 ]

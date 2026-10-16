@@ -229,6 +229,30 @@ streaming_pyclass! {
     getters(bars),
 }
 
+streaming_pyclass! {
+    /// Live implied volatility and greeks for one option contract.
+    ///
+    /// ``update(option_price, underlying, time_to_expiry)`` returns
+    /// ``(iv, delta, gamma, vega, theta, rho)``. The IV solver is seeded with
+    /// the previous tick's IV; a price no volatility can reproduce yields
+    /// all-NaN and keeps the seed.
+    StreamingOptionGreeks wraps core::StreamingOptionGreeks,
+    new(
+        strike: f64,
+        option_type: &str = "call",
+        model: &str = "bsm",
+        rate: f64 = 0.0,
+        carry: f64 = 0.0
+    ) => {
+        let kind = crate::options::parse_option_kind(option_type)?;
+        let model = crate::options::parse_pricing_model(model)?;
+        core::StreamingOptionGreeks::new(model, kind, strike, rate, carry)
+    },
+    update(option_price, underlying, time_to_expiry) -> (f64, f64, f64, f64, f64, f64),
+    repr(|ind| format!("StreamingOptionGreeks(strike={})", ind.strike())),
+    getters(),
+}
+
 // ---------------------------------------------------------------------------
 // register
 // ---------------------------------------------------------------------------
@@ -246,5 +270,6 @@ pub fn register(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<StreamingCross>()?;
     m.add_class::<StreamingStreak>()?;
     m.add_class::<StreamingCooldown>()?;
+    m.add_class::<StreamingOptionGreeks>()?;
     Ok(())
 }

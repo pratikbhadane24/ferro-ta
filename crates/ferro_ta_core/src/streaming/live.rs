@@ -7,8 +7,8 @@
 
 use super::{
     StreamingATR, StreamingBBands, StreamingCooldown, StreamingCross, StreamingEMA, StreamingMACD,
-    StreamingRSI, StreamingSMA, StreamingStoch, StreamingStreak, StreamingSupertrend,
-    StreamingVWAP,
+    StreamingOptionGreeks, StreamingRSI, StreamingSMA, StreamingStoch, StreamingStreak,
+    StreamingSupertrend, StreamingVWAP,
 };
 
 // ---------------------------------------------------------------------------
@@ -83,6 +83,23 @@ impl StreamValue for i8 {
     }
     fn nan() -> Self {
         0
+    }
+}
+
+/// Option IV + greeks output: (iv, delta, gamma, vega, theta, rho).
+impl StreamValue for (f64, f64, f64, f64, f64, f64) {
+    fn has_nan(&self) -> bool {
+        [self.0, self.1, self.2, self.3, self.4, self.5]
+            .iter()
+            .any(|v| v.is_nan())
+    }
+    fn all_finite(&self) -> bool {
+        [self.0, self.1, self.2, self.3, self.4, self.5]
+            .iter()
+            .all(|v| v.is_finite())
+    }
+    fn nan() -> Self {
+        (f64::NAN, f64::NAN, f64::NAN, f64::NAN, f64::NAN, f64::NAN)
     }
 }
 
@@ -194,6 +211,13 @@ impl_streaming_indicator!(
 impl_streaming_indicator!(StreamingCross, (f64, f64), i8, |s, (a, b)| s.update(a, b));
 impl_streaming_indicator!(StreamingStreak, f64, i8, |s, v| s.update(v));
 impl_streaming_indicator!(StreamingCooldown, f64, i8, |s, v| s.update(v));
+
+impl_streaming_indicator!(
+    StreamingOptionGreeks,
+    (f64, f64, f64),
+    (f64, f64, f64, f64, f64, f64),
+    |s, (price, underlying, t)| s.update(price, underlying, t)
+);
 
 // ---------------------------------------------------------------------------
 // Live — closed-bar commits, forming-bar previews, NaN guard
@@ -357,6 +381,20 @@ mod tests {
         assert_previews_are_pure(|| StreamingCross::new(0.1).unwrap(), |b| (b.2, b.0 - 0.5));
         assert_previews_are_pure(|| StreamingStreak::new(3).unwrap(), |b| b.2 - b.1 - 0.5);
         assert_previews_are_pure(|| StreamingCooldown::new(2).unwrap(), |b| b.2 - 100.0);
+        assert_previews_are_pure(
+            || {
+                StreamingOptionGreeks::new(
+                    crate::options::PricingModel::BlackScholes,
+                    crate::options::OptionKind::Call,
+                    100.0,
+                    0.05,
+                    0.0,
+                )
+                .unwrap()
+            },
+            // Price wobbles with the bar so successive solves differ.
+            |b| (5.0 + (b.0 - b.1), b.2, 0.25),
+        );
     }
 
     #[test]

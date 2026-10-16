@@ -2603,6 +2603,14 @@ impl IntoJsOutput for (f64, f64, f64) {
     }
 }
 
+impl IntoJsOutput for (f64, f64, f64, f64, f64, f64) {
+    type Js = Array;
+    fn into_js(self) -> Array {
+        let (a, b, c, d, e, f) = self;
+        [a, b, c, d, e, f].iter().map(|&v| JsValue::from_f64(v)).collect()
+    }
+}
+
 impl IntoJsOutput for (f64, i8) {
     type Js = Array;
     fn into_js(self) -> Array {
@@ -2757,6 +2765,24 @@ wasm_streaming_class! {
     new(bars: usize) => ferro_ta_core::streaming::StreamingCooldown::new(bars),
     update(signal) -> i8,
     getters(bars),
+}
+
+wasm_streaming_class! {
+    /// Live IV + greeks for one option contract.
+    /// `update(optionPrice, underlying, timeToExpiry)` returns
+    /// [iv, delta, gamma, vega, theta, rho]; the IV solver is seeded with the
+    /// previous tick's IV.
+    WasmStreamingOptionGreeks wraps StreamingOptionGreeks,
+    new(strike: f64, option_type: &str, model: &str, rate: f64, carry: f64) =>
+        ferro_ta_core::streaming::StreamingOptionGreeks::new(
+            parse_pricing_model(model),
+            parse_option_kind(option_type),
+            strike,
+            rate,
+            carry,
+        ),
+    update(option_price, underlying, time_to_expiry) -> Array,
+    getters(),
 }
 
 // ===========================================================================
@@ -5102,5 +5128,26 @@ mod tests {
         assert_eq!(cooldown.update(1.0), 1);
         assert_eq!(cooldown.update(1.0), 0);
         assert_eq!(cooldown.update(-1.0), -1);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_streaming_option_greeks_round_trips_iv() {
+        let contract = ferro_ta_core::options::OptionContract {
+            model: ferro_ta_core::options::PricingModel::BlackScholes,
+            underlying: 102.0,
+            strike: 100.0,
+            rate: 0.05,
+            carry: 0.0,
+            time_to_expiry: 0.5,
+            kind: ferro_ta_core::options::OptionKind::Call,
+        };
+        let price = ferro_ta_core::options::pricing::model_price(
+            ferro_ta_core::options::OptionEvaluation { contract, volatility: 0.25 },
+        );
+        let mut s = WasmStreamingOptionGreeks::new(100.0, "call", "bsm", 0.05, 0.0).unwrap();
+        let out = s.update(price, 102.0, 0.5);
+        assert_eq!(out.length(), 6);
+        assert!((out.get(0).as_f64().unwrap() - 0.25).abs() < 1e-8);
+        assert_eq!(s.count(), 1);
     }
 }

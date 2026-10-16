@@ -11,13 +11,13 @@
      - Flutter
      - Flutter excluded
      - C / Go
-   * - 387
-     - 363
-     - 250
-     - 347
+   * - 388
+     - 364
+     - 251
+     - 348
      - 194
      - 50
-     - 262
+     - 263
 
 .. list-table:: Cross-language indicator coverage
    :header-rows: 1
@@ -2390,6 +2390,13 @@
      - —
      - yes
    * - ``StreamingMACD``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingOptionGreeks``
      - streaming
      - yes
      - yes

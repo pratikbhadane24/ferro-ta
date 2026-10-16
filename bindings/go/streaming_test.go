@@ -188,3 +188,25 @@ func TestStreamCrossWithCooldown(t *testing.T) {
 		}
 	}
 }
+
+func TestStreamOptionGreeksSolvesIV(t *testing.T) {
+	s, err := NewStreamOptionGreeks(ModelBlackScholes, OptionCall, 100, 0.05, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Close()
+	price, err := BlackScholesPrice(102, 100, 0.05, 0, 0.5, 0.25, OptionCall)
+	if err != nil {
+		t.Fatal(err)
+	}
+	iv, delta, _, _, _, _, err := s.Update(price, 102, 0.5)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if math.Abs(iv-0.25) > 1e-8 || delta <= 0 || delta >= 1 {
+		t.Fatalf("iv %v delta %v", iv, delta)
+	}
+	if iv2, _, _, _, _, _, _ := s.Peek(price*1.1, 102, 0.5); iv2 <= iv {
+		t.Fatalf("higher price should preview higher IV: %v <= %v", iv2, iv)
+	}
+}

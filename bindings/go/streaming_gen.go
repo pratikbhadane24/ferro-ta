@@ -893,3 +893,77 @@ func (s *StreamCooldown) Close() error {
 	}
 	return nil
 }
+
+// StreamOptionGreeks is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Live implied volatility and greeks for one option contract. The IV
+// solver is seeded with the previous tick's IV; an unsolvable price
+// (e.g. below intrinsic) writes NaN everywhere and keeps the seed.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamOptionGreeks struct {
+	mu sync.Mutex
+	h  *C.FtStreamOptionGreeks
+}
+
+// NewStreamOptionGreeks creates a StreamOptionGreeks.
+func NewStreamOptionGreeks(model PricingModel, kind OptionKind, strike float64, rate float64, carry float64) (*StreamOptionGreeks, error) {
+	var h *C.FtStreamOptionGreeks
+	if err := statusError("NewStreamOptionGreeks", C.ft_stream_option_greeks_new(C.int32_t(model), C.int32_t(kind), C.double(strike), C.double(rate), C.double(carry), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamOptionGreeks{h: h}
+	runtime.SetFinalizer(s, (*StreamOptionGreeks).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s) (NaN during warm-up).
+// A NaN/±inf input returns NaN and leaves state untouched.
+func (s *StreamOptionGreeks) Update(optionPrice float64, underlying float64, timeToExpiry float64) (iv float64, delta float64, gamma float64, vega float64, theta float64, rho float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, 0, 0, 0, 0, closedError("StreamOptionGreeks.Update")
+	}
+	if err := statusError("StreamOptionGreeks.Update", C.ft_stream_option_greeks_update(s.h, C.double(optionPrice), C.double(underlying), C.double(timeToExpiry), (*C.double)(unsafe.Pointer(&iv)), (*C.double)(unsafe.Pointer(&delta)), (*C.double)(unsafe.Pointer(&gamma)), (*C.double)(unsafe.Pointer(&vega)), (*C.double)(unsafe.Pointer(&theta)), (*C.double)(unsafe.Pointer(&rho)))); err != nil {
+		return 0, 0, 0, 0, 0, 0, err
+	}
+	return iv, delta, gamma, vega, theta, rho, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamOptionGreeks) Peek(optionPrice float64, underlying float64, timeToExpiry float64) (iv float64, delta float64, gamma float64, vega float64, theta float64, rho float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, 0, 0, 0, 0, closedError("StreamOptionGreeks.Peek")
+	}
+	if err := statusError("StreamOptionGreeks.Peek", C.ft_stream_option_greeks_peek(s.h, C.double(optionPrice), C.double(underlying), C.double(timeToExpiry), (*C.double)(unsafe.Pointer(&iv)), (*C.double)(unsafe.Pointer(&delta)), (*C.double)(unsafe.Pointer(&gamma)), (*C.double)(unsafe.Pointer(&vega)), (*C.double)(unsafe.Pointer(&theta)), (*C.double)(unsafe.Pointer(&rho)))); err != nil {
+		return 0, 0, 0, 0, 0, 0, err
+	}
+	return iv, delta, gamma, vega, theta, rho, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamOptionGreeks) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamOptionGreeks.Reset")
+	}
+	return statusError("StreamOptionGreeks.Reset", C.ft_stream_option_greeks_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamOptionGreeks) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_option_greeks_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}

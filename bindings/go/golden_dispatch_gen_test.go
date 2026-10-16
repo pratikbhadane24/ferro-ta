@@ -1157,6 +1157,17 @@ var goldenStreams = map[string]func(map[string]float64) (goldenStepper, error){
 		}
 		return goldenStepper{step: step, close: s.Close}, nil
 	},
+	"option_greeks": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamOptionGreeks(PricingModel(p["model"]), OptionKind(p["kind"]), p["strike"], p["rate"], p["carry"])
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			iv, delta, gamma, vega, theta, rho, err := s.Update(bar["option_price"], bar["underlying"], bar["time_to_expiry"])
+			return map[string]any{"out_iv": iv, "out_delta": delta, "out_gamma": gamma, "out_vega": vega, "out_theta": theta, "out_rho": rho}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
 }
 
 // goldenParamNames lists each export's parameters, so a fixture whose
@@ -1428,4 +1439,5 @@ var goldenParamNames = []goldenParamList{
 	{"cross", []string{"dead_band"}},
 	{"streak", []string{"n"}},
 	{"cooldown", []string{"bars"}},
+	{"option_greeks", []string{"model", "kind", "strike", "rate", "carry"}},
 }

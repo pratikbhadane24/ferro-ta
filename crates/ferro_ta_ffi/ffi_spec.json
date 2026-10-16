@@ -7718,6 +7718,82 @@
       "peek_fn": "ft_stream_cooldown_peek",
       "reset_fn": "ft_stream_cooldown_reset",
       "update_fn": "ft_stream_cooldown_update"
+    },
+    {
+      "doc": "Live implied volatility and greeks for one option contract. The IV\nsolver is seeded with the previous tick's IV; an unsolvable price\n(e.g. below intrinsic) writes NaN everywhere and keeps the seed.",
+      "free_fn": "ft_stream_option_greeks_free",
+      "handle": "FtStreamOptionGreeks",
+      "inputs": [
+        "option_price",
+        "underlying",
+        "time_to_expiry"
+      ],
+      "name": "option_greeks",
+      "new_fn": "ft_stream_option_greeks_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_iv"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_delta"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_gamma"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_vega"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_theta"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_rho"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int32_t",
+          "enum": "PricingModel",
+          "kind": "enum",
+          "name": "model"
+        },
+        {
+          "c_type": "int32_t",
+          "enum": "OptionKind",
+          "kind": "enum",
+          "name": "kind"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "strike"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "rate"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "carry"
+        }
+      ],
+      "peek_fn": "ft_stream_option_greeks_peek",
+      "reset_fn": "ft_stream_option_greeks_reset",
+      "update_fn": "ft_stream_option_greeks_update"
     }
   ],
   "version": "1.4.0"

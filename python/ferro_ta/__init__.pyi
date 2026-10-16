@@ -914,6 +914,31 @@ class StreamingCooldown:
     def __copy__(self) -> StreamingCooldown: ...
     def __deepcopy__(self, memo: object) -> StreamingCooldown: ...
 
+class StreamingOptionGreeks:
+    def __init__(
+        self,
+        strike: float,
+        option_type: str = "call",
+        model: str = "bsm",
+        rate: float = 0.0,
+        carry: float = 0.0,
+    ) -> None: ...
+    def update(
+        self,
+        option_price: float,
+        underlying: float,
+        time_to_expiry: float,
+        *,
+        closed: bool = True,
+    ) -> tuple[float, float, float, float, float, float]: ...
+    def reset(self) -> None: ...
+    @property
+    def count(self) -> int: ...
+    @property
+    def is_ready(self) -> bool: ...
+    def __copy__(self) -> StreamingOptionGreeks: ...
+    def __deepcopy__(self, memo: object) -> StreamingOptionGreeks: ...
+
 # ---------------------------------------------------------------------------
 # Candlestick Patterns
 # ---------------------------------------------------------------------------

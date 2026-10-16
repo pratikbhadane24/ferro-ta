@@ -1,8 +1,8 @@
 {
   "surfaces": {
     "python": {
-      "indicator_count": 251,
-      "method_count": 567,
+      "indicator_count": 252,
+      "method_count": 568,
       "categories": [
         "aggregation",
         "alerts",
@@ -1365,6 +1365,13 @@
         },
         {
           "name": "StreamingMACD",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingOptionGreeks",
           "category": "streaming",
           "module": "ferro_ta.data.streaming",
           "doc": "",
@@ -3824,6 +3831,13 @@
         },
         {
           "name": "StreamingMACD",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingOptionGreeks",
           "category": "streaming",
           "module": "ferro_ta.data.streaming",
           "doc": "",
@@ -7582,6 +7596,7 @@
         "StreamingCross",
         "StreamingEMA",
         "StreamingMACD",
+        "StreamingOptionGreeks",
         "StreamingRSI",
         "StreamingSMA",
         "StreamingStoch",
@@ -7591,7 +7606,7 @@
       ]
     },
     "wasm_node": {
-      "export_count": 347,
+      "export_count": 348,
       "exports": [
         "CommissionModel",
         "WasmStreamingATR",
@@ -7600,6 +7615,7 @@
         "WasmStreamingCross",
         "WasmStreamingEMA",
         "WasmStreamingMACD",
+        "WasmStreamingOptionGreeks",
         "WasmStreamingRSI",
         "WasmStreamingSMA",
         "WasmStreamingStoch",
@@ -8195,7 +8211,7 @@
       ]
     },
     "c_abi_go": {
-      "export_count": 265,
+      "export_count": 266,
       "exports": [
         "StreamingATR",
         "StreamingBBANDS",
@@ -8203,6 +8219,7 @@
         "StreamingCROSS",
         "StreamingEMA",
         "StreamingMACD",
+        "StreamingOPTION_GREEKS",
         "StreamingRSI",
         "StreamingSMA",
         "StreamingSTOCH",
@@ -8466,8 +8483,8 @@
     }
   },
   "parity_summary": {
-    "python_indicator_count": 250,
-    "wasm_export_count": 347,
+    "python_indicator_count": 251,
+    "wasm_export_count": 348,
     "common_python_wasm_count": 192,
     "common_python_wasm": [
       "ad",
@@ -8709,6 +8726,7 @@
       "streamingcross",
       "streamingema",
       "streamingmacd",
+      "streamingoptiongreeks",
       "streamingrsi",
       "streamingsma",
       "streamingstoch",
@@ -8870,6 +8888,7 @@
       "wasmstreamingcross",
       "wasmstreamingema",
       "wasmstreamingmacd",
+      "wasmstreamingoptiongreeks",
       "wasmstreamingrsi",
       "wasmstreamingsma",
       "wasmstreamingstoch",
@@ -8882,9 +8901,9 @@
     ]
   },
   "normalized_parity": {
-    "python_indicator_count": 250,
-    "wasm_export_count": 347,
-    "common_python_wasm_count": 234,
+    "python_indicator_count": 251,
+    "wasm_export_count": 348,
+    "common_python_wasm_count": 235,
     "python_only_vs_wasm": [
       "alertevent",
       "alertmanager",
@@ -9021,14 +9040,14 @@
   },
   "coverage": {
     "counts": {
-      "row_count": 387,
-      "core_count": 363,
-      "python_count": 250,
-      "wasm_count": 347,
+      "row_count": 388,
+      "core_count": 364,
+      "python_count": 251,
+      "wasm_count": 348,
       "flutter_count": 194,
       "flutter_excluded_count": 50,
-      "go_count": 262,
-      "common_python_wasm_count": 234,
+      "go_count": 263,
+      "common_python_wasm_count": 235,
       "common_all_four_count": 131
     },
     "rows": [
@@ -14439,6 +14458,22 @@
         "wasm_name": "WasmStreamingMACD",
         "flutter_name": null,
         "go_name": "StreamingMACD"
+      },
+      {
+        "key": "streamingoptiongreeks",
+        "name": "StreamingOptionGreeks",
+        "category": "streaming",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": "StreamingOptionGreeks",
+        "core_name": "StreamingOptionGreeks",
+        "wasm_name": "WasmStreamingOptionGreeks",
+        "flutter_name": null,
+        "go_name": "StreamingOPTION_GREEKS"
       },
       {
         "key": "streamingrsi",

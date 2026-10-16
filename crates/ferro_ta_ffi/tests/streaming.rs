@@ -291,3 +291,59 @@ fn condition_streams_reject_bad_params() {
     );
     assert!(s.is_null());
 }
+
+#[test]
+fn option_greeks_stream_solves_iv_and_keeps_seed_on_failure() {
+    use ferro_ta_core::options::{
+        pricing::model_price, OptionContract, OptionEvaluation, OptionKind, PricingModel,
+    };
+    let contract = OptionContract {
+        model: PricingModel::BlackScholes,
+        underlying: 102.0,
+        strike: 100.0,
+        rate: 0.05,
+        carry: 0.0,
+        time_to_expiry: 0.5,
+        kind: OptionKind::Call,
+    };
+    let price = model_price(OptionEvaluation {
+        contract,
+        volatility: 0.25,
+    });
+    let mut h = ptr::null_mut();
+    assert_eq!(
+        unsafe { ft_stream_option_greeks_new(0, 0, 100.0, 0.05, 0.0, &mut h) },
+        FT_OK
+    );
+    let mut out = [0.0_f64; 6];
+    let [iv, delta, gamma, vega, theta, rho] = &mut out;
+    let feed = |p: f64, s: f64, o: (&mut f64, &mut f64, &mut f64, &mut f64, &mut f64, &mut f64)| unsafe {
+        ft_stream_option_greeks_update(h, p, s, 0.5, o.0, o.1, o.2, o.3, o.4, o.5)
+    };
+    assert_eq!(
+        feed(price, 102.0, (iv, delta, gamma, vega, theta, rho)),
+        FT_OK
+    );
+    assert!((*iv - 0.25).abs() < 1e-8);
+    assert!(*delta > 0.0 && *delta < 1.0);
+    assert_eq!(
+        feed(1.0, 125.0, (iv, delta, gamma, vega, theta, rho)),
+        FT_OK
+    );
+    assert!(iv.is_nan() && rho.is_nan(), "unsolvable price writes NaN");
+    unsafe { ft_stream_option_greeks_free(h) };
+}
+
+#[test]
+fn option_greeks_stream_rejects_bad_enum_and_strike() {
+    let mut h = ptr::null_mut();
+    assert_eq!(
+        unsafe { ft_stream_option_greeks_new(0, 7, 100.0, 0.0, 0.0, &mut h) },
+        FT_ERR_INVALID_PARAM
+    );
+    assert_eq!(
+        unsafe { ft_stream_option_greeks_new(0, 0, -1.0, 0.0, 0.0, &mut h) },
+        FT_ERR_INVALID_PARAM
+    );
+    assert!(h.is_null());
+}
