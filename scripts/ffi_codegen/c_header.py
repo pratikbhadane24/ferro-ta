@@ -14,6 +14,54 @@ def c_doc(doc: str, indent: str = "") -> list[str]:
     return lines
 
 
+# Hand-written in crates/ferro_ta_ffi/src/strategy.rs: legs cross the ABI as
+# a struct array, which the generated-export spec cannot describe.
+STRATEGY_BLOCK = """/* ---- option strategy ------------------------------------------------- */
+
+/* FtLeg.kind values. */
+#define FT_LEG_OPTION 0
+#define FT_LEG_FUTURE 1
+#define FT_LEG_STOCK 2
+
+/**
+ * One strategy leg. quantity is signed (+ long, - short). Option fields are
+ * ignored for futures/stock, entry_price for options; right uses FT_OPTION_*.
+ * Requires: finite values, quantity != 0, multiplier > 0, strike > 0,
+ * premium >= 0, expiry_years >= 0, volatility >= 0, entry_price > 0.
+ */
+typedef struct FtLeg {
+    int32_t kind;
+    int32_t right;
+    double quantity;
+    double multiplier;
+    double strike;
+    double premium;
+    double expiry_years;
+    double volatility;
+    double entry_price;
+} FtLeg;
+
+/*
+ * Expiry analytics (payoff, breakevens, max profit/loss, probability of
+ * profit) need every option leg to share one expiry_years, else
+ * FT_ERR_INVALID_PARAM. Spot is confined to [0, inf).
+ */
+/** Expiry P&L at n_spots spots into out[n_spots]. */
+int32_t ft_strategy_payoff(const FtLeg *legs, size_t n_legs, const double *spots, size_t n_spots, double *out);
+/** Breakevens ascending; *out_len gets the count (<= 2*n_legs+2); cap too small -> FT_ERR_INVALID_PARAM. */
+int32_t ft_strategy_breakevens(const FtLeg *legs, size_t n_legs, double *out, size_t cap, size_t *out_len);
+/** Best expiry P&L and lowest spot attaining it; *out_unlimited = 1 (value/spot NaN) if unbounded. */
+int32_t ft_strategy_max_profit(const FtLeg *legs, size_t n_legs, double *out_value, double *out_spot, int32_t *out_unlimited);
+/** Worst expiry P&L (usually negative); *out_unlimited = 1 (value/spot NaN) if unbounded. */
+int32_t ft_strategy_max_loss(const FtLeg *legs, size_t n_legs, double *out_value, double *out_spot, int32_t *out_unlimited);
+/** Risk-neutral probability that expiry P&L > 0 (lognormal underlying). */
+int32_t ft_strategy_probability_of_profit(const FtLeg *legs, size_t n_legs, double spot, double volatility, double time_years, double rate, double carry, double *out);
+/** Black-Scholes greeks summed over legs (each option at its own expiry/vol). */
+int32_t ft_strategy_greeks(const FtLeg *legs, size_t n_legs, double spot, double rate, double carry, double *out_delta, double *out_gamma, double *out_vega, double *out_theta, double *out_rho);
+/** Mark-to-model P&L, row-major [vol_shift][spot] into out[n_shifts*n_spots]. */
+int32_t ft_strategy_scenario_grid(const FtLeg *legs, size_t n_legs, const double *spots, size_t n_spots, const double *vol_shifts, size_t n_shifts, double days_forward, double rate, double carry, double *out);"""
+
+
 def c_function(fn: dict) -> str:
     args = [f"const double *{name}" for name in fn["inputs"]]
     args.append("size_t len")
@@ -165,6 +213,7 @@ def render_header(spec: dict) -> str:
     out += ["", "/* ---- streaming " + "-" * 61 + " */"]
     for stream in spec["streams"]:
         out += ["", *c_stream(stream)]
+    out += ["", STRATEGY_BLOCK]
     out += [
         "",
         "#ifdef __cplusplus",

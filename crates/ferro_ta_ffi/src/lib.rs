@@ -31,6 +31,7 @@ mod macros;
 pub mod marshal;
 pub mod spec;
 pub mod status;
+pub mod strategy;
 pub mod streaming;
 mod validation;
 
@@ -64,6 +65,7 @@ pub use scalars::options::*;
 pub use scalars::overfit::*;
 pub use scalars::sizing::*;
 pub use status::*;
+pub use strategy::*;
 pub use streaming::*;
 
 /// Signature metadata for every array export.
