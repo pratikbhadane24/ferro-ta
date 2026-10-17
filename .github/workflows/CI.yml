@@ -17,6 +17,15 @@ on:
 permissions:
   contents: read
 
+env:
+  # .cargo/config.toml sets target-cpu=native for local builds. Release
+  # wheels must run on any CPU of their architecture, so override it here
+  # (runtime SIMD dispatch in ferro_ta_core still picks AVX2/AVX-512/NEON
+  # paths where available). Without this, wheels were compiled for the CI
+  # runner's CPU (AVX-512 in plain code paths) and the aarch64 cross-build
+  # crashed rustc.
+  RUSTFLAGS: ""
+
 jobs:
   # -------------------------------------------------------------------------
   # Version consistency — Cargo.toml and pyproject.toml must have same version
@@ -180,6 +189,61 @@ jobs:
         with:
           name: wheels-linux-gnu-${{ matrix.target }}
           path: dist/*.whl
+
+  wheel-portability:
+    # Release wheels must run on any CPU of their architecture. Build through
+    # the same maturin-action/Docker path as the release jobs, then import and
+    # run under QEMU emulating a CPU without AVX: a host-specific instruction
+    # anywhere outside runtime-dispatched SIMD paths dies with SIGILL. Also
+    # cross-build aarch64, which crashed rustc with target-cpu=native.
+    name: Wheel portability (no host-specific CPU features)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
+    env:
+      # Speed only: LTO does not change which CPU features are emitted.
+      CARGO_PROFILE_RELEASE_LTO: "off"
+      CARGO_PROFILE_RELEASE_CODEGEN_UNITS: "16"
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build manylinux x86_64 wheel (release path)
+        uses: PyO3/maturin-action@v1
+        with:
+          command: build
+          target: x86_64
+          args: --release --out dist
+          manylinux: "2_17"
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Import and compute on a CPU without AVX (QEMU, -cpu Nehalem)
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq qemu-user
+          python -m venv /tmp/wheel-venv
+          /tmp/wheel-venv/bin/pip install -q numpy dist/*.whl
+          # Control: numpy alone must run here, so a SIGILL below is ours.
+          qemu-x86_64 -cpu Nehalem /tmp/wheel-venv/bin/python -c "import numpy as np; print('numpy OK', np.random.default_rng(0).standard_normal(8).cumsum()[-1])"
+          qemu-x86_64 -cpu Nehalem /tmp/wheel-venv/bin/python -c "
+          import numpy as np, ferro_ta as ft
+          from ferro_ta.data.streaming import StreamingSMA
+          x = 100 + np.random.default_rng(0).standard_normal(10_000).cumsum()
+          for f in (ft.SMA, ft.EMA, ft.RSI, ft.WMA):
+              assert np.isfinite(f(x, 14)[-100:]).all(), f.__name__
+          up, mid, lo = ft.BBANDS(x, 20)
+          s = StreamingSMA(10)
+          [s.update(v) for v in x[:100]]
+          print('portable OK on Nehalem:', ft.SMA(x, 14)[-1])
+          "
+
+      - name: Cross-build manylinux aarch64 wheel (release path)
+        uses: PyO3/maturin-action@v1
+        with:
+          command: build
+          target: aarch64
+          args: --release --out dist-aarch64
+          manylinux: "2_17"
 
   build-wheels-musllinux:
     name: Build wheels (linux-musl / ${{ matrix.target }})
