@@ -17,6 +17,15 @@ on:
 permissions:
   contents: read
 
+env:
+  # .cargo/config.toml sets target-cpu=native for local builds. Release
+  # wheels must run on any CPU of their architecture, so override it here
+  # (runtime SIMD dispatch in ferro_ta_core still picks AVX2/AVX-512/NEON
+  # paths where available). Without this, wheels were compiled for the CI
+  # runner's CPU (AVX-512 in plain code paths) and the aarch64 cross-build
+  # crashed rustc.
+  RUSTFLAGS: ""
+
 jobs:
   # -------------------------------------------------------------------------
   # Version consistency — Cargo.toml and pyproject.toml must have same version
@@ -214,6 +223,8 @@ jobs:
           sudo apt-get update -qq && sudo apt-get install -y -qq qemu-user
           python -m venv /tmp/wheel-venv
           /tmp/wheel-venv/bin/pip install -q numpy dist/*.whl
+          # Control: numpy alone must run here, so a SIGILL below is ours.
+          qemu-x86_64 -cpu Nehalem /tmp/wheel-venv/bin/python -c "import numpy as np; print('numpy OK', np.random.default_rng(0).standard_normal(8).cumsum()[-1])"
           qemu-x86_64 -cpu Nehalem /tmp/wheel-venv/bin/python -c "
           import numpy as np, ferro_ta as ft
           from ferro_ta.data.streaming import StreamingSMA
