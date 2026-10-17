@@ -1821,7 +1821,7 @@ int32_t ft_strategy_max_profit(const FtLeg *legs, size_t n_legs, double *out_val
 int32_t ft_strategy_max_loss(const FtLeg *legs, size_t n_legs, double *out_value, double *out_spot, int32_t *out_unlimited);
 /** Risk-neutral probability that expiry P&L > 0 (lognormal underlying). */
 int32_t ft_strategy_probability_of_profit(const FtLeg *legs, size_t n_legs, double spot, double volatility, double time_years, double rate, double carry, double *out);
-/** Black-Scholes greeks summed over legs (each option at its own expiry/vol). */
+/** Black-Scholes greeks summed over legs (each option at its own expiry/vol); option legs need vol > 0 and expiry > 0, spot > 0. */
 int32_t ft_strategy_greeks(const FtLeg *legs, size_t n_legs, double spot, double rate, double carry, double *out_delta, double *out_gamma, double *out_vega, double *out_theta, double *out_rho);
 /** Mark-to-model P&L, row-major [vol_shift][spot] into out[n_shifts*n_spots]. */
 int32_t ft_strategy_scenario_grid(const FtLeg *legs, size_t n_legs, const double *spots, size_t n_spots, const double *vol_shifts, size_t n_shifts, double days_forward, double rate, double carry, double *out);

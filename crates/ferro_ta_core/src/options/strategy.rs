@@ -13,6 +13,10 @@ use super::Greeks;
 pub use super::OptionKind;
 
 const DAYS_PER_YEAR: f64 = 365.0;
+/// Relative tolerance for treating slopes / P&L values as exactly zero, so
+/// fractional sizes whose terms cancel (0.1 + 0.2 - 0.3) don't leave float
+/// noise that reads as "unlimited" or as a spurious breakeven.
+const ZERO_REL_TOL: f64 = 1e-12;
 
 /// Invalid leg, strategy or analysis input.
 #[derive(Clone, Debug, PartialEq)]
@@ -243,6 +247,47 @@ impl Strategy {
         Ok(spots.iter().map(|&s| self.expiry_pnl(s)).collect())
     }
 
+    /// Total absolute position size, Σ|quantity × multiplier|.
+    fn gross_size(&self) -> f64 {
+        self.legs.iter().map(|leg| leg.scale().abs()).sum()
+    }
+
+    /// Largest price level in the book (strikes, premiums, entries; ≥ 1).
+    fn price_level(&self) -> f64 {
+        self.legs
+            .iter()
+            .map(|leg| match leg.kind {
+                LegKind::Option {
+                    strike, premium, ..
+                } => strike.max(premium),
+                LegKind::Future { entry_price } | LegKind::Stock { entry_price } => entry_price,
+            })
+            .fold(1.0, f64::max)
+    }
+
+    /// Snap float noise in a slope to exactly zero.
+    fn snap_slope(&self, slope: f64) -> f64 {
+        if slope.abs() <= ZERO_REL_TOL * self.gross_size() {
+            0.0
+        } else {
+            slope
+        }
+    }
+
+    /// Snap float noise in a P&L value to exactly zero.
+    fn snap_pnl(&self, pnl: f64) -> f64 {
+        if pnl.abs() <= ZERO_REL_TOL * self.gross_size() * self.price_level() {
+            0.0
+        } else {
+            pnl
+        }
+    }
+
+    /// Expiry P&L with float noise snapped to zero (analytics only).
+    fn snapped_pnl(&self, spot: f64) -> f64 {
+        self.snap_pnl(self.expiry_pnl(spot))
+    }
+
     /// `0` plus every strike, sorted and unique: the expiry P&L is linear
     /// between consecutive points.
     fn kinks(&self) -> Vec<f64> {
@@ -257,9 +302,10 @@ impl Strategy {
         points
     }
 
-    /// d(P&L)/d(spot) beyond the highest strike.
+    /// d(P&L)/d(spot) beyond the highest strike (float noise snapped to 0).
     fn right_tail_slope(&self) -> f64 {
-        self.legs
+        let slope = self
+            .legs
             .iter()
             .map(|leg| match leg.kind {
                 LegKind::Option {
@@ -268,7 +314,8 @@ impl Strategy {
                 } => 0.0,
                 _ => leg.scale(),
             })
-            .sum()
+            .sum();
+        self.snap_slope(slope)
     }
 
     /// Spots where the expiry P&L crosses or touches zero, ascending.
@@ -276,7 +323,7 @@ impl Strategy {
     pub fn breakevens(&self) -> Result<Vec<f64>, StrategyError> {
         self.require_single_expiry()?;
         let xs = self.kinks();
-        let ys: Vec<f64> = xs.iter().map(|&x| self.expiry_pnl(x)).collect();
+        let ys: Vec<f64> = xs.iter().map(|&x| self.snapped_pnl(x)).collect();
         let slope = self.right_tail_slope();
         let n = xs.len();
         let flat_zero = |i: usize| ys[i] == 0.0 && ys[i + 1] == 0.0;
@@ -321,7 +368,7 @@ impl Strategy {
         let best = self
             .kinks()
             .into_iter()
-            .map(|x| (self.expiry_pnl(x), x))
+            .map(|x| (self.snapped_pnl(x), x))
             .fold(None, |best: Option<(f64, f64)>, (y, x)| match best {
                 Some((by, _)) if y * direction <= by * direction => best,
                 _ => Some((y, x)),
@@ -374,8 +421,13 @@ impl Strategy {
                 cdf(((x / spot).ln() - drift) / sd)
             }
         };
-        let mut edges = vec![0.0];
+        // Kinks ∪ breakevens: inside each sub-interval the P&L is linear with
+        // no interior zero, so one probe decides its sign (breakevens alone
+        // miss the ends of flat-zero stretches, e.g. a zero-cost risk reversal).
+        let mut edges = self.kinks();
         edges.extend(self.breakevens()?);
+        edges.sort_by(f64::total_cmp);
+        edges.dedup();
         edges.push(f64::INFINITY);
         let probability = edges
             .windows(2)
@@ -385,16 +437,24 @@ impl Strategy {
                 } else {
                     0.5 * (w[0] + w[1])
                 };
-                self.expiry_pnl(probe) > 0.0
+                self.snapped_pnl(probe) > 0.0
             })
             .map(|w| below(w[1]) - below(w[0]))
-            .sum::<f64>();
+            .fold(0.0, |acc, p| acc + p);
         Ok(probability.clamp(0.0, 1.0))
     }
 
     /// Black-Scholes greeks summed over legs (each option at its own expiry
-    /// and volatility); futures and stock contribute delta only.
-    pub fn greeks(&self, spot: f64, rate: f64, carry: f64) -> Greeks {
+    /// and volatility); futures and stock contribute delta only. Fails if
+    /// `spot` is not positive or an option leg has zero volatility or
+    /// expiry (its greeks are undefined), naming the leg.
+    pub fn greeks(&self, spot: f64, rate: f64, carry: f64) -> Result<Greeks, StrategyError> {
+        if !spot.is_finite() || spot <= 0.0 {
+            return err(format!("spot must be finite and > 0, got {spot}"));
+        }
+        if !rate.is_finite() || !carry.is_finite() {
+            return err("rate and carry must be finite");
+        }
         let mut total = Greeks {
             delta: 0.0,
             gamma: 0.0,
@@ -402,7 +462,7 @@ impl Strategy {
             theta: 0.0,
             rho: 0.0,
         };
-        for leg in &self.legs {
+        for (i, leg) in self.legs.iter().enumerate() {
             let scale = leg.scale();
             match leg.kind {
                 LegKind::Option {
@@ -412,6 +472,12 @@ impl Strategy {
                     volatility,
                     ..
                 } => {
+                    if expiry_years <= 0.0 || volatility <= 0.0 {
+                        return err(format!(
+                            "leg {i}: greeks need volatility > 0 and expiry_years > 0 \
+                             (got volatility={volatility}, expiry_years={expiry_years})"
+                        ));
+                    }
                     let g = black_scholes_greeks(
                         spot,
                         strike,
@@ -430,11 +496,12 @@ impl Strategy {
                 LegKind::Future { .. } | LegKind::Stock { .. } => total.delta += scale,
             }
         }
-        total
+        Ok(total)
     }
 
     /// Mark-to-model P&L at `spot` after `days_forward` days with every
     /// option's volatility shifted by `vol_shift` (both floored at 0).
+    /// NaN when `days_forward` is negative or not finite.
     pub fn value_at(
         &self,
         spot: f64,
@@ -443,6 +510,9 @@ impl Strategy {
         rate: f64,
         carry: f64,
     ) -> f64 {
+        if !days_forward.is_finite() || days_forward < 0.0 {
+            return f64::NAN;
+        }
         let years_forward = days_forward / DAYS_PER_YEAR;
         self.legs.iter().fold(0.0, |total, leg| {
             total
@@ -590,7 +660,7 @@ mod tests {
         assert!(calendar
             .probability_of_profit(100.0, VOL, 0.1, 0.0, 0.0)
             .is_err());
-        let g = calendar.greeks(100.0, 0.0, 0.0);
+        let g = calendar.greeks(100.0, 0.0, 0.0).unwrap();
         assert!(g.vega > 0.0, "long back month dominates vega");
         assert_eq!(
             calendar
@@ -639,7 +709,7 @@ mod tests {
     #[test]
     fn greeks_match_aggregate_greeks_dense() {
         let s = iron_condor();
-        let g = s.greeks(100.0, 0.03, 0.01);
+        let g = s.greeks(100.0, 0.03, 0.01).unwrap();
         let (d, ga, v, th, rh) = super::super::payoff::aggregate_greeks_dense(
             100.0,
             &[0, 0, 0, 0],
@@ -697,5 +767,69 @@ mod tests {
         assert_eq!(expired, s.payoff(&spots).unwrap());
         // Short premium strategy loses value when vol rises.
         assert!(grid[2 * spots.len() + 1] < grid[spots.len() + 1]);
+    }
+
+    /// Zero-cost risk reversal: P&L is flat zero between the strikes, so
+    /// breakevens are empty but PoP must still be P(S_T > 110).
+    #[test]
+    fn pop_zero_cost_risk_reversal() {
+        let s = Strategy::new(vec![
+            option(1.0, Call, 110.0, 2.0),
+            option(-1.0, Put, 90.0, 2.0),
+        ])
+        .unwrap();
+        assert!(s.breakevens().unwrap().is_empty());
+        let (spot, r, q) = (100.0, 0.0, 0.0);
+        let pop = s.probability_of_profit(spot, VOL, T, r, q).unwrap();
+        let z = ((110.0_f64 / spot).ln() + 0.5 * VOL * VOL * T) / (VOL * T.sqrt());
+        let expected = 1.0 - super::super::normal::cdf(z);
+        assert!((pop - expected).abs() < 1e-12, "{pop} vs {expected}");
+
+        let never = Strategy::new(vec![option(-1.0, Call, 100.0, 0.0)]).unwrap();
+        let p = never.probability_of_profit(spot, VOL, T, r, q).unwrap();
+        assert!(p == 0.0 && p.is_sign_positive(), "no -0.0: {p}");
+    }
+
+    /// Fractional sizes whose right-tail slope cancels to float noise must
+    /// not report unlimited profit or a 1e16 breakeven.
+    #[test]
+    fn slope_noise_is_treated_as_zero() {
+        let s = Strategy::new(vec![
+            option(0.1, Call, 110.0, 0.5),
+            option(0.2, Call, 110.0, 0.5),
+            option(-0.3, Call, 100.0, 2.0),
+        ])
+        .unwrap();
+        let (profit, spot) = finite(s.max_profit().unwrap());
+        assert!(
+            approx(profit, 0.45) && approx(spot, 0.0),
+            "{profit} at {spot}"
+        );
+        let be = s.breakevens().unwrap();
+        assert_eq!(be.len(), 1, "{be:?}");
+        assert!(approx(be[0], 101.5));
+    }
+
+    #[test]
+    fn greeks_reject_unpriceable_legs() {
+        let s = iron_condor();
+        assert!(s.greeks(100.0, 0.0, 0.0).is_ok());
+        assert!(s.greeks(0.0, 0.0, 0.0).is_err(), "spot must be > 0");
+        let zero_vol =
+            Strategy::new(vec![Leg::option(1.0, Call, 100.0, 5.0, T, 0.0, 1.0)]).unwrap();
+        let e = zero_vol.greeks(100.0, 0.0, 0.0).unwrap_err();
+        assert!(e.0.contains("leg 0"), "{e}");
+        let expired =
+            Strategy::new(vec![Leg::option(1.0, Call, 100.0, 5.0, 0.0, VOL, 1.0)]).unwrap();
+        assert!(expired.greeks(100.0, 0.0, 0.0).is_err());
+    }
+
+    #[test]
+    fn scenario_grid_rejects_bad_days_forward() {
+        let s = iron_condor();
+        for days in [f64::NAN, -1.0, f64::INFINITY] {
+            let grid = s.scenario_grid(&[100.0, 110.0], &[0.0], days, 0.0, 0.0);
+            assert!(grid.iter().all(|v| v.is_nan()), "days {days}: {grid:?}");
+        }
     }
 }

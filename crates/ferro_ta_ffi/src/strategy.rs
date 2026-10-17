@@ -240,7 +240,8 @@ pub unsafe extern "C" fn ft_strategy_probability_of_profit(
     })
 }
 
-/// Black-Scholes greeks summed over legs.
+/// Black-Scholes greeks summed over legs. `FT_ERR_INVALID_PARAM` when
+/// `spot <= 0` or an option leg has zero volatility or expiry.
 ///
 /// # Safety
 /// `legs` valid for `n_legs` reads; each output valid for one write.
@@ -260,7 +261,9 @@ pub unsafe extern "C" fn ft_strategy_greeks(
     guard(|| {
         non_null(&[out_delta, out_gamma, out_vega, out_theta, out_rho])?;
         // SAFETY: caller contract.
-        let g = unsafe { strategy(legs, n_legs) }?.greeks(spot, rate, carry);
+        let g = unsafe { strategy(legs, n_legs) }?
+            .greeks(spot, rate, carry)
+            .map_err(|_| Status::InvalidParam)?;
         // SAFETY: checked non-null.
         unsafe {
             out_delta.write(g.delta);

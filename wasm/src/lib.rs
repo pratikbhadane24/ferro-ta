@@ -2873,7 +2873,7 @@ impl WasmOptionStrategy {
 
     /// [delta, gamma, vega, theta, rho] summed over legs.
     pub fn greeks(&self, spot: f64, rate: f64, carry: f64) -> Result<Float64Array, JsError> {
-        let g = self.strategy()?.greeks(spot, rate, carry);
+        let g = self.strategy()?.greeks(spot, rate, carry).map_err(strategy_err)?;
         Ok(from_vec(vec![g.delta, g.gamma, g.vega, g.theta, g.rho]))
     }
 

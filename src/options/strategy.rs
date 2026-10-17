@@ -87,9 +87,9 @@ impl OptionStrategy {
 
     /// ``(delta, gamma, vega, theta, rho)`` summed over legs.
     #[pyo3(signature = (spot, rate = 0.0, carry = 0.0))]
-    fn greeks(&self, spot: f64, rate: f64, carry: f64) -> (f64, f64, f64, f64, f64) {
-        let g = self.inner.greeks(spot, rate, carry);
-        (g.delta, g.gamma, g.vega, g.theta, g.rho)
+    fn greeks(&self, spot: f64, rate: f64, carry: f64) -> PyResult<(f64, f64, f64, f64, f64)> {
+        let g = self.inner.greeks(spot, rate, carry).map_err(to_py_err)?;
+        Ok((g.delta, g.gamma, g.vega, g.theta, g.rho))
     }
 
     /// Mark-to-model P&L, shape ``(len(vol_shifts), len(spots))``.

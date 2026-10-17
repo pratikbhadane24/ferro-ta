@@ -147,8 +147,15 @@ pub(crate) fn core_leg_from_py(
     use ferro_ta_core::options::strategy::Leg;
     use ferro_ta_core::options::OptionKind;
 
-    let quantity =
-        parse_side_label(&leg_attr_string(leg, "side")?)?.sign() * leg_attr_f64(leg, "quantity")?;
+    // `side` carries the direction, so a negative quantity would silently
+    // flip it; reject instead of guessing.
+    let size = leg_attr_f64(leg, "quantity")?;
+    if size.is_nan() || size < 0.0 {
+        return Err(PyValueError::new_err(format!(
+            "quantity must be >= 0 when side is given (use side='short'), got {size}"
+        )));
+    }
+    let quantity = parse_side_label(&leg_attr_string(leg, "side")?)?.sign() * size;
     let multiplier = leg_attr_f64(leg, "multiplier")?;
     let entry = || {
         leg_attr_optional_f64(leg, "entry_price")?
