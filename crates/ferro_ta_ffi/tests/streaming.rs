@@ -414,3 +414,85 @@ fn load_rejects_wrong_stream_and_garbage() {
     );
     unsafe { ft_stream_sma_free(h) };
 }
+
+/// The backtest stream gives NaN signals a meaning (flat), so the `Live`
+/// non-finite guard must not skip them; a non-finite close is still skipped.
+#[test]
+fn backtest_stream_nan_signal_means_flat_through_live() {
+    let mut h = ptr::null_mut();
+    assert_eq!(unsafe { ft_stream_backtest_new(0.0, 0.0, &mut h) }, FT_OK);
+    let mut o = [0.0_f64; 8];
+    let mut n_trades = 0_i64;
+    let step = |close: f64, signal: f64, o: &mut [f64; 8], n: &mut i64| unsafe {
+        let [a, b, c, e, f, g, i, j] = o;
+        ft_stream_backtest_update(h, close, signal, a, b, c, n, e, f, g, i, j)
+    };
+    assert_eq!(step(100.0, 1.0, &mut o, &mut n_trades), FT_OK);
+    assert_eq!(o[0], 1.0, "long");
+    assert_eq!(step(110.0, f64::NAN, &mut o, &mut n_trades), FT_OK);
+    assert_eq!(o[0], 0.0, "NaN signal flattens");
+    assert!(
+        (o[2] - 1.1).abs() < 1e-12,
+        "equity marked to the 10% move: {}",
+        o[2]
+    );
+    assert_eq!(n_trades, 1);
+    assert_eq!(step(f64::NAN, 1.0, &mut o, &mut n_trades), FT_OK);
+    assert!(o[2].is_nan(), "non-finite close is skipped");
+    assert_eq!(step(120.0, 0.0, &mut o, &mut n_trades), FT_OK);
+    assert!(
+        (o[2] - 1.1).abs() < 1e-12,
+        "state untouched by the skipped tick"
+    );
+    unsafe { ft_stream_backtest_free(h) };
+}
+
+#[test]
+fn backtest_stream_save_load_continues_identically() {
+    let close = series(60);
+    let signal = |i: usize| match i % 7 {
+        0..=2 => 1.0,
+        3 => f64::NAN,
+        _ => -1.0,
+    };
+    let run = |h, i: usize| {
+        let mut o = [0.0_f64; 8];
+        let mut n = 0_i64;
+        let [a, b, c, e, f, g, x, y] = &mut o;
+        unsafe {
+            ft_stream_backtest_update(h, close[i], signal(i), a, b, c, &mut n, e, f, g, x, y)
+        };
+        (o, n)
+    };
+    let mut h = ptr::null_mut();
+    assert_eq!(
+        unsafe { ft_stream_backtest_new(0.0005, 2.0, &mut h) },
+        FT_OK
+    );
+    for i in 0..30 {
+        run(h, i);
+    }
+    let mut need = 0usize;
+    unsafe { ft_stream_backtest_save(h, ptr::null_mut(), 0, &mut need) };
+    let mut buf = vec![0u8; need];
+    assert_eq!(
+        unsafe { ft_stream_backtest_save(h, buf.as_mut_ptr().cast(), need, &mut need) },
+        FT_OK
+    );
+    let mut restored = ptr::null_mut();
+    assert_eq!(
+        unsafe { ft_stream_backtest_load(buf.as_ptr().cast(), need, &mut restored) },
+        FT_OK
+    );
+    for i in 30..60 {
+        let (a, na) = run(h, i);
+        let (b, nb) = run(restored, i);
+        assert_eq!(na, nb);
+        assert!(
+            a.iter().zip(&b).all(|(x, y)| same(*x, *y)),
+            "bar {i}: {a:?} vs {b:?}"
+        );
+    }
+    unsafe { ft_stream_backtest_free(h) };
+    unsafe { ft_stream_backtest_free(restored) };
+}

@@ -14,7 +14,8 @@ name = "ferro_ta_ffi"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [dependencies]
-ferro_ta_core = { path = "../ferro_ta_core", version = "1.4.0", features = ["serde"] }
+ferro_ta_core = { path = "../ferro_ta_core", version = "1.4.0", features = ["serde", "parallel"] }
+serde = { version = "1.0", features = ["derive"] }
 
 [dev-dependencies]
 serde_json = "1.0"

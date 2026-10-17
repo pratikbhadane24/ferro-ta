@@ -72,9 +72,13 @@ def go_out_name(out_name: str) -> str:
 def go_param_type(param: dict) -> str:
     if param["kind"] == "enum":
         return param["enum"]
-    return {"period": "int", "count": "int", "matype": "MAType", "float": "float64"}[
-        param["kind"]
-    ]
+    return {
+        "period": "int",
+        "count": "int",
+        "seed": "uint64",
+        "matype": "MAType",
+        "float": "float64",
+    }[param["kind"]]
 
 
 def go_param_arg(param: dict) -> str:
@@ -82,6 +86,7 @@ def go_param_arg(param: dict) -> str:
     return {
         "period": f"C.int64_t({ident})",
         "count": f"C.int64_t({ident})",
+        "seed": f"C.int64_t({ident})",
         "matype": f"C.int32_t({ident})",
         "float": f"C.double({ident})",
         "enum": f"C.int32_t({ident})",
@@ -92,7 +97,11 @@ def go_doc(name: str, summary: str, doc: str) -> list[str]:
     lines = [f"// {name} {summary}"]
     if doc:
         lines.append("//")
-        lines += [f"// {line}".rstrip() for line in doc.splitlines()]
+        # Tab-indented lines are gofmt list/code blocks: no space after //.
+        lines += [
+            ("//" + line if line.startswith("\t") else f"// {line}").rstrip()
+            for line in doc.splitlines()
+        ]
     return lines
 
 
@@ -326,8 +335,10 @@ def go_stream(stream: dict) -> list[str]:
             name,
             "Update",
             stream["update_fn"],
-            "commits one bar and returns its value(s) (NaN during warm-up).\n"
-            "// A NaN/±inf input returns NaN and leaves state untouched.",
+            "commits one bar and returns its value(s); indicators return NaN\n"
+            "// while they warm up. A tick with an input the stream cannot accept\n"
+            "// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and\n"
+            "// leaves state untouched.",
             update_params,
             update_results,
             update_args,
@@ -392,6 +403,7 @@ def go_param_from_map(param: dict) -> str:
     return {
         "period": f"int({key})",
         "count": f"int({key})",
+        "seed": f"uint64({key})",
         "matype": f"MAType({key})",
         "float": key,
     }[param["kind"]]
@@ -505,9 +517,19 @@ def render_go(spec: dict, go_dir: Path) -> dict[Path, str]:
         files[go_dir / f"{group}_scalar_gen.go"] = go_file(
             ["unsafe"], [go_scalar(fn) for fn in fns]
         )
-    files[go_dir / "enums_gen.go"] = go_file(
-        [], [go_enum(e) for e in spec["enums"]], cgo=False
-    )
+    from .go_kernel import go_kernel, kernel_uses_unsafe
+
+    kernel_groups: dict[str, list[dict]] = {}
+    for fn in spec.get("kernels", []):
+        kernel_groups.setdefault(fn["group"], []).append(fn)
+    for group, fns in kernel_groups.items():
+        imports = ["unsafe"] if any(kernel_uses_unsafe(fn) for fn in fns) else []
+        files[go_dir / f"{group}_kernel_gen.go"] = go_file(
+            imports, [go_kernel(fn) for fn in fns]
+        )
+        files[go_dir / "enums_gen.go"] = go_file(
+            [], [go_enum(e) for e in spec["enums"]], cgo=False
+        )
     files[go_dir / "streaming_gen.go"] = go_file(
         ["runtime", "sync", "unsafe"], [go_stream(s) for s in spec["streams"]]
     )

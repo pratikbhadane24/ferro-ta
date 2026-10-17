@@ -62,6 +62,24 @@ ABI conventions
 - Streaming indicators are opaque handles: ``ft_stream_<x>_new`` /
   ``_update`` / ``_reset`` / ``_free``. A handle is not thread-safe; free it
   exactly once (``free(NULL)`` is a no-op).
+- Kernel functions (``ft_sweep_*``, ``ft_pbo_cscv``, ...) take arrays of
+  different, row-major multi-dimensional shapes with explicit ``size_t``
+  dimensions; the header lists each array's element count under
+  ``Shapes:``. Sizes such as ``n_combinations`` must equal a companion
+  helper's result (``ft_pbo_n_combinations``). Metric matrices have
+  ``n_metric_cols`` columns, which must equal ``ft_sweep_n_metrics()``, and are
+  indexed by ``FT_METRIC_*``.
+- ``ft_backtest_ohlcv`` takes its configuration as a settings vector indexed
+  by ``FT_BT_*``: declare ``double s[FT_BT_<LAST> + 1]``, fill it with
+  ``ft_backtest_default_settings(sizeof s / sizeof s[0], s)`` and overwrite
+  entries. Always pass your array's own length, never
+  ``ft_backtest_n_settings()``, so a newer library can't write past it. A shorter vector, from
+  an older header, gets defaults for the missing tail; a longer one is
+  rejected. Kernel inputs documented as optional (``volume``,
+  ``limit_prices``) may be ``NULL``.
+- Results whose count depends on the data (``ft_extract_trades``) are written
+  into columns of a fixed capacity (``n_bars``) plus an ``out_n_trades``
+  count; rows past the count hold -1 (indices) or NaN.
 - A panic inside the core is caught and returned as ``FT_ERR_PANIC``; it never
   unwinds into the caller.
 

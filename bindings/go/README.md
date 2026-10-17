@@ -33,10 +33,16 @@ status, closed, err := bars.OnTick(tsMs, price, qty)
 ```
 
 - 229 array functions (all TA indicators, candlestick patterns, IV, realized
-  volatility, regime and portfolio series), 24 scalar functions (option
-  pricing and greeks, implied volatility, futures, Kelly sizing), 13
-  streaming types (indicators, conditions, option IV/greeks) and a
-  session-aligned bar builder.
+  volatility, regime and portfolio series), 31 scalar functions (option
+  pricing and greeks, implied volatility, futures, Kelly sizing), 14
+  streaming handles (indicators, conditions, option IV/greeks and a live
+  `StreamBacktest`, all with `Peek` and `Save`/`Load`), a session-aligned
+  `BarBuilder`, the full backtesting toolkit (`BacktestOhlcv`, `BacktestClose`,
+  `BacktestMultiAsset`, `ExtractTrades`, `MonteCarloBootstrap`,
+  `WalkForwardIndices`, `PerformanceMetrics` with benchmark stats), and
+  parameter sweeps plus overfitting diagnostics
+  (`SweepBuiltin`, `SweepSignals`, `PboCscv`, `DeflatedSharpeRatio`, …),
+  which run in parallel in Rust.
 - Outputs match input length with NaN warm-up; errors are `*ferrota.Error`,
   comparable with `errors.Is` (`ErrInvalidParam`, `ErrLengthMismatch`, ...).
 

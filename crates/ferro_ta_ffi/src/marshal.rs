@@ -50,7 +50,7 @@ impl Param<i64> for usize {
         let min = match kind {
             ParamKind::Period { min } => min,
             ParamKind::Count => 0,
-            ParamKind::MaType | ParamKind::Float | ParamKind::Enum(_) => {
+            ParamKind::MaType | ParamKind::Float | ParamKind::Seed | ParamKind::Enum(_) => {
                 unreachable!("not an integer period")
             }
         };
@@ -58,6 +58,13 @@ impl Param<i64> for usize {
             return Err(Status::InvalidParam);
         }
         usize::try_from(raw).map_err(|_| Status::InvalidParam)
+    }
+}
+
+impl Param<i64> for u64 {
+    /// Seeds take any bit pattern (same as Python/WASM `u64` seeds).
+    fn from_raw(raw: i64, _kind: ParamKind) -> Result<Self, Status> {
+        Ok(raw as u64)
     }
 }
 
@@ -151,6 +158,66 @@ impl<T> WriteScalars<(*mut T,)> for T {
     }
 }
 
+// ---------------------------------------------------------------------------
+// Kernel exports (multi-shape arrays)
+// ---------------------------------------------------------------------------
+
+/// Element count of a row-major shape; `InvalidParam` on overflow.
+pub fn elems(dims: &[usize]) -> Result<usize, Status> {
+    dims.iter()
+        .try_fold(1usize, |acc, &d| acc.checked_mul(d))
+        .ok_or(Status::InvalidParam)
+}
+
+/// View a kernel input of `count` elements (NULL allowed when `count == 0`).
+///
+/// # Safety
+/// When `count > 0`, `ptr` must be valid for `count` reads.
+pub unsafe fn kernel_in<'a, T>(ptr: *const T, count: usize) -> Result<&'a [T], Status> {
+    if count == 0 {
+        return Ok(&[]);
+    }
+    if ptr.is_null() {
+        return Err(Status::NullPtr);
+    }
+    // SAFETY: non-null and valid for `count` reads per contract.
+    Ok(unsafe { std::slice::from_raw_parts(ptr, count) })
+}
+
+/// View an optional kernel input: NULL means "not supplied".
+///
+/// # Safety
+/// When non-NULL, `ptr` must be valid for `count` reads.
+pub unsafe fn kernel_in_opt<'a, T>(ptr: *const T, count: usize) -> Option<&'a [T]> {
+    if ptr.is_null() {
+        return None;
+    }
+    // SAFETY: non-null; validity per caller contract.
+    Some(unsafe { kernel_in(ptr, count).unwrap_or(&[]) })
+}
+
+/// Reject a NULL scalar output before computing.
+pub fn kernel_check_scalar<T>(ptr: *mut T) -> Result<(), Status> {
+    if ptr.is_null() {
+        return Err(Status::NullPtr);
+    }
+    Ok(())
+}
+
+/// Copy a computed result into a caller-allocated kernel output, checking the
+/// core produced exactly `count` elements.
+///
+/// # Safety
+/// `dst` must be valid for `count` writes.
+pub unsafe fn kernel_out<T: Copy>(dst: *mut T, src: &[T], count: usize) -> Result<(), Status> {
+    if src.len() != count {
+        return Err(Status::Internal);
+    }
+    // SAFETY: length verified; validity per caller contract.
+    unsafe { copy_out(src, dst) };
+    Ok(())
+}
+
 macro_rules! impl_write_scalars {
     ($($t:ident $v:ident $p:ident),+) => {
         impl<$($t),+> WriteScalars<($(*mut $t,)+)> for ($($t,)+) {
@@ -169,6 +236,9 @@ impl_write_scalars!(A a pa, B b pb, C c pc);
 impl_write_scalars!(A a pa, B b pb, C c pc, D d pd);
 impl_write_scalars!(A a pa, B b pb, C c pc, D d pd, E e pe);
 impl_write_scalars!(A a pa, B b pb, C c pc, D d pd, E e pe, F f pf);
+impl_write_scalars!(A a pa, B b pb, C c pc, D d pd, E e pe, F f pf, G g pg);
+impl_write_scalars!(A a pa, B b pb, C c pc, D d pd, E e pe, F f pf, G g pg, H h ph);
+impl_write_scalars!(A a pa, B b pb, C c pc, D d pd, E e pe, F f pf, G g pg, H h ph, I i pi);
 
 #[cfg(test)]
 mod tests {

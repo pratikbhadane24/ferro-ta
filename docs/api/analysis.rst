@@ -1,6 +1,14 @@
 Analysis Modules
 ================
 
+.. automodule:: ferro_ta.analysis.sweep
+   :members:
+   :show-inheritance:
+
+.. automodule:: ferro_ta.analysis.overfit
+   :members:
+   :show-inheritance:
+
 .. automodule:: ferro_ta.analysis.options
    :members:
    :undoc-members:

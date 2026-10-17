@@ -95,7 +95,7 @@ def main() -> int:
             print("run: python3 scripts/build_ffi_bindings.py", file=sys.stderr)
             return 1
         print(
-            f"ffi bindings up to date ({len(spec['functions'])} functions, {len(spec['streams'])} streams)"
+            f"ffi bindings up to date ({len(spec['functions'])} functions, {len(spec.get('kernels', []))} kernels, {len(spec['streams'])} streams)"
         )
         return 0
 
@@ -105,7 +105,7 @@ def main() -> int:
     for path in stale_generated:
         path.unlink()
     print(
-        f"wrote {len(outputs)} files ({len(spec['functions'])} functions, {len(spec['streams'])} streams)"
+        f"wrote {len(outputs)} files ({len(spec['functions'])} functions, {len(spec.get('kernels', []))} kernels, {len(spec['streams'])} streams)"
     )
     return 0
 

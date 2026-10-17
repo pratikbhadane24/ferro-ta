@@ -219,6 +219,7 @@ version = "1.4.0"
 dependencies = [
  "criterion",
  "multiversion",
+ "rayon",
  "serde",
  "serde_json",
 ]

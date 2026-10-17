@@ -13,7 +13,7 @@ mod conditions;
 mod live;
 mod option_greeks;
 #[cfg(feature = "serde")]
-mod snapshot;
+pub(crate) mod snapshot;
 pub use bars::{Bar, BarBuilder, BarSpec, TickStatus};
 pub use conditions::{StreamingCooldown, StreamingCross, StreamingStreak};
 pub use live::{Live, StreamValue, StreamingIndicator};

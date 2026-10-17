@@ -11,13 +11,13 @@
      - Flutter
      - Flutter excluded
      - C / Go
-   * - 390
-     - 364
+   * - 420
+     - 380
      - 253
-     - 349
+     - 362
      - 194
-     - 50
-     - 263
+     - 56
+     - 288
 
 .. list-table:: Cross-language indicator coverage
    :header-rows: 1
@@ -240,6 +240,13 @@
      - yes
      - yes
      - yes
+   * - ``backtest_close``
+     - other
+     - —
+     - —
+     - —
+     - —
+     - yes
    * - ``backtest_core``
      - backtest
      - yes
@@ -247,6 +254,20 @@
      - yes
      - excluded
      - —
+   * - ``backtest_default_settings``
+     - other
+     - —
+     - —
+     - —
+     - —
+     - yes
+   * - ``backtest_multi_asset``
+     - other
+     - —
+     - —
+     - yes
+     - —
+     - yes
    * - ``backtest_multi_asset_core``
      - backtest
      - yes
@@ -254,14 +275,35 @@
      - —
      - —
      - —
+   * - ``backtest_n_settings``
+     - other
+     - —
+     - —
+     - —
+     - —
+     - yes
    * - ``backtest_ohlcv``
      - other
      - —
      - —
      - yes
      - excluded
-     - —
+     - yes
    * - ``backtest_ohlcv_core``
+     - backtest
+     - yes
+     - —
+     - —
+     - —
+     - —
+   * - ``backtest_ohlcv_volume``
+     - other
+     - —
+     - —
+     - yes
+     - —
+     - —
+   * - ``backtest_ohlcv_volume_core``
      - backtest
      - yes
      - —
@@ -365,6 +407,13 @@
      - yes
      - yes
      - yes
+     - yes
+   * - ``benchmark_n_metrics``
+     - other
+     - —
+     - —
+     - —
+     - —
      - yes
    * - ``BETA``
      - portfolio
@@ -1108,6 +1157,13 @@
      - yes
      - yes
      - yes
+   * - ``cscv_combinations``
+     - overfit
+     - yes
+     - —
+     - —
+     - —
+     - —
    * - ``curve_slope``
      - futures
      - yes
@@ -1122,6 +1178,13 @@
      - yes
      - excluded
      - —
+   * - ``deflated_sharpe_ratio``
+     - overfit
+     - yes
+     - —
+     - yes
+     - excluded
+     - yes
    * - ``DEMA``
      - overlap
      - yes
@@ -1248,6 +1311,20 @@
      - yes
      - —
      - —
+   * - ``expand_grid``
+     - sweep
+     - yes
+     - —
+     - yes
+     - excluded
+     - —
+   * - ``expected_max_sharpe``
+     - overfit
+     - yes
+     - —
+     - yes
+     - excluded
+     - yes
    * - ``expected_move``
      - options
      - yes
@@ -1275,7 +1352,7 @@
      - —
      - yes
      - yes
-     - —
+     - yes
    * - ``extract_trades_ohlcv``
      - backtest
      - yes
@@ -1367,6 +1444,13 @@
      - yes
      - yes
      - yes
+   * - ``grid_index``
+     - sweep
+     - yes
+     - —
+     - —
+     - —
+     - —
    * - ``half_kelly_fraction``
      - backtest
      - yes
@@ -1458,6 +1542,13 @@
      - yes
      - excluded
      - yes
+   * - ``inv_cdf``
+     - options
+     - yes
+     - —
+     - —
+     - —
+     - —
    * - ``iv_percentile``
      - options
      - yes
@@ -1618,7 +1709,7 @@
      - —
      - yes
      - excluded
-     - —
+     - yes
    * - ``MACDEXT``
      - overlap
      - yes
@@ -1710,6 +1801,13 @@
      - yes
      - yes
      - yes
+   * - ``metric_names``
+     - sweep
+     - yes
+     - —
+     - —
+     - —
+     - —
    * - ``MFI``
      - momentum
      - yes
@@ -1807,7 +1905,7 @@
      - —
      - yes
      - —
-     - —
+     - yes
    * - ``monthly_contribution``
      - attribution
      - yes
@@ -1892,6 +1990,20 @@
      - yes
      - yes
      - yes
+   * - ``pbo_cscv``
+     - overfit
+     - yes
+     - —
+     - yes
+     - —
+     - yes
+   * - ``pbo_n_combinations``
+     - other
+     - —
+     - —
+     - —
+     - —
+     - yes
    * - ``pdf``
      - options
      - yes
@@ -1899,12 +2011,26 @@
      - —
      - —
      - —
+   * - ``performance_metrics``
+     - other
+     - —
+     - —
+     - —
+     - —
+     - yes
    * - ``PIVOT_POINTS``
      - extended
      - yes
      - yes
      - yes
      - yes
+     - —
+   * - ``plateau_scores``
+     - sweep
+     - yes
+     - —
+     - —
+     - —
      - —
    * - ``PLUS_DI``
      - momentum
@@ -1950,6 +2076,20 @@
      - yes
    * - ``price_upper_bound``
      - options
+     - yes
+     - —
+     - yes
+     - excluded
+     - yes
+   * - ``probabilistic_sharpe_ratio``
+     - overfit
+     - yes
+     - —
+     - yes
+     - excluded
+     - yes
+   * - ``purged_kfold_indices``
+     - overfit
      - yes
      - —
      - yes
@@ -2158,6 +2298,13 @@
      - —
      - —
      - —
+   * - ``run_sweep_combo``
+     - sweep
+     - yes
+     - —
+     - —
+     - —
+     - —
    * - ``rvi``
      - extended
      - yes
@@ -2221,6 +2368,13 @@
      - yes
      - excluded
      - —
+   * - ``sharpe_moments``
+     - overfit
+     - yes
+     - —
+     - —
+     - —
+     - —
    * - ``signal_attribution``
      - attribution
      - yes
@@ -2276,7 +2430,7 @@
      - —
      - yes
      - excluded
-     - —
+     - yes
    * - ``smile_metrics``
      - options
      - yes
@@ -2372,6 +2526,13 @@
      - streaming
      - yes
      - yes
+     - yes
+     - —
+     - yes
+   * - ``WasmStreamingBacktest``
+     - other
+     - —
+     - —
      - yes
      - —
      - yes
@@ -2486,6 +2647,48 @@
      - yes
      - yes
      - excluded
+     - yes
+   * - ``sweep_builtin``
+     - sweep
+     - yes
+     - —
+     - yes
+     - —
+     - yes
+   * - ``sweep_metric_names``
+     - other
+     - —
+     - —
+     - yes
+     - —
+     - —
+   * - ``sweep_n_metrics``
+     - other
+     - —
+     - —
+     - —
+     - —
+     - yes
+   * - ``sweep_plateau_scores``
+     - other
+     - —
+     - —
+     - yes
+     - excluded
+     - yes
+   * - ``sweep_signals``
+     - sweep
+     - yes
+     - —
+     - yes
+     - —
+     - yes
+   * - ``sweep_strategy_n_params``
+     - other
+     - —
+     - —
+     - —
+     - —
      - yes
    * - ``synthetic_forward``
      - futures
@@ -2703,7 +2906,14 @@
      - —
      - yes
      - excluded
+     - yes
+   * - ``walk_forward_n_folds``
+     - other
      - —
+     - —
+     - —
+     - —
+     - yes
    * - ``WCLPRICE``
      - price_transform
      - yes

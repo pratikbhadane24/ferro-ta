@@ -14,6 +14,11 @@
 //! * Periods are `int64_t` (so negative values from signed host languages are
 //!   rejected, not wrapped), MA types `int32_t`, other scalars `double`.
 //! * Panics in the core are contained and reported as `FT_ERR_PANIC`.
+//! * Kernel exports ([`kernels`]) take arrays of different, row-major
+//!   multi-dimensional shapes with explicit `size_t` dimensions; each array's
+//!   shape is listed in the header. Sizes a binding cannot infer from input
+//!   lengths are computed by a companion scalar export
+//!   (e.g. `ft_pbo_n_combinations`).
 //!
 //! Every export is described in [`all_specs`]; `examples/dump_spec.rs` writes
 //! that table to `ffi_spec.json`, the single source the header and language
@@ -31,6 +36,7 @@ pub mod streaming;
 mod validation;
 
 pub mod indicators;
+pub mod kernels;
 pub mod scalars;
 
 pub use bars::*;
@@ -50,8 +56,14 @@ pub use indicators::regime::*;
 pub use indicators::statistic::*;
 pub use indicators::volatility::*;
 pub use indicators::volume::*;
+pub use kernels::backtest::*;
+pub use kernels::backtest_tools::*;
+pub use kernels::overfit::*;
+pub use kernels::sweep::*;
+pub use scalars::backtest::*;
 pub use scalars::futures::*;
 pub use scalars::options::*;
+pub use scalars::overfit::*;
 pub use scalars::sizing::*;
 pub use status::*;
 pub use streaming::*;
@@ -66,6 +78,13 @@ pub fn all_specs() -> impl Iterator<Item = &'static spec::FnSpec> {
 /// Signature metadata for every streaming (opaque handle) export.
 pub fn all_stream_specs() -> impl Iterator<Item = &'static spec::StreamSpec> {
     streaming::STREAM_SPECS.iter()
+}
+
+/// Signature metadata for every kernel (multi-shape array) export.
+pub fn all_kernel_specs() -> impl Iterator<Item = &'static spec::KernelSpec> {
+    kernels::MODULE_KERNEL_SPECS
+        .iter()
+        .flat_map(|specs| specs.iter())
 }
 
 /// Signature metadata for every scalar export.

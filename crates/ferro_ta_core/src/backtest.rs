@@ -5,6 +5,7 @@
 //! convert NumPy arrays to slices and call into this module.
 
 use crate::commission::CommissionModel;
+use crate::fill_model;
 
 // ---------------------------------------------------------------------------
 // Utility helpers
@@ -131,6 +132,22 @@ pub struct BacktestConfig {
     pub daily_loss_limit: f64,
     pub total_loss_limit: f64,
     pub commission: Option<CommissionModel>,
+    /// Max fraction of each bar's volume a signal-driven position change may
+    /// trade (`0.0` = unlimited). The unfilled remainder carries to later
+    /// bars. Requires volume (see [`backtest_ohlcv_volume_core`]). Stop,
+    /// margin-call and circuit-breaker exits are always filled in full.
+    ///
+    /// The cap uses the fill bar's own volume ("participate over the bar"),
+    /// which is not known at the open; pass volume shifted by one bar for a
+    /// strictly causal cap. A limit order that is not touched cancels any
+    /// unfilled remainder, same as an unfilled limit without a cap.
+    pub max_participation: f64,
+    /// Slippage as a multiple of the previous bar's ATR over close
+    /// (`0.0` = off). Takes precedence over `slippage_pct_range` and
+    /// `slippage_bps` once ATR has warmed up.
+    pub slippage_atr_mult: f64,
+    /// ATR look-back for `slippage_atr_mult`.
+    pub slippage_atr_period: usize,
 }
 
 impl Default for BacktestConfig {
@@ -152,6 +169,9 @@ impl Default for BacktestConfig {
             daily_loss_limit: 0.0,
             total_loss_limit: 0.0,
             commission: None,
+            max_participation: 0.0,
+            slippage_atr_mult: 0.0,
+            slippage_atr_period: 14,
         }
     }
 }
@@ -218,6 +238,76 @@ pub struct BacktestMetrics {
     pub information_ratio: Option<f64>,
 }
 
+impl BacktestMetrics {
+    /// Number of entries returned by [`BacktestMetrics::scalar_fields`].
+    pub const N_SCALAR_FIELDS: usize = 24;
+
+    /// Names of [`BacktestMetrics::scalar_fields`], in the same order.
+    pub const SCALAR_FIELD_NAMES: [&'static str; Self::N_SCALAR_FIELDS] = [
+        "total_return",
+        "cagr",
+        "annualized_vol",
+        "sharpe",
+        "sortino",
+        "calmar",
+        "max_drawdown",
+        "avg_drawdown",
+        "max_drawdown_duration_bars",
+        "avg_drawdown_duration_bars",
+        "ulcer_index",
+        "omega_ratio",
+        "win_rate",
+        "profit_factor",
+        "r_expectancy",
+        "avg_win",
+        "avg_loss",
+        "tail_ratio",
+        "skewness",
+        "kurtosis",
+        "best_bar",
+        "worst_bar",
+        "n_trades",
+        "n_position_changes",
+    ];
+
+    /// See [`BacktestMetrics::SCALAR_FIELD_NAMES`].
+    pub fn scalar_field_names() -> [&'static str; Self::N_SCALAR_FIELDS] {
+        Self::SCALAR_FIELD_NAMES
+    }
+
+    /// The always-present (non-benchmark) metrics as `(name, value)` pairs,
+    /// in declaration order. Counts are widened to `f64`.
+    pub fn scalar_fields(&self) -> [(&'static str, f64); Self::N_SCALAR_FIELDS] {
+        let values = [
+            self.total_return,
+            self.cagr,
+            self.annualized_vol,
+            self.sharpe,
+            self.sortino,
+            self.calmar,
+            self.max_drawdown,
+            self.avg_drawdown,
+            self.max_drawdown_duration_bars as f64,
+            self.avg_drawdown_duration_bars,
+            self.ulcer_index,
+            self.omega_ratio,
+            self.win_rate,
+            self.profit_factor,
+            self.r_expectancy,
+            self.avg_win,
+            self.avg_loss,
+            self.tail_ratio,
+            self.skewness,
+            self.kurtosis,
+            self.best_bar,
+            self.worst_bar,
+            self.n_trades as f64,
+            self.n_position_changes as f64,
+        ];
+        std::array::from_fn(|k| (Self::SCALAR_FIELD_NAMES[k], values[k]))
+    }
+}
+
 /// Mutable state bundle for the OHLCV backtest loop.
 pub struct OhlcvState {
     pub current_pos: f64,
@@ -229,6 +319,9 @@ pub struct OhlcvState {
     pub bars_in_trade: usize,
     pub margin_entry_price: f64,
     pub initial_margin_required: f64,
+    /// Position the strategy is working toward; differs from `current_pos`
+    /// only while a volume-capped order is partially filled.
+    pub target: f64,
 }
 
 impl OhlcvState {
@@ -243,6 +336,7 @@ impl OhlcvState {
             bars_in_trade: 0,
             margin_entry_price: f64::NAN,
             initial_margin_required: 0.0,
+            target: 0.0,
         }
     }
 
@@ -256,6 +350,7 @@ impl OhlcvState {
         self.breakeven_stop = f64::NAN;
         self.bars_in_trade = 0;
         self.margin_entry_price = f64::NAN;
+        self.target = 0.0;
         self.initial_margin_required = 0.0;
     }
 }
@@ -268,12 +363,21 @@ impl Default for OhlcvState {
 
 /// Stateful streaming backtester — feed one bar at a time.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct StreamingBacktest {
     pub commission_per_trade: f64,
     pub slippage_bps: f64,
     pub position: f64,
+    #[cfg_attr(
+        feature = "serde",
+        serde(with = "crate::streaming::snapshot::nan_as_null")
+    )]
     pub entry_price: f64,
     pub equity: f64,
+    #[cfg_attr(
+        feature = "serde",
+        serde(with = "crate::streaming::snapshot::nan_as_null")
+    )]
     pub prev_close: f64,
     pub total_commission: f64,
     pub n_trades: usize,
@@ -562,11 +666,56 @@ pub fn single_asset_backtest(
 
 /// Full OHLCV backtest with stop loss, take profit, trailing stops, breakeven,
 /// margin calls, circuit breakers, limit orders, and short borrow costs.
+///
+/// Equivalent to [`backtest_ohlcv_volume_core`] without volume, so
+/// `config.max_participation` must be `0.0`.
 pub fn backtest_ohlcv_core(
     open: &[f64],
     high: &[f64],
     low: &[f64],
     close: &[f64],
+    signals: &[f64],
+    config: &BacktestConfig,
+    limit_prices: Option<&[f64]>,
+) -> Result<OhlcvBacktestResult, String> {
+    backtest_ohlcv_volume_core(open, high, low, close, None, signals, config, limit_prices)
+}
+
+fn validate_execution(
+    n: usize,
+    volume: Option<&[f64]>,
+    config: &BacktestConfig,
+) -> Result<(), String> {
+    if !(config.max_participation >= 0.0 && config.max_participation.is_finite()) {
+        return Err("max_participation must be finite and >= 0".to_string());
+    }
+    if !(config.slippage_atr_mult >= 0.0 && config.slippage_atr_mult.is_finite()) {
+        return Err("slippage_atr_mult must be finite and >= 0".to_string());
+    }
+    if config.slippage_atr_mult > 0.0 && config.slippage_atr_period == 0 {
+        return Err("slippage_atr_period must be >= 1".to_string());
+    }
+    match volume {
+        None if config.max_participation > 0.0 => {
+            Err("max_participation requires volume".to_string())
+        }
+        Some(v) if v.len() != n => Err(format!(
+            "volume length ({}) must equal close length ({n})",
+            v.len()
+        )),
+        _ => Ok(()),
+    }
+}
+
+/// [`backtest_ohlcv_core`] plus optional bar `volume` for the
+/// `max_participation` partial-fill model.
+#[allow(clippy::too_many_arguments)]
+pub fn backtest_ohlcv_volume_core(
+    open: &[f64],
+    high: &[f64],
+    low: &[f64],
+    close: &[f64],
+    volume: Option<&[f64]>,
     signals: &[f64],
     config: &BacktestConfig,
     limit_prices: Option<&[f64]>,
@@ -585,6 +734,11 @@ pub fn backtest_ohlcv_core(
             signals.len()
         ));
     }
+
+    validate_execution(n, volume, config)?;
+    let atr_series = (config.slippage_atr_mult > 0.0)
+        .then(|| crate::volatility::atr(high, low, close, config.slippage_atr_period));
+    let participation = volume.filter(|_| config.max_participation > 0.0);
 
     let use_open_fill = config.fill_mode != "market_close";
     let cm = resolve_commission_model(config.commission.as_ref(), config.commission_per_trade);
@@ -616,7 +770,7 @@ pub fn backtest_ohlcv_core(
 
     for i in 1..n {
         let pos_start = st.current_pos;
-        let desired_pos = position_from_signal(signals[i - 1], st.current_pos);
+        let desired_pos = position_from_signal(signals[i - 1], st.target);
 
         // --- Margin call check (at bar open) ---
         if margin_ratio > 0.0
@@ -649,11 +803,16 @@ pub fn backtest_ohlcv_core(
             }
         }
 
-        let slip: f64 = if slippage_pct_range > 0.0 && close[i] > 0.0 {
-            slippage_pct_range * (high[i] - low[i]) / close[i]
-        } else {
-            default_slip
-        };
+        let slip = fill_model::bar_slippage(
+            i,
+            atr_series.as_deref(),
+            config.slippage_atr_mult,
+            slippage_pct_range,
+            high,
+            low,
+            close,
+            default_slip,
+        );
 
         if trailing_stop_pct > 0.0 {
             if st.current_pos > 0.0 && !st.trail_high.is_nan() {
@@ -708,6 +867,7 @@ pub fn backtest_ohlcv_core(
             forced_close = true;
         }
         if circuit_broken {
+            st.target = 0.0;
             positions[i] = 0.0;
             continue;
         }
@@ -905,9 +1065,24 @@ pub fn backtest_ohlcv_core(
                 (desired_pos, None)
             };
 
-            let pos_changed = (effective_desired_pos - st.current_pos).abs() > 1e-12;
             let base_fill_raw = if use_open_fill { open[i] } else { close[i] };
             let base_fill = limit_override_price.unwrap_or(base_fill_raw);
+            let target_pos = effective_desired_pos;
+            let effective_desired_pos = match participation {
+                Some(v) => fill_model::step_toward(
+                    st.current_pos,
+                    target_pos,
+                    fill_model::participation_cap(
+                        config.max_participation,
+                        v[i],
+                        base_fill,
+                        initial_capital,
+                    ),
+                ),
+                None => target_pos,
+            };
+            let pos_changed = (effective_desired_pos - st.current_pos).abs() > 1e-12;
+            let scaling = fill_model::same_side(st.current_pos, effective_desired_pos);
 
             let actual_fill = if effective_desired_pos > st.current_pos {
                 base_fill * (1.0 + slip)
@@ -919,7 +1094,14 @@ pub fn backtest_ohlcv_core(
 
             if pos_changed {
                 fill_prices[i] = actual_fill;
-                if effective_desired_pos != 0.0 {
+                if scaling {
+                    // Scaling within one side: average the entry on adds,
+                    // keep it (and the trailing anchor) on reductions.
+                    let (held, now) = (st.current_pos.abs(), effective_desired_pos.abs());
+                    if now > held && st.entry_price.is_finite() {
+                        st.entry_price = (st.entry_price * held + actual_fill * (now - held)) / now;
+                    }
+                } else if effective_desired_pos != 0.0 {
                     st.entry_price = actual_fill;
                     if trailing_stop_pct > 0.0 {
                         if effective_desired_pos > 0.0 {
@@ -978,21 +1160,32 @@ pub fn backtest_ohlcv_core(
                         0.0
                     };
                     let entry_r = effective_desired_pos * (close[i] - actual_fill) / actual_fill;
-                    let exit_comm = commission_fraction(
-                        &cm,
-                        actual_fill,
-                        st.current_pos.abs(),
-                        st.current_pos < 0.0,
-                        initial_capital,
-                    );
-                    let entry_comm = commission_fraction(
-                        &cm,
-                        actual_fill,
-                        effective_desired_pos.abs(),
-                        effective_desired_pos > 0.0,
-                        initial_capital,
-                    );
-                    exit_r + entry_r - exit_comm - entry_comm
+                    if scaling {
+                        let comm = commission_fraction(
+                            &cm,
+                            actual_fill,
+                            (effective_desired_pos - st.current_pos).abs(),
+                            effective_desired_pos > st.current_pos,
+                            initial_capital,
+                        );
+                        exit_r + entry_r - comm
+                    } else {
+                        let exit_comm = commission_fraction(
+                            &cm,
+                            actual_fill,
+                            st.current_pos.abs(),
+                            st.current_pos < 0.0,
+                            initial_capital,
+                        );
+                        let entry_comm = commission_fraction(
+                            &cm,
+                            actual_fill,
+                            effective_desired_pos.abs(),
+                            effective_desired_pos > 0.0,
+                            initial_capital,
+                        );
+                        exit_r + entry_r - exit_comm - entry_comm
+                    }
                 }
             } else {
                 let r = st.current_pos * close_ret;
@@ -1017,6 +1210,15 @@ pub fn backtest_ohlcv_core(
                     {
                         st.initial_margin_required = effective_desired_pos.abs() * margin_ratio;
                         st.margin_entry_price = actual_fill;
+                    } else if scaling {
+                        // Same-side resize: margin follows the position size;
+                        // the margin reference price averages in on adds.
+                        let (held, now) = (st.current_pos.abs(), effective_desired_pos.abs());
+                        if now > held && st.margin_entry_price.is_finite() {
+                            st.margin_entry_price =
+                                (st.margin_entry_price * held + actual_fill * (now - held)) / now;
+                        }
+                        st.initial_margin_required = now * margin_ratio;
                     }
                 } else {
                     st.initial_margin_required = 0.0;
@@ -1025,6 +1227,7 @@ pub fn backtest_ohlcv_core(
             }
 
             st.current_pos = effective_desired_pos;
+            st.target = target_pos;
             positions[i] = st.current_pos;
         }
 

@@ -7,6 +7,7 @@ import "C"
 
 import (
 	"fmt"
+	"math"
 	"strings"
 )
 
@@ -69,4 +70,32 @@ func checkLengths(op string, names []string, lengths []int) error {
 		}
 	}
 	return nil
+}
+
+// shapeError reports a kernel input whose length does not match the shape
+// implied by the other arguments (ErrLengthMismatch).
+func shapeError(op, name string, got, want int) error {
+	return &Error{
+		Code: ErrLengthMismatch.Code,
+		Op:   op,
+		Msg:  fmt.Sprintf("%s has %d elements, want %d", name, got, want),
+	}
+}
+
+// maxDim mirrors the C ABI's 2^24 cap on periods and counts; kernel wrappers
+// apply it to every integer that sizes a buffer, so an absurd value is an
+// ErrInvalidParam instead of a giant allocation.
+const maxDim = 1 << 24
+
+// shapeLen is the element count of a row-major shape, rejecting negative
+// dims and int overflow with ErrInvalidParam.
+func shapeLen(op string, dims ...int) (int, error) {
+	n := 1
+	for _, d := range dims {
+		if d < 0 || (d != 0 && n > math.MaxInt/d) {
+			return 0, statusError(op, C.FT_ERR_INVALID_PARAM)
+		}
+		n *= d
+	}
+	return n, nil
 }

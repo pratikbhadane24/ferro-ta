@@ -9,9 +9,10 @@
 use crate::marshal::WriteScalars;
 use crate::status::Status;
 use ferro_ta_core::streaming::{
-    Live, StreamingATR, StreamingBBands, StreamingCooldown, StreamingCross, StreamingEMA,
-    StreamingError, StreamingMACD, StreamingOptionGreeks, StreamingRSI, StreamingSMA,
-    StreamingStoch, StreamingStreak, StreamingSupertrend, StreamingVWAP,
+    Live, StreamValue, StreamingATR, StreamingBBands, StreamingCooldown, StreamingCross,
+    StreamingEMA, StreamingError, StreamingIndicator, StreamingMACD, StreamingOptionGreeks,
+    StreamingRSI, StreamingSMA, StreamingStoch, StreamingStreak, StreamingSupertrend,
+    StreamingVWAP,
 };
 
 /// Copy a snapshot into a caller buffer; see the `*_save` contract.
@@ -70,6 +71,181 @@ impl<T> IntoCtorResult<T> for Result<T, StreamingError> {
     }
 }
 
+/// Bar-by-bar backtester handle: wraps the core `StreamingBacktest` so each
+/// update also reports the running summary.
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+#[serde(transparent)]
+pub struct BacktestStream(ferro_ta_core::backtest::StreamingBacktest);
+
+impl BacktestStream {
+    pub fn new(commission_per_trade: f64, slippage_bps: f64) -> Self {
+        Self(ferro_ta_core::backtest::StreamingBacktest::new(
+            commission_per_trade,
+            slippage_bps,
+        ))
+    }
+
+    /// `(position, bar_return, equity, n_trades, total_commission, win_rate,
+    /// avg_win, avg_loss, kelly_fraction)` after this bar.
+    #[allow(clippy::type_complexity)]
+    pub fn update(
+        &mut self,
+        close: f64,
+        signal: f64,
+    ) -> (f64, f64, f64, i64, f64, f64, f64, f64, f64) {
+        let bar = self.0.on_bar(close, signal);
+        let s = self.0.summary();
+        (
+            bar.position,
+            bar.bar_return,
+            bar.equity,
+            bar.n_trades as i64,
+            s.total_commission,
+            s.win_rate,
+            s.avg_win,
+            s.avg_loss,
+            s.kelly_fraction,
+        )
+    }
+
+    pub fn reset(&mut self) {
+        self.0.reset();
+    }
+}
+
+/// Backtest stream input. A NaN `signal` means "flat", so only a non-finite
+/// close (or an infinite signal) makes a tick unusable for the `Live` guard.
+#[derive(Clone, Copy, Debug)]
+pub struct BacktestBar {
+    pub close: f64,
+    pub signal: f64,
+}
+
+impl From<(f64, f64)> for BacktestBar {
+    fn from((close, signal): (f64, f64)) -> Self {
+        Self { close, signal }
+    }
+}
+
+impl StreamValue for BacktestBar {
+    fn has_nan(&self) -> bool {
+        self.close.is_nan()
+    }
+    fn all_finite(&self) -> bool {
+        self.close.is_finite() && !self.signal.is_infinite()
+    }
+    fn nan() -> Self {
+        Self {
+            close: f64::NAN,
+            signal: f64::NAN,
+        }
+    }
+    fn to_parts(&self) -> Vec<Option<f64>> {
+        [self.close, self.signal]
+            .map(|v| (!v.is_nan()).then_some(v))
+            .to_vec()
+    }
+    fn from_parts(parts: &[Option<f64>]) -> Option<Self> {
+        match parts {
+            [c, s] => Some(Self {
+                close: c.unwrap_or(f64::NAN),
+                signal: s.unwrap_or(f64::NAN),
+            }),
+            _ => None,
+        }
+    }
+}
+
+/// `(position, bar_return, equity, n_trades, total_commission, win_rate,
+/// avg_win, avg_loss, kelly_fraction)`.
+pub type BacktestTuple = (f64, f64, f64, i64, f64, f64, f64, f64, f64);
+
+/// Backtest stream output. Readiness tracks equity: the trade statistics
+/// are legitimately NaN until the first closed trade.
+#[derive(Clone, Copy, Debug)]
+pub struct BacktestOut(pub BacktestTuple);
+
+impl StreamValue for BacktestOut {
+    fn has_nan(&self) -> bool {
+        self.0 .2.is_nan()
+    }
+    fn all_finite(&self) -> bool {
+        let (a, b, c, _, e, f, g, h, i) = self.0;
+        [a, b, c, e, f, g, h, i].iter().all(|v| v.is_finite())
+    }
+    fn nan() -> Self {
+        let n = f64::NAN;
+        Self((n, n, n, 0, n, n, n, n, n))
+    }
+    fn to_parts(&self) -> Vec<Option<f64>> {
+        let (a, b, c, d, e, f, g, h, i) = self.0;
+        [a, b, c, d as f64, e, f, g, h, i]
+            .map(|v| (!v.is_nan()).then_some(v))
+            .to_vec()
+    }
+    fn from_parts(parts: &[Option<f64>]) -> Option<Self> {
+        let v = |p: &Option<f64>| p.unwrap_or(f64::NAN);
+        match parts {
+            [a, b, c, Some(d), e, f, g, h, i] if d.fract() == 0.0 => Some(Self((
+                v(a),
+                v(b),
+                v(c),
+                *d as i64,
+                v(e),
+                v(f),
+                v(g),
+                v(h),
+                v(i),
+            ))),
+            _ => None,
+        }
+    }
+}
+
+impl<P> WriteScalars<P> for BacktestOut
+where
+    BacktestTuple: WriteScalars<P>,
+{
+    unsafe fn write_to(self, ptrs: P) {
+        // SAFETY: forwarded caller contract.
+        unsafe { self.0.write_to(ptrs) }
+    }
+}
+
+impl StreamingIndicator for BacktestStream {
+    const KIND: &'static str = "backtest";
+    type Input = BacktestBar;
+    type Output = BacktestOut;
+
+    fn update(&mut self, input: BacktestBar) -> BacktestOut {
+        BacktestOut(BacktestStream::update(self, input.close, input.signal))
+    }
+
+    fn reset(&mut self) {
+        BacktestStream::reset(self)
+    }
+
+    fn validate(&self) -> Result<(), StreamingError> {
+        let s = &self.0;
+        let finite = [
+            s.commission_per_trade,
+            s.slippage_bps,
+            s.equity,
+            s.total_commission,
+        ];
+        if finite.iter().any(|v| !v.is_finite()) || s.n_wins + s.n_losses > s.n_trades {
+            return Err(StreamingError("inconsistent backtest state".to_string()));
+        }
+        Ok(())
+    }
+}
+
+impl IntoCtorResult<BacktestStream> for BacktestStream {
+    fn into_ctor_result(self) -> Result<BacktestStream, Status> {
+        Ok(self)
+    }
+}
+
 impl IntoCtorResult<StreamingVWAP> for StreamingVWAP {
     fn into_ctor_result(self) -> Result<StreamingVWAP, Status> {
         Ok(self)
@@ -100,7 +276,9 @@ macro_rules! ffi_stream_feed {
                 }
                 // SAFETY: live, exclusively-used handle per contract.
                 let state = unsafe { &mut *handle };
-                let result = state.update(($($input),+), $closed);
+                let raw = ($($input),+);
+                let input = <$ty as StreamingIndicator>::Input::from(raw);
+                let result = state.update(input, $closed);
                 // SAFETY: outputs checked non-null above.
                 unsafe { WriteScalars::write_to(result, ($($out,)+)) };
                 Ok(())
@@ -366,6 +544,26 @@ ffi_streams! {
         ft_stream_vwap_save,
         ft_stream_vwap_load,
         ft_stream_vwap_free,
+    }
+    /// Streaming backtester: feed each bar's close and the target position for the next bar (NaN = flat). Reports the position, bar return, equity (starting at 1.0), the number of closed trades and running statistics over closed trades (win rate, average win/loss, Kelly fraction). commission_per_trade is subtracted from equity on each position change; slippage is in basis points.
+    backtest: BacktestStream as FtStreamBacktest {
+        ft_stream_backtest_new(commission_per_trade: float, slippage_bps: float),
+        ft_stream_backtest_update(close, signal) -> [
+            out_position: f64,
+            out_bar_return: f64,
+            out_equity: f64,
+            out_n_trades: i64,
+            out_total_commission: f64,
+            out_win_rate: f64,
+            out_avg_win: f64,
+            out_avg_loss: f64,
+            out_kelly_fraction: f64
+        ],
+        ft_stream_backtest_peek,
+        ft_stream_backtest_reset,
+        ft_stream_backtest_save,
+        ft_stream_backtest_load,
+        ft_stream_backtest_free,
     }
     /// Streaming Supertrend. `out_direction` is 1 (up) / -1 (down), 0 in warm-up.
     supertrend: StreamingSupertrend as FtStreamSupertrend {
