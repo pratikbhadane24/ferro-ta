@@ -18,6 +18,27 @@ and the project uses [Semantic Versioning](https://semver.org/).
   NaN. Matches the streaming classes tick for tick. The default stays
   `"propagate"` (TA-Lib semantics, unchanged).
 
+## [1.5.1] — 2026-10-17
+
+Hotfix: portable PyPI wheels. Contains everything in 1.5.0 (which never
+reached PyPI); no library code changed.
+
+### Fixed
+
+- **PyPI wheels are portable again.** The release wheel jobs inherited
+  `target-cpu=native` from `.cargo/config.toml`, so wheels were compiled for
+  the CI runner's CPU. The x86_64 wheels of earlier releases (seen in 1.4.0;
+  likely since 1.1.0) use AVX-512 instructions in ordinary code paths and can
+  crash with `Illegal instruction` on CPUs without AVX-512. The aarch64
+  cross-build crashed the compiler, which is why 1.5.0 was published
+  everywhere except PyPI. Wheels are now built for the architecture baseline;
+  runtime SIMD dispatch still uses AVX2 / AVX-512 / NEON where available.
+  **If `import ferro_ta` or an indicator call crashes with "Illegal
+  instruction" on 1.4.0 or earlier, upgrade to 1.5.1.**
+- CI gains a `wheel-portability` guard: the release-path x86_64 wheel is
+  imported and exercised under QEMU emulating a CPU without AVX, and the
+  aarch64 wheel is cross-built, on every pull request.
+
 ## [1.5.0] — 2026-10-17
 
 Highlights: live trading support for every streaming indicator (preview the
@@ -837,7 +858,8 @@ Changed and Fixed.
 
 ---
 
-[Unreleased]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.5.0...HEAD
+[Unreleased]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.5.1...HEAD
+[1.5.1]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.3.1...v1.4.0
 [1.3.1]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.3.0...v1.3.1
