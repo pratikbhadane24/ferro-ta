@@ -13,6 +13,9 @@ pub enum ParamKind {
     Period { min: i64 },
     /// `int64_t` non-negative count (shifts, displacement).
     Count,
+    /// `int64_t` RNG seed: any value, reinterpreted as `u64` (never sizes
+    /// anything, so no cap).
+    Seed,
     /// `int32_t` moving-average type, `0..=8`.
     MaType,
     /// `double`, must be finite.

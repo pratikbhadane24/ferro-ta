@@ -2,6 +2,7 @@
 //! in one call. See [`crate::spec::KernelSpec`].
 
 pub mod backtest;
+pub mod backtest_tools;
 pub mod overfit;
 pub mod sweep;
 
@@ -13,6 +14,7 @@ pub const MODULE_KERNEL_SPECS: &[&[KernelSpec]] = &[
     overfit::KERNEL_SPECS,
     sweep::KERNEL_SPECS,
     backtest::KERNEL_SPECS,
+    backtest_tools::KERNEL_SPECS,
 ];
 
 /// Core input/domain errors surface as `FT_ERR_INVALID_PARAM`.

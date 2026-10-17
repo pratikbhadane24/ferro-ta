@@ -11,8 +11,8 @@ use super::invalid;
 use crate::marshal::{check_output, kernel_in, kernel_in_opt, kernel_out, MAX_PERIOD};
 use crate::status::Status;
 use ferro_ta_core::backtest::{
-    backtest_ohlcv_volume_core, compute_performance_metrics, resolve_commission_model,
-    BacktestConfig, BacktestMetrics,
+    backtest_ohlcv_volume_core, compute_performance_metrics_with_positions,
+    resolve_commission_model, BacktestConfig, BacktestMetrics,
 };
 use ferro_ta_core::commission::CommissionModel;
 
@@ -54,6 +54,8 @@ mod key {
 /// Length of the settings vector this library understands.
 pub const N_SETTINGS: usize = 31;
 const N_METRICS: usize = BacktestMetrics::N_SCALAR_FIELDS;
+/// Columns of `out_benchmark` (`FT_BENCH_*`).
+pub const N_BENCHMARK_METRICS: usize = 8;
 
 fn flag(on: bool) -> f64 {
     if on {
@@ -231,27 +233,55 @@ crate::ffi_kernel_exports! {
             kernel_out(out_equity, &r.equity, n_bars)
         }
     };
-    /// Performance metrics of a strategy-return / equity series (e.g. from ft_backtest_ohlcv), written as one row indexed by FT_METRIC_*; n_metric_cols must equal ft_sweep_n_metrics().
+    /// Performance metrics of a strategy-return / equity series (e.g. from ft_backtest_ohlcv), written as one row indexed by FT_METRIC_*. With `positions` (optional) trades are counted from position changes; otherwise inferred from non-zero return runs. With `benchmark_returns` (optional, per-bar returns) out_benchmark gets the FT_BENCH_* metrics; without it, NaN. n_metric_cols / n_benchmark_cols must equal ft_sweep_n_metrics() / ft_benchmark_n_metrics().
     ft_performance_metrics(
         strategy_returns: in f64 [n_bars],
         equity: in f64 [n_bars],
+        benchmark_returns: in_opt f64 [n_bars],
+        positions: in_opt f64 [n_bars],
         n_bars: size usize,
         periods_per_year: param float,
         risk_free_rate: param float,
         n_metric_cols: size usize <- ft_sweep_n_metrics(),
+        n_benchmark_cols: size usize <- ft_benchmark_n_metrics(),
         out_metrics: out f64 [n_metric_cols],
+        out_benchmark: out f64 [n_benchmark_cols],
     ) => {
-        if n_metric_cols != N_METRICS {
+        if n_metric_cols != N_METRICS || n_benchmark_cols != N_BENCHMARK_METRICS {
             return Err(Status::InvalidParam);
         }
         check_output(out_metrics, n_metric_cols)?;
-        // SAFETY: caller contract — inputs valid for n_bars reads.
-        let (r, eq) = unsafe { (kernel_in(strategy_returns, n_bars)?, kernel_in(equity, n_bars)?) };
-        let m = compute_performance_metrics(r, eq, periods_per_year, risk_free_rate, None)
-            .map_err(invalid)?;
+        check_output(out_benchmark, n_benchmark_cols)?;
+        // SAFETY: caller contract — inputs valid for n_bars reads (optional ones may be NULL).
+        let (r, eq, bench, pos) = unsafe {
+            (
+                kernel_in(strategy_returns, n_bars)?,
+                kernel_in(equity, n_bars)?,
+                kernel_in_opt(benchmark_returns, n_bars),
+                kernel_in_opt(positions, n_bars),
+            )
+        };
+        let m = compute_performance_metrics_with_positions(
+            r, eq, periods_per_year, risk_free_rate, bench, pos,
+        )
+        .map_err(invalid)?;
         let row = m.scalar_fields().map(|(_, v)| v);
-        // SAFETY: checked non-null; valid for n_metric_cols writes.
-        unsafe { kernel_out(out_metrics, &row, n_metric_cols) }
+        let bench_row = [
+            m.benchmark_total_return,
+            m.benchmark_cagr,
+            m.benchmark_annualized_vol,
+            m.benchmark_sharpe,
+            m.alpha,
+            m.beta,
+            m.tracking_error,
+            m.information_ratio,
+        ]
+        .map(|v| v.unwrap_or(f64::NAN));
+        // SAFETY: checked non-null; valid for their lengths.
+        unsafe {
+            kernel_out(out_metrics, &row, n_metric_cols)?;
+            kernel_out(out_benchmark, &bench_row, n_benchmark_cols)
+        }
     };
 }
 

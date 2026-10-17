@@ -50,7 +50,7 @@ impl Param<i64> for usize {
         let min = match kind {
             ParamKind::Period { min } => min,
             ParamKind::Count => 0,
-            ParamKind::MaType | ParamKind::Float | ParamKind::Enum(_) => {
+            ParamKind::MaType | ParamKind::Float | ParamKind::Seed | ParamKind::Enum(_) => {
                 unreachable!("not an integer period")
             }
         };
@@ -58,6 +58,13 @@ impl Param<i64> for usize {
             return Err(Status::InvalidParam);
         }
         usize::try_from(raw).map_err(|_| Status::InvalidParam)
+    }
+}
+
+impl Param<i64> for u64 {
+    /// Seeds take any bit pattern (same as Python/WASM `u64` seeds).
+    fn from_raw(raw: i64, _kind: ParamKind) -> Result<Self, Status> {
+        Ok(raw as u64)
     }
 }
 
@@ -234,6 +241,10 @@ impl_write_scalars!(A a pa, B b pb);
 impl_write_scalars!(A a pa, B b pb, C c pc);
 impl_write_scalars!(A a pa, B b pb, C c pc, D d pd);
 impl_write_scalars!(A a pa, B b pb, C c pc, D d pd, E e pe);
+impl_write_scalars!(A a pa, B b pb, C c pc, D d pd, E e pe, F f pf);
+impl_write_scalars!(A a pa, B b pb, C c pc, D d pd, E e pe, F f pf, G g pg);
+impl_write_scalars!(A a pa, B b pb, C c pc, D d pd, E e pe, F f pf, G g pg, H h ph);
+impl_write_scalars!(A a pa, B b pb, C c pc, D d pd, E e pe, F f pf, G g pg, H h ph, I i pi);
 
 #[cfg(test)]
 mod tests {

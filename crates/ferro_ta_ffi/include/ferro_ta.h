@@ -126,6 +126,16 @@ const char *ft_version(void);
 #define FT_BT_LOT_SIZE 29
 #define FT_BT_SHORT_BORROW_RATE_ANNUAL 30
 
+/* BenchmarkMetric values (int32_t parameters of that kind). */
+#define FT_BENCH_TOTAL_RETURN 0
+#define FT_BENCH_CAGR 1
+#define FT_BENCH_ANNUALIZED_VOL 2
+#define FT_BENCH_SHARPE 3
+#define FT_BENCH_ALPHA 4
+#define FT_BENCH_BETA 5
+#define FT_BENCH_TRACKING_ERROR 6
+#define FT_BENCH_INFORMATION_RATIO 7
+
 /* ---- overlap --------------------------------------------------------------- */
 
 /**
@@ -1471,6 +1481,16 @@ int32_t ft_sweep_n_metrics(int64_t *out_value);
 /* ---- backtest (scalar) ----------------------------------------------------- */
 
 /**
+ * Number of folds ft_walk_forward_indices writes for these arguments (anchored must be 0 or 1).
+ */
+int32_t ft_walk_forward_n_folds(int64_t n_bars, int64_t train_bars, int64_t test_bars, int64_t anchored, int64_t step_bars, int64_t *out_value);
+
+/**
+ * Number of benchmark-relative metrics ft_performance_metrics writes (FT_BENCH_* indices are below it).
+ */
+int32_t ft_benchmark_n_metrics(int64_t *out_value);
+
+/**
  * Length of the settings vector this library understands (FT_BT_* indices are below it).
  */
 int32_t ft_backtest_n_settings(int64_t *out_value);
@@ -1579,15 +1599,95 @@ int32_t ft_backtest_default_settings(size_t n_settings, double *out);
 int32_t ft_backtest_ohlcv(const double *open, const double *high, const double *low, const double *close, const double *volume, const double *signals, const double *limit_prices, size_t n_bars, const double *settings, size_t n_settings, double *out_positions, double *out_fill_prices, double *out_bar_returns, double *out_strategy_returns, double *out_equity);
 
 /**
- * Performance metrics of a strategy-return / equity series (e.g. from ft_backtest_ohlcv), written as one row indexed by FT_METRIC_*; n_metric_cols must equal ft_sweep_n_metrics().
+ * Performance metrics of a strategy-return / equity series (e.g. from ft_backtest_ohlcv), written as one row indexed by FT_METRIC_*. With `positions` (optional) trades are counted from position changes; otherwise inferred from non-zero return runs. With `benchmark_returns` (optional, per-bar returns) out_benchmark gets the FT_BENCH_* metrics; without it, NaN. n_metric_cols / n_benchmark_cols must equal ft_sweep_n_metrics() / ft_benchmark_n_metrics().
  * Shapes (row-major element counts):
  *   strategy_returns[n_bars]
  *   equity[n_bars]
+ *   benchmark_returns[n_bars] (optional: may be NULL)
+ *   positions[n_bars] (optional: may be NULL)
  *   out_metrics[n_metric_cols]
+ *   out_benchmark[n_benchmark_cols]
  * Sizes computed by a helper:
  *   n_metric_cols = ft_sweep_n_metrics()
+ *   n_benchmark_cols = ft_benchmark_n_metrics()
  */
-int32_t ft_performance_metrics(const double *strategy_returns, const double *equity, size_t n_bars, double periods_per_year, double risk_free_rate, size_t n_metric_cols, double *out_metrics);
+int32_t ft_performance_metrics(const double *strategy_returns, const double *equity, const double *benchmark_returns, const double *positions, size_t n_bars, double periods_per_year, double risk_free_rate, size_t n_metric_cols, size_t n_benchmark_cols, double *out_metrics, double *out_benchmark);
+
+/**
+ * SMA crossover signals: +1 when SMA(fast) > SMA(slow), -1 below, NaN during warm-up. Requires fast < slow.
+ * Shapes (row-major element counts):
+ *   close[n]
+ *   out[n]
+ */
+int32_t ft_sma_crossover_signals(const double *close, size_t n, int64_t fast, int64_t slow, double *out);
+
+/**
+ * MACD crossover signals: +1 when the MACD line is above its signal line, -1 below, NaN during warm-up. Requires fastperiod < slowperiod.
+ * Shapes (row-major element counts):
+ *   close[n]
+ *   out[n]
+ */
+int32_t ft_macd_crossover_signals(const double *close, size_t n, int64_t fastperiod, int64_t slowperiod, int64_t signalperiod, double *out);
+
+/**
+ * Close-only vectorised backtest: positions are lagged signals (NaN holds the prior position), slippage and commission are charged on position changes. Uses FT_BT_SLIPPAGE_BPS, FT_BT_INITIAL_CAPITAL and the commission entries of `settings` (same vector as ft_backtest_ohlcv); other entries must still be valid but have no effect (short-borrow costs are not modelled by this engine).
+ * Shapes (row-major element counts):
+ *   close[n_bars]
+ *   signals[n_bars]
+ *   settings[n_settings]
+ *   out_positions[n_bars]
+ *   out_bar_returns[n_bars]
+ *   out_strategy_returns[n_bars]
+ *   out_equity[n_bars]
+ */
+int32_t ft_backtest_close(const double *close, const double *signals, size_t n_bars, const double *settings, size_t n_settings, double *out_positions, double *out_bar_returns, double *out_strategy_returns, double *out_equity);
+
+/**
+ * Block-bootstrap Monte Carlo of strategy returns: n_sims resampled equity curves, row-major (n_sims, n_bars). block_size 0 or 1 = i.i.d. resampling. Deterministic for a given seed; any 64-bit seed (reinterpreted as unsigned) reproduces the Python/WASM paths.
+ * Shapes (row-major element counts):
+ *   strategy_returns[n_bars]
+ *   out[n_sims * n_bars]
+ */
+int32_t ft_monte_carlo_bootstrap(const double *strategy_returns, size_t n_bars, int64_t n_sims, int64_t seed, int64_t block_size, double *out);
+
+/**
+ * Walk-forward fold boundaries, row-major (n_folds, 4) rows of [train_start, train_end, test_start, test_end]. anchored: 0 = rolling window, 1 = expanding from bar 0. step_bars 0 = non-overlapping test windows.
+ * Shapes (row-major element counts):
+ *   out[n_folds * 4]
+ * Sizes computed by a helper:
+ *   n_folds = ft_walk_forward_n_folds(n_bars, train_bars, test_bars, anchored, step_bars)
+ */
+int32_t ft_walk_forward_indices(int64_t n_bars, int64_t train_bars, int64_t test_bars, int64_t anchored, int64_t step_bars, size_t n_folds, int64_t *out);
+
+/**
+ * Round-trip trades from an OHLCV backtest (positions and fill prices from ft_backtest_ohlcv). Writes out_n_trades rows into columns of capacity n_bars; rows past it hold -1 (bar indices) or NaN. mae/mfe are the maximum adverse/favourable excursions as fractions of the entry price.
+ * Shapes (row-major element counts):
+ *   positions[n_bars]
+ *   fill_prices[n_bars]
+ *   high[n_bars]
+ *   low[n_bars]
+ *   out_entry_bar[n_bars]
+ *   out_exit_bar[n_bars]
+ *   out_direction[n_bars]
+ *   out_entry_price[n_bars]
+ *   out_exit_price[n_bars]
+ *   out_pnl_pct[n_bars]
+ *   out_duration_bars[n_bars]
+ *   out_mae[n_bars]
+ *   out_mfe[n_bars]
+ */
+int32_t ft_extract_trades(const double *positions, const double *fill_prices, const double *high, const double *low, size_t n_bars, int64_t *out_n_trades, int64_t *out_entry_bar, int64_t *out_exit_bar, double *out_direction, double *out_entry_price, double *out_exit_price, double *out_pnl_pct, int64_t *out_duration_bars, double *out_mae, double *out_mfe);
+
+/**
+ * Multi-asset backtest: each asset's close-only backtest on its weight column, combined into a portfolio. close and weights are row-major (n_bars, n_assets). Exposure caps (0 = off for gross/net, 1 = off for per-asset) are applied to the weights bar by bar.
+ * Shapes (row-major element counts):
+ *   close[n_bars * n_assets]
+ *   weights[n_bars * n_assets]
+ *   out_asset_returns[n_bars * n_assets]
+ *   out_portfolio_returns[n_bars]
+ *   out_equity[n_bars]
+ */
+int32_t ft_backtest_multi_asset(const double *close, const double *weights, size_t n_bars, size_t n_assets, double commission_per_trade, double slippage_bps, double max_asset_weight, double max_gross_exposure, double max_net_exposure, double *out_asset_returns, double *out_portfolio_returns, double *out_equity);
 
 /* ---- streaming ------------------------------------------------------------- */
 
@@ -1662,6 +1762,15 @@ int32_t ft_stream_vwap_new(FtStreamVwap **out_handle);
 int32_t ft_stream_vwap_update(FtStreamVwap *handle, double high, double low, double close, double volume, double *out);
 int32_t ft_stream_vwap_reset(FtStreamVwap *handle);
 void ft_stream_vwap_free(FtStreamVwap *handle);
+
+/**
+ * Streaming backtester: feed each bar's close and the target position for the next bar (NaN = flat). Reports the position, bar return, equity (starting at 1.0), the number of closed trades and running statistics over closed trades (win rate, average win/loss, Kelly fraction). commission_per_trade is subtracted from equity on each position change; slippage is in basis points.
+ */
+typedef struct FtStreamBacktest FtStreamBacktest;
+int32_t ft_stream_backtest_new(double commission_per_trade, double slippage_bps, FtStreamBacktest **out_handle);
+int32_t ft_stream_backtest_update(FtStreamBacktest *handle, double close, double signal, double *out_position, double *out_bar_return, double *out_equity, int64_t *out_n_trades, double *out_total_commission, double *out_win_rate, double *out_avg_win, double *out_avg_loss, double *out_kelly_fraction);
+int32_t ft_stream_backtest_reset(FtStreamBacktest *handle);
+void ft_stream_backtest_free(FtStreamBacktest *handle);
 
 /**
  * Streaming Supertrend. `out_direction` is 1 (up) / -1 (down), 0 in warm-up.

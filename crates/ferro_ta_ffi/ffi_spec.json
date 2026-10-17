@@ -305,6 +305,44 @@
           "value": 30
         }
       ]
+    },
+    {
+      "c_prefix": "FT_BENCH",
+      "name": "BenchmarkMetric",
+      "values": [
+        {
+          "name": "TOTAL_RETURN",
+          "value": 0
+        },
+        {
+          "name": "CAGR",
+          "value": 1
+        },
+        {
+          "name": "ANNUALIZED_VOL",
+          "value": 2
+        },
+        {
+          "name": "SHARPE",
+          "value": 3
+        },
+        {
+          "name": "ALPHA",
+          "value": 4
+        },
+        {
+          "name": "BETA",
+          "value": 5
+        },
+        {
+          "name": "TRACKING_ERROR",
+          "value": 6
+        },
+        {
+          "name": "INFORMATION_RATIO",
+          "value": 7
+        }
+      ]
     }
   ],
   "functions": [
@@ -7208,6 +7246,30 @@
           "role": "in"
         },
         {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            }
+          ],
+          "elem": "f64",
+          "name": "benchmark_returns",
+          "optional": true,
+          "role": "in"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            }
+          ],
+          "elem": "f64",
+          "name": "positions",
+          "optional": true,
+          "role": "in"
+        },
+        {
           "c_type": "size_t",
           "derived": null,
           "name": "n_bars",
@@ -7235,6 +7297,15 @@
           "role": "size"
         },
         {
+          "c_type": "size_t",
+          "derived": {
+            "params": [],
+            "via": "ft_benchmark_n_metrics"
+          },
+          "name": "n_benchmark_cols",
+          "role": "size"
+        },
+        {
           "c_type": "double",
           "dims": [
             {
@@ -7244,11 +7315,639 @@
           "elem": "f64",
           "name": "out_metrics",
           "role": "out"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_benchmark_cols"
+            }
+          ],
+          "elem": "f64",
+          "name": "out_benchmark",
+          "role": "out"
         }
       ],
-      "doc": "Performance metrics of a strategy-return / equity series (e.g. from ft_backtest_ohlcv), written as one row indexed by FT_METRIC_*; n_metric_cols must equal ft_sweep_n_metrics().",
+      "doc": "Performance metrics of a strategy-return / equity series (e.g. from ft_backtest_ohlcv), written as one row indexed by FT_METRIC_*. With `positions` (optional) trades are counted from position changes; otherwise inferred from non-zero return runs. With `benchmark_returns` (optional, per-bar returns) out_benchmark gets the FT_BENCH_* metrics; without it, NaN. n_metric_cols / n_benchmark_cols must equal ft_sweep_n_metrics() / ft_benchmark_n_metrics().",
       "group": "backtest",
       "name": "ft_performance_metrics"
+    },
+    {
+      "args": [
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n"
+            }
+          ],
+          "elem": "f64",
+          "name": "close",
+          "optional": false,
+          "role": "in"
+        },
+        {
+          "c_type": "size_t",
+          "derived": null,
+          "name": "n",
+          "role": "size"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "fast",
+          "role": "param"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "slow",
+          "role": "param"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n"
+            }
+          ],
+          "elem": "f64",
+          "name": "out",
+          "role": "out"
+        }
+      ],
+      "doc": "SMA crossover signals: +1 when SMA(fast) > SMA(slow), -1 below, NaN during warm-up. Requires fast < slow.",
+      "group": "backtest",
+      "name": "ft_sma_crossover_signals"
+    },
+    {
+      "args": [
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n"
+            }
+          ],
+          "elem": "f64",
+          "name": "close",
+          "optional": false,
+          "role": "in"
+        },
+        {
+          "c_type": "size_t",
+          "derived": null,
+          "name": "n",
+          "role": "size"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "fastperiod",
+          "role": "param"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "slowperiod",
+          "role": "param"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "signalperiod",
+          "role": "param"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n"
+            }
+          ],
+          "elem": "f64",
+          "name": "out",
+          "role": "out"
+        }
+      ],
+      "doc": "MACD crossover signals: +1 when the MACD line is above its signal line, -1 below, NaN during warm-up. Requires fastperiod < slowperiod.",
+      "group": "backtest",
+      "name": "ft_macd_crossover_signals"
+    },
+    {
+      "args": [
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            }
+          ],
+          "elem": "f64",
+          "name": "close",
+          "optional": false,
+          "role": "in"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            }
+          ],
+          "elem": "f64",
+          "name": "signals",
+          "optional": false,
+          "role": "in"
+        },
+        {
+          "c_type": "size_t",
+          "derived": null,
+          "name": "n_bars",
+          "role": "size"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_settings"
+            }
+          ],
+          "elem": "f64",
+          "name": "settings",
+          "optional": false,
+          "role": "in"
+        },
+        {
+          "c_type": "size_t",
+          "derived": null,
+          "name": "n_settings",
+          "role": "size"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            }
+          ],
+          "elem": "f64",
+          "name": "out_positions",
+          "role": "out"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            }
+          ],
+          "elem": "f64",
+          "name": "out_bar_returns",
+          "role": "out"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            }
+          ],
+          "elem": "f64",
+          "name": "out_strategy_returns",
+          "role": "out"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            }
+          ],
+          "elem": "f64",
+          "name": "out_equity",
+          "role": "out"
+        }
+      ],
+      "doc": "Close-only vectorised backtest: positions are lagged signals (NaN holds the prior position), slippage and commission are charged on position changes. Uses FT_BT_SLIPPAGE_BPS, FT_BT_INITIAL_CAPITAL and the commission entries of `settings` (same vector as ft_backtest_ohlcv); other entries must still be valid but have no effect (short-borrow costs are not modelled by this engine).",
+      "group": "backtest",
+      "name": "ft_backtest_close"
+    },
+    {
+      "args": [
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            }
+          ],
+          "elem": "f64",
+          "name": "strategy_returns",
+          "optional": false,
+          "role": "in"
+        },
+        {
+          "c_type": "size_t",
+          "derived": null,
+          "name": "n_bars",
+          "role": "size"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "n_sims",
+          "role": "param"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "seed",
+          "name": "seed",
+          "role": "param"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "count",
+          "min": 0,
+          "name": "block_size",
+          "role": "param"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_sims"
+            },
+            {
+              "name": "n_bars"
+            }
+          ],
+          "elem": "f64",
+          "name": "out",
+          "role": "out"
+        }
+      ],
+      "doc": "Block-bootstrap Monte Carlo of strategy returns: n_sims resampled equity curves, row-major (n_sims, n_bars). block_size 0 or 1 = i.i.d. resampling. Deterministic for a given seed; any 64-bit seed (reinterpreted as unsigned) reproduces the Python/WASM paths.",
+      "group": "backtest",
+      "name": "ft_monte_carlo_bootstrap"
+    },
+    {
+      "args": [
+        {
+          "c_type": "int64_t",
+          "kind": "count",
+          "min": 0,
+          "name": "n_bars",
+          "role": "param"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "train_bars",
+          "role": "param"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "test_bars",
+          "role": "param"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "count",
+          "min": 0,
+          "name": "anchored",
+          "role": "param"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "count",
+          "min": 0,
+          "name": "step_bars",
+          "role": "param"
+        },
+        {
+          "c_type": "size_t",
+          "derived": {
+            "params": [
+              "n_bars",
+              "train_bars",
+              "test_bars",
+              "anchored",
+              "step_bars"
+            ],
+            "via": "ft_walk_forward_n_folds"
+          },
+          "name": "n_folds",
+          "role": "size"
+        },
+        {
+          "c_type": "int64_t",
+          "dims": [
+            {
+              "name": "n_folds"
+            },
+            {
+              "const": 4
+            }
+          ],
+          "elem": "i64",
+          "name": "out",
+          "role": "out"
+        }
+      ],
+      "doc": "Walk-forward fold boundaries, row-major (n_folds, 4) rows of [train_start, train_end, test_start, test_end]. anchored: 0 = rolling window, 1 = expanding from bar 0. step_bars 0 = non-overlapping test windows.",
+      "group": "backtest",
+      "name": "ft_walk_forward_indices"
+    },
+    {
+      "args": [
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            }
+          ],
+          "elem": "f64",
+          "name": "positions",
+          "optional": false,
+          "role": "in"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            }
+          ],
+          "elem": "f64",
+          "name": "fill_prices",
+          "optional": false,
+          "role": "in"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            }
+          ],
+          "elem": "f64",
+          "name": "high",
+          "optional": false,
+          "role": "in"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            }
+          ],
+          "elem": "f64",
+          "name": "low",
+          "optional": false,
+          "role": "in"
+        },
+        {
+          "c_type": "size_t",
+          "derived": null,
+          "name": "n_bars",
+          "role": "size"
+        },
+        {
+          "c_type": "int64_t",
+          "elem": "i64",
+          "name": "out_n_trades",
+          "role": "out_scalar"
+        },
+        {
+          "c_type": "int64_t",
+          "dims": [
+            {
+              "name": "n_bars"
+            }
+          ],
+          "elem": "i64",
+          "name": "out_entry_bar",
+          "role": "out"
+        },
+        {
+          "c_type": "int64_t",
+          "dims": [
+            {
+              "name": "n_bars"
+            }
+          ],
+          "elem": "i64",
+          "name": "out_exit_bar",
+          "role": "out"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            }
+          ],
+          "elem": "f64",
+          "name": "out_direction",
+          "role": "out"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            }
+          ],
+          "elem": "f64",
+          "name": "out_entry_price",
+          "role": "out"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            }
+          ],
+          "elem": "f64",
+          "name": "out_exit_price",
+          "role": "out"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            }
+          ],
+          "elem": "f64",
+          "name": "out_pnl_pct",
+          "role": "out"
+        },
+        {
+          "c_type": "int64_t",
+          "dims": [
+            {
+              "name": "n_bars"
+            }
+          ],
+          "elem": "i64",
+          "name": "out_duration_bars",
+          "role": "out"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            }
+          ],
+          "elem": "f64",
+          "name": "out_mae",
+          "role": "out"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            }
+          ],
+          "elem": "f64",
+          "name": "out_mfe",
+          "role": "out"
+        }
+      ],
+      "doc": "Round-trip trades from an OHLCV backtest (positions and fill prices from ft_backtest_ohlcv). Writes out_n_trades rows into columns of capacity n_bars; rows past it hold -1 (bar indices) or NaN. mae/mfe are the maximum adverse/favourable excursions as fractions of the entry price.",
+      "group": "backtest",
+      "name": "ft_extract_trades"
+    },
+    {
+      "args": [
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            },
+            {
+              "name": "n_assets"
+            }
+          ],
+          "elem": "f64",
+          "name": "close",
+          "optional": false,
+          "role": "in"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            },
+            {
+              "name": "n_assets"
+            }
+          ],
+          "elem": "f64",
+          "name": "weights",
+          "optional": false,
+          "role": "in"
+        },
+        {
+          "c_type": "size_t",
+          "derived": null,
+          "name": "n_bars",
+          "role": "size"
+        },
+        {
+          "c_type": "size_t",
+          "derived": null,
+          "name": "n_assets",
+          "role": "size"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "commission_per_trade",
+          "role": "param"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "slippage_bps",
+          "role": "param"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "max_asset_weight",
+          "role": "param"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "max_gross_exposure",
+          "role": "param"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "max_net_exposure",
+          "role": "param"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            },
+            {
+              "name": "n_assets"
+            }
+          ],
+          "elem": "f64",
+          "name": "out_asset_returns",
+          "role": "out"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            }
+          ],
+          "elem": "f64",
+          "name": "out_portfolio_returns",
+          "role": "out"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            }
+          ],
+          "elem": "f64",
+          "name": "out_equity",
+          "role": "out"
+        }
+      ],
+      "doc": "Multi-asset backtest: each asset's close-only backtest on its weight column, combined into a portfolio. close and weights are row-major (n_bars, n_assets). Exposure caps (0 = off for gross/net, 1 = off for per-asset) are applied to the weights bar by bar.",
+      "group": "backtest",
+      "name": "ft_backtest_multi_asset"
     }
   ],
   "scalars": [
@@ -8450,6 +9149,63 @@
       "params": []
     },
     {
+      "doc": "Number of folds ft_walk_forward_indices writes for these arguments (anchored must be 0 or 1).",
+      "group": "backtest",
+      "name": "ft_walk_forward_n_folds",
+      "outputs": [
+        {
+          "c_type": "int64_t",
+          "elem": "i64",
+          "name": "out_value"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "count",
+          "min": 0,
+          "name": "n_bars"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "train_bars"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "test_bars"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "count",
+          "min": 0,
+          "name": "anchored"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "count",
+          "min": 0,
+          "name": "step_bars"
+        }
+      ]
+    },
+    {
+      "doc": "Number of benchmark-relative metrics ft_performance_metrics writes (FT_BENCH_* indices are below it).",
+      "group": "backtest",
+      "name": "ft_benchmark_n_metrics",
+      "outputs": [
+        {
+          "c_type": "int64_t",
+          "elem": "i64",
+          "name": "out_value"
+        }
+      ],
+      "params": []
+    },
+    {
       "doc": "Length of the settings vector this library understands (FT_BT_* indices are below it).",
       "group": "backtest",
       "name": "ft_backtest_n_settings",
@@ -8760,6 +9516,78 @@
       "params": [],
       "reset_fn": "ft_stream_vwap_reset",
       "update_fn": "ft_stream_vwap_update"
+    },
+    {
+      "doc": "Streaming backtester: feed each bar's close and the target position for the next bar (NaN = flat). Reports the position, bar return, equity (starting at 1.0), the number of closed trades and running statistics over closed trades (win rate, average win/loss, Kelly fraction). commission_per_trade is subtracted from equity on each position change; slippage is in basis points.",
+      "free_fn": "ft_stream_backtest_free",
+      "handle": "FtStreamBacktest",
+      "inputs": [
+        "close",
+        "signal"
+      ],
+      "name": "backtest",
+      "new_fn": "ft_stream_backtest_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_position"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_bar_return"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_equity"
+        },
+        {
+          "c_type": "int64_t",
+          "elem": "i64",
+          "name": "out_n_trades"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_total_commission"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_win_rate"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_avg_win"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_avg_loss"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_kelly_fraction"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "commission_per_trade"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "slippage_bps"
+        }
+      ],
+      "reset_fn": "ft_stream_backtest_reset",
+      "update_fn": "ft_stream_backtest_update"
     },
     {
       "doc": "Streaming Supertrend. `out_direction` is 1 (up) / -1 (down), 0 in warm-up.",

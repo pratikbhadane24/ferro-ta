@@ -11,6 +11,28 @@ import (
 	"unsafe"
 )
 
+// WalkForwardNFolds wraps ferro_ta_core backtest::walk_forward_n_folds.
+//
+// Number of folds ft_walk_forward_indices writes for these arguments (anchored must be 0 or 1).
+func WalkForwardNFolds(nBars int, trainBars int, testBars int, anchored int, stepBars int) (int64, error) {
+	var valueOut int64
+	if err := statusError("WalkForwardNFolds", C.ft_walk_forward_n_folds(C.int64_t(nBars), C.int64_t(trainBars), C.int64_t(testBars), C.int64_t(anchored), C.int64_t(stepBars), (*C.int64_t)(unsafe.Pointer(&valueOut)))); err != nil {
+		return 0, err
+	}
+	return valueOut, nil
+}
+
+// BenchmarkNMetrics wraps ferro_ta_core backtest::benchmark_n_metrics.
+//
+// Number of benchmark-relative metrics ft_performance_metrics writes (FT_BENCH_* indices are below it).
+func BenchmarkNMetrics() (int64, error) {
+	var valueOut int64
+	if err := statusError("BenchmarkNMetrics", C.ft_benchmark_n_metrics((*C.int64_t)(unsafe.Pointer(&valueOut)))); err != nil {
+		return 0, err
+	}
+	return valueOut, nil
+}
+
 // BacktestNSettings wraps ferro_ta_core backtest::backtest_n_settings.
 //
 // Length of the settings vector this library understands (FT_BT_* indices are below it).

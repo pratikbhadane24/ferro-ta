@@ -212,36 +212,68 @@ fn atr_period_zero_is_fine_when_atr_slippage_is_off() {
     assert_eq!(unsafe { run(&b, ptr::null(), &s) }.0, FT_ERR_INVALID_PARAM);
 }
 
-#[test]
-fn performance_metrics_row_matches_core() {
-    let b = bars(60);
-    let (_, [_, _, _, sr, eq]) = unsafe { run(&b, ptr::null(), &defaults()) };
-    let mut row = vec![0.0; N_METRICS];
+const N_BENCH: usize = 8;
+
+unsafe fn metrics(
+    sr: &[f64],
+    eq: &[f64],
+    bench: *const f64,
+    pos: *const f64,
+    n_metric_cols: usize,
+) -> (i32, Vec<f64>, Vec<f64>) {
+    let mut row = vec![0.0; n_metric_cols];
+    let mut brow = vec![0.0; N_BENCH];
     let st = unsafe {
         ft_performance_metrics(
             sr.as_ptr(),
             eq.as_ptr(),
+            bench,
+            pos,
             sr.len(),
             252.0,
             0.0,
-            N_METRICS,
+            n_metric_cols,
+            N_BENCH,
             row.as_mut_ptr(),
+            brow.as_mut_ptr(),
         )
     };
+    (st, row, brow)
+}
+
+#[test]
+fn performance_metrics_row_matches_core() {
+    let b = bars(60);
+    let (_, [pos, _, br, sr, eq]) = unsafe { run(&b, ptr::null(), &defaults()) };
+    let (st, row, brow) = unsafe { metrics(&sr, &eq, ptr::null(), ptr::null(), N_METRICS) };
     assert_eq!(st, FT_OK);
     let want = compute_performance_metrics(&sr, &eq, 252.0, 0.0, None).unwrap();
     assert_eq!(row[metric("SHARPE")], want.sharpe);
     assert_eq!(row[metric("MAX_DRAWDOWN")], want.max_drawdown);
-    let st = unsafe {
-        ft_performance_metrics(
-            sr.as_ptr(),
-            eq.as_ptr(),
-            sr.len(),
-            252.0,
-            0.0,
-            N_METRICS + 1,
-            row.as_mut_ptr(),
-        )
-    };
+    assert!(brow.iter().all(|v| v.is_nan()), "no benchmark -> NaN row");
+
+    // Benchmark + positions variant.
+    let (st, row, brow) = unsafe { metrics(&sr, &eq, br.as_ptr(), pos.as_ptr(), N_METRICS) };
+    assert_eq!(st, FT_OK);
+    let want = ferro_ta_core::backtest::compute_performance_metrics_with_positions(
+        &sr,
+        &eq,
+        252.0,
+        0.0,
+        Some(&br),
+        Some(&pos),
+    )
+    .unwrap();
+    assert_eq!(row[metric("N_TRADES")], want.n_trades as f64);
+    assert_eq!(
+        brow[index_of(&ferro_ta_ffi::enums::BENCHMARK_METRIC, "BETA")],
+        want.beta.unwrap()
+    );
+    assert_eq!(
+        brow[index_of(&ferro_ta_ffi::enums::BENCHMARK_METRIC, "ALPHA")],
+        want.alpha.unwrap()
+    );
+
+    let (st, _, _) = unsafe { metrics(&sr, &eq, ptr::null(), ptr::null(), N_METRICS + 1) };
     assert_eq!(st, FT_ERR_INVALID_PARAM);
 }

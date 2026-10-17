@@ -39,6 +39,9 @@ macro_rules! ffi_cty {
     (count) => {
         i64
     };
+    (seed) => {
+        i64
+    };
     (matype) => {
         i32
     };
@@ -68,6 +71,9 @@ macro_rules! ffi_rty {
     };
     (count) => {
         usize
+    };
+    (seed) => {
+        u64
     };
     (matype) => {
         u8
@@ -100,6 +106,9 @@ macro_rules! ffi_kind {
     };
     (count) => {
         $crate::spec::ParamKind::Count
+    };
+    (seed) => {
+        $crate::spec::ParamKind::Seed
     };
     (matype) => {
         $crate::spec::ParamKind::MaType

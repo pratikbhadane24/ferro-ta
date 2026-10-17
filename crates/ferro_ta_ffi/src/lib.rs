@@ -55,6 +55,7 @@ pub use indicators::statistic::*;
 pub use indicators::volatility::*;
 pub use indicators::volume::*;
 pub use kernels::backtest::*;
+pub use kernels::backtest_tools::*;
 pub use kernels::overfit::*;
 pub use kernels::sweep::*;
 pub use scalars::backtest::*;

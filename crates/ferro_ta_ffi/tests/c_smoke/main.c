@@ -106,8 +106,25 @@ int main(void) {
                             settings, n_set, pos, fills, bar_r, strat_r, equity) == FT_OK);
     CHECK(pos[0] == 0.0 && pos[59] == 1.0 && equity[0] == 1.0);
     double row[FT_METRIC_N_POSITION_CHANGES + 1];
-    CHECK(ft_performance_metrics(strat_r, equity, 60, 252.0, 0.0,
-                                 sizeof row / sizeof row[0], row) == FT_OK);
+    double bench_row[FT_BENCH_INFORMATION_RATIO + 1];
+    CHECK(ft_performance_metrics(strat_r, equity, bar_r, NULL, 60, 252.0, 0.0,
+                                 sizeof row / sizeof row[0],
+                                 sizeof bench_row / sizeof bench_row[0],
+                                 row, bench_row) == FT_OK);
+    CHECK(!isnan(bench_row[FT_BENCH_BETA]));
+
+    /* Streaming backtester handle. */
+    FtStreamBacktest *bt = NULL;
+    CHECK(ft_stream_backtest_new(0.0, 0.0, &bt) == FT_OK && bt != NULL);
+    double s_pos = 0, s_ret = 0, s_eq = 0, s_comm = 0, s_wr = 0, s_aw = 0, s_al = 0, s_k = 0;
+    int64_t s_trades = 0;
+    for (size_t i = 0; i < 60; i++) {
+        CHECK(ft_stream_backtest_update(bt, prices[i], 1.0, &s_pos, &s_ret, &s_eq, &s_trades,
+                                        &s_comm, &s_wr, &s_aw, &s_al, &s_k) == FT_OK);
+    }
+    /* One entry held to the end: no *closed* trade yet. */
+    CHECK(s_pos == 1.0 && s_trades == 0 && s_eq > 0.0);
+    ft_stream_backtest_free(bt);
 
     if (failures) {
         fprintf(stderr, "%d check(s) failed\n", failures);

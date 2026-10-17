@@ -7626,11 +7626,12 @@
       ]
     },
     "wasm_node": {
-      "export_count": 355,
+      "export_count": 357,
       "exports": [
         "CommissionModel",
         "WasmStreamingATR",
         "WasmStreamingBBands",
+        "WasmStreamingBacktest",
         "WasmStreamingEMA",
         "WasmStreamingMACD",
         "WasmStreamingRSI",
@@ -7662,6 +7663,7 @@
         "avgprice",
         "back_adjusted_continuous",
         "backtest_core",
+        "backtest_multi_asset",
         "backtest_ohlcv",
         "backtest_ohlcv_volume",
         "batch_adx",
@@ -8244,9 +8246,10 @@
       ]
     },
     "c_abi_go": {
-      "export_count": 277,
+      "export_count": 287,
       "exports": [
         "StreamingATR",
+        "StreamingBACKTEST",
         "StreamingBBANDS",
         "StreamingEMA",
         "StreamingMACD",
@@ -8272,13 +8275,16 @@
         "atr",
         "avgprice",
         "back_adjusted_continuous",
+        "backtest_close",
         "backtest_default_settings",
+        "backtest_multi_asset",
         "backtest_n_settings",
         "backtest_ohlcv",
         "basis",
         "bbands",
         "bbpercent",
         "bbwidth",
+        "benchmark_n_metrics",
         "beta",
         "black_76_greeks",
         "black_76_price",
@@ -8377,6 +8383,7 @@
         "emv",
         "expected_max_sharpe",
         "expected_move",
+        "extract_trades",
         "fisher",
         "force_index",
         "forward_fill_nan",
@@ -8411,6 +8418,7 @@
         "ma",
         "ma_envelopes",
         "macd",
+        "macd_crossover_signals",
         "macdext",
         "macdfix",
         "mama",
@@ -8429,6 +8437,7 @@
         "minus_dm",
         "mode",
         "mom",
+        "monte_carlo_bootstrap",
         "mult",
         "natr",
         "nvi",
@@ -8481,6 +8490,7 @@
         "sliding_max",
         "sliding_min",
         "sma",
+        "sma_crossover_signals",
         "spread",
         "starc",
         "stc",
@@ -8515,6 +8525,8 @@
         "vroc",
         "vwap",
         "vwma",
+        "walk_forward_indices",
+        "walk_forward_n_folds",
         "wclprice",
         "weighted_continuous",
         "williams_fractals",
@@ -8528,7 +8540,7 @@
   },
   "parity_summary": {
     "python_indicator_count": 247,
-    "wasm_export_count": 355,
+    "wasm_export_count": 357,
     "common_python_wasm_count": 192,
     "common_python_wasm": [
       "ad",
@@ -8795,6 +8807,7 @@
       "atm_iv",
       "back_adjusted_continuous",
       "backtest_core",
+      "backtest_multi_asset",
       "backtest_ohlcv",
       "backtest_ohlcv_volume",
       "batch_adx",
@@ -8934,6 +8947,7 @@
       "vortex",
       "walk_forward_indices",
       "wasmstreamingatr",
+      "wasmstreamingbacktest",
       "wasmstreamingbbands",
       "wasmstreamingema",
       "wasmstreamingmacd",
@@ -8949,7 +8963,7 @@
   },
   "normalized_parity": {
     "python_indicator_count": 247,
-    "wasm_export_count": 355,
+    "wasm_export_count": 357,
     "common_python_wasm_count": 231,
     "python_only_vs_wasm": [
       "alertevent",
@@ -8982,6 +8996,7 @@
       "atmiv",
       "backadjustedcontinuous",
       "backtestcore",
+      "backtestmultiasset",
       "backtestohlcv",
       "backtestohlcvvolume",
       "batchadx",
@@ -9076,6 +9091,7 @@
       "stitchchunks",
       "strategypayoffdense",
       "strategyvaluegrid",
+      "streamingbacktest",
       "sweepbuiltin",
       "sweepmetricnames",
       "sweepplateauscores",
@@ -9098,13 +9114,13 @@
   },
   "coverage": {
     "counts": {
-      "row_count": 409,
+      "row_count": 414,
       "core_count": 376,
       "python_count": 247,
-      "wasm_count": 355,
+      "wasm_count": 357,
       "flutter_count": 194,
       "flutter_excluded_count": 56,
-      "go_count": 274,
+      "go_count": 284,
       "common_python_wasm_count": 231,
       "common_all_four_count": 131
     },
@@ -9590,6 +9606,22 @@
         "go_name": "back_adjusted_continuous"
       },
       {
+        "key": "backtestclose",
+        "name": "backtest_close",
+        "category": "other",
+        "core": false,
+        "python": false,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": null,
+        "core_name": null,
+        "wasm_name": null,
+        "flutter_name": null,
+        "go_name": "backtest_close"
+      },
+      {
         "key": "backtestcore",
         "name": "backtest_core",
         "category": "backtest",
@@ -9620,6 +9652,22 @@
         "wasm_name": null,
         "flutter_name": null,
         "go_name": "backtest_default_settings"
+      },
+      {
+        "key": "backtestmultiasset",
+        "name": "backtest_multi_asset",
+        "category": "other",
+        "core": false,
+        "python": false,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": null,
+        "core_name": null,
+        "wasm_name": "backtest_multi_asset",
+        "flutter_name": null,
+        "go_name": "backtest_multi_asset"
       },
       {
         "key": "backtestmultiassetcore",
@@ -9908,6 +9956,22 @@
         "wasm_name": "bbwidth",
         "flutter_name": "bbwidth",
         "go_name": "bbwidth"
+      },
+      {
+        "key": "benchmarknmetrics",
+        "name": "benchmark_n_metrics",
+        "category": "other",
+        "core": false,
+        "python": false,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": null,
+        "core_name": null,
+        "wasm_name": null,
+        "flutter_name": null,
+        "go_name": "benchmark_n_metrics"
       },
       {
         "key": "beta",
@@ -12046,12 +12110,12 @@
         "wasm": true,
         "flutter": true,
         "flutter_excluded": false,
-        "go": false,
+        "go": true,
         "python_name": null,
         "core_name": "extract_trades",
         "wasm_name": "extract_trades",
         "flutter_name": "extract_trades",
-        "go_name": null
+        "go_name": "extract_trades"
       },
       {
         "key": "extracttradesohlcv",
@@ -12862,12 +12926,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
-        "go": false,
+        "go": true,
         "python_name": null,
         "core_name": "macd_crossover_signals",
         "wasm_name": "macd_crossover_signals",
         "flutter_name": null,
-        "go_name": null
+        "go_name": "macd_crossover_signals"
       },
       {
         "key": "macdext",
@@ -13310,12 +13374,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
-        "go": false,
+        "go": true,
         "python_name": null,
         "core_name": "monte_carlo_bootstrap",
         "wasm_name": "monte_carlo_bootstrap",
         "flutter_name": null,
-        "go_name": null
+        "go_name": "monte_carlo_bootstrap"
       },
       {
         "key": "monthlycontribution",
@@ -14510,12 +14574,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
-        "go": false,
+        "go": true,
         "python_name": null,
         "core_name": "sma_crossover_signals",
         "wasm_name": "sma_crossover_signals",
         "flutter_name": null,
-        "go_name": null
+        "go_name": "sma_crossover_signals"
       },
       {
         "key": "smilemetrics",
@@ -14740,6 +14804,22 @@
         "wasm_name": "WasmStreamingATR",
         "flutter_name": null,
         "go_name": "StreamingATR"
+      },
+      {
+        "key": "streamingbacktest",
+        "name": "WasmStreamingBacktest",
+        "category": "other",
+        "core": false,
+        "python": false,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": null,
+        "core_name": null,
+        "wasm_name": "WasmStreamingBacktest",
+        "flutter_name": null,
+        "go_name": "StreamingBACKTEST"
       },
       {
         "key": "streamingbbands",
@@ -15518,12 +15598,28 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
-        "go": false,
+        "go": true,
         "python_name": null,
         "core_name": "walk_forward_indices",
         "wasm_name": "walk_forward_indices",
         "flutter_name": null,
-        "go_name": null
+        "go_name": "walk_forward_indices"
+      },
+      {
+        "key": "walkforwardnfolds",
+        "name": "walk_forward_n_folds",
+        "category": "other",
+        "core": false,
+        "python": false,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": null,
+        "core_name": null,
+        "wasm_name": null,
+        "flutter_name": null,
+        "go_name": "walk_forward_n_folds"
       },
       {
         "key": "wclprice",

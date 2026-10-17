@@ -45,9 +45,12 @@ func TestBacktestOhlcvDefaultsAndStops(t *testing.T) {
 	if pos[0] != 0 || pos[1] != 1 || eq[0] != 1 {
 		t.Fatalf("pos=%v eq0=%v", pos[:3], eq[0])
 	}
-	metrics, err := PerformanceMetrics(sr, eq, 252, 0)
+	metrics, bench, err := PerformanceMetrics(sr, eq, nil, pos, 252, 0)
 	if err != nil || len(metrics) == 0 || math.IsNaN(metrics[MetricSharpe]) {
 		t.Fatalf("metrics=%v err=%v", metrics, err)
+	}
+	if !math.IsNaN(bench[BenchBeta]) {
+		t.Fatalf("no benchmark given, beta=%v want NaN", bench[BenchBeta])
 	}
 
 	// A tight stop must flatten at least once versus the always-long baseline.

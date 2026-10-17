@@ -116,3 +116,18 @@ const (
 	BtLotSize               BacktestSetting = 29
 	BtShortBorrowRateAnnual BacktestSetting = 30
 )
+
+// BenchmarkMetric mirrors the C FT_BENCH_* constants.
+type BenchmarkMetric int32
+
+// BenchmarkMetric values.
+const (
+	BenchTotalReturn      BenchmarkMetric = 0
+	BenchCagr             BenchmarkMetric = 1
+	BenchAnnualizedVol    BenchmarkMetric = 2
+	BenchSharpe           BenchmarkMetric = 3
+	BenchAlpha            BenchmarkMetric = 4
+	BenchBeta             BenchmarkMetric = 5
+	BenchTrackingError    BenchmarkMetric = 6
+	BenchInformationRatio BenchmarkMetric = 7
+)

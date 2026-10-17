@@ -11,13 +11,13 @@
      - Flutter
      - Flutter excluded
      - C / Go
-   * - 409
+   * - 414
      - 376
      - 247
-     - 355
+     - 357
      - 194
      - 56
-     - 274
+     - 284
 
 .. list-table:: Cross-language indicator coverage
    :header-rows: 1
@@ -240,6 +240,13 @@
      - yes
      - yes
      - yes
+   * - ``backtest_close``
+     - other
+     - —
+     - —
+     - —
+     - —
+     - yes
    * - ``backtest_core``
      - backtest
      - yes
@@ -252,6 +259,13 @@
      - —
      - —
      - —
+     - —
+     - yes
+   * - ``backtest_multi_asset``
+     - other
+     - —
+     - —
+     - yes
      - —
      - yes
    * - ``backtest_multi_asset_core``
@@ -379,6 +393,13 @@
      - yes
      - yes
      - yes
+     - yes
+   * - ``benchmark_n_metrics``
+     - other
+     - —
+     - —
+     - —
+     - —
      - yes
    * - ``BETA``
      - portfolio
@@ -1317,7 +1338,7 @@
      - —
      - yes
      - yes
-     - —
+     - yes
    * - ``extract_trades_ohlcv``
      - backtest
      - yes
@@ -1674,7 +1695,7 @@
      - —
      - yes
      - excluded
-     - —
+     - yes
    * - ``MACDEXT``
      - overlap
      - yes
@@ -1870,7 +1891,7 @@
      - —
      - yes
      - —
-     - —
+     - yes
    * - ``monthly_contribution``
      - attribution
      - yes
@@ -2395,7 +2416,7 @@
      - —
      - yes
      - excluded
-     - —
+     - yes
    * - ``smile_metrics``
      - options
      - yes
@@ -2491,6 +2512,13 @@
      - streaming
      - yes
      - yes
+     - yes
+     - —
+     - yes
+   * - ``WasmStreamingBacktest``
+     - other
+     - —
+     - —
      - yes
      - —
      - yes
@@ -2836,7 +2864,14 @@
      - —
      - yes
      - excluded
+     - yes
+   * - ``walk_forward_n_folds``
+     - other
      - —
+     - —
+     - —
+     - —
+     - yes
    * - ``WCLPRICE``
      - price_transform
      - yes

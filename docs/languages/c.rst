@@ -77,6 +77,9 @@ ABI conventions
   an older header, gets defaults for the missing tail; a longer one is
   rejected. Kernel inputs documented as optional (``volume``,
   ``limit_prices``) may be ``NULL``.
+- Results whose count depends on the data (``ft_extract_trades``) are written
+  into columns of a fixed capacity (``n_bars``) plus an ``out_n_trades``
+  count; rows past the count hold -1 (indices) or NaN.
 - A panic inside the core is caught and returned as ``FT_ERR_PANIC``; it never
   unwinds into the caller.
 

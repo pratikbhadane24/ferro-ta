@@ -7,6 +7,10 @@ package ferrota
 */
 import "C"
 
+import (
+	"unsafe"
+)
+
 // BacktestDefaultSettings wraps ferro_ta_core backtest::backtest_default_settings.
 //
 // Write the first `n_settings` entries of the default settings vector for ft_backtest_ohlcv (index with FT_BT_*): market-open fills, no stops, no costs, 100000 initial capital, 252 periods per year. Pass your array's own length (at most ft_backtest_n_settings()), so code built against an older header stays in bounds.
@@ -132,34 +136,355 @@ func BacktestOhlcv(open []float64, high []float64, low []float64, close []float6
 
 // PerformanceMetrics wraps ferro_ta_core backtest::performance_metrics.
 //
-// Performance metrics of a strategy-return / equity series (e.g. from ft_backtest_ohlcv), written as one row indexed by FT_METRIC_*; n_metric_cols must equal ft_sweep_n_metrics().
+// Performance metrics of a strategy-return / equity series (e.g. from ft_backtest_ohlcv), written as one row indexed by FT_METRIC_*. With `positions` (optional) trades are counted from position changes; otherwise inferred from non-zero return runs. With `benchmark_returns` (optional, per-bar returns) out_benchmark gets the FT_BENCH_* metrics; without it, NaN. n_metric_cols / n_benchmark_cols must equal ft_sweep_n_metrics() / ft_benchmark_n_metrics().
 // Shapes:
 //
 //	strategyReturns: nBars elements (row-major)
 //	equity: nBars elements (row-major)
+//	benchmarkReturns: nBars elements (row-major) or nil (not supplied)
+//	positions: nBars elements (row-major) or nil (not supplied)
 //	metrics: nMetricCols elements (row-major)
-func PerformanceMetrics(strategyReturns []float64, equity []float64, periodsPerYear float64, riskFreeRate float64) (metrics []float64, err error) {
+//	benchmark: nBenchmarkCols elements (row-major)
+func PerformanceMetrics(strategyReturns []float64, equity []float64, benchmarkReturns []float64, positions []float64, periodsPerYear float64, riskFreeRate float64) (metrics []float64, benchmark []float64, err error) {
 	var nMetricColsC C.int64_t
 	if err = statusError("PerformanceMetrics", C.ft_sweep_n_metrics(&nMetricColsC)); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	nMetricCols := int(nMetricColsC)
+	var nBenchmarkColsC C.int64_t
+	if err = statusError("PerformanceMetrics", C.ft_benchmark_n_metrics(&nBenchmarkColsC)); err != nil {
+		return nil, nil, err
+	}
+	nBenchmarkCols := int(nBenchmarkColsC)
 	nBars := len(strategyReturns)
 	equityLen, err := shapeLen("PerformanceMetrics", nBars)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	if len(equity) != equityLen {
 		err = shapeError("PerformanceMetrics", "equity", len(equity), equityLen)
-		return nil, err
+		return nil, nil, err
+	}
+	benchmarkReturnsLen, err := shapeLen("PerformanceMetrics", nBars)
+	if err != nil {
+		return nil, nil, err
+	}
+	if benchmarkReturns != nil && len(benchmarkReturns) != benchmarkReturnsLen {
+		err = shapeError("PerformanceMetrics", "benchmarkReturns", len(benchmarkReturns), benchmarkReturnsLen)
+		return nil, nil, err
+	}
+	positionsLen, err := shapeLen("PerformanceMetrics", nBars)
+	if err != nil {
+		return nil, nil, err
+	}
+	if positions != nil && len(positions) != positionsLen {
+		err = shapeError("PerformanceMetrics", "positions", len(positions), positionsLen)
+		return nil, nil, err
 	}
 	metricsLen, err := shapeLen("PerformanceMetrics", nMetricCols)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	metricsBuf := make([]float64, metricsLen)
-	if err = statusError("PerformanceMetrics", C.ft_performance_metrics(inPtr(strategyReturns), inPtr(equity), C.size_t(nBars), C.double(periodsPerYear), C.double(riskFreeRate), C.size_t(nMetricCols), (*C.double)(outPtr(metricsBuf)))); err != nil {
+	benchmarkLen, err := shapeLen("PerformanceMetrics", nBenchmarkCols)
+	if err != nil {
+		return nil, nil, err
+	}
+	benchmarkBuf := make([]float64, benchmarkLen)
+	if err = statusError("PerformanceMetrics", C.ft_performance_metrics(inPtr(strategyReturns), inPtr(equity), inPtr(benchmarkReturns), inPtr(positions), C.size_t(nBars), C.double(periodsPerYear), C.double(riskFreeRate), C.size_t(nMetricCols), C.size_t(nBenchmarkCols), (*C.double)(outPtr(metricsBuf)), (*C.double)(outPtr(benchmarkBuf)))); err != nil {
+		return nil, nil, err
+	}
+	return metricsBuf, benchmarkBuf, nil
+}
+
+// SmaCrossoverSignals wraps ferro_ta_core backtest::sma_crossover_signals.
+//
+// SMA crossover signals: +1 when SMA(fast) > SMA(slow), -1 below, NaN during warm-up. Requires fast < slow.
+// Shapes:
+//
+//	close: n_ elements (row-major)
+//	out: n_ elements (row-major)
+func SmaCrossoverSignals(close []float64, fast int, slow int) (out []float64, err error) {
+	n_ := len(close)
+	outLen, err := shapeLen("SmaCrossoverSignals", n_)
+	if err != nil {
 		return nil, err
 	}
-	return metricsBuf, nil
+	outBuf := make([]float64, outLen)
+	if err = statusError("SmaCrossoverSignals", C.ft_sma_crossover_signals(inPtr(close), C.size_t(n_), C.int64_t(fast), C.int64_t(slow), (*C.double)(outPtr(outBuf)))); err != nil {
+		return nil, err
+	}
+	return outBuf, nil
+}
+
+// MacdCrossoverSignals wraps ferro_ta_core backtest::macd_crossover_signals.
+//
+// MACD crossover signals: +1 when the MACD line is above its signal line, -1 below, NaN during warm-up. Requires fastperiod < slowperiod.
+// Shapes:
+//
+//	close: n_ elements (row-major)
+//	out: n_ elements (row-major)
+func MacdCrossoverSignals(close []float64, fastperiod int, slowperiod int, signalperiod int) (out []float64, err error) {
+	n_ := len(close)
+	outLen, err := shapeLen("MacdCrossoverSignals", n_)
+	if err != nil {
+		return nil, err
+	}
+	outBuf := make([]float64, outLen)
+	if err = statusError("MacdCrossoverSignals", C.ft_macd_crossover_signals(inPtr(close), C.size_t(n_), C.int64_t(fastperiod), C.int64_t(slowperiod), C.int64_t(signalperiod), (*C.double)(outPtr(outBuf)))); err != nil {
+		return nil, err
+	}
+	return outBuf, nil
+}
+
+// BacktestClose wraps ferro_ta_core backtest::backtest_close.
+//
+// Close-only vectorised backtest: positions are lagged signals (NaN holds the prior position), slippage and commission are charged on position changes. Uses FT_BT_SLIPPAGE_BPS, FT_BT_INITIAL_CAPITAL and the commission entries of `settings` (same vector as ft_backtest_ohlcv); other entries must still be valid but have no effect (short-borrow costs are not modelled by this engine).
+// Shapes:
+//
+//	close: nBars elements (row-major)
+//	signals: nBars elements (row-major)
+//	settings: nSettings elements (row-major)
+//	positions: nBars elements (row-major)
+//	barReturns: nBars elements (row-major)
+//	strategyReturns: nBars elements (row-major)
+//	equity: nBars elements (row-major)
+func BacktestClose(close []float64, signals []float64, settings []float64) (positions []float64, barReturns []float64, strategyReturns []float64, equity []float64, err error) {
+	nBars := len(close)
+	nSettings := len(settings)
+	signalsLen, err := shapeLen("BacktestClose", nBars)
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+	if len(signals) != signalsLen {
+		err = shapeError("BacktestClose", "signals", len(signals), signalsLen)
+		return nil, nil, nil, nil, err
+	}
+	positionsLen, err := shapeLen("BacktestClose", nBars)
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+	positionsBuf := make([]float64, positionsLen)
+	barReturnsLen, err := shapeLen("BacktestClose", nBars)
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+	barReturnsBuf := make([]float64, barReturnsLen)
+	strategyReturnsLen, err := shapeLen("BacktestClose", nBars)
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+	strategyReturnsBuf := make([]float64, strategyReturnsLen)
+	equityLen, err := shapeLen("BacktestClose", nBars)
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+	equityBuf := make([]float64, equityLen)
+	if err = statusError("BacktestClose", C.ft_backtest_close(inPtr(close), inPtr(signals), C.size_t(nBars), inPtr(settings), C.size_t(nSettings), (*C.double)(outPtr(positionsBuf)), (*C.double)(outPtr(barReturnsBuf)), (*C.double)(outPtr(strategyReturnsBuf)), (*C.double)(outPtr(equityBuf)))); err != nil {
+		return nil, nil, nil, nil, err
+	}
+	return positionsBuf, barReturnsBuf, strategyReturnsBuf, equityBuf, nil
+}
+
+// MonteCarloBootstrap wraps ferro_ta_core backtest::monte_carlo_bootstrap.
+//
+// Block-bootstrap Monte Carlo of strategy returns: n_sims resampled equity curves, row-major (n_sims, n_bars). block_size 0 or 1 = i.i.d. resampling. Deterministic for a given seed; any 64-bit seed (reinterpreted as unsigned) reproduces the Python/WASM paths.
+// Shapes:
+//
+//	strategyReturns: nBars elements (row-major)
+//	out: nSims * nBars elements (row-major)
+func MonteCarloBootstrap(strategyReturns []float64, nSims int, seed uint64, blockSize int) (out []float64, err error) {
+	if nSims < 1 || nSims > maxDim {
+		err = statusError("MonteCarloBootstrap", C.FT_ERR_INVALID_PARAM)
+		return nil, err
+	}
+	nBars := len(strategyReturns)
+	outLen, err := shapeLen("MonteCarloBootstrap", nSims, nBars)
+	if err != nil {
+		return nil, err
+	}
+	outBuf := make([]float64, outLen)
+	if err = statusError("MonteCarloBootstrap", C.ft_monte_carlo_bootstrap(inPtr(strategyReturns), C.size_t(nBars), C.int64_t(nSims), C.int64_t(seed), C.int64_t(blockSize), (*C.double)(outPtr(outBuf)))); err != nil {
+		return nil, err
+	}
+	return outBuf, nil
+}
+
+// WalkForwardIndices wraps ferro_ta_core backtest::walk_forward_indices.
+//
+// Walk-forward fold boundaries, row-major (n_folds, 4) rows of [train_start, train_end, test_start, test_end]. anchored: 0 = rolling window, 1 = expanding from bar 0. step_bars 0 = non-overlapping test windows.
+// Shapes:
+//
+//	out: nFolds * 4 elements (row-major)
+func WalkForwardIndices(nBars int, trainBars int, testBars int, anchored int, stepBars int) (out []int64, err error) {
+	var nFoldsC C.int64_t
+	if err = statusError("WalkForwardIndices", C.ft_walk_forward_n_folds(C.int64_t(nBars), C.int64_t(trainBars), C.int64_t(testBars), C.int64_t(anchored), C.int64_t(stepBars), &nFoldsC)); err != nil {
+		return nil, err
+	}
+	nFolds := int(nFoldsC)
+	outLen, err := shapeLen("WalkForwardIndices", nFolds, 4)
+	if err != nil {
+		return nil, err
+	}
+	outBuf := make([]int64, outLen)
+	if err = statusError("WalkForwardIndices", C.ft_walk_forward_indices(C.int64_t(nBars), C.int64_t(trainBars), C.int64_t(testBars), C.int64_t(anchored), C.int64_t(stepBars), C.size_t(nFolds), (*C.int64_t)(outPtr(outBuf)))); err != nil {
+		return nil, err
+	}
+	return outBuf, nil
+}
+
+// ExtractTrades wraps ferro_ta_core backtest::extract_trades.
+//
+// Round-trip trades from an OHLCV backtest (positions and fill prices from ft_backtest_ohlcv). Writes out_n_trades rows into columns of capacity n_bars; rows past it hold -1 (bar indices) or NaN. mae/mfe are the maximum adverse/favourable excursions as fractions of the entry price.
+// Shapes:
+//
+//	positions: nBars elements (row-major)
+//	fillPrices: nBars elements (row-major)
+//	high: nBars elements (row-major)
+//	low: nBars elements (row-major)
+//	entryBar: nBars elements (row-major)
+//	exitBar: nBars elements (row-major)
+//	direction: nBars elements (row-major)
+//	entryPrice: nBars elements (row-major)
+//	exitPrice: nBars elements (row-major)
+//	pnlPct: nBars elements (row-major)
+//	durationBars: nBars elements (row-major)
+//	mae: nBars elements (row-major)
+//	mfe: nBars elements (row-major)
+func ExtractTrades(positions []float64, fillPrices []float64, high []float64, low []float64) (nTrades int64, entryBar []int64, exitBar []int64, direction []float64, entryPrice []float64, exitPrice []float64, pnlPct []float64, durationBars []int64, mae []float64, mfe []float64, err error) {
+	nBars := len(positions)
+	fillPricesLen, err := shapeLen("ExtractTrades", nBars)
+	if err != nil {
+		return 0, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+	}
+	if len(fillPrices) != fillPricesLen {
+		err = shapeError("ExtractTrades", "fillPrices", len(fillPrices), fillPricesLen)
+		return 0, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+	}
+	highLen, err := shapeLen("ExtractTrades", nBars)
+	if err != nil {
+		return 0, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+	}
+	if len(high) != highLen {
+		err = shapeError("ExtractTrades", "high", len(high), highLen)
+		return 0, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+	}
+	lowLen, err := shapeLen("ExtractTrades", nBars)
+	if err != nil {
+		return 0, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+	}
+	if len(low) != lowLen {
+		err = shapeError("ExtractTrades", "low", len(low), lowLen)
+		return 0, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+	}
+	var nTradesVal int64
+	entryBarLen, err := shapeLen("ExtractTrades", nBars)
+	if err != nil {
+		return 0, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+	}
+	entryBarBuf := make([]int64, entryBarLen)
+	exitBarLen, err := shapeLen("ExtractTrades", nBars)
+	if err != nil {
+		return 0, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+	}
+	exitBarBuf := make([]int64, exitBarLen)
+	directionLen, err := shapeLen("ExtractTrades", nBars)
+	if err != nil {
+		return 0, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+	}
+	directionBuf := make([]float64, directionLen)
+	entryPriceLen, err := shapeLen("ExtractTrades", nBars)
+	if err != nil {
+		return 0, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+	}
+	entryPriceBuf := make([]float64, entryPriceLen)
+	exitPriceLen, err := shapeLen("ExtractTrades", nBars)
+	if err != nil {
+		return 0, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+	}
+	exitPriceBuf := make([]float64, exitPriceLen)
+	pnlPctLen, err := shapeLen("ExtractTrades", nBars)
+	if err != nil {
+		return 0, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+	}
+	pnlPctBuf := make([]float64, pnlPctLen)
+	durationBarsLen, err := shapeLen("ExtractTrades", nBars)
+	if err != nil {
+		return 0, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+	}
+	durationBarsBuf := make([]int64, durationBarsLen)
+	maeLen, err := shapeLen("ExtractTrades", nBars)
+	if err != nil {
+		return 0, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+	}
+	maeBuf := make([]float64, maeLen)
+	mfeLen, err := shapeLen("ExtractTrades", nBars)
+	if err != nil {
+		return 0, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+	}
+	mfeBuf := make([]float64, mfeLen)
+	if err = statusError("ExtractTrades", C.ft_extract_trades(inPtr(positions), inPtr(fillPrices), inPtr(high), inPtr(low), C.size_t(nBars), (*C.int64_t)(unsafe.Pointer(&nTradesVal)), (*C.int64_t)(outPtr(entryBarBuf)), (*C.int64_t)(outPtr(exitBarBuf)), (*C.double)(outPtr(directionBuf)), (*C.double)(outPtr(entryPriceBuf)), (*C.double)(outPtr(exitPriceBuf)), (*C.double)(outPtr(pnlPctBuf)), (*C.int64_t)(outPtr(durationBarsBuf)), (*C.double)(outPtr(maeBuf)), (*C.double)(outPtr(mfeBuf)))); err != nil {
+		return 0, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+	}
+	return nTradesVal, entryBarBuf, exitBarBuf, directionBuf, entryPriceBuf, exitPriceBuf, pnlPctBuf, durationBarsBuf, maeBuf, mfeBuf, nil
+}
+
+// BacktestMultiAsset wraps ferro_ta_core backtest::backtest_multi_asset.
+//
+// Multi-asset backtest: each asset's close-only backtest on its weight column, combined into a portfolio. close and weights are row-major (n_bars, n_assets). Exposure caps (0 = off for gross/net, 1 = off for per-asset) are applied to the weights bar by bar.
+// Shapes:
+//
+//	close: nBars * nAssets elements (row-major)
+//	weights: nBars * nAssets elements (row-major)
+//	assetReturns: nBars * nAssets elements (row-major)
+//	portfolioReturns: nBars elements (row-major)
+//	equity: nBars elements (row-major)
+func BacktestMultiAsset(close []float64, weights []float64, nAssets int, commissionPerTrade float64, slippageBps float64, maxAssetWeight float64, maxGrossExposure float64, maxNetExposure float64) (assetReturns []float64, portfolioReturns []float64, equity []float64, err error) {
+	if nAssets < 0 || nAssets > maxDim {
+		err = statusError("BacktestMultiAsset", C.FT_ERR_INVALID_PARAM)
+		return nil, nil, nil, err
+	}
+	nBarsRest, err := shapeLen("BacktestMultiAsset", nAssets)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	nBars := 0
+	if nBarsRest > 0 {
+		nBars = len(close) / nBarsRest
+	}
+	closeLen, err := shapeLen("BacktestMultiAsset", nBars, nAssets)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	if len(close) != closeLen {
+		err = shapeError("BacktestMultiAsset", "close", len(close), closeLen)
+		return nil, nil, nil, err
+	}
+	weightsLen, err := shapeLen("BacktestMultiAsset", nBars, nAssets)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	if len(weights) != weightsLen {
+		err = shapeError("BacktestMultiAsset", "weights", len(weights), weightsLen)
+		return nil, nil, nil, err
+	}
+	assetReturnsLen, err := shapeLen("BacktestMultiAsset", nBars, nAssets)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	assetReturnsBuf := make([]float64, assetReturnsLen)
+	portfolioReturnsLen, err := shapeLen("BacktestMultiAsset", nBars)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	portfolioReturnsBuf := make([]float64, portfolioReturnsLen)
+	equityLen, err := shapeLen("BacktestMultiAsset", nBars)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	equityBuf := make([]float64, equityLen)
+	if err = statusError("BacktestMultiAsset", C.ft_backtest_multi_asset(inPtr(close), inPtr(weights), C.size_t(nBars), C.size_t(nAssets), C.double(commissionPerTrade), C.double(slippageBps), C.double(maxAssetWeight), C.double(maxGrossExposure), C.double(maxNetExposure), (*C.double)(outPtr(assetReturnsBuf)), (*C.double)(outPtr(portfolioReturnsBuf)), (*C.double)(outPtr(equityBuf)))); err != nil {
+		return nil, nil, nil, err
+	}
+	return assetReturnsBuf, portfolioReturnsBuf, equityBuf, nil
 }

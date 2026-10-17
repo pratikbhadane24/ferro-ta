@@ -126,6 +126,26 @@ defaults and overwrite what you need:
 ``volume`` and ``limitPrices`` may be ``nil``. A settings slice from an older
 release (shorter) still works, because missing entries take defaults.
 
+The rest of the toolkit:
+
+.. code-block:: go
+
+   sig, _ := ferrota.SmaCrossoverSignals(close, 10, 50)       // also MacdCrossoverSignals
+   _, _, rets, eq, _ := ferrota.BacktestClose(close, sig, s) // close-only engine, same settings
+   n, entry, exit, dir, _, _, pnl, _, mae, mfe, _ := ferrota.ExtractTrades(pos, fills, high, low)
+   paths, _ := ferrota.MonteCarloBootstrap(rets, 1000, 42, 20) // (1000, n_bars) row-major
+   folds, _ := ferrota.WalkForwardIndices(len(close), 500, 100, 0, 0)
+   assets, port, peq, _ := ferrota.BacktestMultiAsset(closes, weights, nAssets, 0, 2, 1, 0, 0)
+   metrics, bench, _ := ferrota.PerformanceMetrics(rets, eq, benchRets, pos, 252, 0)
+   beta := bench[ferrota.BenchBeta]
+
+   live, _ := ferrota.NewStreamBacktest(0.0005, 2) // bar-by-bar, safe for concurrent use
+   defer live.Close()
+   position, ret, equity, trades, _, winRate, _, _, kelly, _ := live.Update(lastClose, signal)
+
+``ExtractTrades`` columns have capacity ``len(positions)``; the first ``n``
+rows are trades and the rest are padded with -1 or NaN.
+
 Parameter sweeps and overfitting diagnostics
 --------------------------------------------
 
@@ -161,9 +181,8 @@ Not exported yet
 ----------------
 
 The C ABI covers same-length array functions, scalar functions, streaming
-handles and multi-shape kernels (sweeps, PBO). These core APIs are not in the
-Go module yet: the simple close-only backtest, Monte Carlo bootstrap and
-walk-forward helpers, batch/2-D portfolio functions, bar
+handles and multi-shape kernels; the whole backtesting toolkit is available.
+These core APIs are not in the Go module yet: batch/2-D portfolio functions, bar
 resampling and tick aggregation, volatility cones and smile metrics, option
 chain/strategy helpers, chunked processing helpers, ``pivot_points``,
 ``dtw_*``, ``calendar_spreads``. :doc:`coverage` lists every function per

@@ -3614,6 +3614,74 @@ pub fn purged_kfold_indices(
     }
 }
 
+/// Multi-asset backtest. `close_flat` and `weights_flat` are row-major
+/// `(n_bars, n_assets)`. Exposure caps: `max_asset_weight` 1 = off,
+/// `max_gross_exposure` / `max_net_exposure` 0 = off.
+/// Returns `[asset_returns_flat (n_bars*n_assets), portfolio_returns, equity]`,
+/// or an empty Array on invalid input.
+#[wasm_bindgen]
+#[allow(clippy::too_many_arguments)]
+pub fn backtest_multi_asset(
+    close_flat: &Float64Array, weights_flat: &Float64Array, n_assets: usize,
+    commission_per_trade: f64, slippage_bps: f64, max_asset_weight: f64,
+    max_gross_exposure: f64, max_net_exposure: f64,
+) -> Array {
+    let (c, w) = (to_vec(close_flat), to_vec(weights_flat));
+    if n_assets == 0 || c.len() != w.len() || c.len() % n_assets != 0 {
+        return Array::new();
+    }
+    let n_bars = c.len() / n_assets;
+    let cols = |flat: &[f64]| -> Vec<Vec<f64>> {
+        (0..n_assets).map(|j| (0..n_bars).map(|i| flat[i * n_assets + j]).collect()).collect()
+    };
+    match ferro_ta_core::backtest::backtest_multi_asset_core(
+        &cols(&c), &cols(&w), n_bars, n_assets, commission_per_trade, slippage_bps,
+        max_asset_weight, max_gross_exposure, max_net_exposure,
+    ) {
+        Ok(r) => {
+            let mut asset = vec![0.0; n_bars * n_assets];
+            for (j, col) in r.asset_returns.iter().enumerate() {
+                for (i, &v) in col.iter().enumerate() {
+                    asset[i * n_assets + j] = v;
+                }
+            }
+            vecs_to_array_of_f64arr(vec![asset, r.portfolio_returns, r.portfolio_equity])
+        }
+        Err(_) => Array::new(),
+    }
+}
+
+/// Bar-by-bar backtester for live loops: feed each close and the target
+/// position for the next bar (NaN = flat).
+#[wasm_bindgen]
+pub struct WasmStreamingBacktest {
+    inner: ferro_ta_core::backtest::StreamingBacktest,
+}
+
+#[wasm_bindgen]
+impl WasmStreamingBacktest {
+    #[wasm_bindgen(constructor)]
+    pub fn new(commission_per_trade: f64, slippage_bps: f64) -> WasmStreamingBacktest {
+        Self {
+            inner: ferro_ta_core::backtest::StreamingBacktest::new(commission_per_trade, slippage_bps),
+        }
+    }
+    /// Returns `[position, bar_return, equity, n_trades]` after this bar.
+    pub fn on_bar(&mut self, close: f64, signal: f64) -> Float64Array {
+        let r = self.inner.on_bar(close, signal);
+        from_vec(vec![r.position, r.bar_return, r.equity, r.n_trades as f64])
+    }
+    /// Returns `[equity, n_trades, total_commission, win_rate, avg_win, avg_loss, kelly_fraction]`.
+    pub fn summary(&self) -> Float64Array {
+        let s = self.inner.summary();
+        from_vec(vec![
+            s.equity, s.n_trades as f64, s.total_commission, s.win_rate, s.avg_win, s.avg_loss,
+            s.kelly_fraction,
+        ])
+    }
+    pub fn reset(&mut self) { self.inner.reset(); }
+}
+
 /// Names of the per-combination metrics returned by `sweep_signals` /
 /// `sweep_builtin`, in column order.
 #[wasm_bindgen]

@@ -124,6 +124,22 @@ pub const BACKTEST_SETTING: EnumSpec = EnumSpec {
     ],
 };
 
+/// Column indices of `out_benchmark` written by `ft_performance_metrics`.
+pub const BENCHMARK_METRIC: EnumSpec = EnumSpec {
+    name: "BenchmarkMetric",
+    c_prefix: "FT_BENCH",
+    values: &[
+        ("TOTAL_RETURN", 0),
+        ("CAGR", 1),
+        ("ANNUALIZED_VOL", 2),
+        ("SHARPE", 3),
+        ("ALPHA", 4),
+        ("BETA", 5),
+        ("TRACKING_ERROR", 6),
+        ("INFORMATION_RATIO", 7),
+    ],
+};
+
 /// Every C enum, for the spec dump.
 pub const ALL_ENUMS: &[&EnumSpec] = &[
     &OPTION_KIND,
@@ -133,6 +149,7 @@ pub const ALL_ENUMS: &[&EnumSpec] = &[
     &SWEEP_METRIC,
     &FILL_MODE,
     &BACKTEST_SETTING,
+    &BENCHMARK_METRIC,
 ];
 
 impl Param<i32> for BuiltinStrategy {

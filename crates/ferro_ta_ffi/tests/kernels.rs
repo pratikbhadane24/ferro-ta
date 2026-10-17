@@ -312,7 +312,7 @@ fn plateau_rejects_negative_coords() {
 fn every_kernel_is_in_the_spec_with_consistent_dims() {
     use ferro_ta_ffi::spec::{Dim, KernelArg};
     let kernels: Vec<_> = all_kernel_specs().collect();
-    assert_eq!(kernels.len(), 10);
+    assert_eq!(kernels.len(), 17);
     for k in kernels {
         let named: Vec<&str> = k
             .args

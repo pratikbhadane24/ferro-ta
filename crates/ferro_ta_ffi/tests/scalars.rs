@@ -130,7 +130,7 @@ fn every_scalar_spec_is_unique() {
             spec.name
         );
     }
-    assert_eq!(seen.len(), 29);
+    assert_eq!(seen.len(), 31);
 }
 
 #[test]

@@ -72,6 +72,16 @@ and the project uses [Semantic Versioning](https://semver.org/).
   `volume` / `limit_prices` inputs may be NULL; this adds the `in_opt` kernel
   argument role. Go: `BacktestOhlcv`, `PerformanceMetrics`,
   `BacktestDefaultSettings` and the `Bt*` / `Fill*` constants.
+- **C ABI / Go: the rest of the backtesting toolkit.** `ft_backtest_close`
+  (close-only engine, same settings vector), `ft_sma_crossover_signals`,
+  `ft_macd_crossover_signals`, `ft_monte_carlo_bootstrap`,
+  `ft_walk_forward_indices` (+ `ft_walk_forward_n_folds`), `ft_extract_trades`
+  (columns of capacity `n_bars` plus `out_n_trades`), `ft_backtest_multi_asset`,
+  and a `FtStreamBacktest` streaming handle that reports position, equity and
+  running trade statistics each bar. `ft_performance_metrics` gains optional
+  `benchmark_returns` / `positions` inputs and an `FT_BENCH_*` row (alpha,
+  beta, tracking error, information ratio, …). WASM gains
+  `backtest_multi_asset` and `WasmStreamingBacktest`.
 - `ferro_ta_core::options::normal::inv_cdf` (Acklam, rel. error < 1.2e-9)
   and `BacktestMetrics::scalar_fields()`.
 

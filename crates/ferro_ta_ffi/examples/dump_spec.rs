@@ -18,6 +18,7 @@ fn param(p: &ParamSpec) -> Value {
             json!({"name": p.name, "kind": "period", "c_type": "int64_t", "min": min})
         }
         ParamKind::Count => json!({"name": p.name, "kind": "count", "c_type": "int64_t", "min": 0}),
+        ParamKind::Seed => json!({"name": p.name, "kind": "seed", "c_type": "int64_t"}),
         ParamKind::MaType => {
             json!({"name": p.name, "kind": "matype", "c_type": "int32_t", "min": 0, "max": 8})
         }
