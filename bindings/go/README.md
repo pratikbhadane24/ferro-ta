@@ -28,9 +28,10 @@ value, err := rsi.Update(lastPrice)
 ```
 
 - 229 array functions (all TA indicators, candlestick patterns, IV, realized
-  volatility, regime and portfolio series), 28 scalar functions (option
+  volatility, regime and portfolio series), 29 scalar functions (option
   pricing and greeks, implied volatility, futures, Kelly sizing), 9
-  streaming indicators, and parameter sweeps plus overfitting diagnostics
+  streaming indicators, the OHLCV backtest engine (`BacktestOhlcv`,
+  `PerformanceMetrics`), and parameter sweeps plus overfitting diagnostics
   (`SweepBuiltin`, `SweepSignals`, `PboCscv`, `DeflatedSharpeRatio`, …),
   which run in parallel in Rust.
 - Outputs match input length with NaN warm-up; errors are `*ferrota.Error`,

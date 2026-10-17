@@ -90,6 +90,25 @@ int main(void) {
     CHECK(ft_purged_kfold_indices(30, 3, 1, 1, folds) == FT_OK);
     CHECK(folds[4] == 9 && folds[5] == 10 && folds[6] == 20 && folds[7] == 21);
 
+    /* Backtest engine via the settings vector. Always pass the array's own
+     * (compile-time) length: a newer library fills just that prefix. */
+    int64_t n_settings = 0;
+    CHECK(ft_backtest_n_settings(&n_settings) == FT_OK && n_settings > FT_BT_SHORT_BORROW_RATE_ANNUAL);
+    double settings[FT_BT_SHORT_BORROW_RATE_ANNUAL + 1];
+    const size_t n_set = sizeof settings / sizeof settings[0];
+    CHECK(ft_backtest_default_settings(n_set, settings) == FT_OK);
+    settings[FT_BT_FILL_MODE] = FT_FILL_MARKET_CLOSE;
+    double sig[60], pos[60], fills[60], bar_r[60], strat_r[60], equity[60];
+    for (size_t i = 0; i < 60; i++) {
+        sig[i] = 1.0;
+    }
+    CHECK(ft_backtest_ohlcv(prices, prices, prices, prices, NULL, sig, NULL, 60,
+                            settings, n_set, pos, fills, bar_r, strat_r, equity) == FT_OK);
+    CHECK(pos[0] == 0.0 && pos[59] == 1.0 && equity[0] == 1.0);
+    double row[FT_METRIC_N_POSITION_CHANGES + 1];
+    CHECK(ft_performance_metrics(strat_r, equity, 60, 252.0, 0.0,
+                                 sizeof row / sizeof row[0], row) == FT_OK);
+
     if (failures) {
         fprintf(stderr, "%d check(s) failed\n", failures);
         return 1;

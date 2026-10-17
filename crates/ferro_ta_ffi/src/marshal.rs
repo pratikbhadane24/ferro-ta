@@ -183,6 +183,18 @@ pub unsafe fn kernel_in<'a, T>(ptr: *const T, count: usize) -> Result<&'a [T], S
     Ok(unsafe { std::slice::from_raw_parts(ptr, count) })
 }
 
+/// View an optional kernel input: NULL means "not supplied".
+///
+/// # Safety
+/// When non-NULL, `ptr` must be valid for `count` reads.
+pub unsafe fn kernel_in_opt<'a, T>(ptr: *const T, count: usize) -> Option<&'a [T]> {
+    if ptr.is_null() {
+        return None;
+    }
+    // SAFETY: non-null; validity per caller contract.
+    Some(unsafe { kernel_in(ptr, count).unwrap_or(&[]) })
+}
+
 /// Reject a NULL scalar output before computing.
 pub fn kernel_check_scalar<T>(ptr: *mut T) -> Result<(), Status> {
     if ptr.is_null() {

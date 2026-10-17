@@ -54,6 +54,7 @@ def kernel_doc(fn: dict) -> str:
     """Kernel doc plus the element count of every array argument."""
     shapes = [
         f"  {a['name']}[{dims_text(a['dims'])}]"
+        + (" (optional: may be NULL)" if a.get("optional") else "")
         for a in fn["args"]
         if a["role"] in ("in", "out")
     ]
@@ -66,7 +67,7 @@ def kernel_doc(fn: dict) -> str:
     if shapes:
         out += "\nShapes (row-major element counts):\n" + "\n".join(shapes)
     if derived:
-        out += "\nDerived sizes (must match):\n" + "\n".join(derived)
+        out += "\nSizes computed by a helper:\n" + "\n".join(derived)
     return out
 
 

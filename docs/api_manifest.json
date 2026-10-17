@@ -8244,7 +8244,7 @@
       ]
     },
     "c_abi_go": {
-      "export_count": 273,
+      "export_count": 277,
       "exports": [
         "StreamingATR",
         "StreamingBBANDS",
@@ -8272,6 +8272,9 @@
         "atr",
         "avgprice",
         "back_adjusted_continuous",
+        "backtest_default_settings",
+        "backtest_n_settings",
+        "backtest_ohlcv",
         "basis",
         "bbands",
         "bbpercent",
@@ -8436,6 +8439,7 @@
         "parkinson_vol",
         "pbo_cscv",
         "pbo_n_combinations",
+        "performance_metrics",
         "plus_di",
         "plus_dm",
         "po",
@@ -9094,13 +9098,13 @@
   },
   "coverage": {
     "counts": {
-      "row_count": 406,
+      "row_count": 409,
       "core_count": 376,
       "python_count": 247,
       "wasm_count": 355,
       "flutter_count": 194,
       "flutter_excluded_count": 56,
-      "go_count": 270,
+      "go_count": 274,
       "common_python_wasm_count": 231,
       "common_all_four_count": 131
     },
@@ -9602,6 +9606,22 @@
         "go_name": null
       },
       {
+        "key": "backtestdefaultsettings",
+        "name": "backtest_default_settings",
+        "category": "other",
+        "core": false,
+        "python": false,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": null,
+        "core_name": null,
+        "wasm_name": null,
+        "flutter_name": null,
+        "go_name": "backtest_default_settings"
+      },
+      {
         "key": "backtestmultiassetcore",
         "name": "backtest_multi_asset_core",
         "category": "backtest",
@@ -9618,6 +9638,22 @@
         "go_name": null
       },
       {
+        "key": "backtestnsettings",
+        "name": "backtest_n_settings",
+        "category": "other",
+        "core": false,
+        "python": false,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": null,
+        "core_name": null,
+        "wasm_name": null,
+        "flutter_name": null,
+        "go_name": "backtest_n_settings"
+      },
+      {
         "key": "backtestohlcv",
         "name": "backtest_ohlcv",
         "category": "other",
@@ -9626,12 +9662,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
-        "go": false,
+        "go": true,
         "python_name": null,
         "core_name": null,
         "wasm_name": "backtest_ohlcv",
         "flutter_name": null,
-        "go_name": null
+        "go_name": "backtest_ohlcv"
       },
       {
         "key": "backtestohlcvcore",
@@ -13520,6 +13556,22 @@
         "wasm_name": null,
         "flutter_name": null,
         "go_name": null
+      },
+      {
+        "key": "performancemetrics",
+        "name": "performance_metrics",
+        "category": "other",
+        "core": false,
+        "python": false,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": null,
+        "core_name": null,
+        "wasm_name": null,
+        "flutter_name": null,
+        "go_name": "performance_metrics"
       },
       {
         "key": "pivotpoints",

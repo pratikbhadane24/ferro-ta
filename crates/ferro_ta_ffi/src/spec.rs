@@ -133,11 +133,13 @@ pub struct DerivedSize {
 /// One argument of a kernel export, in C declaration order.
 #[derive(Debug, Clone, Copy)]
 pub enum KernelArg {
-    /// `const T *name`; element count is the product of `dims`.
+    /// `const T *name`; element count is the product of `dims`. An
+    /// `optional` input may be NULL, meaning "not supplied".
     In {
         name: &'static str,
         elem: ElemType,
         dims: &'static [Dim],
+        optional: bool,
     },
     /// `size_t name`. Bindings infer it from the length of the first input
     /// whose leading dim it is, derive it via `derived`, or take it from the

@@ -89,6 +89,43 @@ const char *ft_version(void);
 #define FT_METRIC_N_TRADES 22
 #define FT_METRIC_N_POSITION_CHANGES 23
 
+/* FillMode values (int32_t parameters of that kind). */
+#define FT_FILL_MARKET_OPEN 0
+#define FT_FILL_MARKET_CLOSE 1
+
+/* BacktestSetting values (int32_t parameters of that kind). */
+#define FT_BT_FILL_MODE 0
+#define FT_BT_STOP_LOSS_PCT 1
+#define FT_BT_TAKE_PROFIT_PCT 2
+#define FT_BT_TRAILING_STOP_PCT 3
+#define FT_BT_BREAKEVEN_PCT 4
+#define FT_BT_MAX_HOLD_BARS 5
+#define FT_BT_SLIPPAGE_BPS 6
+#define FT_BT_SLIPPAGE_PCT_RANGE 7
+#define FT_BT_SLIPPAGE_ATR_MULT 8
+#define FT_BT_SLIPPAGE_ATR_PERIOD 9
+#define FT_BT_MAX_PARTICIPATION 10
+#define FT_BT_INITIAL_CAPITAL 11
+#define FT_BT_PERIODS_PER_YEAR 12
+#define FT_BT_MARGIN_RATIO 13
+#define FT_BT_MARGIN_CALL_PCT 14
+#define FT_BT_DAILY_LOSS_LIMIT 15
+#define FT_BT_TOTAL_LOSS_LIMIT 16
+#define FT_BT_FLAT_PER_ORDER 17
+#define FT_BT_RATE_OF_VALUE 18
+#define FT_BT_PER_LOT 19
+#define FT_BT_MAX_BROKERAGE 20
+#define FT_BT_SPREAD_BPS 21
+#define FT_BT_STT_RATE 22
+#define FT_BT_STT_ON_BUY 23
+#define FT_BT_STT_ON_SELL 24
+#define FT_BT_EXCHANGE_CHARGES_RATE 25
+#define FT_BT_REGULATORY_CHARGES_RATE 26
+#define FT_BT_GST_RATE 27
+#define FT_BT_STAMP_DUTY_RATE 28
+#define FT_BT_LOT_SIZE 29
+#define FT_BT_SHORT_BORROW_RATE_ANNUAL 30
+
 /* ---- overlap --------------------------------------------------------------- */
 
 /**
@@ -1431,6 +1468,13 @@ int32_t ft_sweep_strategy_n_params(int32_t strategy, int64_t *out_value);
  */
 int32_t ft_sweep_n_metrics(int64_t *out_value);
 
+/* ---- backtest (scalar) ----------------------------------------------------- */
+
+/**
+ * Length of the settings vector this library understands (FT_BT_* indices are below it).
+ */
+int32_t ft_backtest_n_settings(int64_t *out_value);
+
 /* ---- overfit (kernel) ------------------------------------------------------ */
 
 /**
@@ -1455,7 +1499,7 @@ int32_t ft_deflated_sharpe_ratio(const double *returns, size_t n_obs, int64_t n_
  *   out_is_sharpe[n_combinations]
  *   out_oos_sharpe[n_combinations]
  *   out_best_index[n_combinations]
- * Derived sizes (must match):
+ * Sizes computed by a helper:
  *   n_combinations = ft_pbo_n_combinations(n_splits)
  */
 int32_t ft_pbo_cscv(const double *returns, size_t n_bars, size_t n_strategies, int64_t n_splits, size_t n_combinations, double *out_pbo, double *out_logits, double *out_is_sharpe, double *out_oos_sharpe, int64_t *out_best_index);
@@ -1476,7 +1520,7 @@ int32_t ft_purged_kfold_indices(int64_t n_bars, int64_t n_folds, int64_t purge_b
  *   signals[n_bars * n_combos]
  *   out_returns[n_bars * n_combos]
  *   out_metrics[n_combos * n_metric_cols]
- * Derived sizes (must match):
+ * Sizes computed by a helper:
  *   n_metric_cols = ft_sweep_n_metrics()
  */
 int32_t ft_sweep_signals(const double *close, size_t n_bars, const double *signals, size_t n_combos, double commission_per_trade, double slippage_bps, double initial_capital, double periods_per_year, double risk_free_rate, size_t n_metric_cols, double *out_returns, double *out_metrics);
@@ -1489,7 +1533,7 @@ int32_t ft_sweep_signals(const double *close, size_t n_bars, const double *signa
  *   out_valid[n_combos]
  *   out_returns[n_bars * n_combos]
  *   out_metrics[n_combos * n_metric_cols]
- * Derived sizes (must match):
+ * Sizes computed by a helper:
  *   n_params = ft_sweep_strategy_n_params(strategy)
  *   n_metric_cols = ft_sweep_n_metrics()
  */
@@ -1503,6 +1547,47 @@ int32_t ft_sweep_builtin(const double *close, size_t n_bars, int32_t strategy, c
  *   out[n_combos]
  */
 int32_t ft_sweep_plateau_scores(const double *values, size_t n_combos, const int64_t *coords, size_t n_axes, int64_t radius, double *out);
+
+/* ---- backtest (kernel) ----------------------------------------------------- */
+
+/**
+ * Write the first `n_settings` entries of the default settings vector for ft_backtest_ohlcv (index with FT_BT_*): market-open fills, no stops, no costs, 100000 initial capital, 252 periods per year. Pass your array's own length (at most ft_backtest_n_settings()), so code built against an older header stays in bounds.
+ * Shapes (row-major element counts):
+ *   out[n_settings]
+ * Sizes computed by a helper:
+ *   n_settings = ft_backtest_n_settings()
+ */
+int32_t ft_backtest_default_settings(size_t n_settings, double *out);
+
+/**
+ * OHLCV backtest engine: lagged signals fill at the bar open (or close), with stop-loss, take-profit, trailing and breakeven stops, max-hold exits, limit orders, leverage/margin calls, loss circuit breakers, the full commission model, ATR slippage and volume-capped partial fills. `settings` is indexed by FT_BT_* and may be shorter than ft_backtest_n_settings() (missing entries take defaults). `volume` (required when FT_BT_MAX_PARTICIPATION > 0) and `limit_prices` (NaN = market order) may be NULL. Equity starts at 1.0.
+ * Shapes (row-major element counts):
+ *   open[n_bars]
+ *   high[n_bars]
+ *   low[n_bars]
+ *   close[n_bars]
+ *   volume[n_bars] (optional: may be NULL)
+ *   signals[n_bars]
+ *   limit_prices[n_bars] (optional: may be NULL)
+ *   settings[n_settings]
+ *   out_positions[n_bars]
+ *   out_fill_prices[n_bars]
+ *   out_bar_returns[n_bars]
+ *   out_strategy_returns[n_bars]
+ *   out_equity[n_bars]
+ */
+int32_t ft_backtest_ohlcv(const double *open, const double *high, const double *low, const double *close, const double *volume, const double *signals, const double *limit_prices, size_t n_bars, const double *settings, size_t n_settings, double *out_positions, double *out_fill_prices, double *out_bar_returns, double *out_strategy_returns, double *out_equity);
+
+/**
+ * Performance metrics of a strategy-return / equity series (e.g. from ft_backtest_ohlcv), written as one row indexed by FT_METRIC_*; n_metric_cols must equal ft_sweep_n_metrics().
+ * Shapes (row-major element counts):
+ *   strategy_returns[n_bars]
+ *   equity[n_bars]
+ *   out_metrics[n_metric_cols]
+ * Sizes computed by a helper:
+ *   n_metric_cols = ft_sweep_n_metrics()
+ */
+int32_t ft_performance_metrics(const double *strategy_returns, const double *equity, size_t n_bars, double periods_per_year, double risk_free_rate, size_t n_metric_cols, double *out_metrics);
 
 /* ---- streaming ------------------------------------------------------------- */
 

@@ -11,13 +11,13 @@
      - Flutter
      - Flutter excluded
      - C / Go
-   * - 406
+   * - 409
      - 376
      - 247
      - 355
      - 194
      - 56
-     - 270
+     - 274
 
 .. list-table:: Cross-language indicator coverage
    :header-rows: 1
@@ -247,6 +247,13 @@
      - yes
      - excluded
      - —
+   * - ``backtest_default_settings``
+     - other
+     - —
+     - —
+     - —
+     - —
+     - yes
    * - ``backtest_multi_asset_core``
      - backtest
      - yes
@@ -254,13 +261,20 @@
      - —
      - —
      - —
+   * - ``backtest_n_settings``
+     - other
+     - —
+     - —
+     - —
+     - —
+     - yes
    * - ``backtest_ohlcv``
      - other
      - —
      - —
      - yes
      - excluded
-     - —
+     - yes
    * - ``backtest_ohlcv_core``
      - backtest
      - yes
@@ -1962,6 +1976,13 @@
      - —
      - —
      - —
+   * - ``performance_metrics``
+     - other
+     - —
+     - —
+     - —
+     - —
+     - yes
    * - ``PIVOT_POINTS``
      - extended
      - yes

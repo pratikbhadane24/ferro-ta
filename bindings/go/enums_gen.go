@@ -69,3 +69,50 @@ const (
 	MetricNTrades                 SweepMetric = 22
 	MetricNPositionChanges        SweepMetric = 23
 )
+
+// FillMode mirrors the C FT_FILL_* constants.
+type FillMode int32
+
+// FillMode values.
+const (
+	FillMarketOpen  FillMode = 0
+	FillMarketClose FillMode = 1
+)
+
+// BacktestSetting mirrors the C FT_BT_* constants.
+type BacktestSetting int32
+
+// BacktestSetting values.
+const (
+	BtFillMode              BacktestSetting = 0
+	BtStopLossPct           BacktestSetting = 1
+	BtTakeProfitPct         BacktestSetting = 2
+	BtTrailingStopPct       BacktestSetting = 3
+	BtBreakevenPct          BacktestSetting = 4
+	BtMaxHoldBars           BacktestSetting = 5
+	BtSlippageBps           BacktestSetting = 6
+	BtSlippagePctRange      BacktestSetting = 7
+	BtSlippageAtrMult       BacktestSetting = 8
+	BtSlippageAtrPeriod     BacktestSetting = 9
+	BtMaxParticipation      BacktestSetting = 10
+	BtInitialCapital        BacktestSetting = 11
+	BtPeriodsPerYear        BacktestSetting = 12
+	BtMarginRatio           BacktestSetting = 13
+	BtMarginCallPct         BacktestSetting = 14
+	BtDailyLossLimit        BacktestSetting = 15
+	BtTotalLossLimit        BacktestSetting = 16
+	BtFlatPerOrder          BacktestSetting = 17
+	BtRateOfValue           BacktestSetting = 18
+	BtPerLot                BacktestSetting = 19
+	BtMaxBrokerage          BacktestSetting = 20
+	BtSpreadBps             BacktestSetting = 21
+	BtSttRate               BacktestSetting = 22
+	BtSttOnBuy              BacktestSetting = 23
+	BtSttOnSell             BacktestSetting = 24
+	BtExchangeChargesRate   BacktestSetting = 25
+	BtRegulatoryChargesRate BacktestSetting = 26
+	BtGstRate               BacktestSetting = 27
+	BtStampDutyRate         BacktestSetting = 28
+	BtLotSize               BacktestSetting = 29
+	BtShortBorrowRateAnnual BacktestSetting = 30
+)

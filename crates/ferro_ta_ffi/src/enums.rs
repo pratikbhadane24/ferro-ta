@@ -76,6 +76,54 @@ pub const SWEEP_METRIC: EnumSpec = EnumSpec {
     ],
 };
 
+/// `ft_backtest_ohlcv` fill price: bar open or bar close.
+pub const FILL_MODE: EnumSpec = EnumSpec {
+    name: "FillMode",
+    c_prefix: "FT_FILL",
+    values: &[("MARKET_OPEN", 0), ("MARKET_CLOSE", 1)],
+};
+
+/// Indices into the `settings` vector of `ft_backtest_ohlcv` (fill it with
+/// `ft_backtest_default_settings`, then overwrite what you need). Append-only:
+/// existing indices never change, so older callers keep working.
+pub const BACKTEST_SETTING: EnumSpec = EnumSpec {
+    name: "BacktestSetting",
+    c_prefix: "FT_BT",
+    values: &[
+        ("FILL_MODE", 0),
+        ("STOP_LOSS_PCT", 1),
+        ("TAKE_PROFIT_PCT", 2),
+        ("TRAILING_STOP_PCT", 3),
+        ("BREAKEVEN_PCT", 4),
+        ("MAX_HOLD_BARS", 5),
+        ("SLIPPAGE_BPS", 6),
+        ("SLIPPAGE_PCT_RANGE", 7),
+        ("SLIPPAGE_ATR_MULT", 8),
+        ("SLIPPAGE_ATR_PERIOD", 9),
+        ("MAX_PARTICIPATION", 10),
+        ("INITIAL_CAPITAL", 11),
+        ("PERIODS_PER_YEAR", 12),
+        ("MARGIN_RATIO", 13),
+        ("MARGIN_CALL_PCT", 14),
+        ("DAILY_LOSS_LIMIT", 15),
+        ("TOTAL_LOSS_LIMIT", 16),
+        ("FLAT_PER_ORDER", 17),
+        ("RATE_OF_VALUE", 18),
+        ("PER_LOT", 19),
+        ("MAX_BROKERAGE", 20),
+        ("SPREAD_BPS", 21),
+        ("STT_RATE", 22),
+        ("STT_ON_BUY", 23),
+        ("STT_ON_SELL", 24),
+        ("EXCHANGE_CHARGES_RATE", 25),
+        ("REGULATORY_CHARGES_RATE", 26),
+        ("GST_RATE", 27),
+        ("STAMP_DUTY_RATE", 28),
+        ("LOT_SIZE", 29),
+        ("SHORT_BORROW_RATE_ANNUAL", 30),
+    ],
+};
+
 /// Every C enum, for the spec dump.
 pub const ALL_ENUMS: &[&EnumSpec] = &[
     &OPTION_KIND,
@@ -83,6 +131,8 @@ pub const ALL_ENUMS: &[&EnumSpec] = &[
     &PRICING_MODEL,
     &SWEEP_STRATEGY,
     &SWEEP_METRIC,
+    &FILL_MODE,
+    &BACKTEST_SETTING,
 ];
 
 impl Param<i32> for BuiltinStrategy {

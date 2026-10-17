@@ -65,6 +65,13 @@ and the project uses [Semantic Versioning](https://semver.org/).
   later can never overflow an older caller's buffer. Go gets the same
   functions (`ferrota.SweepBuiltin`, `ferrota.PboCscv`, …), which guard
   every integer that sizes a buffer. FFI sweeps run on all cores.
+- **C ABI / Go: OHLCV backtest engine.** `ft_backtest_ohlcv` and
+  `ft_performance_metrics`, configured through an append-only settings
+  vector (`FT_BT_*`, `ft_backtest_default_settings`, `ft_backtest_n_settings`)
+  that covers every engine knob and the full commission model. Optional
+  `volume` / `limit_prices` inputs may be NULL; this adds the `in_opt` kernel
+  argument role. Go: `BacktestOhlcv`, `PerformanceMetrics`,
+  `BacktestDefaultSettings` and the `Bt*` / `Fill*` constants.
 - `ferro_ta_core::options::normal::inv_cdf` (Acklam, rel. error < 1.2e-9)
   and `BacktestMetrics::scalar_fields()`.
 

@@ -56,9 +56,10 @@ fn kernel_arg(a: &KernelArg) -> Value {
             name,
             elem,
             dims: d,
+            optional,
         } => json!({
             "role": "in", "name": name, "elem": elem_name(*elem),
-            "c_type": elem.c_name(), "dims": dims(d),
+            "c_type": elem.c_name(), "dims": dims(d), "optional": optional,
         }),
         KernelArg::Size { name, derived } => json!({
             "role": "size", "name": name, "c_type": "size_t",

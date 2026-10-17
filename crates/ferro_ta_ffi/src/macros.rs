@@ -303,6 +303,7 @@ macro_rules! ffi_scalar_exports {
 macro_rules! ffi_kcty {
     (in f64) => { *const f64 };
     (in i64) => { *const i64 };
+    (in_opt f64) => { *const f64 };
     (size usize) => { usize };
     (param $kind:ident) => { $crate::ffi_cty!($kind) };
     (out f64) => { *mut f64 };
@@ -344,6 +345,15 @@ macro_rules! ffi_karg {
             name: stringify!($arg),
             elem: $crate::ffi_elem!($e),
             dims: &[$($crate::ffi_dim!($d)),+],
+            optional: false,
+        }
+    };
+    ($arg:ident, in_opt, $e:ident, [$($d:tt),+], ) => {
+        $crate::spec::KernelArg::In {
+            name: stringify!($arg),
+            elem: $crate::ffi_elem!($e),
+            dims: &[$($crate::ffi_dim!($d)),+],
+            optional: true,
         }
     };
     ($arg:ident, size, usize, [], ) => {
@@ -396,7 +406,7 @@ macro_rules! ffi_karg {
 /// ```
 ///
 /// Each argument is `name: role type [dims]? (<- via(params))?` with roles
-/// `in`, `size`, `param`, `out`, `out_scalar`. The extern signature and the
+/// `in`, `in_opt` (may be NULL), `size`, `param`, `out`, `out_scalar`. The extern signature and the
 /// [`KernelSpec`](crate::spec::KernelSpec) are generated from the same tokens.
 /// Params are validated before `body` runs; `body` receives raw pointers and
 /// sizes for everything else (see [`crate::marshal::kernel_in`] /

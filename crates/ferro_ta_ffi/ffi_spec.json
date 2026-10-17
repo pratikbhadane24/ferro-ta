@@ -161,6 +161,150 @@
           "value": 23
         }
       ]
+    },
+    {
+      "c_prefix": "FT_FILL",
+      "name": "FillMode",
+      "values": [
+        {
+          "name": "MARKET_OPEN",
+          "value": 0
+        },
+        {
+          "name": "MARKET_CLOSE",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "c_prefix": "FT_BT",
+      "name": "BacktestSetting",
+      "values": [
+        {
+          "name": "FILL_MODE",
+          "value": 0
+        },
+        {
+          "name": "STOP_LOSS_PCT",
+          "value": 1
+        },
+        {
+          "name": "TAKE_PROFIT_PCT",
+          "value": 2
+        },
+        {
+          "name": "TRAILING_STOP_PCT",
+          "value": 3
+        },
+        {
+          "name": "BREAKEVEN_PCT",
+          "value": 4
+        },
+        {
+          "name": "MAX_HOLD_BARS",
+          "value": 5
+        },
+        {
+          "name": "SLIPPAGE_BPS",
+          "value": 6
+        },
+        {
+          "name": "SLIPPAGE_PCT_RANGE",
+          "value": 7
+        },
+        {
+          "name": "SLIPPAGE_ATR_MULT",
+          "value": 8
+        },
+        {
+          "name": "SLIPPAGE_ATR_PERIOD",
+          "value": 9
+        },
+        {
+          "name": "MAX_PARTICIPATION",
+          "value": 10
+        },
+        {
+          "name": "INITIAL_CAPITAL",
+          "value": 11
+        },
+        {
+          "name": "PERIODS_PER_YEAR",
+          "value": 12
+        },
+        {
+          "name": "MARGIN_RATIO",
+          "value": 13
+        },
+        {
+          "name": "MARGIN_CALL_PCT",
+          "value": 14
+        },
+        {
+          "name": "DAILY_LOSS_LIMIT",
+          "value": 15
+        },
+        {
+          "name": "TOTAL_LOSS_LIMIT",
+          "value": 16
+        },
+        {
+          "name": "FLAT_PER_ORDER",
+          "value": 17
+        },
+        {
+          "name": "RATE_OF_VALUE",
+          "value": 18
+        },
+        {
+          "name": "PER_LOT",
+          "value": 19
+        },
+        {
+          "name": "MAX_BROKERAGE",
+          "value": 20
+        },
+        {
+          "name": "SPREAD_BPS",
+          "value": 21
+        },
+        {
+          "name": "STT_RATE",
+          "value": 22
+        },
+        {
+          "name": "STT_ON_BUY",
+          "value": 23
+        },
+        {
+          "name": "STT_ON_SELL",
+          "value": 24
+        },
+        {
+          "name": "EXCHANGE_CHARGES_RATE",
+          "value": 25
+        },
+        {
+          "name": "REGULATORY_CHARGES_RATE",
+          "value": 26
+        },
+        {
+          "name": "GST_RATE",
+          "value": 27
+        },
+        {
+          "name": "STAMP_DUTY_RATE",
+          "value": 28
+        },
+        {
+          "name": "LOT_SIZE",
+          "value": 29
+        },
+        {
+          "name": "SHORT_BORROW_RATE_ANNUAL",
+          "value": 30
+        }
+      ]
     }
   ],
   "functions": [
@@ -6300,6 +6444,7 @@
           ],
           "elem": "f64",
           "name": "returns",
+          "optional": false,
           "role": "in"
         },
         {
@@ -6336,6 +6481,7 @@
           ],
           "elem": "f64",
           "name": "returns",
+          "optional": false,
           "role": "in"
         },
         {
@@ -6382,6 +6528,7 @@
           ],
           "elem": "f64",
           "name": "returns",
+          "optional": false,
           "role": "in"
         },
         {
@@ -6529,6 +6676,7 @@
           ],
           "elem": "f64",
           "name": "close",
+          "optional": false,
           "role": "in"
         },
         {
@@ -6549,6 +6697,7 @@
           ],
           "elem": "f64",
           "name": "signals",
+          "optional": false,
           "role": "in"
         },
         {
@@ -6640,6 +6789,7 @@
           ],
           "elem": "f64",
           "name": "close",
+          "optional": false,
           "role": "in"
         },
         {
@@ -6667,6 +6817,7 @@
           ],
           "elem": "f64",
           "name": "combos",
+          "optional": false,
           "role": "in"
         },
         {
@@ -6780,6 +6931,7 @@
           ],
           "elem": "f64",
           "name": "values",
+          "optional": false,
           "role": "in"
         },
         {
@@ -6800,6 +6952,7 @@
           ],
           "elem": "i64",
           "name": "coords",
+          "optional": false,
           "role": "in"
         },
         {
@@ -6830,6 +6983,272 @@
       "doc": "Plateau-robust scores: mean of `values` over each combination's grid neighbourhood (combinations within `radius` steps on every axis; NaN ignored). `coords` is row-major (n_combos, n_axes) per-axis grid indices (>= 0).",
       "group": "sweep",
       "name": "ft_sweep_plateau_scores"
+    },
+    {
+      "args": [
+        {
+          "c_type": "size_t",
+          "derived": {
+            "params": [],
+            "via": "ft_backtest_n_settings"
+          },
+          "name": "n_settings",
+          "role": "size"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_settings"
+            }
+          ],
+          "elem": "f64",
+          "name": "out",
+          "role": "out"
+        }
+      ],
+      "doc": "Write the first `n_settings` entries of the default settings vector for ft_backtest_ohlcv (index with FT_BT_*): market-open fills, no stops, no costs, 100000 initial capital, 252 periods per year. Pass your array's own length (at most ft_backtest_n_settings()), so code built against an older header stays in bounds.",
+      "group": "backtest",
+      "name": "ft_backtest_default_settings"
+    },
+    {
+      "args": [
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            }
+          ],
+          "elem": "f64",
+          "name": "open",
+          "optional": false,
+          "role": "in"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            }
+          ],
+          "elem": "f64",
+          "name": "high",
+          "optional": false,
+          "role": "in"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            }
+          ],
+          "elem": "f64",
+          "name": "low",
+          "optional": false,
+          "role": "in"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            }
+          ],
+          "elem": "f64",
+          "name": "close",
+          "optional": false,
+          "role": "in"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            }
+          ],
+          "elem": "f64",
+          "name": "volume",
+          "optional": true,
+          "role": "in"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            }
+          ],
+          "elem": "f64",
+          "name": "signals",
+          "optional": false,
+          "role": "in"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            }
+          ],
+          "elem": "f64",
+          "name": "limit_prices",
+          "optional": true,
+          "role": "in"
+        },
+        {
+          "c_type": "size_t",
+          "derived": null,
+          "name": "n_bars",
+          "role": "size"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_settings"
+            }
+          ],
+          "elem": "f64",
+          "name": "settings",
+          "optional": false,
+          "role": "in"
+        },
+        {
+          "c_type": "size_t",
+          "derived": null,
+          "name": "n_settings",
+          "role": "size"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            }
+          ],
+          "elem": "f64",
+          "name": "out_positions",
+          "role": "out"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            }
+          ],
+          "elem": "f64",
+          "name": "out_fill_prices",
+          "role": "out"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            }
+          ],
+          "elem": "f64",
+          "name": "out_bar_returns",
+          "role": "out"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            }
+          ],
+          "elem": "f64",
+          "name": "out_strategy_returns",
+          "role": "out"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            }
+          ],
+          "elem": "f64",
+          "name": "out_equity",
+          "role": "out"
+        }
+      ],
+      "doc": "OHLCV backtest engine: lagged signals fill at the bar open (or close), with stop-loss, take-profit, trailing and breakeven stops, max-hold exits, limit orders, leverage/margin calls, loss circuit breakers, the full commission model, ATR slippage and volume-capped partial fills. `settings` is indexed by FT_BT_* and may be shorter than ft_backtest_n_settings() (missing entries take defaults). `volume` (required when FT_BT_MAX_PARTICIPATION > 0) and `limit_prices` (NaN = market order) may be NULL. Equity starts at 1.0.",
+      "group": "backtest",
+      "name": "ft_backtest_ohlcv"
+    },
+    {
+      "args": [
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            }
+          ],
+          "elem": "f64",
+          "name": "strategy_returns",
+          "optional": false,
+          "role": "in"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            }
+          ],
+          "elem": "f64",
+          "name": "equity",
+          "optional": false,
+          "role": "in"
+        },
+        {
+          "c_type": "size_t",
+          "derived": null,
+          "name": "n_bars",
+          "role": "size"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "periods_per_year",
+          "role": "param"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "risk_free_rate",
+          "role": "param"
+        },
+        {
+          "c_type": "size_t",
+          "derived": {
+            "params": [],
+            "via": "ft_sweep_n_metrics"
+          },
+          "name": "n_metric_cols",
+          "role": "size"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_metric_cols"
+            }
+          ],
+          "elem": "f64",
+          "name": "out_metrics",
+          "role": "out"
+        }
+      ],
+      "doc": "Performance metrics of a strategy-return / equity series (e.g. from ft_backtest_ohlcv), written as one row indexed by FT_METRIC_*; n_metric_cols must equal ft_sweep_n_metrics().",
+      "group": "backtest",
+      "name": "ft_performance_metrics"
     }
   ],
   "scalars": [
@@ -8021,6 +8440,19 @@
       "doc": "Number of columns in the sweep metric matrices (FT_METRIC_* indices are below it). Pass it as `n_metric_cols` so a caller built against an older header can never under-allocate.",
       "group": "overfit",
       "name": "ft_sweep_n_metrics",
+      "outputs": [
+        {
+          "c_type": "int64_t",
+          "elem": "i64",
+          "name": "out_value"
+        }
+      ],
+      "params": []
+    },
+    {
+      "doc": "Length of the settings vector this library understands (FT_BT_* indices are below it).",
+      "group": "backtest",
+      "name": "ft_backtest_n_settings",
       "outputs": [
         {
           "c_type": "int64_t",

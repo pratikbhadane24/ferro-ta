@@ -1037,6 +1037,10 @@ var goldenScalars = map[string]func(map[string]float64) (map[string]any, error){
 		value, err := SweepNMetrics()
 		return map[string]any{"out_value": value}, err
 	},
+	"ft_backtest_n_settings": func(p map[string]float64) (map[string]any, error) {
+		value, err := BacktestNSettings()
+		return map[string]any{"out_value": value}, err
+	},
 }
 
 // goldenStreams builds each streaming wrapper for golden replay.
@@ -1403,6 +1407,7 @@ var goldenParamNames = []goldenParamList{
 	{"ft_pbo_n_combinations", []string{"n_splits"}},
 	{"ft_sweep_strategy_n_params", []string{"strategy"}},
 	{"ft_sweep_n_metrics", []string{}},
+	{"ft_backtest_n_settings", []string{}},
 	{"sma", []string{"period"}},
 	{"ema", []string{"period"}},
 	{"rsi", []string{"period"}},

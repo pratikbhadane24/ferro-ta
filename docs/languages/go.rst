@@ -102,6 +102,30 @@ Options, futures and sizing
    iv, _ := ferrota.ImpliedVolatility(price, ferrota.ModelBlackScholes,
    	100, 105, 0.03, 0.02, 0.5, ferrota.OptionCall, 0.2, 1e-8, 100)
 
+Backtesting
+-----------
+
+``BacktestOhlcv`` runs the full OHLCV engine: stops, take-profit, trailing and
+breakeven stops, max-hold exits, limit orders, leverage, loss circuit
+breakers, the commission model, ATR slippage and volume-capped partial fills.
+Settings travel as a vector indexed by the ``Bt*`` constants. Start from the
+defaults and overwrite what you need:
+
+.. code-block:: go
+
+   s, _ := ferrota.BacktestDefaultSettings()
+   s[ferrota.BtStopLossPct] = 0.02
+   s[ferrota.BtRateOfValue] = 0.0005          // 5 bps commission
+   s[ferrota.BtSlippageAtrMult] = 0.1         // slippage = 0.1 x ATR / price
+   s[ferrota.BtMaxParticipation] = 0.05       // <= 5% of bar volume (needs volume)
+   pos, fills, _, rets, equity, err := ferrota.BacktestOhlcv(
+   	open, high, low, close, volume, signals, nil /* limit prices */, s)
+   metrics, _ := ferrota.PerformanceMetrics(rets, equity, 252, 0)
+   sharpe := metrics[ferrota.MetricSharpe]
+
+``volume`` and ``limitPrices`` may be ``nil``. A settings slice from an older
+release (shorter) still works, because missing entries take defaults.
+
 Parameter sweeps and overfitting diagnostics
 --------------------------------------------
 
@@ -138,8 +162,8 @@ Not exported yet
 
 The C ABI covers same-length array functions, scalar functions, streaming
 handles and multi-shape kernels (sweeps, PBO). These core APIs are not in the
-Go module yet: the OHLCV backtest engine and performance metrics,
-batch/2-D portfolio functions, bar
+Go module yet: the simple close-only backtest, Monte Carlo bootstrap and
+walk-forward helpers, batch/2-D portfolio functions, bar
 resampling and tick aggregation, volatility cones and smile metrics, option
 chain/strategy helpers, chunked processing helpers, ``pivot_points``,
 ``dtw_*``, ``calendar_spreads``. :doc:`coverage` lists every function per

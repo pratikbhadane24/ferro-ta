@@ -50,7 +50,7 @@ def _inferred_sizes(fn: dict) -> dict[str, dict]:
     derived = {a["name"] for a in fn["args"] if a["role"] == "size" and a["derived"]}
     out: dict[str, dict] = {}
     for arg in fn["args"]:
-        if arg["role"] == "in":
+        if arg["role"] == "in" and not arg.get("optional"):
             lead = arg["dims"][0].get("name")
             if lead and lead not in derived and lead not in out:
                 out[lead] = arg
@@ -105,6 +105,7 @@ def go_kernel(fn: dict) -> list[str]:
     shapes = [
         f"\t{go_ident(a['name']) if a['role'] == 'in' else go_out_name(a['name'])}: "
         f"{_product(a['dims'])} elements (row-major)"
+        + (" or nil (not supplied)" if a.get("optional") else "")
         for a in fn["args"]
         if a["role"] in ("in", "out")
     ]
@@ -161,7 +162,11 @@ def go_kernel(fn: dict) -> list[str]:
             "\tif err != nil {",
             f"\t\t{fail}",
             "\t}",
-            f"\tif len({ident}) != {ident}Len {{",
+            (
+                f"\tif {ident} != nil && len({ident}) != {ident}Len {{"
+                if arg.get("optional")
+                else f"\tif len({ident}) != {ident}Len {{"
+            ),
             f'\t\terr = shapeError("{name}", "{ident}", len({ident}), {ident}Len)',
             f"\t\t{fail}",
             "\t}",
