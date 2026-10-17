@@ -229,6 +229,7 @@ name = "ferro_ta_ffi"
 version = "1.4.0"
 dependencies = [
  "ferro_ta_core",
+ "serde",
  "serde_json",
 ]
 
