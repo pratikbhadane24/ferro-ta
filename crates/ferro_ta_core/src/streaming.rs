@@ -12,10 +12,14 @@ mod bars;
 mod conditions;
 mod live;
 mod option_greeks;
+#[cfg(feature = "serde")]
+mod snapshot;
 pub use bars::{Bar, BarBuilder, BarSpec, TickStatus};
 pub use conditions::{StreamingCooldown, StreamingCross, StreamingStreak};
 pub use live::{Live, StreamValue, StreamingIndicator};
 pub use option_greeks::StreamingOptionGreeks;
+#[cfg(feature = "serde")]
+pub use snapshot::STATE_FORMAT_VERSION;
 
 // ---------------------------------------------------------------------------
 // Error type
@@ -50,6 +54,7 @@ fn validate_timeperiod(value: usize, name: &str, minimum: usize) -> Result<(), S
 /// SMA-seeded EMA state machine.  Not exposed directly — used by
 /// `StreamingEMA`, `StreamingMACD`, etc.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub(crate) struct EmaState {
     period: usize,
     alpha: f64,
@@ -105,6 +110,7 @@ impl EmaState {
 /// Wilder-smoothed ATR state machine.  Used by `StreamingATR` and
 /// `StreamingSupertrend`.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub(crate) struct AtrState {
     period: usize,
     /// `1 / period`, cached so `update` multiplies instead of dividing.
@@ -177,6 +183,7 @@ impl AtrState {
 ///
 /// Returns NaN during the first `period - 1` bars.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct StreamingSMA {
     period: usize,
     buf: VecDeque<f64>,
@@ -251,6 +258,7 @@ impl StreamingSMA {
 /// switches to the standard EMA formula (alpha = 2 / (period + 1)).
 /// Returns NaN during the warmup window.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct StreamingEMA {
     inner: EmaState,
 }
@@ -285,6 +293,7 @@ impl StreamingEMA {
 ///
 /// Returns NaN during the first `period` bars.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct StreamingRSI {
     period: usize,
     prev: f64,
@@ -374,6 +383,7 @@ impl StreamingRSI {
 /// Accepts (high, low, close) per bar.
 /// Returns NaN during the first `period` bars.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct StreamingATR {
     inner: AtrState,
 }
@@ -409,6 +419,7 @@ impl StreamingATR {
 /// Returns (upper, middle, lower).
 /// NaN tuple during the warmup window.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct StreamingBBands {
     period: usize,
     nbdevup: f64,
@@ -521,6 +532,7 @@ impl StreamingBBands {
 /// Returns (macd_line, signal_line, histogram).
 /// NaN values during warmup.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct StreamingMACD {
     fast: EmaState,
     slow: EmaState,
@@ -595,6 +607,7 @@ impl StreamingMACD {
 /// Returns (slowk, slowd).
 /// NaN tuple during warmup.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct StreamingStoch {
     fastk_period: usize,
     slowk_period: usize,
@@ -752,6 +765,7 @@ impl StreamingStoch {
 /// Resets automatically when `reset()` is called (e.g. at session open).
 /// Accepts (high, low, close, volume) per bar.
 #[derive(Clone, Debug, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct StreamingVWAP {
     cum_tpv: f64,
     cum_vol: f64,
@@ -794,6 +808,7 @@ impl StreamingVWAP {
 /// Returns (supertrend_line, direction).
 /// direction: 1 = uptrend, -1 = downtrend, 0 = warmup.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct StreamingSupertrend {
     period: usize,
     multiplier: f64,

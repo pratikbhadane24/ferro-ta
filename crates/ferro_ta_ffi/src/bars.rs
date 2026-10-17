@@ -176,6 +176,55 @@ pub unsafe extern "C" fn ft_bar_builder_reset(handle: *mut BarBuilder) -> i32 {
     })
 }
 
+/// Write a versioned JSON snapshot (not NUL-terminated); same contract as
+/// the streaming `*_save` exports.
+///
+/// # Safety
+/// `handle` live; `buf` valid for `cap` bytes when `cap > 0`; `out_len`
+/// valid for one write.
+#[no_mangle]
+pub unsafe extern "C" fn ft_bar_builder_save(
+    handle: *mut BarBuilder,
+    buf: *mut std::ffi::c_char,
+    cap: usize,
+    out_len: *mut usize,
+) -> i32 {
+    guard(|| {
+        if handle.is_null() || out_len.is_null() {
+            return Err(Status::NullPtr);
+        }
+        // SAFETY: live handle per contract; read-only use.
+        let json = unsafe { &*handle }.save().map_err(|_| Status::Internal)?;
+        // SAFETY: checked non-null; caller contract for `buf`.
+        unsafe { crate::streaming::write_snapshot(&json, buf, cap, out_len) }
+    })
+}
+
+/// Create a bar builder from a snapshot made by `ft_bar_builder_save`.
+///
+/// # Safety
+/// `json` valid for `len` bytes; `out_handle` valid for one write.
+#[no_mangle]
+pub unsafe extern "C" fn ft_bar_builder_load(
+    json: *const std::ffi::c_char,
+    len: usize,
+    out_handle: *mut *mut BarBuilder,
+) -> i32 {
+    if out_handle.is_null() {
+        return FT_ERR_NULL_PTR;
+    }
+    // SAFETY: checked non-null; valid for one write per contract.
+    unsafe { out_handle.write(std::ptr::null_mut()) };
+    guard(|| {
+        // SAFETY: valid for `len` bytes per contract.
+        let text = unsafe { crate::streaming::read_snapshot(json, len) }?;
+        let builder = BarBuilder::load(text).map_err(|_| Status::InvalidParam)?;
+        // SAFETY: as above.
+        unsafe { out_handle.write(Box::into_raw(Box::new(builder))) };
+        Ok(())
+    })
+}
+
 /// Release a bar builder. NULL is a no-op.
 ///
 /// # Safety

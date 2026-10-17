@@ -53,6 +53,10 @@ int32_t ft_bar_builder_on_time(FtBarBuilder *handle, int64_t now_ms, int32_t *ou
 /** The bar being built: *out_has is 1 with *out_bar set, else 0. */
 int32_t ft_bar_builder_forming(FtBarBuilder *handle, int32_t *out_has, FtBar *out_bar);
 int32_t ft_bar_builder_reset(FtBarBuilder *handle);
+/** Versioned JSON snapshot; same contract as the stream *_save functions. */
+int32_t ft_bar_builder_save(FtBarBuilder *handle, char *buf, size_t cap, size_t *out_len);
+/** New builder from an ft_bar_builder_save snapshot; else FT_ERR_INVALID_PARAM. */
+int32_t ft_bar_builder_load(const char *json, size_t len, FtBarBuilder **out_handle);
 void ft_bar_builder_free(FtBarBuilder *handle);"""
 
 
@@ -78,6 +82,11 @@ def c_stream(stream: dict) -> list[str]:
         f"int32_t {stream['update_fn']}({', '.join(update_args)});",
         f"int32_t {stream['peek_fn']}({', '.join(update_args)});",
         f"int32_t {stream['reset_fn']}({handle} *handle);",
+        "/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length."
+        " cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */",
+        f"int32_t {stream['save_fn']}({handle} *handle, char *buf, size_t cap, size_t *out_len);",
+        "/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */",
+        f"int32_t {stream['load_fn']}(const char *json, size_t len, {handle} **out_handle);",
         f"void {stream['free_fn']}({handle} *handle);",
     ]
 

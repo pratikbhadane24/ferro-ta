@@ -210,3 +210,35 @@ func TestStreamOptionGreeksSolvesIV(t *testing.T) {
 		t.Fatalf("higher price should preview higher IV: %v <= %v", iv2, iv)
 	}
 }
+
+func TestStreamSaveLoad(t *testing.T) {
+	a, err := NewStreamEma(5)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer a.Close()
+	for _, x := range ramp(20) {
+		if _, err := a.Update(x); err != nil {
+			t.Fatal(err)
+		}
+	}
+	snap, err := a.Save()
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, err := LoadStreamEma(snap)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer b.Close()
+	for _, x := range []float64{30, 25, 40} {
+		va, _ := a.Update(x)
+		vb, _ := b.Update(x)
+		if math.Float64bits(va) != math.Float64bits(vb) {
+			t.Fatalf("diverged: %v vs %v", va, vb)
+		}
+	}
+	if _, err := LoadStreamSma(snap); !errors.Is(err, ErrInvalidParam) {
+		t.Fatalf("wrong-kind load: %v", err)
+	}
+}

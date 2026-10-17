@@ -48,3 +48,24 @@ func TestBarBuilderInvalidAndClosed(t *testing.T) {
 		t.Fatalf("got %v", err)
 	}
 }
+
+func TestBarBuilderSaveLoad(t *testing.T) {
+	b, _ := NewNSEBarBuilder(300)
+	defer b.Close()
+	if _, _, err := b.OnTick(istMs(9, 16), 100, 1); err != nil {
+		t.Fatal(err)
+	}
+	snap, err := b.Save()
+	if err != nil {
+		t.Fatal(err)
+	}
+	r, err := LoadBarBuilder(snap)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer r.Close()
+	f, _ := r.Forming()
+	if f == nil || f.StartMs != istMs(9, 15) || f.Open != 100 {
+		t.Fatalf("forming after load: %+v", f)
+	}
+}

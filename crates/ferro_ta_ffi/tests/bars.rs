@@ -98,3 +98,33 @@ fn rejects_bad_spec_and_null_pointers() {
     unsafe { ft_bar_builder_free(h) };
     unsafe { ft_bar_builder_free(ptr::null_mut()) };
 }
+
+#[test]
+fn bar_builder_save_load_keeps_forming_bar() {
+    let h = nse_5min();
+    let (mut st, mut closed, mut bar) = (0, 0, FtBar::default());
+    unsafe { ft_bar_builder_on_tick(h, ist(9, 16), 100.0, 1.0, &mut st, &mut closed, &mut bar) };
+    let mut need = 0usize;
+    assert_eq!(
+        unsafe { ft_bar_builder_save(h, ptr::null_mut(), 0, &mut need) },
+        FT_ERR_LENGTH_MISMATCH
+    );
+    let mut buf = vec![0u8; need];
+    assert_eq!(
+        unsafe { ft_bar_builder_save(h, buf.as_mut_ptr().cast(), need, &mut need) },
+        FT_OK
+    );
+    let mut restored = ptr::null_mut();
+    assert_eq!(
+        unsafe { ft_bar_builder_load(buf.as_ptr().cast(), need, &mut restored) },
+        FT_OK
+    );
+    let (mut has, mut forming) = (0, FtBar::default());
+    unsafe { ft_bar_builder_forming(restored, &mut has, &mut forming) };
+    assert_eq!(
+        (has, forming.start_ms, forming.open),
+        (1, ist(9, 15), 100.0)
+    );
+    unsafe { ft_bar_builder_free(h) };
+    unsafe { ft_bar_builder_free(restored) };
+}

@@ -8,6 +8,7 @@ use super::StreamingError;
 
 /// Which side of the dead band a series pair was last seen on.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 enum Side {
     #[default]
     Unknown,
@@ -23,6 +24,7 @@ enum Side {
 /// `0`. The first bar outside the band only arms the side. Noise that stays
 /// inside the band can therefore fire at most once per real crossing.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct StreamingCross {
     dead_band: f64,
     side: Side,
@@ -71,6 +73,7 @@ impl StreamingCross {
 /// "N bars in a row": emits `1` while the current run of true (non-zero)
 /// inputs is at least `n` bars long, else `0`.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct StreamingStreak {
     n: usize,
     run: usize,
@@ -102,6 +105,7 @@ impl StreamingStreak {
 /// Passes the sign of the first non-zero signal, then mutes the next
 /// `bars` bars, so one event cannot re-fire on every following bar.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct StreamingCooldown {
     bars: usize,
     remaining: usize,

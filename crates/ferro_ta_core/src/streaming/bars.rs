@@ -17,6 +17,7 @@ const MAX_UTC_OFFSET_SECS: i64 = 14 * 3_600;
 
 /// Bar grid: interval plus a daily session window in local time.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct BarSpec {
     pub interval_secs: i64,
     /// Session open, seconds after local midnight.
@@ -70,6 +71,7 @@ impl BarSpec {
 
 /// One OHLCV bar covering `[start_ms, end_ms)` (UTC epoch milliseconds).
 #[derive(Clone, Copy, Debug, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Bar {
     pub start_ms: i64,
     pub end_ms: i64,
@@ -110,6 +112,7 @@ impl TickStatus {
 
 /// Builds session-aligned OHLCV bars from ticks.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct BarBuilder {
     spec: BarSpec,
     forming: Option<Bar>,

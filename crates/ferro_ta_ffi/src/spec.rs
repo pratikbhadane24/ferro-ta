@@ -98,6 +98,10 @@ pub struct StreamSpec {
     /// Same signature as `update_fn`; previews without committing.
     pub peek_fn: &'static str,
     pub reset_fn: &'static str,
+    /// `int32_t f(FtStreamX *h, char *buf, size_t cap, size_t *out_len)`.
+    pub save_fn: &'static str,
+    /// `int32_t f(const char *json, size_t len, FtStreamX **out_handle)`.
+    pub load_fn: &'static str,
     pub free_fn: &'static str,
     pub params: &'static [ParamSpec],
     /// Scalar `double` inputs to `update`.

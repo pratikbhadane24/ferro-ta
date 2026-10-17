@@ -20,8 +20,9 @@ pub const FT_OK: i32 = 0;
 pub const FT_ERR_NULL_PTR: i32 = 1;
 /// A scalar parameter is out of range (period below minimum, bad matype, ...).
 pub const FT_ERR_INVALID_PARAM: i32 = 2;
-/// Input arrays differ in length. The C ABI takes one shared `len`, so this is
-/// only produced by language wrappers that accept separately sized arrays.
+/// Input arrays differ in length (the C ABI takes one shared `len`, so only
+/// language wrappers with separately sized arrays produce it for indicators),
+/// or a caller buffer is too small: `*_save` then writes the required length.
 pub const FT_ERR_LENGTH_MISMATCH: i32 = 3;
 /// Internal error: the Rust core panicked (the panic was contained) or broke
 /// an ABI invariant such as output length. Outputs are unspecified.
@@ -32,6 +33,8 @@ pub const FT_ERR_PANIC: i32 = 4;
 pub enum Status {
     NullPtr,
     InvalidParam,
+    /// A caller-provided buffer is too small.
+    LengthMismatch,
     /// A core invariant was violated (e.g. output length != input length).
     Internal,
 }
@@ -41,6 +44,7 @@ impl Status {
         match self {
             Status::NullPtr => FT_ERR_NULL_PTR,
             Status::InvalidParam => FT_ERR_INVALID_PARAM,
+            Status::LengthMismatch => FT_ERR_LENGTH_MISMATCH,
             Status::Internal => FT_ERR_PANIC,
         }
     }

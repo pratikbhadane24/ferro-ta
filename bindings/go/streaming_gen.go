@@ -65,6 +65,41 @@ func (s *StreamSma) Peek(value float64) (float64, error) {
 	return out, nil
 }
 
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamSma.
+func (s *StreamSma) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamSma.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_sma_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamSma.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_sma_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamSma.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamSma restores a StreamSma from a snapshot made by Save.
+func LoadStreamSma(snapshot []byte) (*StreamSma, error) {
+	var h *C.FtStreamSma
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamSma", C.ft_stream_sma_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamSma{h: h}
+	runtime.SetFinalizer(s, (*StreamSma).Close)
+	return s, nil
+}
+
 // Reset clears all state; subsequent bars warm up again.
 func (s *StreamSma) Reset() error {
 	s.mu.Lock()
@@ -137,6 +172,41 @@ func (s *StreamEma) Peek(value float64) (float64, error) {
 		return 0, err
 	}
 	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamEma.
+func (s *StreamEma) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamEma.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_ema_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamEma.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_ema_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamEma.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamEma restores a StreamEma from a snapshot made by Save.
+func LoadStreamEma(snapshot []byte) (*StreamEma, error) {
+	var h *C.FtStreamEma
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamEma", C.ft_stream_ema_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamEma{h: h}
+	runtime.SetFinalizer(s, (*StreamEma).Close)
+	return s, nil
 }
 
 // Reset clears all state; subsequent bars warm up again.
@@ -213,6 +283,41 @@ func (s *StreamRsi) Peek(value float64) (float64, error) {
 	return out, nil
 }
 
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamRsi.
+func (s *StreamRsi) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamRsi.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_rsi_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamRsi.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_rsi_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamRsi.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamRsi restores a StreamRsi from a snapshot made by Save.
+func LoadStreamRsi(snapshot []byte) (*StreamRsi, error) {
+	var h *C.FtStreamRsi
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamRsi", C.ft_stream_rsi_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamRsi{h: h}
+	runtime.SetFinalizer(s, (*StreamRsi).Close)
+	return s, nil
+}
+
 // Reset clears all state; subsequent bars warm up again.
 func (s *StreamRsi) Reset() error {
 	s.mu.Lock()
@@ -287,6 +392,41 @@ func (s *StreamAtr) Peek(high float64, low float64, close float64) (float64, err
 	return out, nil
 }
 
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamAtr.
+func (s *StreamAtr) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamAtr.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_atr_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamAtr.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_atr_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamAtr.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamAtr restores a StreamAtr from a snapshot made by Save.
+func LoadStreamAtr(snapshot []byte) (*StreamAtr, error) {
+	var h *C.FtStreamAtr
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamAtr", C.ft_stream_atr_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamAtr{h: h}
+	runtime.SetFinalizer(s, (*StreamAtr).Close)
+	return s, nil
+}
+
 // Reset clears all state; subsequent bars warm up again.
 func (s *StreamAtr) Reset() error {
 	s.mu.Lock()
@@ -357,6 +497,41 @@ func (s *StreamBbands) Peek(value float64) (upper float64, middle float64, lower
 		return 0, 0, 0, err
 	}
 	return upper, middle, lower, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamBbands.
+func (s *StreamBbands) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamBbands.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_bbands_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamBbands.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_bbands_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamBbands.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamBbands restores a StreamBbands from a snapshot made by Save.
+func LoadStreamBbands(snapshot []byte) (*StreamBbands, error) {
+	var h *C.FtStreamBbands
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamBbands", C.ft_stream_bbands_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamBbands{h: h}
+	runtime.SetFinalizer(s, (*StreamBbands).Close)
+	return s, nil
 }
 
 // Reset clears all state; subsequent bars warm up again.
@@ -431,6 +606,41 @@ func (s *StreamMacd) Peek(value float64) (macd float64, signal float64, hist flo
 	return macd, signal, hist, nil
 }
 
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamMacd.
+func (s *StreamMacd) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamMacd.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_macd_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamMacd.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_macd_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamMacd.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamMacd restores a StreamMacd from a snapshot made by Save.
+func LoadStreamMacd(snapshot []byte) (*StreamMacd, error) {
+	var h *C.FtStreamMacd
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamMacd", C.ft_stream_macd_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMacd{h: h}
+	runtime.SetFinalizer(s, (*StreamMacd).Close)
+	return s, nil
+}
+
 // Reset clears all state; subsequent bars warm up again.
 func (s *StreamMacd) Reset() error {
 	s.mu.Lock()
@@ -501,6 +711,41 @@ func (s *StreamStoch) Peek(high float64, low float64, close float64) (slowk floa
 		return 0, 0, err
 	}
 	return slowk, slowd, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamStoch.
+func (s *StreamStoch) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamStoch.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_stoch_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamStoch.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_stoch_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamStoch.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamStoch restores a StreamStoch from a snapshot made by Save.
+func LoadStreamStoch(snapshot []byte) (*StreamStoch, error) {
+	var h *C.FtStreamStoch
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamStoch", C.ft_stream_stoch_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamStoch{h: h}
+	runtime.SetFinalizer(s, (*StreamStoch).Close)
+	return s, nil
 }
 
 // Reset clears all state; subsequent bars warm up again.
@@ -577,6 +822,41 @@ func (s *StreamVwap) Peek(high float64, low float64, close float64, volume float
 	return out, nil
 }
 
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamVwap.
+func (s *StreamVwap) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamVwap.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_vwap_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamVwap.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_vwap_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamVwap.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamVwap restores a StreamVwap from a snapshot made by Save.
+func LoadStreamVwap(snapshot []byte) (*StreamVwap, error) {
+	var h *C.FtStreamVwap
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamVwap", C.ft_stream_vwap_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamVwap{h: h}
+	runtime.SetFinalizer(s, (*StreamVwap).Close)
+	return s, nil
+}
+
 // Reset clears all state; subsequent bars warm up again.
 func (s *StreamVwap) Reset() error {
 	s.mu.Lock()
@@ -647,6 +927,41 @@ func (s *StreamSupertrend) Peek(high float64, low float64, close float64) (line 
 		return 0, 0, err
 	}
 	return line, direction, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamSupertrend.
+func (s *StreamSupertrend) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamSupertrend.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_supertrend_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamSupertrend.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_supertrend_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamSupertrend.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamSupertrend restores a StreamSupertrend from a snapshot made by Save.
+func LoadStreamSupertrend(snapshot []byte) (*StreamSupertrend, error) {
+	var h *C.FtStreamSupertrend
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamSupertrend", C.ft_stream_supertrend_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamSupertrend{h: h}
+	runtime.SetFinalizer(s, (*StreamSupertrend).Close)
+	return s, nil
 }
 
 // Reset clears all state; subsequent bars warm up again.
@@ -724,6 +1039,41 @@ func (s *StreamCross) Peek(a float64, b float64) (int8, error) {
 	return out, nil
 }
 
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCross.
+func (s *StreamCross) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCross.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cross_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCross.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cross_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCross.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCross restores a StreamCross from a snapshot made by Save.
+func LoadStreamCross(snapshot []byte) (*StreamCross, error) {
+	var h *C.FtStreamCross
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCross", C.ft_stream_cross_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCross{h: h}
+	runtime.SetFinalizer(s, (*StreamCross).Close)
+	return s, nil
+}
+
 // Reset clears all state; subsequent bars warm up again.
 func (s *StreamCross) Reset() error {
 	s.mu.Lock()
@@ -796,6 +1146,41 @@ func (s *StreamStreak) Peek(condition float64) (int8, error) {
 		return 0, err
 	}
 	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamStreak.
+func (s *StreamStreak) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamStreak.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_streak_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamStreak.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_streak_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamStreak.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamStreak restores a StreamStreak from a snapshot made by Save.
+func LoadStreamStreak(snapshot []byte) (*StreamStreak, error) {
+	var h *C.FtStreamStreak
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamStreak", C.ft_stream_streak_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamStreak{h: h}
+	runtime.SetFinalizer(s, (*StreamStreak).Close)
+	return s, nil
 }
 
 // Reset clears all state; subsequent bars warm up again.
@@ -872,6 +1257,41 @@ func (s *StreamCooldown) Peek(signal float64) (int8, error) {
 	return out, nil
 }
 
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCooldown.
+func (s *StreamCooldown) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCooldown.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cooldown_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCooldown.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cooldown_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCooldown.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCooldown restores a StreamCooldown from a snapshot made by Save.
+func LoadStreamCooldown(snapshot []byte) (*StreamCooldown, error) {
+	var h *C.FtStreamCooldown
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCooldown", C.ft_stream_cooldown_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCooldown{h: h}
+	runtime.SetFinalizer(s, (*StreamCooldown).Close)
+	return s, nil
+}
+
 // Reset clears all state; subsequent bars warm up again.
 func (s *StreamCooldown) Reset() error {
 	s.mu.Lock()
@@ -944,6 +1364,41 @@ func (s *StreamOptionGreeks) Peek(optionPrice float64, underlying float64, timeT
 		return 0, 0, 0, 0, 0, 0, err
 	}
 	return iv, delta, gamma, vega, theta, rho, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamOptionGreeks.
+func (s *StreamOptionGreeks) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamOptionGreeks.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_option_greeks_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamOptionGreeks.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_option_greeks_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamOptionGreeks.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamOptionGreeks restores a StreamOptionGreeks from a snapshot made by Save.
+func LoadStreamOptionGreeks(snapshot []byte) (*StreamOptionGreeks, error) {
+	var h *C.FtStreamOptionGreeks
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamOptionGreeks", C.ft_stream_option_greeks_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamOptionGreeks{h: h}
+	runtime.SetFinalizer(s, (*StreamOptionGreeks).Close)
+	return s, nil
 }
 
 // Reset clears all state; subsequent bars warm up again.

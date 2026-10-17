@@ -347,3 +347,70 @@ fn option_greeks_stream_rejects_bad_enum_and_strike() {
     );
     assert!(h.is_null());
 }
+
+#[test]
+fn save_load_round_trip_continues_bit_identically() {
+    let close = series(80);
+    let mut h = ptr::null_mut();
+    assert_eq!(unsafe { ft_stream_rsi_new(14, &mut h) }, FT_OK);
+    let mut out = 0.0;
+    for x in &close[..40] {
+        unsafe { ft_stream_rsi_update(h, *x, &mut out) };
+    }
+    let mut need = 0usize;
+    assert_eq!(
+        unsafe { ft_stream_rsi_save(h, ptr::null_mut(), 0, &mut need) },
+        FT_ERR_LENGTH_MISMATCH
+    );
+    assert!(need > 0);
+    let mut buf = vec![0u8; need];
+    let mut len = 0usize;
+    assert_eq!(
+        unsafe { ft_stream_rsi_save(h, buf.as_mut_ptr().cast(), buf.len(), &mut len) },
+        FT_OK
+    );
+    assert_eq!(len, need);
+    let mut restored = ptr::null_mut();
+    assert_eq!(
+        unsafe { ft_stream_rsi_load(buf.as_ptr().cast(), len, &mut restored) },
+        FT_OK
+    );
+    for x in &close[40..] {
+        let (mut a, mut b) = (0.0, 0.0);
+        unsafe { ft_stream_rsi_update(h, *x, &mut a) };
+        unsafe { ft_stream_rsi_update(restored, *x, &mut b) };
+        assert!(same(a, b));
+    }
+    unsafe { ft_stream_rsi_free(h) };
+    unsafe { ft_stream_rsi_free(restored) };
+}
+
+#[test]
+fn load_rejects_wrong_stream_and_garbage() {
+    let mut h = ptr::null_mut();
+    assert_eq!(unsafe { ft_stream_sma_new(3, &mut h) }, FT_OK);
+    let mut buf = vec![0u8; 4096];
+    let mut len = 0usize;
+    assert_eq!(
+        unsafe { ft_stream_sma_save(h, buf.as_mut_ptr().cast(), buf.len(), &mut len) },
+        FT_OK
+    );
+    let mut ema = ptr::null_mut();
+    assert_eq!(
+        unsafe { ft_stream_ema_load(buf.as_ptr().cast(), len, &mut ema) },
+        FT_ERR_INVALID_PARAM
+    );
+    assert!(ema.is_null());
+    let junk = [0xFFu8, 0xFE];
+    let mut sma = ptr::null_mut();
+    assert_eq!(
+        unsafe { ft_stream_sma_load(junk.as_ptr().cast(), junk.len(), &mut sma) },
+        FT_ERR_INVALID_PARAM,
+        "non-UTF-8"
+    );
+    assert_eq!(
+        unsafe { ft_stream_sma_load(ptr::null(), 5, &mut sma) },
+        FT_ERR_NULL_PTR
+    );
+    unsafe { ft_stream_sma_free(h) };
+}

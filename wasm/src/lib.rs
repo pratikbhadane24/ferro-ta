@@ -2653,6 +2653,19 @@ macro_rules! wasm_streaming_class {
                 self.inner.update(($($input),+), false).into_js()
             }
             pub fn reset(&mut self) { self.inner.reset(); }
+            /// Versioned JSON snapshot of the full state.
+            #[cfg(feature = "snapshot")]
+            #[wasm_bindgen(js_name = saveState)]
+            pub fn save_state(&self) -> Result<String, JsError> {
+                self.inner.save().map_err(|e| JsError::new(&e.0))
+            }
+            /// Restore a snapshot made by `saveState` of this same class.
+            #[cfg(feature = "snapshot")]
+            #[wasm_bindgen(js_name = loadState)]
+            pub fn load_state(json: &str) -> Result<$name, JsError> {
+                let inner = ferro_ta_core::streaming::Live::load(json).map_err(|e| JsError::new(&e.0))?;
+                Ok(Self { inner })
+            }
             /// Number of committed bars.
             #[wasm_bindgen(getter)]
             pub fn count(&self) -> usize { self.inner.count() }
@@ -2878,6 +2891,21 @@ impl WasmBarBuilder {
 
     pub fn reset(&mut self) {
         self.inner.reset();
+    }
+
+    /// Versioned JSON snapshot, including the forming bar.
+    #[cfg(feature = "snapshot")]
+            #[wasm_bindgen(js_name = saveState)]
+    pub fn save_state(&self) -> Result<String, JsError> {
+        self.inner.save().map_err(|e| JsError::new(&e.0))
+    }
+
+    /// Restore a snapshot made by `saveState`.
+    #[cfg(feature = "snapshot")]
+            #[wasm_bindgen(js_name = loadState)]
+    pub fn load_state(json: &str) -> Result<WasmBarBuilder, JsError> {
+        let inner = ferro_ta_core::streaming::BarBuilder::load(json).map_err(|e| JsError::new(&e.0))?;
+        Ok(Self { inner })
     }
 }
 
@@ -5263,5 +5291,20 @@ mod tests {
         assert_eq!(status.as_string().as_deref(), Some("invalid"));
         assert!(b.on_time(ist(9, 24)).is_undefined());
         assert!(!b.on_time(ist(9, 25)).is_undefined());
+    }
+
+    #[cfg(feature = "snapshot")]
+    #[wasm_bindgen_test]
+    fn test_streaming_save_load_round_trip() {
+        let mut a = WasmStreamingRSI::new(5).unwrap();
+        for v in [1.0, 2.0, 1.5, 3.0, 2.5, 4.0, 3.5] {
+            a.update(v);
+        }
+        let mut b = WasmStreamingRSI::load_state(&a.save_state().unwrap()).unwrap();
+        assert_eq!(b.count(), a.count());
+        for v in [5.0, 4.0, 6.0] {
+            assert_eq!(a.update(v).to_bits(), b.update(v).to_bits());
+        }
+        assert!(WasmStreamingEMA::load_state(&a.save_state().unwrap()).is_err());
     }
 }

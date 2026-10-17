@@ -14,6 +14,51 @@ use ferro_ta_core::streaming::{
     StreamingStoch, StreamingStreak, StreamingSupertrend, StreamingVWAP,
 };
 
+/// Copy a snapshot into a caller buffer; see the `*_save` contract.
+///
+/// # Safety
+/// `out_len` valid for one write; `buf` valid for `cap` bytes if `cap > 0`.
+#[doc(hidden)]
+pub unsafe fn write_snapshot(
+    json: &str,
+    buf: *mut std::ffi::c_char,
+    cap: usize,
+    out_len: *mut usize,
+) -> Result<(), Status> {
+    // SAFETY: caller contract.
+    unsafe { out_len.write(json.len()) };
+    if cap < json.len() {
+        return Err(Status::LengthMismatch);
+    }
+    if buf.is_null() {
+        return Err(Status::NullPtr);
+    }
+    // SAFETY: `buf` holds at least `json.len()` bytes; regions are distinct.
+    unsafe { std::ptr::copy_nonoverlapping(json.as_ptr(), buf.cast::<u8>(), json.len()) };
+    Ok(())
+}
+
+/// Borrow a caller snapshot as UTF-8; see the `*_load` contract.
+///
+/// # Safety
+/// `json` valid for `len` bytes (may be NULL only when `len == 0`).
+#[doc(hidden)]
+pub unsafe fn read_snapshot<'a>(
+    json: *const std::ffi::c_char,
+    len: usize,
+) -> Result<&'a str, Status> {
+    if json.is_null() {
+        return if len == 0 {
+            Ok("")
+        } else {
+            Err(Status::NullPtr)
+        };
+    }
+    // SAFETY: caller contract.
+    let bytes = unsafe { std::slice::from_raw_parts(json.cast::<u8>(), len) };
+    std::str::from_utf8(bytes).map_err(|_| Status::InvalidParam)
+}
+
 /// Normalise core constructors (fallible or not) to `Result<T, Status>`.
 pub trait IntoCtorResult<T> {
     fn into_ctor_result(self) -> Result<T, Status>;
@@ -73,6 +118,8 @@ macro_rules! ffi_streams {
                 $update_fn:ident ( $($input:ident),+ ) -> [ $($out:ident : $elem:ident),+ ],
                 $peek_fn:ident,
                 $reset_fn:ident,
+                $save_fn:ident,
+                $load_fn:ident,
                 $free_fn:ident $(,)?
             }
         )+
@@ -137,6 +184,61 @@ macro_rules! ffi_streams {
                 })
             }
 
+            /// Write a versioned JSON snapshot (UTF-8, not NUL-terminated) of the
+            /// full state. `*out_len` always receives the snapshot length; when
+            /// `cap` is smaller (pass `buf = NULL, cap = 0` to query) nothing is
+            /// copied and `FT_ERR_LENGTH_MISMATCH` is returned.
+            ///
+            /// # Safety
+            /// `handle` must come from the matching `_new`/`_load` and not be
+            /// freed; `buf` must be valid for `cap` bytes when `cap > 0`;
+            /// `out_len` must be valid for one write.
+            #[no_mangle]
+            pub unsafe extern "C" fn $save_fn(
+                handle: *mut Live<$ty>,
+                buf: *mut std::ffi::c_char,
+                cap: usize,
+                out_len: *mut usize,
+            ) -> i32 {
+                $crate::status::guard(|| {
+                    if handle.is_null() || out_len.is_null() {
+                        return Err(Status::NullPtr);
+                    }
+                    // SAFETY: live handle per contract; read-only use.
+                    let json = unsafe { &*handle }.save().map_err(|_| Status::Internal)?;
+                    // SAFETY: checked non-null; valid for one write.
+                    unsafe { $crate::streaming::write_snapshot(&json, buf, cap, out_len) }
+                })
+            }
+
+            /// Create a handle from a snapshot made by `_save` of this same
+            /// stream. Wrong stream, unsupported format or malformed JSON
+            /// returns `FT_ERR_INVALID_PARAM` with `*out_handle` = NULL.
+            ///
+            /// # Safety
+            /// `json` must be valid for `len` bytes; `out_handle` must be
+            /// valid for one write.
+            #[no_mangle]
+            pub unsafe extern "C" fn $load_fn(
+                json: *const std::ffi::c_char,
+                len: usize,
+                out_handle: *mut *mut Live<$ty>,
+            ) -> i32 {
+                if out_handle.is_null() {
+                    return $crate::status::FT_ERR_NULL_PTR;
+                }
+                // SAFETY: checked non-null; valid for one write per contract.
+                unsafe { out_handle.write(std::ptr::null_mut()) };
+                $crate::status::guard(|| {
+                    // SAFETY: valid for `len` bytes per contract.
+                    let text = unsafe { $crate::streaming::read_snapshot(json, len) }?;
+                    let live = Live::<$ty>::load(text).map_err(|_| Status::InvalidParam)?;
+                    // SAFETY: as above.
+                    unsafe { out_handle.write(Box::into_raw(Box::new(live))) };
+                    Ok(())
+                })
+            }
+
             /// Release a handle. NULL is a no-op.
             ///
             /// # Safety
@@ -162,6 +264,8 @@ macro_rules! ffi_streams {
                     update_fn: stringify!($update_fn),
                     peek_fn: stringify!($peek_fn),
                     reset_fn: stringify!($reset_fn),
+                    save_fn: stringify!($save_fn),
+                    load_fn: stringify!($load_fn),
                     free_fn: stringify!($free_fn),
                     params: &[$(
                         $crate::spec::ParamSpec {
@@ -189,6 +293,8 @@ ffi_streams! {
         ft_stream_sma_update(value) -> [out: f64],
         ft_stream_sma_peek,
         ft_stream_sma_reset,
+        ft_stream_sma_save,
+        ft_stream_sma_load,
         ft_stream_sma_free,
     }
     /// Streaming exponential moving average (SMA-seeded, TA-Lib compatible).
@@ -197,6 +303,8 @@ ffi_streams! {
         ft_stream_ema_update(value) -> [out: f64],
         ft_stream_ema_peek,
         ft_stream_ema_reset,
+        ft_stream_ema_save,
+        ft_stream_ema_load,
         ft_stream_ema_free,
     }
     /// Streaming RSI (Wilder smoothing).
@@ -205,6 +313,8 @@ ffi_streams! {
         ft_stream_rsi_update(value) -> [out: f64],
         ft_stream_rsi_peek,
         ft_stream_rsi_reset,
+        ft_stream_rsi_save,
+        ft_stream_rsi_load,
         ft_stream_rsi_free,
     }
     /// Streaming average true range.
@@ -213,6 +323,8 @@ ffi_streams! {
         ft_stream_atr_update(high, low, close) -> [out: f64],
         ft_stream_atr_peek,
         ft_stream_atr_reset,
+        ft_stream_atr_save,
+        ft_stream_atr_load,
         ft_stream_atr_free,
     }
     /// Streaming Bollinger Bands.
@@ -221,6 +333,8 @@ ffi_streams! {
         ft_stream_bbands_update(value) -> [out_upper: f64, out_middle: f64, out_lower: f64],
         ft_stream_bbands_peek,
         ft_stream_bbands_reset,
+        ft_stream_bbands_save,
+        ft_stream_bbands_load,
         ft_stream_bbands_free,
     }
     /// Streaming MACD. Requires `fastperiod < slowperiod`.
@@ -229,6 +343,8 @@ ffi_streams! {
         ft_stream_macd_update(value) -> [out_macd: f64, out_signal: f64, out_hist: f64],
         ft_stream_macd_peek,
         ft_stream_macd_reset,
+        ft_stream_macd_save,
+        ft_stream_macd_load,
         ft_stream_macd_free,
     }
     /// Streaming slow stochastic.
@@ -237,6 +353,8 @@ ffi_streams! {
         ft_stream_stoch_update(high, low, close) -> [out_slowk: f64, out_slowd: f64],
         ft_stream_stoch_peek,
         ft_stream_stoch_reset,
+        ft_stream_stoch_save,
+        ft_stream_stoch_load,
         ft_stream_stoch_free,
     }
     /// Streaming cumulative VWAP (session-anchored; `reset` starts a new session).
@@ -245,6 +363,8 @@ ffi_streams! {
         ft_stream_vwap_update(high, low, close, volume) -> [out: f64],
         ft_stream_vwap_peek,
         ft_stream_vwap_reset,
+        ft_stream_vwap_save,
+        ft_stream_vwap_load,
         ft_stream_vwap_free,
     }
     /// Streaming Supertrend. `out_direction` is 1 (up) / -1 (down), 0 in warm-up.
@@ -253,6 +373,8 @@ ffi_streams! {
         ft_stream_supertrend_update(high, low, close) -> [out_line: f64, out_direction: i8],
         ft_stream_supertrend_peek,
         ft_stream_supertrend_reset,
+        ft_stream_supertrend_save,
+        ft_stream_supertrend_load,
         ft_stream_supertrend_free,
     }
     /// Dead-band cross of `a` over `b`: `out` is 1 (up), -1 (down) or 0.
@@ -262,6 +384,8 @@ ffi_streams! {
         ft_stream_cross_update(a, b) -> [out: i8],
         ft_stream_cross_peek,
         ft_stream_cross_reset,
+        ft_stream_cross_save,
+        ft_stream_cross_load,
         ft_stream_cross_free,
     }
     /// "N bars in a row": `out` is 1 while the run of non-zero inputs is >= n.
@@ -270,6 +394,8 @@ ffi_streams! {
         ft_stream_streak_update(condition) -> [out: i8],
         ft_stream_streak_peek,
         ft_stream_streak_reset,
+        ft_stream_streak_save,
+        ft_stream_streak_load,
         ft_stream_streak_free,
     }
     /// Passes the first non-zero signal's sign, then mutes the next `bars` bars.
@@ -278,6 +404,8 @@ ffi_streams! {
         ft_stream_cooldown_update(signal) -> [out: i8],
         ft_stream_cooldown_peek,
         ft_stream_cooldown_reset,
+        ft_stream_cooldown_save,
+        ft_stream_cooldown_load,
         ft_stream_cooldown_free,
     }
     /// Live implied volatility and greeks for one option contract. The IV
@@ -301,6 +429,8 @@ ffi_streams! {
         ],
         ft_stream_option_greeks_peek,
         ft_stream_option_greeks_reset,
+        ft_stream_option_greeks_save,
+        ft_stream_option_greeks_load,
         ft_stream_option_greeks_free,
     }
 }

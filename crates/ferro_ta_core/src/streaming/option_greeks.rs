@@ -24,12 +24,14 @@ pub type OptionGreeksOutput = (f64, f64, f64, f64, f64, f64);
 /// When no volatility reproduces the price (e.g. below intrinsic) the tick
 /// yields all-NaN and the IV seed is left unchanged.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct StreamingOptionGreeks {
     model: PricingModel,
     kind: OptionKind,
     strike: f64,
     rate: f64,
     carry: f64,
+    #[cfg_attr(feature = "serde", serde(with = "super::snapshot::nan_as_null"))]
     last_iv: f64,
 }
 

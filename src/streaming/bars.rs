@@ -140,6 +140,24 @@ impl BarBuilder {
         self.inner.reset();
     }
 
+    /// Versioned JSON snapshot, including the forming bar (see ``from_json``).
+    fn to_json(&self) -> PyResult<String> {
+        self.inner.save().map_err(to_py_err)
+    }
+
+    /// Restore a snapshot made by ``to_json``.
+    #[staticmethod]
+    fn from_json(json: &str) -> PyResult<Self> {
+        Ok(Self {
+            inner: core::BarBuilder::load(json).map_err(to_py_err)?,
+        })
+    }
+
+    fn __reduce__<'py>(slf: &Bound<'py, Self>) -> PyResult<(Bound<'py, PyAny>, (String,))> {
+        let snapshot = slf.borrow().inner.save().map_err(to_py_err)?;
+        Ok((slf.get_type().getattr("from_json")?, (snapshot,)))
+    }
+
     fn __copy__(&self) -> Self {
         self.clone()
     }

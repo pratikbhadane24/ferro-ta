@@ -82,6 +82,26 @@ macro_rules! streaming_pyclass {
                 self.inner.is_ready()
             }
 
+            /// Versioned JSON snapshot of the full state (see ``from_json``).
+            pub fn to_json(&self) -> PyResult<String> {
+                self.inner.save().map_err(to_py_err)
+            }
+
+            /// Restore a snapshot made by ``to_json`` of this same class.
+            #[staticmethod]
+            pub fn from_json(json: &str) -> PyResult<Self> {
+                Ok(Self {
+                    inner: core::Live::load(json).map_err(to_py_err)?,
+                })
+            }
+
+            fn __reduce__<'py>(
+                slf: &Bound<'py, Self>,
+            ) -> PyResult<(Bound<'py, PyAny>, (String,))> {
+                let snapshot = slf.borrow().inner.save().map_err(to_py_err)?;
+                Ok((slf.get_type().getattr("from_json")?, (snapshot,)))
+            }
+
             fn __copy__(&self) -> Self {
                 self.clone()
             }

@@ -8,6 +8,7 @@ import "C"
 import (
 	"runtime"
 	"sync"
+	"unsafe"
 )
 
 // Bar is one OHLCV bar covering [StartMs, EndMs) in UTC epoch milliseconds.
@@ -144,6 +145,41 @@ func (b *BarBuilder) Reset() error {
 		return closedError("BarBuilder.Reset")
 	}
 	return statusError("BarBuilder.Reset", C.ft_bar_builder_reset(b.h))
+}
+
+// Save returns a versioned JSON snapshot, including the forming bar; restore
+// it with LoadBarBuilder.
+func (b *BarBuilder) Save() ([]byte, error) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	if b.h == nil {
+		return nil, closedError("BarBuilder.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_bar_builder_save(b.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("BarBuilder.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_bar_builder_save(b.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("BarBuilder.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadBarBuilder restores a BarBuilder from a snapshot made by Save.
+func LoadBarBuilder(snapshot []byte) (*BarBuilder, error) {
+	var h *C.FtBarBuilder
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadBarBuilder", C.ft_bar_builder_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	b := &BarBuilder{h: h}
+	runtime.SetFinalizer(b, (*BarBuilder).Close)
+	return b, nil
 }
 
 // Close releases the underlying handle. It is safe to call more than once.

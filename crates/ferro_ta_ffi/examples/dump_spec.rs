@@ -71,6 +71,8 @@ fn main() {
                 "update_fn": s.update_fn,
                 "peek_fn": s.peek_fn,
                 "reset_fn": s.reset_fn,
+                "save_fn": s.save_fn,
+                "load_fn": s.load_fn,
                 "free_fn": s.free_fn,
                 "params": s.params.iter().map(param).collect::<Vec<_>>(),
                 "inputs": s.inputs,

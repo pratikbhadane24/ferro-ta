@@ -23,6 +23,24 @@ pub trait StreamValue: Copy + std::fmt::Debug {
     fn all_finite(&self) -> bool;
     /// The "no value" sentinel emitted during warmup.
     fn nan() -> Self;
+    /// Components as numbers, NaN as `None` (for snapshots).
+    fn to_parts(&self) -> Vec<Option<f64>>;
+    /// Inverse of `to_parts`; `None` on a length mismatch.
+    fn from_parts(parts: &[Option<f64>]) -> Option<Self>;
+}
+
+fn part(v: f64) -> Option<f64> {
+    (!v.is_nan()).then_some(v)
+}
+
+fn unpart(p: Option<f64>) -> f64 {
+    p.unwrap_or(f64::NAN)
+}
+
+/// Exact small integer back to `i8` (event / direction codes).
+fn i8_from(v: f64) -> Option<i8> {
+    let n = v as i8;
+    (f64::from(n) == v).then_some(n)
 }
 
 impl StreamValue for f64 {
@@ -34,6 +52,15 @@ impl StreamValue for f64 {
     }
     fn nan() -> Self {
         f64::NAN
+    }
+    fn to_parts(&self) -> Vec<Option<f64>> {
+        vec![part(*self)]
+    }
+    fn from_parts(parts: &[Option<f64>]) -> Option<Self> {
+        match parts {
+            [a] => Some(unpart(*a)),
+            _ => None,
+        }
     }
 }
 
@@ -47,6 +74,15 @@ impl StreamValue for (f64, f64) {
     fn nan() -> Self {
         (f64::NAN, f64::NAN)
     }
+    fn to_parts(&self) -> Vec<Option<f64>> {
+        vec![part(self.0), part(self.1)]
+    }
+    fn from_parts(parts: &[Option<f64>]) -> Option<Self> {
+        match parts {
+            [a, b] => Some((unpart(*a), unpart(*b))),
+            _ => None,
+        }
+    }
 }
 
 impl StreamValue for (f64, f64, f64) {
@@ -58,6 +94,15 @@ impl StreamValue for (f64, f64, f64) {
     }
     fn nan() -> Self {
         (f64::NAN, f64::NAN, f64::NAN)
+    }
+    fn to_parts(&self) -> Vec<Option<f64>> {
+        vec![part(self.0), part(self.1), part(self.2)]
+    }
+    fn from_parts(parts: &[Option<f64>]) -> Option<Self> {
+        match parts {
+            [a, b, c] => Some((unpart(*a), unpart(*b), unpart(*c))),
+            _ => None,
+        }
     }
 }
 
@@ -71,6 +116,15 @@ impl StreamValue for (f64, f64, f64, f64) {
     fn nan() -> Self {
         (f64::NAN, f64::NAN, f64::NAN, f64::NAN)
     }
+    fn to_parts(&self) -> Vec<Option<f64>> {
+        vec![part(self.0), part(self.1), part(self.2), part(self.3)]
+    }
+    fn from_parts(parts: &[Option<f64>]) -> Option<Self> {
+        match parts {
+            [a, b, c, d] => Some((unpart(*a), unpart(*b), unpart(*c), unpart(*d))),
+            _ => None,
+        }
+    }
 }
 
 /// Condition events (`StreamingCross` etc.): no NaN state; `0` = no event.
@@ -83,6 +137,15 @@ impl StreamValue for i8 {
     }
     fn nan() -> Self {
         0
+    }
+    fn to_parts(&self) -> Vec<Option<f64>> {
+        vec![Some(f64::from(*self))]
+    }
+    fn from_parts(parts: &[Option<f64>]) -> Option<Self> {
+        match parts {
+            [Some(a)] => i8_from(*a),
+            _ => None,
+        }
     }
 }
 
@@ -101,6 +164,24 @@ impl StreamValue for (f64, f64, f64, f64, f64, f64) {
     fn nan() -> Self {
         (f64::NAN, f64::NAN, f64::NAN, f64::NAN, f64::NAN, f64::NAN)
     }
+    fn to_parts(&self) -> Vec<Option<f64>> {
+        [self.0, self.1, self.2, self.3, self.4, self.5]
+            .map(part)
+            .to_vec()
+    }
+    fn from_parts(parts: &[Option<f64>]) -> Option<Self> {
+        match parts {
+            [a, b, c, d, e, f] => Some((
+                unpart(*a),
+                unpart(*b),
+                unpart(*c),
+                unpart(*d),
+                unpart(*e),
+                unpart(*f),
+            )),
+            _ => None,
+        }
+    }
 }
 
 /// Supertrend output: (line, direction). Direction 0 means warmup.
@@ -114,6 +195,15 @@ impl StreamValue for (f64, i8) {
     fn nan() -> Self {
         (f64::NAN, 0)
     }
+    fn to_parts(&self) -> Vec<Option<f64>> {
+        vec![part(self.0), Some(f64::from(self.1))]
+    }
+    fn from_parts(parts: &[Option<f64>]) -> Option<Self> {
+        match parts {
+            [a, Some(d)] => Some((unpart(*a), i8_from(*d)?)),
+            _ => None,
+        }
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -122,6 +212,8 @@ impl StreamValue for (f64, i8) {
 
 /// Common interface implemented by every streaming indicator.
 pub trait StreamingIndicator: Clone {
+    /// Stable type tag, used in snapshots (matches the C ABI stream name).
+    const KIND: &'static str;
     type Input: StreamValue;
     type Output: StreamValue;
 
@@ -139,10 +231,11 @@ pub trait StreamingIndicator: Clone {
 
 macro_rules! impl_streaming_indicator {
     (
-        $ty:ty, $input:ty, $output:ty, |$s:ident, $pat:pat_param| $call:expr
+        $kind:literal => $ty:ty, $input:ty, $output:ty, |$s:ident, $pat:pat_param| $call:expr
         $(, peek = |$ps:ident, $ppat:pat_param| $peek:expr)? $(,)?
     ) => {
         impl StreamingIndicator for $ty {
+            const KIND: &'static str = $kind;
             type Input = $input;
             type Output = $output;
 
@@ -168,52 +261,47 @@ macro_rules! impl_streaming_indicator {
     };
 }
 
-impl_streaming_indicator!(
-    StreamingSMA,
+impl_streaming_indicator!("sma" => StreamingSMA,
     f64,
     f64,
     |s, v| s.update(v),
     peek = |s, v| s.peek_value(v)
 );
-impl_streaming_indicator!(StreamingEMA, f64, f64, |s, v| s.update(v));
-impl_streaming_indicator!(StreamingRSI, f64, f64, |s, v| s.update(v));
-impl_streaming_indicator!(
-    StreamingBBands,
+impl_streaming_indicator!("ema" => StreamingEMA, f64, f64, |s, v| s.update(v));
+impl_streaming_indicator!("rsi" => StreamingRSI, f64, f64, |s, v| s.update(v));
+impl_streaming_indicator!("bbands" => StreamingBBands,
     f64,
     (f64, f64, f64),
     |s, v| s.update(v),
     peek = |s, v| s.peek_value(v)
 );
-impl_streaming_indicator!(StreamingMACD, f64, (f64, f64, f64), |s, v| s.update(v));
-impl_streaming_indicator!(StreamingATR, (f64, f64, f64), f64, |s, (h, l, c)| s
+impl_streaming_indicator!("macd" => StreamingMACD, f64, (f64, f64, f64), |s, v| s.update(v));
+impl_streaming_indicator!("atr" => StreamingATR, (f64, f64, f64), f64, |s, (h, l, c)| s
     .update(h, l, c));
-impl_streaming_indicator!(
-    StreamingStoch,
+impl_streaming_indicator!("stoch" => StreamingStoch,
     (f64, f64, f64),
     (f64, f64),
     |s, (h, l, c)| s.update(h, l, c),
     peek = |s, (h, l, c)| s.peek_value(h, l, c)
 );
-impl_streaming_indicator!(StreamingSupertrend, (f64, f64, f64), (f64, i8), |s,
+impl_streaming_indicator!("supertrend" => StreamingSupertrend, (f64, f64, f64), (f64, i8), |s,
                                                                             (
     h,
     l,
     c,
 )| s
     .update(h, l, c));
-impl_streaming_indicator!(
-    StreamingVWAP,
+impl_streaming_indicator!("vwap" => StreamingVWAP,
     (f64, f64, f64, f64),
     f64,
     |s, (h, l, c, v)| s.update(h, l, c, v)
 );
 
-impl_streaming_indicator!(StreamingCross, (f64, f64), i8, |s, (a, b)| s.update(a, b));
-impl_streaming_indicator!(StreamingStreak, f64, i8, |s, v| s.update(v));
-impl_streaming_indicator!(StreamingCooldown, f64, i8, |s, v| s.update(v));
+impl_streaming_indicator!("cross" => StreamingCross, (f64, f64), i8, |s, (a, b)| s.update(a, b));
+impl_streaming_indicator!("streak" => StreamingStreak, f64, i8, |s, v| s.update(v));
+impl_streaming_indicator!("cooldown" => StreamingCooldown, f64, i8, |s, v| s.update(v));
 
-impl_streaming_indicator!(
-    StreamingOptionGreeks,
+impl_streaming_indicator!("option_greeks" => StreamingOptionGreeks,
     (f64, f64, f64),
     (f64, f64, f64, f64, f64, f64),
     |s, (price, underlying, t)| s.update(price, underlying, t)
@@ -225,8 +313,17 @@ impl_streaming_indicator!(
 
 /// Wraps a streaming indicator with live-bar semantics and introspection.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serde",
+    serde(bound(
+        serialize = "T: serde::Serialize",
+        deserialize = "T: serde::Deserialize<'de>"
+    ))
+)]
 pub struct Live<T: StreamingIndicator> {
     inner: T,
+    #[cfg_attr(feature = "serde", serde(with = "super::snapshot::stream_value"))]
     last: T::Output,
     count: usize,
 }
