@@ -42,7 +42,10 @@ status, closed, err := bars.OnTick(tsMs, price, qty)
   `WalkForwardIndices`, `PerformanceMetrics` with benchmark stats), and
   parameter sweeps plus overfitting diagnostics
   (`SweepBuiltin`, `SweepSignals`, `PboCscv`, `DeflatedSharpeRatio`, …),
-  which run in parallel in Rust.
+  which run in parallel in Rust; option strategy analytics
+  (`StrategyBreakevens`, `StrategyMaxProfit`/`MaxLoss` with unlimited
+  detection, `StrategyProbabilityOfProfit`, `StrategyScenarioGrid`) over a
+  `[]Leg`.
 - Outputs match input length with NaN warm-up; errors are `*ferrota.Error`,
   comparable with `errors.Is` (`ErrInvalidParam`, `ErrLengthMismatch`, ...).
 

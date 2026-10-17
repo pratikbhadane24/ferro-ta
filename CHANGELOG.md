@@ -11,6 +11,14 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **Option strategy API** (`ferro_ta_core::options::strategy`, all bindings):
+  a leg/strategy struct in place of parallel slices, with exact breakevens,
+  max profit / max loss with "unlimited" detection, risk-neutral probability
+  of profit, per-leg greeks and a spot × IV-shock scenario grid with days
+  forward. Python `option_strategy(legs)` → `OptionStrategy`, WASM
+  `WasmOptionStrategy`, C `ft_strategy_*` over an `FtLeg` array, Go
+  `Strategy*` functions. Legs are validated at construction; expiry analytics
+  reject mixed-expiry strategies.
 - **Live-bar streaming.** Every streaming indicator accepts
   `update(..., closed=False)` (Python) / `peek(...)` (WASM) /
   `ft_stream_*_peek` (C) / `Stream*.Peek` (Go) to preview the still-forming bar

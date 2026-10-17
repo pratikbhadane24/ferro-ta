@@ -11,6 +11,7 @@ from typing import Any
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
+from ferro_ta._ferro_ta import OptionStrategy
 from ferro_ta._ferro_ta import aggregate_greeks_legs as _rust_aggregate_greeks_legs
 from ferro_ta._ferro_ta import strategy_payoff_dense as _rust_strategy_payoff_dense
 from ferro_ta._ferro_ta import strategy_payoff_legs as _rust_strategy_payoff_legs
@@ -28,6 +29,8 @@ __all__ = [
     "option_leg_payoff",
     "futures_leg_payoff",
     "stock_leg_payoff",
+    "option_strategy",
+    "OptionStrategy",
     "strategy_payoff",
     "strategy_value",
     "aggregate_greeks",
@@ -219,6 +222,28 @@ def _normalize_legs(
     for leg in legs:
         normalized.append(leg if isinstance(leg, PayoffLeg) else _mapping_to_leg(leg))
     return tuple(normalized)
+
+
+def option_strategy(
+    legs: Sequence[PayoffLeg | Mapping[str, Any]] | None = None,
+    *,
+    strategy: DerivativesStrategy | None = None,
+) -> OptionStrategy:
+    """Build an :class:`OptionStrategy` from legs (``PayoffLeg`` or dicts).
+
+    The result exposes exact ``breakevens()``, ``max_profit()`` /
+    ``max_loss()`` as ``(value, spot)`` with ``(±inf, None)`` when unlimited,
+    ``probability_of_profit(spot, volatility, time_to_expiry)``,
+    ``greeks(spot)`` and ``scenario_grid(spots, vol_shifts, days_forward)``.
+    Option legs that should feed greeks or scenarios need ``volatility`` and
+    ``time_to_expiry``; per-leg ``rate``/``carry`` are ignored in favour of
+    the method arguments.
+    """
+    normalized = _normalize_legs(legs, strategy=strategy)
+    try:
+        return OptionStrategy(normalized)
+    except ValueError as err:
+        _normalize_rust_error(err)
 
 
 def strategy_payoff(

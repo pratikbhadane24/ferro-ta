@@ -2910,6 +2910,110 @@ impl WasmBarBuilder {
 }
 
 // ===========================================================================
+// Option strategy (leg/strategy struct API)
+// ===========================================================================
+
+fn extreme_to_js(e: ferro_ta_core::options::strategy::Extreme) -> JsValue {
+    use ferro_ta_core::options::strategy::Extreme;
+    let obj = js_sys::Object::new();
+    let (value, spot, unlimited) = match e {
+        Extreme::Finite { value, spot } => (JsValue::from_f64(value), JsValue::from_f64(spot), false),
+        Extreme::Unlimited => (JsValue::NULL, JsValue::NULL, true),
+    };
+    let _ = js_sys::Reflect::set(&obj, &"value".into(), &value);
+    let _ = js_sys::Reflect::set(&obj, &"spot".into(), &spot);
+    let _ = js_sys::Reflect::set(&obj, &"unlimited".into(), &JsValue::from_bool(unlimited));
+    obj.into()
+}
+
+fn strategy_err(e: ferro_ta_core::options::strategy::StrategyError) -> JsError {
+    JsError::new(&e.0)
+}
+
+/// Multi-leg option strategy builder. Add legs (quantity is signed: + long,
+/// - short), then query breakevens, max profit/loss (`{value, spot, unlimited}`),
+/// probability of profit, greeks and a scenario grid.
+#[wasm_bindgen]
+#[derive(Default)]
+pub struct WasmOptionStrategy {
+    legs: Vec<ferro_ta_core::options::strategy::Leg>,
+}
+
+#[wasm_bindgen]
+impl WasmOptionStrategy {
+    #[wasm_bindgen(constructor)]
+    pub fn new() -> WasmOptionStrategy {
+        Self::default()
+    }
+
+    /// Add an option leg; `right` is "call" or "put".
+    #[wasm_bindgen(js_name = addOption)]
+    #[allow(clippy::too_many_arguments)]
+    pub fn add_option(&mut self, quantity: f64, right: &str, strike: f64, premium: f64, expiry_years: f64, volatility: f64, multiplier: f64) -> Result<(), JsError> {
+        let right = match right.to_ascii_lowercase().as_str() {
+            "call" => ferro_ta_core::options::OptionKind::Call,
+            "put" => ferro_ta_core::options::OptionKind::Put,
+            other => return Err(JsError::new(&format!("right must be 'call' or 'put', got {other:?}"))),
+        };
+        self.legs.push(ferro_ta_core::options::strategy::Leg::option(quantity, right, strike, premium, expiry_years, volatility, multiplier));
+        Ok(())
+    }
+
+    #[wasm_bindgen(js_name = addFuture)]
+    pub fn add_future(&mut self, quantity: f64, entry_price: f64, multiplier: f64) {
+        self.legs.push(ferro_ta_core::options::strategy::Leg::future(quantity, entry_price, multiplier));
+    }
+
+    #[wasm_bindgen(js_name = addStock)]
+    pub fn add_stock(&mut self, quantity: f64, entry_price: f64, multiplier: f64) {
+        self.legs.push(ferro_ta_core::options::strategy::Leg::stock(quantity, entry_price, multiplier));
+    }
+
+    fn strategy(&self) -> Result<ferro_ta_core::options::strategy::Strategy, JsError> {
+        ferro_ta_core::options::strategy::Strategy::new(self.legs.clone()).map_err(strategy_err)
+    }
+
+    /// Expiry P&L over `spots`.
+    pub fn payoff(&self, spots: &Float64Array) -> Result<Float64Array, JsError> {
+        Ok(from_vec(self.strategy()?.payoff(&to_vec(spots)).map_err(strategy_err)?))
+    }
+
+    /// Spots where expiry P&L crosses zero, ascending.
+    pub fn breakevens(&self) -> Result<Float64Array, JsError> {
+        Ok(from_vec(self.strategy()?.breakevens().map_err(strategy_err)?))
+    }
+
+    #[wasm_bindgen(js_name = maxProfit)]
+    pub fn max_profit(&self) -> Result<JsValue, JsError> {
+        Ok(extreme_to_js(self.strategy()?.max_profit().map_err(strategy_err)?))
+    }
+
+    #[wasm_bindgen(js_name = maxLoss)]
+    pub fn max_loss(&self) -> Result<JsValue, JsError> {
+        Ok(extreme_to_js(self.strategy()?.max_loss().map_err(strategy_err)?))
+    }
+
+    /// Risk-neutral probability that expiry P&L > 0 (lognormal underlying).
+    #[wasm_bindgen(js_name = probabilityOfProfit)]
+    pub fn probability_of_profit(&self, spot: f64, volatility: f64, time_years: f64, rate: f64, carry: f64) -> Result<f64, JsError> {
+        self.strategy()?.probability_of_profit(spot, volatility, time_years, rate, carry).map_err(strategy_err)
+    }
+
+    /// [delta, gamma, vega, theta, rho] summed over legs.
+    pub fn greeks(&self, spot: f64, rate: f64, carry: f64) -> Result<Float64Array, JsError> {
+        let g = self.strategy()?.greeks(spot, rate, carry).map_err(strategy_err)?;
+        Ok(from_vec(vec![g.delta, g.gamma, g.vega, g.theta, g.rho]))
+    }
+
+    /// Row-major [volShift][spot] mark-to-model P&L.
+    #[wasm_bindgen(js_name = scenarioGrid)]
+    pub fn scenario_grid(&self, spots: &Float64Array, vol_shifts: &Float64Array, days_forward: f64, rate: f64, carry: f64) -> Result<Float64Array, JsError> {
+        let grid = self.strategy()?.scenario_grid(&to_vec(spots), &to_vec(vol_shifts), days_forward, rate, carry);
+        Ok(from_vec(grid))
+    }
+}
+
+// ===========================================================================
 // Batch Operations
 // ===========================================================================
 
@@ -5481,6 +5585,29 @@ mod tests {
         let second = to_vec(&valuewhen(&condition, &real, 2));
         assert!(second[2].is_nan());
         assert_eq!(second[3], 20.0);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_option_strategy_iron_condor() {
+        let mut s = WasmOptionStrategy::new();
+        s.add_option(1.0, "put", 80.0, 1.0, 0.25, 0.2, 1.0).unwrap();
+        s.add_option(-1.0, "put", 90.0, 3.0, 0.25, 0.2, 1.0).unwrap();
+        s.add_option(-1.0, "call", 110.0, 3.0, 0.25, 0.2, 1.0).unwrap();
+        s.add_option(1.0, "call", 120.0, 1.0, 0.25, 0.2, 1.0).unwrap();
+        assert_eq!(to_vec(&s.breakevens().unwrap()), vec![86.0, 114.0]);
+        let profit = s.max_profit().unwrap();
+        assert_eq!(js_sys::Reflect::get(&profit, &"value".into()).unwrap().as_f64(), Some(4.0));
+        let grid = s.scenario_grid(&make_arr(&[90.0, 100.0]), &make_arr(&[0.0, 0.05]), 0.0, 0.0, 0.0).unwrap();
+        assert_eq!(grid.length(), 4);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_option_strategy_unlimited_and_errors() {
+        let mut s = WasmOptionStrategy::new();
+        s.add_option(-1.0, "call", 100.0, 5.0, 0.25, 0.2, 1.0).unwrap();
+        let loss = s.max_loss().unwrap();
+        assert_eq!(js_sys::Reflect::get(&loss, &"unlimited".into()).unwrap().as_bool(), Some(true));
+        assert!(s.add_option(1.0, "straddle", 100.0, 1.0, 0.25, 0.2, 1.0).is_err());
     }
 
     #[wasm_bindgen_test]

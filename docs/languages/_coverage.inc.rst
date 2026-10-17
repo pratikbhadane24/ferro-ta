@@ -11,10 +11,10 @@
      - Flutter
      - Flutter excluded
      - C / Go
-   * - 420
+   * - 421
      - 380
      - 253
-     - 362
+     - 363
      - 194
      - 56
      - 288
@@ -1975,6 +1975,13 @@
      - —
      - yes
      - excluded
+     - —
+   * - ``WasmOptionStrategy``
+     - other
+     - —
+     - —
+     - yes
+     - —
      - —
    * - ``parity_gap``
      - futures
