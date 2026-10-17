@@ -16,6 +16,9 @@
 
 use crate::options::normal;
 
+// `std::f64::consts::EULER_GAMMA` is too new for the toolchains this crate
+// supports (absent in Rust 1.93), so the literal stays.
+#[allow(clippy::approx_constant)]
 const EULER_MASCHERONI: f64 = 0.577_215_664_901_532_9;
 /// C(20, 10) = 184 756 combinations — the largest grid we enumerate.
 const MAX_CSCV_SPLITS: usize = 20;
