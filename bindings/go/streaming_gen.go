@@ -35,8 +35,10 @@ func NewStreamSma(period int) (*StreamSma, error) {
 	return s, nil
 }
 
-// Update commits one bar and returns its value(s) (NaN during warm-up).
-// A NaN/±inf input returns NaN and leaves state untouched.
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
 func (s *StreamSma) Update(value float64) (float64, error) {
 	var out float64
 	s.mu.Lock()
@@ -109,8 +111,10 @@ func NewStreamEma(period int) (*StreamEma, error) {
 	return s, nil
 }
 
-// Update commits one bar and returns its value(s) (NaN during warm-up).
-// A NaN/±inf input returns NaN and leaves state untouched.
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
 func (s *StreamEma) Update(value float64) (float64, error) {
 	var out float64
 	s.mu.Lock()
@@ -183,8 +187,10 @@ func NewStreamRsi(period int) (*StreamRsi, error) {
 	return s, nil
 }
 
-// Update commits one bar and returns its value(s) (NaN during warm-up).
-// A NaN/±inf input returns NaN and leaves state untouched.
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
 func (s *StreamRsi) Update(value float64) (float64, error) {
 	var out float64
 	s.mu.Lock()
@@ -257,8 +263,10 @@ func NewStreamAtr(period int) (*StreamAtr, error) {
 	return s, nil
 }
 
-// Update commits one bar and returns its value(s) (NaN during warm-up).
-// A NaN/±inf input returns NaN and leaves state untouched.
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
 func (s *StreamAtr) Update(high float64, low float64, close float64) (float64, error) {
 	var out float64
 	s.mu.Lock()
@@ -331,8 +339,10 @@ func NewStreamBbands(period int, nbdevup float64, nbdevdn float64) (*StreamBband
 	return s, nil
 }
 
-// Update commits one bar and returns its value(s) (NaN during warm-up).
-// A NaN/±inf input returns NaN and leaves state untouched.
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
 func (s *StreamBbands) Update(value float64) (upper float64, middle float64, lower float64, err error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -403,8 +413,10 @@ func NewStreamMacd(fastperiod int, slowperiod int, signalperiod int) (*StreamMac
 	return s, nil
 }
 
-// Update commits one bar and returns its value(s) (NaN during warm-up).
-// A NaN/±inf input returns NaN and leaves state untouched.
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
 func (s *StreamMacd) Update(value float64) (macd float64, signal float64, hist float64, err error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -475,8 +487,10 @@ func NewStreamStoch(fastkPeriod int, slowkPeriod int, slowdPeriod int) (*StreamS
 	return s, nil
 }
 
-// Update commits one bar and returns its value(s) (NaN during warm-up).
-// A NaN/±inf input returns NaN and leaves state untouched.
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
 func (s *StreamStoch) Update(high float64, low float64, close float64) (slowk float64, slowd float64, err error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -547,8 +561,10 @@ func NewStreamVwap() (*StreamVwap, error) {
 	return s, nil
 }
 
-// Update commits one bar and returns its value(s) (NaN during warm-up).
-// A NaN/±inf input returns NaN and leaves state untouched.
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
 func (s *StreamVwap) Update(high float64, low float64, close float64, volume float64) (float64, error) {
 	var out float64
 	s.mu.Lock()
@@ -599,6 +615,80 @@ func (s *StreamVwap) Close() error {
 	return nil
 }
 
+// StreamBacktest is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming backtester: feed each bar's close and the target position for the next bar (NaN = flat). Reports the position, bar return, equity (starting at 1.0), the number of closed trades and running statistics over closed trades (win rate, average win/loss, Kelly fraction). commission_per_trade is subtracted from equity on each position change; slippage is in basis points.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamBacktest struct {
+	mu sync.Mutex
+	h  *C.FtStreamBacktest
+}
+
+// NewStreamBacktest creates a StreamBacktest.
+func NewStreamBacktest(commissionPerTrade float64, slippageBps float64) (*StreamBacktest, error) {
+	var h *C.FtStreamBacktest
+	if err := statusError("NewStreamBacktest", C.ft_stream_backtest_new(C.double(commissionPerTrade), C.double(slippageBps), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamBacktest{h: h}
+	runtime.SetFinalizer(s, (*StreamBacktest).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamBacktest) Update(close float64, signal float64) (position float64, barReturn float64, equity float64, nTrades int64, totalCommission float64, winRate float64, avgWin float64, avgLoss float64, kellyFraction float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, 0, 0, 0, 0, 0, 0, 0, closedError("StreamBacktest.Update")
+	}
+	if err := statusError("StreamBacktest.Update", C.ft_stream_backtest_update(s.h, C.double(close), C.double(signal), (*C.double)(unsafe.Pointer(&position)), (*C.double)(unsafe.Pointer(&barReturn)), (*C.double)(unsafe.Pointer(&equity)), (*C.int64_t)(unsafe.Pointer(&nTrades)), (*C.double)(unsafe.Pointer(&totalCommission)), (*C.double)(unsafe.Pointer(&winRate)), (*C.double)(unsafe.Pointer(&avgWin)), (*C.double)(unsafe.Pointer(&avgLoss)), (*C.double)(unsafe.Pointer(&kellyFraction)))); err != nil {
+		return 0, 0, 0, 0, 0, 0, 0, 0, 0, err
+	}
+	return position, barReturn, equity, nTrades, totalCommission, winRate, avgWin, avgLoss, kellyFraction, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamBacktest) Peek(close float64, signal float64) (position float64, barReturn float64, equity float64, nTrades int64, totalCommission float64, winRate float64, avgWin float64, avgLoss float64, kellyFraction float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, 0, 0, 0, 0, 0, 0, 0, closedError("StreamBacktest.Peek")
+	}
+	if err := statusError("StreamBacktest.Peek", C.ft_stream_backtest_peek(s.h, C.double(close), C.double(signal), (*C.double)(unsafe.Pointer(&position)), (*C.double)(unsafe.Pointer(&barReturn)), (*C.double)(unsafe.Pointer(&equity)), (*C.int64_t)(unsafe.Pointer(&nTrades)), (*C.double)(unsafe.Pointer(&totalCommission)), (*C.double)(unsafe.Pointer(&winRate)), (*C.double)(unsafe.Pointer(&avgWin)), (*C.double)(unsafe.Pointer(&avgLoss)), (*C.double)(unsafe.Pointer(&kellyFraction)))); err != nil {
+		return 0, 0, 0, 0, 0, 0, 0, 0, 0, err
+	}
+	return position, barReturn, equity, nTrades, totalCommission, winRate, avgWin, avgLoss, kellyFraction, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamBacktest) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamBacktest.Reset")
+	}
+	return statusError("StreamBacktest.Reset", C.ft_stream_backtest_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamBacktest) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_backtest_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
 // StreamSupertrend is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
 // Streaming Supertrend. `out_direction` is 1 (up) / -1 (down), 0 in warm-up.
@@ -621,8 +711,10 @@ func NewStreamSupertrend(period int, multiplier float64) (*StreamSupertrend, err
 	return s, nil
 }
 
-// Update commits one bar and returns its value(s) (NaN during warm-up).
-// A NaN/±inf input returns NaN and leaves state untouched.
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
 func (s *StreamSupertrend) Update(high float64, low float64, close float64) (line float64, direction int8, err error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()

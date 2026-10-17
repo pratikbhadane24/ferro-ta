@@ -102,13 +102,87 @@ Options, futures and sizing
    iv, _ := ferrota.ImpliedVolatility(price, ferrota.ModelBlackScholes,
    	100, 105, 0.03, 0.02, 0.5, ferrota.OptionCall, 0.2, 1e-8, 100)
 
+Backtesting
+-----------
+
+``BacktestOhlcv`` runs the full OHLCV engine: stops, take-profit, trailing and
+breakeven stops, max-hold exits, limit orders, leverage, loss circuit
+breakers, the commission model, ATR slippage and volume-capped partial fills.
+Settings travel as a vector indexed by the ``Bt*`` constants. Start from the
+defaults and overwrite what you need:
+
+.. code-block:: go
+
+   s, _ := ferrota.BacktestDefaultSettings()
+   s[ferrota.BtStopLossPct] = 0.02
+   s[ferrota.BtRateOfValue] = 0.0005          // 5 bps commission
+   s[ferrota.BtSlippageAtrMult] = 0.1         // slippage = 0.1 x ATR / price
+   s[ferrota.BtMaxParticipation] = 0.05       // <= 5% of bar volume (needs volume)
+   pos, fills, _, rets, equity, err := ferrota.BacktestOhlcv(
+   	open, high, low, close, volume, signals, nil /* limit prices */, s)
+   metrics, _ := ferrota.PerformanceMetrics(rets, equity, 252, 0)
+   sharpe := metrics[ferrota.MetricSharpe]
+
+``volume`` and ``limitPrices`` may be ``nil``. A settings slice from an older
+release (shorter) still works, because missing entries take defaults.
+
+The rest of the toolkit:
+
+.. code-block:: go
+
+   sig, _ := ferrota.SmaCrossoverSignals(close, 10, 50)       // also MacdCrossoverSignals
+   _, _, rets, eq, _ := ferrota.BacktestClose(close, sig, s) // close-only engine, same settings
+   n, entry, exit, dir, _, _, pnl, _, mae, mfe, _ := ferrota.ExtractTrades(pos, fills, high, low)
+   paths, _ := ferrota.MonteCarloBootstrap(rets, 1000, 42, 20) // (1000, n_bars) row-major
+   folds, _ := ferrota.WalkForwardIndices(len(close), 500, 100, 0, 0)
+   assets, port, peq, _ := ferrota.BacktestMultiAsset(closes, weights, nAssets, 0, 2, 1, 0, 0)
+   metrics, bench, _ := ferrota.PerformanceMetrics(rets, eq, benchRets, pos, 252, 0)
+   beta := bench[ferrota.BenchBeta]
+
+   live, _ := ferrota.NewStreamBacktest(0.0005, 2) // bar-by-bar, safe for concurrent use
+   defer live.Close()
+   position, ret, equity, trades, _, winRate, _, _, kelly, _ := live.Update(lastClose, signal)
+
+``ExtractTrades`` columns have capacity ``len(positions)``; the first ``n``
+rows are trades and the rest are padded with -1 or NaN.
+
+Parameter sweeps and overfitting diagnostics
+--------------------------------------------
+
+Sweeps run entirely in Rust on all cores. Matrices are flat, row-major
+slices; a metric row has ``len(metrics)/nCombos`` columns (also
+``SweepNMetrics()``), indexed by the ``Metric*`` constants:
+
+.. code-block:: go
+
+   // SMA crossover over (fast, slow) pairs; invalid pairs (fast >= slow) are skipped.
+   combos := []float64{5, 50, 10, 50, 10, 100, 60, 50}
+   valid, returns, metrics, err := ferrota.SweepBuiltin(
+   	close, ferrota.StrategySmaCrossover, combos, 1.0, 2.0, 100_000, 252, 0)
+   cols := len(metrics) / len(valid)
+   for c := range valid {
+   	if valid[c] == 1 {
+   		sharpe := metrics[c*cols+int(ferrota.MetricSharpe)]
+   		_ = sharpe
+   	}
+   }
+
+   // How much of the winner's edge survives the search?
+   nCombos := len(valid)
+   pbo, _, _, _, _, _ := ferrota.PboCscv(returns, nCombos, 16) // P(overfit)
+   dsr, _ := ferrota.DeflatedSharpeRatio(bestColumn, nCombos, sharpeVariance)
+
+``returns`` is ``(n_bars, n_combos)``; columns of skipped combos are NaN.
+``SweepSignals`` backtests your own signal matrix the same way, and
+``SweepPlateauScores``, ``PurgedKfoldIndices``, ``ProbabilisticSharpeRatio``
+and ``PboNCombinations`` are also available.
+
 Not exported yet
 ----------------
 
-The C ABI covers same-length array functions, scalar functions and streaming
-handles. These core APIs need a different ABI pattern (variable-length or
-2-D results, nested structs) and are not in the Go module yet: backtest
-engines and performance metrics, batch/2-D portfolio functions, bar
+The C ABI covers same-length array functions, scalar functions, streaming
+handles and multi-shape kernels; the whole backtesting toolkit is available.
+These core APIs are not in the Go module yet: batch/2-D portfolio functions, bar
 resampling and tick aggregation, volatility cones and smile metrics, option
 chain/strategy helpers, chunked processing helpers, ``pivot_points``,
 ``dtw_*``, ``calendar_spreads``. :doc:`coverage` lists every function per

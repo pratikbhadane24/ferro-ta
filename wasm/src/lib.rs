@@ -3502,6 +3502,258 @@ pub fn half_kelly_fraction(win_rate: f64, avg_win: f64, avg_loss: f64) -> f64 {
     ferro_ta_core::backtest::half_kelly_fraction(win_rate, avg_win, avg_loss).unwrap_or(f64::NAN)
 }
 
+/// Probabilistic Sharpe Ratio of per-period returns vs a per-period benchmark Sharpe.
+/// Returns NaN on invalid input.
+#[wasm_bindgen]
+pub fn probabilistic_sharpe_ratio(returns: &Float64Array, benchmark_sharpe: f64) -> f64 {
+    ferro_ta_core::overfit::probabilistic_sharpe_ratio(&to_vec(returns), benchmark_sharpe)
+        .unwrap_or(f64::NAN)
+}
+
+/// Expected maximum per-period Sharpe of `n_trials` zero-skill trials. NaN on invalid input.
+#[wasm_bindgen]
+pub fn expected_max_sharpe(n_trials: usize, trial_sharpe_variance: f64) -> f64 {
+    ferro_ta_core::overfit::expected_max_sharpe(n_trials, trial_sharpe_variance).unwrap_or(f64::NAN)
+}
+
+/// Deflated Sharpe Ratio of the selected strategy's returns. NaN on invalid input.
+#[wasm_bindgen]
+pub fn deflated_sharpe_ratio(
+    returns: &Float64Array,
+    n_trials: usize,
+    trial_sharpe_variance: f64,
+) -> f64 {
+    ferro_ta_core::overfit::deflated_sharpe_ratio(&to_vec(returns), n_trials, trial_sharpe_variance)
+        .unwrap_or(f64::NAN)
+}
+
+/// Probability of Backtest Overfitting (CSCV) over a row-major
+/// `(n_bars, n_strategies)` returns matrix.
+/// Returns `[ [pbo], logits, is_sharpe, oos_sharpe, best_index ]` as Float64Arrays,
+/// or an empty Array on invalid input.
+#[wasm_bindgen]
+pub fn pbo_cscv(returns_flat: &Float64Array, n_strategies: usize, n_splits: usize) -> Array {
+    match ferro_ta_core::overfit::pbo_cscv(&to_vec(returns_flat), n_strategies, n_splits) {
+        Ok(res) => vecs_to_array_of_f64arr(vec![
+            vec![res.pbo],
+            res.logits,
+            res.is_sharpe,
+            res.oos_sharpe,
+            res.best_index.iter().map(|&i| i as f64).collect(),
+        ]),
+        Err(_) => Array::new(),
+    }
+}
+
+/// Purged/embargoed k-fold boundaries, flattened as
+/// `[train_left_end, test_start, test_end, train_right_start] * n_folds`.
+/// Empty on invalid input.
+#[wasm_bindgen]
+pub fn purged_kfold_indices(
+    n_bars: usize,
+    n_folds: usize,
+    purge_bars: usize,
+    embargo_bars: usize,
+) -> Float64Array {
+    match ferro_ta_core::overfit::purged_kfold_indices(n_bars, n_folds, purge_bars, embargo_bars) {
+        Ok(folds) => from_vec(folds.iter().flatten().map(|&v| v as f64).collect()),
+        Err(_) => from_vec(vec![]),
+    }
+}
+
+/// Multi-asset backtest. `close_flat` and `weights_flat` are row-major
+/// `(n_bars, n_assets)`. Exposure caps: `max_asset_weight` 1 = off,
+/// `max_gross_exposure` / `max_net_exposure` 0 = off.
+/// Returns `[asset_returns_flat (n_bars*n_assets), portfolio_returns, equity]`,
+/// or an empty Array on invalid input.
+#[wasm_bindgen]
+#[allow(clippy::too_many_arguments)]
+pub fn backtest_multi_asset(
+    close_flat: &Float64Array, weights_flat: &Float64Array, n_assets: usize,
+    commission_per_trade: f64, slippage_bps: f64, max_asset_weight: f64,
+    max_gross_exposure: f64, max_net_exposure: f64,
+) -> Array {
+    let (c, w) = (to_vec(close_flat), to_vec(weights_flat));
+    if n_assets == 0 || c.len() != w.len() || c.len() % n_assets != 0 {
+        return Array::new();
+    }
+    let n_bars = c.len() / n_assets;
+    let cols = |flat: &[f64]| -> Vec<Vec<f64>> {
+        (0..n_assets).map(|j| (0..n_bars).map(|i| flat[i * n_assets + j]).collect()).collect()
+    };
+    match ferro_ta_core::backtest::backtest_multi_asset_core(
+        &cols(&c), &cols(&w), n_bars, n_assets, commission_per_trade, slippage_bps,
+        max_asset_weight, max_gross_exposure, max_net_exposure,
+    ) {
+        Ok(r) => {
+            let mut asset = vec![0.0; n_bars * n_assets];
+            for (j, col) in r.asset_returns.iter().enumerate() {
+                for (i, &v) in col.iter().enumerate() {
+                    asset[i * n_assets + j] = v;
+                }
+            }
+            vecs_to_array_of_f64arr(vec![asset, r.portfolio_returns, r.portfolio_equity])
+        }
+        Err(_) => Array::new(),
+    }
+}
+
+/// Bar-by-bar backtester for live loops: feed each close and the target
+/// position for the next bar (NaN = flat).
+#[wasm_bindgen]
+pub struct WasmStreamingBacktest {
+    inner: ferro_ta_core::backtest::StreamingBacktest,
+}
+
+#[wasm_bindgen]
+impl WasmStreamingBacktest {
+    #[wasm_bindgen(constructor)]
+    pub fn new(commission_per_trade: f64, slippage_bps: f64) -> WasmStreamingBacktest {
+        Self {
+            inner: ferro_ta_core::backtest::StreamingBacktest::new(commission_per_trade, slippage_bps),
+        }
+    }
+    /// Returns `[position, bar_return, equity, n_trades]` after this bar.
+    pub fn on_bar(&mut self, close: f64, signal: f64) -> Float64Array {
+        let r = self.inner.on_bar(close, signal);
+        from_vec(vec![r.position, r.bar_return, r.equity, r.n_trades as f64])
+    }
+    /// Returns `[equity, n_trades, total_commission, win_rate, avg_win, avg_loss, kelly_fraction]`.
+    pub fn summary(&self) -> Float64Array {
+        let s = self.inner.summary();
+        from_vec(vec![
+            s.equity, s.n_trades as f64, s.total_commission, s.win_rate, s.avg_win, s.avg_loss,
+            s.kelly_fraction,
+        ])
+    }
+    pub fn reset(&mut self) { self.inner.reset(); }
+}
+
+/// Names of the per-combination metrics returned by `sweep_signals` /
+/// `sweep_builtin`, in column order.
+#[wasm_bindgen]
+pub fn sweep_metric_names() -> Array {
+    ferro_ta_core::sweep::metric_names()
+        .iter()
+        .map(|n| JsValue::from_str(n))
+        .collect()
+}
+
+fn sweep_cfg(
+    commission_per_trade: f64, slippage_bps: f64, initial_capital: f64,
+    periods_per_year: f64, risk_free_rate: f64,
+) -> ferro_ta_core::sweep::SweepConfig {
+    ferro_ta_core::sweep::SweepConfig {
+        commission_per_trade,
+        slippage_bps,
+        initial_capital,
+        periods_per_year,
+        risk_free_rate,
+        parallel: false,
+    }
+}
+
+/// Backtest every column of a row-major `(n_bars, n_combos)` signal matrix.
+/// Returns `[returns_flat (n_bars*n_combos), metrics_flat (n_combos*n_metrics)]`
+/// (see `sweep_metric_names`), or an empty Array on invalid input.
+#[wasm_bindgen]
+#[allow(clippy::too_many_arguments)]
+pub fn sweep_signals(
+    close: &Float64Array, signals_flat: &Float64Array, n_combos: usize,
+    commission_per_trade: f64, slippage_bps: f64, initial_capital: f64,
+    periods_per_year: f64, risk_free_rate: f64,
+) -> Array {
+    let cfg = sweep_cfg(commission_per_trade, slippage_bps, initial_capital, periods_per_year, risk_free_rate);
+    match ferro_ta_core::sweep::sweep_signals(&to_vec(close), &to_vec(signals_flat), n_combos, &cfg) {
+        Ok(out) => {
+            let metrics = out.metrics_matrix();
+            vecs_to_array_of_f64arr(vec![out.returns, metrics])
+        }
+        Err(_) => Array::new(),
+    }
+}
+
+/// Whole sweep in Rust for a built-in strategy (`sma_crossover`, `rsi_30_70`,
+/// `macd_crossover`). `param_names` is comma-separated; `combos_flat` is
+/// row-major `(n_combos, n_names)`. Combos violating the strategy's
+/// constraints are skipped. Returns `[kept_indices, returns_flat
+/// (n_bars*n_kept), metrics_flat (n_kept*n_metrics)]`, or an empty Array on
+/// invalid input.
+#[wasm_bindgen]
+#[allow(clippy::too_many_arguments)]
+pub fn sweep_builtin(
+    close: &Float64Array, strategy: &str, param_names: &str, combos_flat: &Float64Array,
+    commission_per_trade: f64, slippage_bps: f64, initial_capital: f64,
+    periods_per_year: f64, risk_free_rate: f64,
+) -> Array {
+    let Ok(strat) = ferro_ta_core::sweep::BuiltinStrategy::from_name(strategy) else {
+        return Array::new();
+    };
+    let names: Vec<&str> = param_names.split(',').map(str::trim).collect();
+    let cfg = sweep_cfg(commission_per_trade, slippage_bps, initial_capital, periods_per_year, risk_free_rate);
+    match ferro_ta_core::sweep::sweep_builtin(&to_vec(close), strat, &names, &to_vec(combos_flat), &cfg) {
+        Ok(res) => {
+            let metrics = res.output.metrics_matrix();
+            let kept = res.kept.iter().map(|&k| k as f64).collect();
+            vecs_to_array_of_f64arr(vec![kept, res.output.returns, metrics])
+        }
+        Err(_) => Array::new(),
+    }
+}
+
+/// Convert JS numbers to indices; `None` if any is negative, fractional,
+/// non-finite or larger than `usize` (32-bit on wasm32).
+fn to_indices(values: &[f64]) -> Option<Vec<usize>> {
+    values
+        .iter()
+        .map(|&v| {
+            (v.is_finite() && v >= 0.0 && v.fract() == 0.0 && v <= usize::MAX as f64)
+                .then_some(v as usize)
+        })
+        .collect()
+}
+
+/// Cartesian product of parameter axes. `values_flat` concatenates every
+/// axis's values; `axis_lens` gives each axis's length. Returns row-major
+/// `(n_combos, n_axes)` (last axis fastest), or empty on invalid input.
+#[wasm_bindgen]
+pub fn expand_grid(values_flat: &Float64Array, axis_lens: &Float64Array) -> Float64Array {
+    let values = to_vec(values_flat);
+    let Some(lens) = to_indices(&to_vec(axis_lens)) else {
+        return from_vec(vec![]);
+    };
+    let total = lens.iter().try_fold(0usize, |acc, &l| acc.checked_add(l));
+    if total != Some(values.len()) {
+        return from_vec(vec![]);
+    }
+    let mut start = 0;
+    let axes: Vec<Vec<f64>> = lens
+        .iter()
+        .map(|&l| {
+            let axis = values[start..start + l].to_vec();
+            start += l;
+            axis
+        })
+        .collect();
+    from_vec(ferro_ta_core::sweep::grid::expand_grid(&axes).unwrap_or_default())
+}
+
+/// Plateau-robust scores: mean of `values` over each combo's grid
+/// neighbourhood (`radius` steps on every axis). `coords_flat` is row-major
+/// `(n_combos, n_axes)` grid indices. Empty on invalid input.
+#[wasm_bindgen]
+pub fn sweep_plateau_scores(
+    values: &Float64Array, coords_flat: &Float64Array, n_axes: usize, radius: usize,
+) -> Float64Array {
+    let Some(coords) = to_indices(&to_vec(coords_flat)) else {
+        return from_vec(vec![]);
+    };
+    from_vec(
+        ferro_ta_core::sweep::grid::plateau_scores(&to_vec(values), &coords, n_axes, radius)
+            .unwrap_or_default(),
+    )
+}
+
 /// Compute performance metrics from strategy returns and equity.
 /// Returns Float64Array with 22 metrics in order:
 /// [total_return, cagr, annualized_vol, sharpe, sortino, calmar, max_drawdown,
@@ -3545,21 +3797,56 @@ pub fn backtest_ohlcv(
         max_hold_bars,
         ..Default::default()
     };
-    match ferro_ta_core::backtest::backtest_ohlcv_core(
+    ohlcv_result_to_array(ferro_ta_core::backtest::backtest_ohlcv_core(
         &to_vec(open), &to_vec(high), &to_vec(low), &to_vec(close),
         &to_vec(signals), &config, None,
-    ) {
-        Ok(r) => {
-            let out = Array::new();
-            out.push(&from_vec(r.positions));
-            out.push(&from_vec(r.fill_prices));
-            out.push(&from_vec(r.bar_returns));
-            out.push(&from_vec(r.strategy_returns));
-            out.push(&from_vec(r.equity));
-            out
-        }
+    ))
+}
+
+fn ohlcv_result_to_array(
+    res: Result<ferro_ta_core::backtest::OhlcvBacktestResult, String>,
+) -> Array {
+    match res {
+        Ok(r) => vecs_to_array_of_f64arr(vec![
+            r.positions, r.fill_prices, r.bar_returns, r.strategy_returns, r.equity,
+        ]),
         Err(_) => Array::new(),
     }
+}
+
+/// OHLCV backtest with execution realism: `max_participation` caps each
+/// signal-driven fill at that fraction of bar `volume` (partial fills carry
+/// over; pass an empty `volume` to disable), and `slippage_atr_mult` sets
+/// slippage to `mult * ATR(slippage_atr_period)[i-1] / close[i-1]`.
+/// Returns [positions, fill_prices, bar_returns, strategy_returns, equity],
+/// or an empty Array on invalid input.
+#[wasm_bindgen]
+#[allow(clippy::too_many_arguments)]
+pub fn backtest_ohlcv_volume(
+    open: &Float64Array, high: &Float64Array, low: &Float64Array, close: &Float64Array,
+    volume: &Float64Array, signals: &Float64Array, slippage_bps: f64, initial_capital: f64,
+    commission_per_trade: f64, stop_loss_pct: f64, take_profit_pct: f64,
+    trailing_stop_pct: f64, max_hold_bars: usize, max_participation: f64,
+    slippage_atr_mult: f64, slippage_atr_period: usize,
+) -> Array {
+    let config = ferro_ta_core::backtest::BacktestConfig {
+        slippage_bps,
+        initial_capital,
+        commission_per_trade,
+        stop_loss_pct,
+        take_profit_pct,
+        trailing_stop_pct,
+        max_hold_bars,
+        max_participation,
+        slippage_atr_mult,
+        slippage_atr_period,
+        ..Default::default()
+    };
+    let vol = to_vec(volume);
+    ohlcv_result_to_array(ferro_ta_core::backtest::backtest_ohlcv_volume_core(
+        &to_vec(open), &to_vec(high), &to_vec(low), &to_vec(close),
+        (!vol.is_empty()).then_some(vol.as_slice()), &to_vec(signals), &config, None,
+    ))
 }
 
 /// RSI threshold signals.

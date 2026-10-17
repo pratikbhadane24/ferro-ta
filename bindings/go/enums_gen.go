@@ -28,3 +28,106 @@ const (
 	ModelBlackScholes PricingModel = 0
 	ModelBlack76      PricingModel = 1
 )
+
+// SweepStrategy mirrors the C FT_STRATEGY_* constants.
+type SweepStrategy int32
+
+// SweepStrategy values.
+const (
+	StrategyRsiThreshold  SweepStrategy = 0
+	StrategySmaCrossover  SweepStrategy = 1
+	StrategyMacdCrossover SweepStrategy = 2
+)
+
+// SweepMetric mirrors the C FT_METRIC_* constants.
+type SweepMetric int32
+
+// SweepMetric values.
+const (
+	MetricTotalReturn             SweepMetric = 0
+	MetricCagr                    SweepMetric = 1
+	MetricAnnualizedVol           SweepMetric = 2
+	MetricSharpe                  SweepMetric = 3
+	MetricSortino                 SweepMetric = 4
+	MetricCalmar                  SweepMetric = 5
+	MetricMaxDrawdown             SweepMetric = 6
+	MetricAvgDrawdown             SweepMetric = 7
+	MetricMaxDrawdownDurationBars SweepMetric = 8
+	MetricAvgDrawdownDurationBars SweepMetric = 9
+	MetricUlcerIndex              SweepMetric = 10
+	MetricOmegaRatio              SweepMetric = 11
+	MetricWinRate                 SweepMetric = 12
+	MetricProfitFactor            SweepMetric = 13
+	MetricRExpectancy             SweepMetric = 14
+	MetricAvgWin                  SweepMetric = 15
+	MetricAvgLoss                 SweepMetric = 16
+	MetricTailRatio               SweepMetric = 17
+	MetricSkewness                SweepMetric = 18
+	MetricKurtosis                SweepMetric = 19
+	MetricBestBar                 SweepMetric = 20
+	MetricWorstBar                SweepMetric = 21
+	MetricNTrades                 SweepMetric = 22
+	MetricNPositionChanges        SweepMetric = 23
+)
+
+// FillMode mirrors the C FT_FILL_* constants.
+type FillMode int32
+
+// FillMode values.
+const (
+	FillMarketOpen  FillMode = 0
+	FillMarketClose FillMode = 1
+)
+
+// BacktestSetting mirrors the C FT_BT_* constants.
+type BacktestSetting int32
+
+// BacktestSetting values.
+const (
+	BtFillMode              BacktestSetting = 0
+	BtStopLossPct           BacktestSetting = 1
+	BtTakeProfitPct         BacktestSetting = 2
+	BtTrailingStopPct       BacktestSetting = 3
+	BtBreakevenPct          BacktestSetting = 4
+	BtMaxHoldBars           BacktestSetting = 5
+	BtSlippageBps           BacktestSetting = 6
+	BtSlippagePctRange      BacktestSetting = 7
+	BtSlippageAtrMult       BacktestSetting = 8
+	BtSlippageAtrPeriod     BacktestSetting = 9
+	BtMaxParticipation      BacktestSetting = 10
+	BtInitialCapital        BacktestSetting = 11
+	BtPeriodsPerYear        BacktestSetting = 12
+	BtMarginRatio           BacktestSetting = 13
+	BtMarginCallPct         BacktestSetting = 14
+	BtDailyLossLimit        BacktestSetting = 15
+	BtTotalLossLimit        BacktestSetting = 16
+	BtFlatPerOrder          BacktestSetting = 17
+	BtRateOfValue           BacktestSetting = 18
+	BtPerLot                BacktestSetting = 19
+	BtMaxBrokerage          BacktestSetting = 20
+	BtSpreadBps             BacktestSetting = 21
+	BtSttRate               BacktestSetting = 22
+	BtSttOnBuy              BacktestSetting = 23
+	BtSttOnSell             BacktestSetting = 24
+	BtExchangeChargesRate   BacktestSetting = 25
+	BtRegulatoryChargesRate BacktestSetting = 26
+	BtGstRate               BacktestSetting = 27
+	BtStampDutyRate         BacktestSetting = 28
+	BtLotSize               BacktestSetting = 29
+	BtShortBorrowRateAnnual BacktestSetting = 30
+)
+
+// BenchmarkMetric mirrors the C FT_BENCH_* constants.
+type BenchmarkMetric int32
+
+// BenchmarkMetric values.
+const (
+	BenchTotalReturn      BenchmarkMetric = 0
+	BenchCagr             BenchmarkMetric = 1
+	BenchAnnualizedVol    BenchmarkMetric = 2
+	BenchSharpe           BenchmarkMetric = 3
+	BenchAlpha            BenchmarkMetric = 4
+	BenchBeta             BenchmarkMetric = 5
+	BenchTrackingError    BenchmarkMetric = 6
+	BenchInformationRatio BenchmarkMetric = 7
+)

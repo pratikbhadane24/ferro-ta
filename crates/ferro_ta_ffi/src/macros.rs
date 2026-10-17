@@ -39,6 +39,9 @@ macro_rules! ffi_cty {
     (count) => {
         i64
     };
+    (seed) => {
+        i64
+    };
     (matype) => {
         i32
     };
@@ -54,6 +57,9 @@ macro_rules! ffi_cty {
     (pricing_model) => {
         i32
     };
+    (sweep_strategy) => {
+        i32
+    };
 }
 
 /// Core-side (Rust) type of a param kind.
@@ -65,6 +71,9 @@ macro_rules! ffi_rty {
     };
     (count) => {
         usize
+    };
+    (seed) => {
+        u64
     };
     (matype) => {
         u8
@@ -81,6 +90,9 @@ macro_rules! ffi_rty {
     (pricing_model) => {
         ferro_ta_core::options::PricingModel
     };
+    (sweep_strategy) => {
+        ferro_ta_core::sweep::BuiltinStrategy
+    };
 }
 
 #[macro_export]
@@ -94,6 +106,9 @@ macro_rules! ffi_kind {
     };
     (count) => {
         $crate::spec::ParamKind::Count
+    };
+    (seed) => {
+        $crate::spec::ParamKind::Seed
     };
     (matype) => {
         $crate::spec::ParamKind::MaType
@@ -109,6 +124,9 @@ macro_rules! ffi_kind {
     };
     (pricing_model) => {
         $crate::spec::ParamKind::Enum(&$crate::enums::PRICING_MODEL)
+    };
+    (sweep_strategy) => {
+        $crate::spec::ParamKind::Enum(&$crate::enums::SWEEP_STRATEGY)
     };
 }
 
@@ -281,6 +299,174 @@ macro_rules! ffi_scalar_exports {
                             name: stringify!($out),
                             elem: $crate::ffi_elem!($elem),
                         }
+                    ),+],
+                }
+            ),+
+        ];
+    };
+}
+
+/// C-side type of a kernel argument (`role elem_or_kind`).
+#[macro_export]
+#[doc(hidden)]
+macro_rules! ffi_kcty {
+    (in f64) => { *const f64 };
+    (in i64) => { *const i64 };
+    (in_opt f64) => { *const f64 };
+    (size usize) => { usize };
+    (param $kind:ident) => { $crate::ffi_cty!($kind) };
+    (out f64) => { *mut f64 };
+    (out i64) => { *mut i64 };
+    (out i8) => { *mut i8 };
+    (out_scalar f64) => { *mut f64 };
+    (out_scalar i64) => { *mut i64 };
+}
+
+/// Validate/convert a kernel argument in place (only params need it).
+#[macro_export]
+#[doc(hidden)]
+macro_rules! ffi_kconvert {
+    ($arg:ident, param, $kind:ident $($min:literal)?) => {
+        let $arg: $crate::ffi_rty!($kind) =
+            $crate::marshal::Param::from_raw($arg, $crate::ffi_kind!($kind $($min)?))?;
+    };
+    ($arg:ident, $role:ident, $ty:ident) => {};
+}
+
+/// One kernel array dimension: `name` or `{ const_expr }`.
+#[macro_export]
+#[doc(hidden)]
+macro_rules! ffi_dim {
+    ({ $e:expr }) => {
+        $crate::spec::Dim::Const($e)
+    };
+    ($name:ident) => {
+        $crate::spec::Dim::Named(stringify!($name))
+    };
+}
+
+/// Spec entry for one kernel argument.
+#[macro_export]
+#[doc(hidden)]
+macro_rules! ffi_karg {
+    ($arg:ident, in, $e:ident, [$($d:tt),+], ) => {
+        $crate::spec::KernelArg::In {
+            name: stringify!($arg),
+            elem: $crate::ffi_elem!($e),
+            dims: &[$($crate::ffi_dim!($d)),+],
+            optional: false,
+        }
+    };
+    ($arg:ident, in_opt, $e:ident, [$($d:tt),+], ) => {
+        $crate::spec::KernelArg::In {
+            name: stringify!($arg),
+            elem: $crate::ffi_elem!($e),
+            dims: &[$($crate::ffi_dim!($d)),+],
+            optional: true,
+        }
+    };
+    ($arg:ident, size, usize, [], ) => {
+        $crate::spec::KernelArg::Size { name: stringify!($arg), derived: None }
+    };
+    ($arg:ident, size, usize, [], $via:ident ($($vp:ident),*)) => {
+        $crate::spec::KernelArg::Size {
+            name: stringify!($arg),
+            derived: Some($crate::spec::DerivedSize {
+                via: stringify!($via),
+                params: &[$(stringify!($vp)),*],
+            }),
+        }
+    };
+    ($arg:ident, param, $kind:ident $($min:literal)?, [], ) => {
+        $crate::spec::KernelArg::Param($crate::spec::ParamSpec {
+            name: stringify!($arg),
+            kind: $crate::ffi_kind!($kind $($min)?),
+        })
+    };
+    ($arg:ident, out, $e:ident, [$($d:tt),+], ) => {
+        $crate::spec::KernelArg::Out {
+            name: stringify!($arg),
+            elem: $crate::ffi_elem!($e),
+            dims: &[$($crate::ffi_dim!($d)),+],
+        }
+    };
+    ($arg:ident, out_scalar, $e:ident, [], ) => {
+        $crate::spec::KernelArg::OutScalar { name: stringify!($arg), elem: $crate::ffi_elem!($e) }
+    };
+}
+
+/// `ffi_kernel_exports!` — exports whose arrays have different, possibly
+/// multi-dimensional (row-major) shapes.
+///
+/// ```ignore
+/// ffi_kernel_exports! {
+///     group: "overfit",
+///     /// PBO via CSCV.
+///     ft_pbo_cscv(
+///         returns: in f64 [n_bars, n_strategies],
+///         n_bars: size usize,
+///         n_strategies: size usize,
+///         n_splits: param period 2,
+///         n_combinations: size usize <- ft_pbo_n_combinations(n_splits),
+///         out_pbo: out_scalar f64,
+///         out_logits: out f64 [n_combinations],
+///     ) => { ... };
+/// }
+/// ```
+///
+/// Each argument is `name: role type [dims]? (<- via(params))?` with roles
+/// `in`, `in_opt` (may be NULL), `size`, `param`, `out`, `out_scalar`. The extern signature and the
+/// [`KernelSpec`](crate::spec::KernelSpec) are generated from the same tokens.
+/// Params are validated before `body` runs; `body` receives raw pointers and
+/// sizes for everything else (see [`crate::marshal::kernel_in`] /
+/// [`crate::marshal::kernel_out`]) and evaluates to `Result<(), Status>`.
+#[macro_export]
+macro_rules! ffi_kernel_exports {
+    (
+        group: $group:literal,
+        $(
+            $(#[doc = $doc:literal])*
+            $name:ident (
+                $(
+                    $arg:ident : $role:ident $ty:ident $($min:literal)?
+                        $([ $($dim:tt),+ ])?
+                        $(<- $via:ident ( $($vp:ident),* ))?
+                ),+ $(,)?
+            ) => $body:block;
+        )+
+    ) => {
+        $(
+            $(#[doc = $doc])*
+            ///
+            /// # Safety
+            /// Every array pointer must be valid for the element count its
+            /// shape implies (see the header); pointers may be NULL when that
+            /// count is 0. Scalar outputs must be valid for one write.
+            #[no_mangle]
+            #[allow(clippy::too_many_arguments)]
+            pub unsafe extern "C" fn $name(
+                $($arg: $crate::ffi_kcty!($role $ty),)+
+            ) -> i32 {
+                $crate::status::guard(|| {
+                    $( $crate::ffi_kconvert!($arg, $role, $ty $($min)?); )+
+                    $body
+                })
+            }
+        )+
+
+        /// Signature metadata for every kernel export in this module.
+        pub(crate) const KERNEL_SPECS: &[$crate::spec::KernelSpec] = &[
+            $(
+                $crate::spec::KernelSpec {
+                    name: stringify!($name),
+                    group: $group,
+                    doc: concat!($($doc, "\n",)*),
+                    args: &[$(
+                        $crate::ffi_karg!(
+                            $arg, $role, $ty $($min)?,
+                            [$($($dim),+)?],
+                            $($via ($($vp),*))?
+                        )
                     ),+],
                 }
             ),+

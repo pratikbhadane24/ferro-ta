@@ -18,6 +18,14 @@ func inPtr(s []float64) *C.double {
 	return (*C.double)(unsafe.Pointer(&s[0]))
 }
 
+// inPtrI64 is inPtr for int64 inputs of kernel exports.
+func inPtrI64(s []int64) *C.int64_t {
+	if len(s) == 0 {
+		return nil
+	}
+	return (*C.int64_t)(unsafe.Pointer(&s[0]))
+}
+
 // outPtr is inPtr for caller-allocated output buffers of any element type.
 func outPtr[T float64 | int32 | int64 | int8](s []T) unsafe.Pointer {
 	if len(s) == 0 {

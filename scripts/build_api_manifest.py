@@ -382,6 +382,7 @@ def _extract_ffi_exports(root: Path) -> list[str]:
     spec = json.loads(spec_path.read_text(encoding="utf-8"))
     names = [fn["name"].removeprefix("ft_") for fn in spec["functions"]]
     names += [fn["name"].removeprefix("ft_") for fn in spec.get("scalars", [])]
+    names += [fn["name"].removeprefix("ft_") for fn in spec.get("kernels", [])]
     names += [f"Streaming{stream['name'].upper()}" for stream in spec["streams"]]
     return sorted(names)
 

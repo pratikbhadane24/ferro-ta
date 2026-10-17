@@ -6,6 +6,8 @@ Sub-modules
 -----------
 * :mod:`ferro_ta.analysis.portfolio`    — Portfolio and multi-asset analytics
 * :mod:`ferro_ta.analysis.backtest`     — Vectorised back-testing helpers
+* :mod:`ferro_ta.analysis.sweep`        — Parallel parameter sweeps
+* :mod:`ferro_ta.analysis.overfit`      — Overfitting diagnostics (PSR, DSR, PBO, purged k-fold)
 * :mod:`ferro_ta.analysis.regime`       — Market regime detection
 * :mod:`ferro_ta.analysis.cross_asset`  — Cross-asset and relative-strength analysis
 * :mod:`ferro_ta.analysis.attribution`  — Return attribution
@@ -45,6 +47,16 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "mean_variance_optimize": ("ferro_ta.analysis.optimize", "mean_variance_optimize"),
     "risk_parity_optimize": ("ferro_ta.analysis.optimize", "risk_parity_optimize"),
     "max_sharpe_optimize": ("ferro_ta.analysis.optimize", "max_sharpe_optimize"),
+    "sweep": ("ferro_ta.analysis.sweep", "sweep"),
+    "SweepResult": ("ferro_ta.analysis.sweep", "SweepResult"),
+    "probabilistic_sharpe_ratio": (
+        "ferro_ta.analysis.overfit",
+        "probabilistic_sharpe_ratio",
+    ),
+    "deflated_sharpe_ratio": ("ferro_ta.analysis.overfit", "deflated_sharpe_ratio"),
+    "pbo": ("ferro_ta.analysis.overfit", "pbo"),
+    "PBOResult": ("ferro_ta.analysis.overfit", "PBOResult"),
+    "purged_kfold": ("ferro_ta.analysis.overfit", "purged_kfold"),
     "PaperTrader": ("ferro_ta.analysis.live", "PaperTrader"),
     "BarResult": ("ferro_ta.analysis.live", "BarResult"),
     "TradeRecord": ("ferro_ta.analysis.live", "TradeRecord"),

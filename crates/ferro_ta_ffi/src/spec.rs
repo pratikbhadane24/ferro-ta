@@ -13,6 +13,9 @@ pub enum ParamKind {
     Period { min: i64 },
     /// `int64_t` non-negative count (shifts, displacement).
     Count,
+    /// `int64_t` RNG seed: any value, reinterpreted as `u64` (never sizes
+    /// anything, so no cap).
+    Seed,
     /// `int32_t` moving-average type, `0..=8`.
     MaType,
     /// `double`, must be finite.
@@ -115,4 +118,62 @@ pub struct ScalarSpec {
     pub doc: &'static str,
     pub params: &'static [ParamSpec],
     pub outputs: &'static [OutputSpec],
+}
+
+/// One dimension of a kernel array: a named size/integer param, or a constant.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Dim {
+    /// Name of a `size` argument or integer (`period` / `count`) param.
+    Named(&'static str),
+    Const(usize),
+}
+
+/// A `size` argument that bindings compute by calling a scalar export
+/// (`via(params...) -> [out_value: i64]`) instead of asking the caller.
+#[derive(Debug, Clone, Copy)]
+pub struct DerivedSize {
+    pub via: &'static str,
+    pub params: &'static [&'static str],
+}
+
+/// One argument of a kernel export, in C declaration order.
+#[derive(Debug, Clone, Copy)]
+pub enum KernelArg {
+    /// `const T *name`; element count is the product of `dims`. An
+    /// `optional` input may be NULL, meaning "not supplied".
+    In {
+        name: &'static str,
+        elem: ElemType,
+        dims: &'static [Dim],
+        optional: bool,
+    },
+    /// `size_t name`. Bindings infer it from the length of the first input
+    /// whose leading dim it is, derive it via `derived`, or take it from the
+    /// caller.
+    Size {
+        name: &'static str,
+        derived: Option<DerivedSize>,
+    },
+    /// Validated scalar parameter (same kinds as array exports).
+    Param(ParamSpec),
+    /// Caller-allocated `T *name` of `product(dims)` elements, written only on
+    /// success.
+    Out {
+        name: &'static str,
+        elem: ElemType,
+        dims: &'static [Dim],
+    },
+    /// `T *name` written once on success.
+    OutScalar { name: &'static str, elem: ElemType },
+}
+
+/// A kernel export: arrays of different (row-major, multi-dimensional)
+/// shapes, explicit sizes, params and scalar results in one call:
+/// `int32_t ft_x(args...)`.
+#[derive(Debug, Clone, Copy)]
+pub struct KernelSpec {
+    pub name: &'static str,
+    pub group: &'static str,
+    pub doc: &'static str,
+    pub args: &'static [KernelArg],
 }
