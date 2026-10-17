@@ -8,6 +8,7 @@ mod iv;
 mod payoff;
 mod pricing;
 mod realized_vol;
+mod strategy;
 mod surface;
 
 use pyo3::exceptions::PyValueError;
@@ -36,6 +37,7 @@ pub(crate) fn parse_pricing_model(model: &str) -> PyResult<ferro_ta_core::option
 }
 
 pub fn register(m: &Bound<'_, PyModule>) -> PyResult<()> {
+    m.add_class::<self::strategy::OptionStrategy>()?;
     m.add_function(pyo3::wrap_pyfunction!(self::pricing::bsm_price, m)?)?;
     m.add_function(pyo3::wrap_pyfunction!(self::pricing::black76_price, m)?)?;
     m.add_function(pyo3::wrap_pyfunction!(self::pricing::bsm_price_batch, m)?)?;

@@ -137,6 +137,51 @@ fn leg_attr_optional_f64(leg: &Bound<'_, PyAny>, name: &str) -> PyResult<Option<
     })
 }
 
+/// Convert a `PayoffLeg`-like object into a core strategy leg. Missing
+/// option volatility / time to expiry default to 0 (only greeks and scenario
+/// grids use them); per-leg rate and carry are ignored in favour of the
+/// strategy-level arguments.
+pub(crate) fn core_leg_from_py(
+    leg: &Bound<'_, PyAny>,
+) -> PyResult<ferro_ta_core::options::strategy::Leg> {
+    use ferro_ta_core::options::strategy::Leg;
+    use ferro_ta_core::options::OptionKind;
+
+    let quantity =
+        parse_side_label(&leg_attr_string(leg, "side")?)?.sign() * leg_attr_f64(leg, "quantity")?;
+    let multiplier = leg_attr_f64(leg, "multiplier")?;
+    let entry = || {
+        leg_attr_optional_f64(leg, "entry_price")?
+            .ok_or_else(|| PyValueError::new_err("future/stock legs require entry_price."))
+    };
+    Ok(
+        match parse_instrument_label(&leg_attr_string(leg, "instrument")?)? {
+            Instrument::Option => {
+                let right = match leg_attr_optional_string(leg, "option_type")? {
+                    Some(label) => match parse_option_type_label(&label)? {
+                        OptionType::Call => OptionKind::Call,
+                        OptionType::Put => OptionKind::Put,
+                    },
+                    None => return Err(PyValueError::new_err("Option legs require option_type.")),
+                };
+                let strike = leg_attr_optional_f64(leg, "strike")?
+                    .ok_or_else(|| PyValueError::new_err("Option legs require strike."))?;
+                Leg::option(
+                    quantity,
+                    right,
+                    strike,
+                    leg_attr_f64(leg, "premium")?,
+                    leg_attr_optional_f64(leg, "time_to_expiry")?.unwrap_or(0.0),
+                    leg_attr_optional_f64(leg, "volatility")?.unwrap_or(0.0),
+                    multiplier,
+                )
+            }
+            Instrument::Future => Leg::future(quantity, entry()?, multiplier),
+            Instrument::Stock => Leg::stock(quantity, entry()?, multiplier),
+        },
+    )
+}
+
 /// Compute aggregate strategy payoff over a spot grid.
 ///
 /// Encoded arrays (same length = n_legs):
