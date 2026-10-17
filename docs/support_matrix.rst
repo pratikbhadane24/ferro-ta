@@ -118,7 +118,7 @@ generated :doc:`languages/coverage` table and must be refreshed with
      - Direct ``&[f64]`` API; docs.rs ``ferro_ta_core``.
    * - WASM / Node
      - npm ``ferro-ta-wasm``
-     - 357 exports
+     - 358 exports
      - Node.js and browsers; 231 names shared with Python after normalization.
    * - Flutter / Dart
      - pub.dev ``ferro_ta``

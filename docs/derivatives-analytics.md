@@ -49,6 +49,7 @@ Multi-leg payoff and Greeks aggregation supporting **option**, **future**, and
 | `strategy_payoff` | Aggregate expiry payoff across all legs |
 | `strategy_value` | Pre-expiry BSM mid-price value of a multi-leg strategy |
 | `aggregate_greeks` | Portfolio-level Greeks across option, futures, and stock legs |
+| `option_strategy` | `OptionStrategy` object: exact breakevens, max profit/loss with unlimited detection, probability of profit, greeks, scenario grid |
 
 ---
 
@@ -179,6 +180,48 @@ payoff = strategy_payoff(spot_grid, legs=legs)
 # Pre-expiry BSM value (T=3 months remaining)
 value = strategy_value(spot_grid, legs=legs, time_to_expiry=0.25, volatility=0.20)
 ```
+
+### Strategy analytics: breakevens, max profit/loss, probability of profit
+
+`option_strategy(legs)` builds an `OptionStrategy` from the same `PayoffLeg`s.
+Expiry P&L is piecewise linear with kinks at strikes, so breakevens and
+extremes are exact (no grid sampling). Spot is confined to `[0, ∞)`.
+
+```python
+from ferro_ta.analysis.derivatives_payoff import PayoffLeg, option_strategy
+
+def opt(side, right, strike, premium):
+    return PayoffLeg("option", side, option_type=right, strike=strike,
+                     premium=premium, volatility=0.20, time_to_expiry=0.25)
+
+condor = option_strategy([
+    opt("long", "put", 80, 1.0), opt("short", "put", 90, 3.0),
+    opt("short", "call", 110, 3.0), opt("long", "call", 120, 1.0),
+])
+condor.breakevens()                      # [86.0, 114.0]
+condor.max_profit()                      # (4.0, 90.0)   value, spot
+condor.max_loss()                        # (-6.0, 0.0)
+condor.probability_of_profit(100.0, volatility=0.20, time_to_expiry=0.25)
+condor.greeks(100.0)                     # (delta, gamma, vega, theta, rho)
+
+# "NIFTY -2%, IV +3": rows are vol shifts, columns spots, 5 days forward
+condor.scenario_grid([98.0, 100.0], vol_shifts=[0.0, 0.03], days_forward=5)
+
+option_strategy([opt("short", "call", 100, 5.0)]).max_loss()   # (-inf, None)
+```
+
+- `max_profit()` / `max_loss()` return `(value, spot)`; an unbounded side is
+  `(inf, None)` / `(-inf, None)`. `max_loss` is the lowest P&L value (usually
+  negative).
+- `probability_of_profit` is **risk-neutral**: lognormal terminal price with
+  drift `rate − carry`, summing the probability over the profitable intervals
+  between breakevens.
+- Expiry analytics need every option leg to share one `time_to_expiry`;
+  calendars raise `ValueError` (greeks and scenario grids still work).
+- Legs are validated when the strategy is built: zero quantity, non-positive
+  strike, negative premium/vol/expiry or non-finite values raise.
+- Also available as `WasmOptionStrategy` (WASM), `ft_strategy_*` with an
+  `FtLeg` array (C) and `Strategy*` functions with `[]Leg` (Go).
 
 ### Futures analytics
 

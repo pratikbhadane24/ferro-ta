@@ -135,3 +135,13 @@ def test_accepts_dict_legs():
         ]
     )
     assert s.breakevens() == [96.0]
+
+
+def test_constructor_and_signature_introspection():
+    import inspect
+
+    from ferro_ta.analysis.derivatives_payoff import OptionStrategy
+
+    s = OptionStrategy(IRON_CONDOR)
+    assert len(s) == 4 and s.breakevens() == [86.0, 114.0]
+    assert "legs" in str(inspect.signature(OptionStrategy))

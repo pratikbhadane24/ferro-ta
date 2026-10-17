@@ -241,7 +241,7 @@ def option_strategy(
     """
     normalized = _normalize_legs(legs, strategy=strategy)
     try:
-        return OptionStrategy.from_legs(tuple(normalized))
+        return OptionStrategy(normalized)
     except ValueError as err:
         _normalize_rust_error(err)
 

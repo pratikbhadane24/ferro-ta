@@ -3,7 +3,6 @@
 use numpy::{IntoPyArray, PyArray1, PyArray2};
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
-use pyo3::types::PyTuple;
 
 use ferro_ta_core::options::strategy::{Extreme, Strategy, StrategyError};
 
@@ -22,7 +21,8 @@ fn extreme_tuple(e: Extreme, unlimited: f64) -> (f64, Option<f64>) {
 /// Multi-leg option strategy: exact breakevens, max profit / loss (with
 /// unlimited detection), probability of profit, greeks and scenario grids.
 ///
-/// Build with ``ferro_ta.analysis.derivatives_payoff.option_strategy(legs)``.
+/// Build with ``OptionStrategy(legs)`` or ``option_strategy(legs)`` (which also
+/// accepts dicts and a ``DerivativesStrategy``).
 #[pyclass(module = "ferro_ta._ferro_ta", frozen)]
 pub struct OptionStrategy {
     inner: Strategy,
@@ -30,12 +30,13 @@ pub struct OptionStrategy {
 
 #[pymethods]
 impl OptionStrategy {
-    /// Build from a tuple of ``PayoffLeg``-like objects.
-    #[staticmethod]
-    fn from_legs(legs: &Bound<'_, PyTuple>) -> PyResult<Self> {
+    /// Build from an iterable of ``PayoffLeg``-like objects (use
+    /// ``option_strategy`` to also accept dicts or a ``DerivativesStrategy``).
+    #[new]
+    fn new(legs: &Bound<'_, PyAny>) -> PyResult<Self> {
         let legs = legs
-            .iter()
-            .map(|leg| crate::options::payoff::core_leg_from_py(&leg))
+            .try_iter()?
+            .map(|leg| crate::options::payoff::core_leg_from_py(&leg?))
             .collect::<PyResult<Vec<_>>>()?;
         Ok(Self {
             inner: Strategy::new(legs).map_err(to_py_err)?,
