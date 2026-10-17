@@ -24,17 +24,23 @@ upper, middle, lower, err := ferrota.Bbands(closes, 20, 2, 2, ferrota.MATypeSMA)
 
 rsi, err := ferrota.NewStreamRsi(14) // bar-by-bar
 defer rsi.Close()
-value, err := rsi.Update(lastPrice)
+value, err := rsi.Update(lastPrice)  // commits the bar
+live, err := rsi.Peek(tickPrice)     // previews the forming bar
+snapshot, err := rsi.Save()          // restore with ferrota.LoadStreamRsi
+
+bars, err := ferrota.NewNSEBarBuilder(300) // ticks -> 09:15, 09:20, ... bars
+status, closed, err := bars.OnTick(tsMs, price, qty)
 ```
 
 - 229 array functions (all TA indicators, candlestick patterns, IV, realized
   volatility, regime and portfolio series), 31 scalar functions (option
-  pricing and greeks, implied volatility, futures, Kelly sizing), 10
-  streaming handles (indicators and a live `StreamBacktest`), the full
-  backtesting toolkit (`BacktestOhlcv`, `BacktestClose`, `BacktestMultiAsset`,
-  `ExtractTrades`, `MonteCarloBootstrap`, `WalkForwardIndices`,
-  `PerformanceMetrics` with benchmark stats), and parameter sweeps plus
-  overfitting diagnostics
+  pricing and greeks, implied volatility, futures, Kelly sizing), 14
+  streaming handles (indicators, conditions, option IV/greeks and a live
+  `StreamBacktest`, all with `Peek` and `Save`/`Load`), a session-aligned
+  `BarBuilder`, the full backtesting toolkit (`BacktestOhlcv`, `BacktestClose`,
+  `BacktestMultiAsset`, `ExtractTrades`, `MonteCarloBootstrap`,
+  `WalkForwardIndices`, `PerformanceMetrics` with benchmark stats), and
+  parameter sweeps plus overfitting diagnostics
   (`SweepBuiltin`, `SweepSignals`, `PboCscv`, `DeflatedSharpeRatio`, …),
   which run in parallel in Rust; option strategy analytics
   (`StrategyBreakevens`, `StrategyMaxProfit`/`MaxLoss` with unlimited

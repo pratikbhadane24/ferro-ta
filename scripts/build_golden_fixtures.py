@@ -110,10 +110,15 @@ INPUT_COLUMNS = {
     "position_size": "position",
     "funding_rate": "funding",
     "values": "gappy",
+    "condition": "condition",
+    "option_price": "put_price",
+    "underlying": "close",
+    "time_to_expiry": "tte",
 }
 
 # Period-like params whose relationships matter (fast < slow, etc.).
 PERIOD_VALUES = {
+    "n": 3,
     "train_bars": 60,  # ft_walk_forward_n_folds
     "test_bars": 20,
     "n_splits": 8,  # ft_pbo_n_combinations: must be even
@@ -159,6 +164,7 @@ DEFAULT_PERIOD = 5
 DEFAULT_COUNT = 2
 
 FLOAT_VALUES = {
+    "dead_band": 0.2,
     "commission_per_trade": 0.0005,  # stream backtest
     "slippage_bps": 2.0,
     "trial_sharpe_variance": 0.004,
@@ -220,6 +226,7 @@ FLOAT_VALUES = {
 
 COUNT_VALUES = {
     "max_iterations": 100,
+    "bars": 3,
     "n_bars": 300,  # ft_walk_forward_n_folds
     "anchored": 1,
     "step_bars": 0,
@@ -236,6 +243,19 @@ C_ELEM = {
     "i64": ctypes.c_int64,
     "i8": ctypes.c_int8,
 }
+
+
+def _bs_put(spot: float, t: float, vol: float) -> float:
+    """Black-Scholes put at the golden strike/rate/carry (carry = yield)."""
+    k, r, q = FLOAT_VALUES["strike"], FLOAT_VALUES["rate"], FLOAT_VALUES["carry"]
+    sd = vol * math.sqrt(t)
+    d1 = (math.log(spot / k) + (r - q + 0.5 * vol * vol) * t) / sd
+    d2 = d1 - sd
+
+    def cdf(x: float) -> float:
+        return 0.5 * (1.0 + math.erf(x / math.sqrt(2.0)))
+
+    return k * math.exp(-r * t) * cdf(-d2) - spot * math.exp(-q * t) * cdf(-d1)
 
 
 def load_library(spec: dict) -> ctypes.CDLL:
@@ -286,6 +306,18 @@ def load_inputs() -> dict[str, list[float]]:
         sum(close[max(0, i - 4) : i + 1]) / (i - max(0, i - 4) + 1) for i in range(n)
     ]
     cols["position"] = [1.0 if (i // 10) % 2 == 0 else -1.0 for i in range(n)]
+    # Time to expiry decaying 0.5y -> 0.05y with a drifting vol, priced as a
+    # Black-Scholes put on `close`, so the option-greeks stream solves a real
+    # IV every bar (golden params: model 0 = BSM, kind 1 = put after dedup).
+    cols["tte"] = [0.5 - 0.45 * i / max(n - 1, 1) for i in range(n)]
+    cols["put_price"] = [
+        _bs_put(c, t, 0.22 + 0.06 * math.sin(i * 0.1))
+        for i, (c, t) in enumerate(zip(close, cols["tte"], strict=True))
+    ]
+    # 0/1 with real runs of both, so streak/condition streams are exercised.
+    cols["condition"] = [0.0] + [
+        1.0 if close[i] > close[i - 1] else 0.0 for i in range(1, n)
+    ]
     cols["funding"] = [0.0001 * math.sin(i * 0.5) for i in range(n)]
     cols["gappy"] = [math.nan if i % 7 in (0, 3) else c for i, c in enumerate(close)]
     return cols

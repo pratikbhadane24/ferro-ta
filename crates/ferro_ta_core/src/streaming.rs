@@ -8,6 +8,19 @@
 
 use std::collections::VecDeque;
 
+mod bars;
+mod conditions;
+mod live;
+mod option_greeks;
+#[cfg(feature = "serde")]
+pub(crate) mod snapshot;
+pub use bars::{Bar, BarBuilder, BarSpec, TickStatus};
+pub use conditions::{StreamingCooldown, StreamingCross, StreamingStreak};
+pub use live::{Live, StreamValue, StreamingIndicator};
+pub use option_greeks::StreamingOptionGreeks;
+#[cfg(feature = "serde")]
+pub use snapshot::STATE_FORMAT_VERSION;
+
 // ---------------------------------------------------------------------------
 // Error type
 // ---------------------------------------------------------------------------
@@ -23,6 +36,25 @@ impl std::fmt::Display for StreamingError {
 }
 
 impl std::error::Error for StreamingError {}
+
+/// Reject a restored buffer longer than the window it belongs to.
+fn validate_buffer_len(len: usize, max: usize, name: &str) -> Result<(), StreamingError> {
+    if len > max {
+        return Err(StreamingError(format!(
+            "{name} holds {len} values but its window is {max}"
+        )));
+    }
+    Ok(())
+}
+
+fn validate_finite(value: f64, name: &str) -> Result<(), StreamingError> {
+    if !value.is_finite() {
+        return Err(StreamingError(format!(
+            "{name} must be finite, got {value}"
+        )));
+    }
+    Ok(())
+}
 
 fn validate_timeperiod(value: usize, name: &str, minimum: usize) -> Result<(), StreamingError> {
     if value < minimum {
@@ -40,6 +72,8 @@ fn validate_timeperiod(value: usize, name: &str, minimum: usize) -> Result<(), S
 
 /// SMA-seeded EMA state machine.  Not exposed directly — used by
 /// `StreamingEMA`, `StreamingMACD`, etc.
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub(crate) struct EmaState {
     period: usize,
     alpha: f64,
@@ -68,6 +102,9 @@ impl EmaState {
             let seed = self.seed_buf.iter().sum::<f64>() / self.period as f64;
             self.ema = seed;
             self.seeded = true;
+            // Warm-up buffer is dead from here on; free it so clones (`peek`)
+            // stay allocation-free.
+            self.seed_buf = Vec::new();
             return seed;
         }
         self.ema += self.alpha * (value - self.ema);
@@ -83,6 +120,12 @@ impl EmaState {
     pub fn period(&self) -> usize {
         self.period
     }
+
+    /// Re-check invariants (used when restoring a snapshot).
+    pub fn validate(&self) -> Result<(), StreamingError> {
+        validate_timeperiod(self.period, "period", 1)?;
+        validate_buffer_len(self.seed_buf.len(), self.period, "seed buffer")
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -91,6 +134,8 @@ impl EmaState {
 
 /// Wilder-smoothed ATR state machine.  Used by `StreamingATR` and
 /// `StreamingSupertrend`.
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub(crate) struct AtrState {
     period: usize,
     /// `1 / period`, cached so `update` multiplies instead of dividing.
@@ -133,6 +178,7 @@ impl AtrState {
             // Emit the seed itself at index `period`, matching batch ATR.
             self.atr = self.tr_buf.iter().sum::<f64>() / self.period as f64;
             self.seeded = true;
+            self.tr_buf = Vec::new(); // dead after seeding; keeps clones cheap
             return self.atr;
         }
         // Same `* (1 / p)` form as batch `atr`, so the two stay bit-identical.
@@ -152,6 +198,12 @@ impl AtrState {
     pub fn period(&self) -> usize {
         self.period
     }
+
+    /// Re-check invariants (used when restoring a snapshot).
+    pub fn validate(&self) -> Result<(), StreamingError> {
+        validate_timeperiod(self.period, "period", 1)?;
+        validate_buffer_len(self.tr_buf.len(), self.period, "true-range buffer")
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -161,6 +213,8 @@ impl AtrState {
 /// Simple Moving Average — O(1) per update via running sum.
 ///
 /// Returns NaN during the first `period - 1` bars.
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct StreamingSMA {
     period: usize,
     buf: VecDeque<f64>,
@@ -196,6 +250,23 @@ impl StreamingSMA {
         }
     }
 
+    /// Value `update(value)` would return, without changing state or
+    /// allocating (same arithmetic order, so bit-identical).
+    pub fn peek_value(&self, value: f64) -> f64 {
+        let mut sum = self.running_sum;
+        if self.buf.len() == self.period {
+            if let Some(&old) = self.buf.front() {
+                sum -= old;
+            }
+        }
+        sum += value;
+        if self.count + 1 < self.period {
+            f64::NAN
+        } else {
+            sum / self.period as f64
+        }
+    }
+
     /// Reset state to initial condition.
     pub fn reset(&mut self) {
         self.buf.clear();
@@ -205,6 +276,12 @@ impl StreamingSMA {
 
     pub fn period(&self) -> usize {
         self.period
+    }
+
+    /// Re-check invariants (used when restoring a snapshot).
+    pub fn validate(&self) -> Result<(), StreamingError> {
+        validate_timeperiod(self.period, "period", 1)?;
+        validate_buffer_len(self.buf.len(), self.period, "window")
     }
 }
 
@@ -217,6 +294,8 @@ impl StreamingSMA {
 /// Uses a simple SMA for the first `period` bars to seed the EMA, then
 /// switches to the standard EMA formula (alpha = 2 / (period + 1)).
 /// Returns NaN during the warmup window.
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct StreamingEMA {
     inner: EmaState,
 }
@@ -241,6 +320,11 @@ impl StreamingEMA {
     pub fn period(&self) -> usize {
         self.inner.period()
     }
+
+    /// Re-check invariants (used when restoring a snapshot).
+    pub fn validate(&self) -> Result<(), StreamingError> {
+        self.inner.validate()
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -250,6 +334,8 @@ impl StreamingEMA {
 /// Relative Strength Index with TA-Lib-compatible Wilder seeding.
 ///
 /// Returns NaN during the first `period` bars.
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct StreamingRSI {
     period: usize,
     prev: f64,
@@ -297,6 +383,9 @@ impl StreamingRSI {
             self.avg_gain = self.gains.iter().sum::<f64>() / self.period as f64;
             self.avg_loss = self.losses.iter().sum::<f64>() / self.period as f64;
             self.seeded = true;
+            // Dead after seeding; keeps clones cheap.
+            self.gains = Vec::new();
+            self.losses = Vec::new();
         } else {
             let pf = (self.period - 1) as f64;
             self.avg_gain = (self.avg_gain * pf + gain) / self.period as f64;
@@ -325,6 +414,13 @@ impl StreamingRSI {
     pub fn period(&self) -> usize {
         self.period
     }
+
+    /// Re-check invariants (used when restoring a snapshot).
+    pub fn validate(&self) -> Result<(), StreamingError> {
+        validate_timeperiod(self.period, "period", 1)?;
+        validate_buffer_len(self.gains.len(), self.period, "gain buffer")?;
+        validate_buffer_len(self.losses.len(), self.period, "loss buffer")
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -335,6 +431,8 @@ impl StreamingRSI {
 ///
 /// Accepts (high, low, close) per bar.
 /// Returns NaN during the first `period` bars.
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct StreamingATR {
     inner: AtrState,
 }
@@ -359,6 +457,11 @@ impl StreamingATR {
     pub fn period(&self) -> usize {
         self.inner.period()
     }
+
+    /// Re-check invariants (used when restoring a snapshot).
+    pub fn validate(&self) -> Result<(), StreamingError> {
+        self.inner.validate()
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -369,6 +472,8 @@ impl StreamingATR {
 ///
 /// Returns (upper, middle, lower).
 /// NaN tuple during the warmup window.
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct StreamingBBands {
     period: usize,
     nbdevup: f64,
@@ -430,6 +535,37 @@ impl StreamingBBands {
         )
     }
 
+    /// Value `update(value)` would return, without changing state or
+    /// allocating (same Welford steps on local copies, so bit-identical).
+    pub fn peek_value(&self, value: f64) -> (f64, f64, f64) {
+        let mut mean = self.mean;
+        let mut m2 = self.m2;
+        let mut len = self.buf.len();
+        if len == self.period {
+            let x_old = self.buf[0];
+            let count = self.period as f64;
+            let delta_old = x_old - mean;
+            mean -= delta_old / (count - 1.0);
+            let delta2_old = x_old - mean;
+            m2 -= delta_old * delta2_old;
+            len -= 1;
+        }
+        len += 1;
+        let count = len as f64;
+        let delta_new = value - mean;
+        mean += delta_new / count;
+        let delta2_new = value - mean;
+        m2 += delta_new * delta2_new;
+        if m2 < 0.0 {
+            m2 = 0.0;
+        }
+        if len < self.period {
+            return (f64::NAN, f64::NAN, f64::NAN);
+        }
+        let std = (m2 / count).sqrt();
+        (mean + self.nbdevup * std, mean, mean - self.nbdevdn * std)
+    }
+
     pub fn reset(&mut self) {
         self.buf.clear();
         self.mean = 0.0;
@@ -438,6 +574,14 @@ impl StreamingBBands {
 
     pub fn period(&self) -> usize {
         self.period
+    }
+
+    /// Re-check invariants (used when restoring a snapshot).
+    pub fn validate(&self) -> Result<(), StreamingError> {
+        validate_timeperiod(self.period, "period", 2)?;
+        validate_buffer_len(self.buf.len(), self.period, "window")?;
+        validate_finite(self.nbdevup, "nbdevup")?;
+        validate_finite(self.nbdevdn, "nbdevdn")
     }
 }
 
@@ -449,6 +593,8 @@ impl StreamingBBands {
 ///
 /// Returns (macd_line, signal_line, histogram).
 /// NaN values during warmup.
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct StreamingMACD {
     fast: EmaState,
     slow: EmaState,
@@ -512,6 +658,19 @@ impl StreamingMACD {
     pub fn signal_period(&self) -> usize {
         self.signal.period()
     }
+
+    /// Re-check invariants (used when restoring a snapshot).
+    pub fn validate(&self) -> Result<(), StreamingError> {
+        self.fast.validate()?;
+        self.slow.validate()?;
+        self.signal.validate()?;
+        if self.fast.period() >= self.slow.period() {
+            return Err(StreamingError(
+                "fastperiod must be < slowperiod".to_string(),
+            ));
+        }
+        Ok(())
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -522,6 +681,8 @@ impl StreamingMACD {
 ///
 /// Returns (slowk, slowd).
 /// NaN tuple during warmup.
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct StreamingStoch {
     fastk_period: usize,
     slowk_period: usize,
@@ -602,6 +763,62 @@ impl StreamingStoch {
         (slowk, slowd)
     }
 
+    /// Value `update(high, low, close)` would return, without changing state
+    /// or allocating: each window is read with its would-be-evicted front
+    /// skipped and the new value chained on, in the same fold order.
+    pub fn peek_value(&self, high: f64, low: f64, close: f64) -> (f64, f64) {
+        let skip_hl = usize::from(self.high_buf.len() == self.fastk_period);
+        if self.high_buf.len() - skip_hl + 1 < self.fastk_period {
+            return (f64::NAN, f64::NAN);
+        }
+        let max_h = self
+            .high_buf
+            .iter()
+            .skip(skip_hl)
+            .cloned()
+            .chain(std::iter::once(high))
+            .fold(f64::NEG_INFINITY, f64::max);
+        let min_l = self
+            .low_buf
+            .iter()
+            .skip(skip_hl)
+            .cloned()
+            .chain(std::iter::once(low))
+            .fold(f64::INFINITY, f64::min);
+        let fastk = if max_h != min_l {
+            100.0 * (close - min_l) / (max_h - min_l)
+        } else {
+            0.0
+        };
+
+        let skip_k = usize::from(self.fastk_buf.len() == self.slowk_period);
+        if self.fastk_buf.len() - skip_k + 1 < self.slowk_period {
+            return (f64::NAN, f64::NAN);
+        }
+        let slowk = self
+            .fastk_buf
+            .iter()
+            .skip(skip_k)
+            .cloned()
+            .chain(std::iter::once(fastk))
+            .sum::<f64>()
+            / self.slowk_period as f64;
+
+        let skip_d = usize::from(self.slowk_buf.len() == self.slowd_period);
+        if self.slowk_buf.len() - skip_d + 1 < self.slowd_period {
+            return (f64::NAN, f64::NAN);
+        }
+        let slowd = self
+            .slowk_buf
+            .iter()
+            .skip(skip_d)
+            .cloned()
+            .chain(std::iter::once(slowk))
+            .sum::<f64>()
+            / self.slowd_period as f64;
+        (slowk, slowd)
+    }
+
     pub fn reset(&mut self) {
         self.high_buf.clear();
         self.low_buf.clear();
@@ -611,6 +828,17 @@ impl StreamingStoch {
 
     pub fn period(&self) -> usize {
         self.fastk_period
+    }
+
+    /// Re-check invariants (used when restoring a snapshot).
+    pub fn validate(&self) -> Result<(), StreamingError> {
+        validate_timeperiod(self.fastk_period, "fastk_period", 1)?;
+        validate_timeperiod(self.slowk_period, "slowk_period", 1)?;
+        validate_timeperiod(self.slowd_period, "slowd_period", 1)?;
+        validate_buffer_len(self.high_buf.len(), self.fastk_period, "high window")?;
+        validate_buffer_len(self.low_buf.len(), self.fastk_period, "low window")?;
+        validate_buffer_len(self.fastk_buf.len(), self.slowk_period, "fastk window")?;
+        validate_buffer_len(self.slowk_buf.len(), self.slowd_period, "slowk window")
     }
 }
 
@@ -622,7 +850,8 @@ impl StreamingStoch {
 ///
 /// Resets automatically when `reset()` is called (e.g. at session open).
 /// Accepts (high, low, close, volume) per bar.
-#[derive(Default)]
+#[derive(Clone, Debug, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct StreamingVWAP {
     cum_tpv: f64,
     cum_vol: f64,
@@ -653,6 +882,11 @@ impl StreamingVWAP {
         self.cum_tpv = 0.0;
         self.cum_vol = 0.0;
     }
+
+    /// Re-check invariants (used when restoring a snapshot).
+    pub fn validate(&self) -> Result<(), StreamingError> {
+        Ok(())
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -664,6 +898,8 @@ impl StreamingVWAP {
 /// Accepts (high, low, close) per bar.
 /// Returns (supertrend_line, direction).
 /// direction: 1 = uptrend, -1 = downtrend, 0 = warmup.
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct StreamingSupertrend {
     period: usize,
     multiplier: f64,
@@ -772,6 +1008,13 @@ impl StreamingSupertrend {
 
     pub fn period(&self) -> usize {
         self.period
+    }
+
+    /// Re-check invariants (used when restoring a snapshot).
+    pub fn validate(&self) -> Result<(), StreamingError> {
+        validate_timeperiod(self.period, "period", 1)?;
+        validate_finite(self.multiplier, "multiplier")?;
+        self.atr.validate()
     }
 }
 

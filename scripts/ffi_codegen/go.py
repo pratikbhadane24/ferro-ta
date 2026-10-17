@@ -214,6 +214,81 @@ def go_scalar(fn: dict) -> list[str]:
     ]
 
 
+def go_stream_feed(
+    name: str,
+    method: str,
+    c_fn: str,
+    doc: str,
+    params: str,
+    results: str,
+    args: list[str],
+    outs: list[tuple[str, dict]],
+) -> list[str]:
+    """One mutex-guarded method forwarding to a stream feed export."""
+    single = len(outs) == 1
+    zero = "0, err" if single else ", ".join(["0"] * len(outs)) + ", err"
+    closed_return = zero.replace("err", f'closedError("{name}.{method}")')
+    return [
+        f"// {method} {doc}",
+        f"func (s *{name}) {method}({params}) {results} {{",
+        # Multi-output methods use named results; a single output needs a local.
+        *([f"\tvar {outs[0][0]} {GO_ELEM[outs[0][1]['elem']]}"] if single else []),
+        "\ts.mu.Lock()",
+        "\tdefer s.mu.Unlock()",
+        "\tif s.h == nil {",
+        f"\t\treturn {closed_return}",
+        "\t}",
+        f'\tif err := statusError("{name}.{method}", C.{c_fn}({", ".join(args)})); err != nil {{',
+        f"\t\treturn {zero}",
+        "\t}",
+        f"\treturn {', '.join(n for n, _ in outs)}, nil",
+        "}",
+        "",
+    ]
+
+
+def go_stream_snapshot(name: str, handle: str, stream: dict) -> list[str]:
+    """Save method plus Load constructor over the `_save` / `_load` exports."""
+    save, load = stream["save_fn"], stream["load_fn"]
+    return [
+        "// Save returns a versioned JSON snapshot of the full state; restore it",
+        f"// with Load{name}.",
+        f"func (s *{name}) Save() ([]byte, error) {{",
+        "\ts.mu.Lock()",
+        "\tdefer s.mu.Unlock()",
+        "\tif s.h == nil {",
+        f'\t\treturn nil, closedError("{name}.Save")',
+        "\t}",
+        "\tvar n C.size_t",
+        f"\tif rc := C.{save}(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {{",
+        f'\t\treturn nil, statusError("{name}.Save", rc)',
+        "\t}",
+        "\tbuf := make([]byte, int(n))",
+        f"\trc := C.{save}(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)",
+        f'\tif err := statusError("{name}.Save", rc); err != nil {{',
+        "\t\treturn nil, err",
+        "\t}",
+        "\treturn buf[:int(n)], nil",
+        "}",
+        "",
+        f"// Load{name} restores a {name} from a snapshot made by Save.",
+        f"func Load{name}(snapshot []byte) (*{name}, error) {{",
+        f"\tvar h {handle}",
+        "\tvar p *C.char",
+        "\tif len(snapshot) > 0 {",
+        "\t\tp = (*C.char)(unsafe.Pointer(&snapshot[0]))",
+        "\t}",
+        f'\tif err := statusError("Load{name}", C.{load}(p, C.size_t(len(snapshot)), &h)); err != nil {{',
+        "\t\treturn nil, err",
+        "\t}",
+        f"\ts := &{name}{{h: h}}",
+        f"\truntime.SetFinalizer(s, (*{name}).Close)",
+        "\treturn s, nil",
+        "}",
+        "",
+    ]
+
+
 def go_stream(stream: dict) -> list[str]:
     name = "Stream" + go_name(stream["name"])
     handle = f"*C.{stream['handle']}"
@@ -224,8 +299,6 @@ def go_stream(stream: dict) -> list[str]:
     else:
         named = ", ".join(f"{n} {GO_ELEM[o['elem']]}" for n, o in outs)
         update_results = f"({named}, err error)"
-    update_zero = "0, err" if single else ", ".join(["0"] * len(outs)) + ", err"
-    closed_return = update_zero.replace("err", f'closedError("{name}.Update")')
     new_params = ", ".join(
         f"{go_ident(p['name'])} {go_param_type(p)}" for p in stream["params"]
     )
@@ -258,22 +331,31 @@ def go_stream(stream: dict) -> list[str]:
         "\treturn s, nil",
         "}",
         "",
-        "// Update feeds one bar and returns this bar's value(s); indicators return",
-        "// NaN while they warm up.",
-        f"func (s *{name}) Update({update_params}) {update_results} {{",
-        # Multi-output Update uses named results; a single output needs a local.
-        *([f"\tvar {outs[0][0]} {GO_ELEM[outs[0][1]['elem']]}"] if single else []),
-        "\ts.mu.Lock()",
-        "\tdefer s.mu.Unlock()",
-        "\tif s.h == nil {",
-        f"\t\treturn {closed_return}",
-        "\t}",
-        f'\tif err := statusError("{name}.Update", C.{stream["update_fn"]}({", ".join(update_args)})); err != nil {{',
-        f"\t\treturn {update_zero}",
-        "\t}",
-        f"\treturn {', '.join(n for n, _ in outs)}, nil",
-        "}",
-        "",
+        *go_stream_feed(
+            name,
+            "Update",
+            stream["update_fn"],
+            "commits one bar and returns its value(s); indicators return NaN\n"
+            "// while they warm up. A tick with an input the stream cannot accept\n"
+            "// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and\n"
+            "// leaves state untouched.",
+            update_params,
+            update_results,
+            update_args,
+            outs,
+        ),
+        *go_stream_feed(
+            name,
+            "Peek",
+            stream["peek_fn"],
+            "previews the still-forming bar: it returns what Update would\n"
+            "// return for these inputs, without changing state.",
+            update_params,
+            update_results,
+            update_args,
+            outs,
+        ),
+        *go_stream_snapshot(name, handle, stream),
         "// Reset clears all state; subsequent bars warm up again.",
         f"func (s *{name}) Reset() error {{",
         "\ts.mu.Lock()",

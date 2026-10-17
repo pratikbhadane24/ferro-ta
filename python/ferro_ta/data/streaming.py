@@ -19,6 +19,13 @@ Usage
 13.0 → 12.0000
 14.0 → 13.0000
 
+Live bars
+---------
+``update(x)`` commits a closed bar; ``update(x, closed=False)`` previews the
+still-forming bar without changing state. ``count`` / ``is_ready`` report
+committed progress, ``copy.copy`` snapshots state, and NaN/±inf ticks are skipped
+(they return NaN without poisoning state).
+
 Available classes
 -----------------
 StreamingSMA        — Simple Moving Average
@@ -30,6 +37,11 @@ StreamingMACD       — MACD line, signal, histogram
 StreamingStoch      — Slow Stochastic (slowk, slowd)
 StreamingVWAP       — Volume Weighted Average Price (cumulative)
 StreamingSupertrend — ATR-based Supertrend
+StreamingCross      — Dead-band cross of two series (1 / -1 / 0 events)
+StreamingStreak     — "N bars in a row" condition
+StreamingCooldown   — Mute repeat signals for N bars
+StreamingOptionGreeks — Live IV + greeks for one option contract
+BarBuilder          — Session-aligned tick → OHLCV bar builder (yields Bar)
 
 Rust backend
 ------------
@@ -45,13 +57,19 @@ from __future__ import annotations
 # Import Rust-backed streaming classes from the compiled extension.
 # ---------------------------------------------------------------------------
 from ferro_ta._ferro_ta import (  # noqa: F401
+    Bar,
+    BarBuilder,
     StreamingATR,
     StreamingBBands,
+    StreamingCooldown,
+    StreamingCross,
     StreamingEMA,
     StreamingMACD,
+    StreamingOptionGreeks,
     StreamingRSI,
     StreamingSMA,
     StreamingStoch,
+    StreamingStreak,
     StreamingSupertrend,
     StreamingVWAP,
 )
@@ -66,4 +84,10 @@ __all__ = [
     "StreamingStoch",
     "StreamingVWAP",
     "StreamingSupertrend",
+    "StreamingCross",
+    "StreamingStreak",
+    "StreamingCooldown",
+    "StreamingOptionGreeks",
+    "Bar",
+    "BarBuilder",
 ]

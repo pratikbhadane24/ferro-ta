@@ -2565,220 +2565,348 @@ pub fn dtw_distance(series1: &Float64Array, series2: &Float64Array, window: usiz
 // Streaming / Stateful API
 // ===========================================================================
 
-/// Streaming Simple Moving Average.
+/// Converts a core streaming output into its JS return value.
+trait IntoJsOutput {
+    type Js;
+    fn into_js(self) -> Self::Js;
+}
+
+impl IntoJsOutput for f64 {
+    type Js = f64;
+    fn into_js(self) -> f64 {
+        self
+    }
+}
+
+impl IntoJsOutput for i8 {
+    type Js = i8;
+    fn into_js(self) -> i8 {
+        self
+    }
+}
+
+impl IntoJsOutput for (f64, f64) {
+    type Js = Array;
+    fn into_js(self) -> Array {
+        Array::of2(&JsValue::from_f64(self.0), &JsValue::from_f64(self.1))
+    }
+}
+
+impl IntoJsOutput for (f64, f64, f64) {
+    type Js = Array;
+    fn into_js(self) -> Array {
+        Array::of3(
+            &JsValue::from_f64(self.0),
+            &JsValue::from_f64(self.1),
+            &JsValue::from_f64(self.2),
+        )
+    }
+}
+
+impl IntoJsOutput for (f64, f64, f64, f64, f64, f64) {
+    type Js = Array;
+    fn into_js(self) -> Array {
+        let (a, b, c, d, e, f) = self;
+        [a, b, c, d, e, f].iter().map(|&v| JsValue::from_f64(v)).collect()
+    }
+}
+
+impl IntoJsOutput for (f64, i8) {
+    type Js = Array;
+    fn into_js(self) -> Array {
+        Array::of2(&JsValue::from_f64(self.0), &JsValue::from_f64(self.1 as f64))
+    }
+}
+
+/// Generates a `#[wasm_bindgen]` class wrapping `Live<$core>`.
+///
+/// `update` commits a bar; `peek` previews the forming bar without changing
+/// state. NaN/±inf inputs return NaN and leave state untouched.
+macro_rules! wasm_streaming_class {
+    (
+        $(#[$doc:meta])*
+        $name:ident wraps $core:ident,
+        new($($arg:ident: $arg_ty:ty),*) => $ctor:expr,
+        update($($input:ident),+) -> $ret:ty,
+        getters($($getter:ident),*) $(,)?
+    ) => {
+        $(#[$doc])*
+        #[wasm_bindgen]
+        pub struct $name {
+            inner: ferro_ta_core::streaming::Live<ferro_ta_core::streaming::$core>,
+        }
+
+        #[wasm_bindgen]
+        impl $name {
+            #[wasm_bindgen(constructor)]
+            pub fn new($($arg: $arg_ty),*) -> Result<$name, JsError> {
+                let indicator: ferro_ta_core::streaming::$core =
+                    $ctor.map_err(|e: ferro_ta_core::streaming::StreamingError| JsError::new(&e.0))?;
+                Ok(Self { inner: ferro_ta_core::streaming::Live::new(indicator) })
+            }
+            /// Commit one bar and return its value(s) (NaN during warm-up).
+            pub fn update(&mut self, $($input: f64),+) -> $ret {
+                self.inner.update(($($input),+), true).into_js()
+            }
+            /// Preview the still-forming bar without changing state.
+            pub fn peek(&mut self, $($input: f64),+) -> $ret {
+                self.inner.update(($($input),+), false).into_js()
+            }
+            pub fn reset(&mut self) { self.inner.reset(); }
+            /// Versioned JSON snapshot of the full state.
+            #[cfg(feature = "snapshot")]
+            #[wasm_bindgen(js_name = saveState)]
+            pub fn save_state(&self) -> Result<String, JsError> {
+                self.inner.save().map_err(|e| JsError::new(&e.0))
+            }
+            /// Restore a snapshot made by `saveState` of this same class.
+            #[cfg(feature = "snapshot")]
+            #[wasm_bindgen(js_name = loadState)]
+            pub fn load_state(json: &str) -> Result<$name, JsError> {
+                let inner = ferro_ta_core::streaming::Live::load(json).map_err(|e| JsError::new(&e.0))?;
+                Ok(Self { inner })
+            }
+            /// Number of committed bars.
+            #[wasm_bindgen(getter)]
+            pub fn count(&self) -> usize { self.inner.count() }
+            /// True once the last committed bar produced a non-NaN value.
+            #[wasm_bindgen(getter, js_name = isReady)]
+            pub fn is_ready(&self) -> bool { self.inner.is_ready() }
+            $(
+                #[wasm_bindgen(getter)]
+                pub fn $getter(&self) -> usize { self.inner.inner().$getter() }
+            )*
+        }
+    };
+}
+
+wasm_streaming_class! {
+    /// Streaming Simple Moving Average.
+    WasmStreamingSMA wraps StreamingSMA,
+    new(period: usize) => ferro_ta_core::streaming::StreamingSMA::new(period),
+    update(value) -> f64,
+    getters(period),
+}
+
+wasm_streaming_class! {
+    /// Streaming Exponential Moving Average.
+    WasmStreamingEMA wraps StreamingEMA,
+    new(period: usize) => ferro_ta_core::streaming::StreamingEMA::new(period),
+    update(value) -> f64,
+    getters(period),
+}
+
+wasm_streaming_class! {
+    /// Streaming Relative Strength Index.
+    WasmStreamingRSI wraps StreamingRSI,
+    new(period: usize) => ferro_ta_core::streaming::StreamingRSI::new(period),
+    update(value) -> f64,
+    getters(period),
+}
+
+wasm_streaming_class! {
+    /// Streaming Average True Range.
+    WasmStreamingATR wraps StreamingATR,
+    new(period: usize) => ferro_ta_core::streaming::StreamingATR::new(period),
+    update(high, low, close) -> f64,
+    getters(period),
+}
+
+wasm_streaming_class! {
+    /// Streaming Bollinger Bands. Returns [upper, middle, lower] from `update()`.
+    WasmStreamingBBands wraps StreamingBBands,
+    new(period: usize, nbdevup: f64, nbdevdn: f64) =>
+        ferro_ta_core::streaming::StreamingBBands::new(period, nbdevup, nbdevdn),
+    update(value) -> Array,
+    getters(period),
+}
+
+wasm_streaming_class! {
+    /// Streaming MACD. Returns [macd, signal, histogram] from `update()`.
+    WasmStreamingMACD wraps StreamingMACD,
+    new(fastperiod: usize, slowperiod: usize, signalperiod: usize) =>
+        ferro_ta_core::streaming::StreamingMACD::new(fastperiod, slowperiod, signalperiod),
+    update(value) -> Array,
+    getters(fast_period, slow_period, signal_period),
+}
+
+wasm_streaming_class! {
+    /// Streaming Stochastic Oscillator. Returns [slowk, slowd] from `update()`.
+    WasmStreamingStoch wraps StreamingStoch,
+    new(fastk_period: usize, slowk_period: usize, slowd_period: usize) =>
+        ferro_ta_core::streaming::StreamingStoch::new(fastk_period, slowk_period, slowd_period),
+    update(high, low, close) -> Array,
+    getters(period),
+}
+
+wasm_streaming_class! {
+    /// Streaming cumulative VWAP.
+    WasmStreamingVWAP wraps StreamingVWAP,
+    new() => Ok(ferro_ta_core::streaming::StreamingVWAP::new()),
+    update(high, low, close, volume) -> f64,
+    getters(),
+}
+
+wasm_streaming_class! {
+    /// Streaming Supertrend. Returns [line, direction] from `update()`.
+    WasmStreamingSupertrend wraps StreamingSupertrend,
+    new(period: usize, multiplier: f64) =>
+        ferro_ta_core::streaming::StreamingSupertrend::new(period, multiplier),
+    update(high, low, close) -> Array,
+    getters(period),
+}
+
+wasm_streaming_class! {
+    /// Dead-band cross of `a` over `b`. Returns 1 (up), -1 (down) or 0.
+    WasmStreamingCross wraps StreamingCross,
+    new(dead_band: f64) => ferro_ta_core::streaming::StreamingCross::new(dead_band),
+    update(a, b) -> i8,
+    getters(),
+}
+
+wasm_streaming_class! {
+    /// "N bars in a row": returns 1 while the run of non-zero inputs is >= n.
+    WasmStreamingStreak wraps StreamingStreak,
+    new(n: usize) => ferro_ta_core::streaming::StreamingStreak::new(n),
+    update(condition) -> i8,
+    getters(n),
+}
+
+wasm_streaming_class! {
+    /// Passes the first non-zero signal's sign, then mutes the next `bars` bars.
+    WasmStreamingCooldown wraps StreamingCooldown,
+    new(bars: usize) => ferro_ta_core::streaming::StreamingCooldown::new(bars),
+    update(signal) -> i8,
+    getters(bars),
+}
+
+wasm_streaming_class! {
+    /// Live IV + greeks for one option contract.
+    /// `update(optionPrice, underlying, timeToExpiry)` returns
+    /// [iv, delta, gamma, vega, theta, rho]; the IV solver is seeded with the
+    /// previous tick's IV.
+    WasmStreamingOptionGreeks wraps StreamingOptionGreeks,
+    new(strike: f64, option_type: &str, model: &str, rate: f64, carry: f64) =>
+        ferro_ta_core::streaming::StreamingOptionGreeks::new(
+            parse_pricing_model(model),
+            parse_option_kind(option_type),
+            strike,
+            rate,
+            carry,
+        ),
+    update(option_price, underlying, time_to_expiry) -> Array,
+    getters(),
+}
+
+/// JS object for a bar: {startMs, endMs, open, high, low, close, volume, ticks}.
+fn bar_to_js(bar: ferro_ta_core::streaming::Bar) -> JsValue {
+    let obj = js_sys::Object::new();
+    let fields = [
+        ("startMs", bar.start_ms as f64),
+        ("endMs", bar.end_ms as f64),
+        ("open", bar.open),
+        ("high", bar.high),
+        ("low", bar.low),
+        ("close", bar.close),
+        ("volume", bar.volume),
+        ("ticks", f64::from(bar.ticks)),
+    ];
+    for (key, value) in fields {
+        // Setting a plain data property on a fresh Object cannot fail.
+        let _ = js_sys::Reflect::set(&obj, &JsValue::from_str(key), &JsValue::from_f64(value));
+    }
+    obj.into()
+}
+
+fn opt_bar_to_js(bar: Option<ferro_ta_core::streaming::Bar>) -> JsValue {
+    bar.map_or(JsValue::UNDEFINED, bar_to_js)
+}
+
+/// Session-aligned tick -> bar builder. Timestamps are UTC epoch milliseconds
+/// as JS numbers (`Date.now()`); session times are seconds after local
+/// midnight. Gaps produce no bars.
 #[wasm_bindgen]
-pub struct WasmStreamingSMA {
-    inner: ferro_ta_core::streaming::StreamingSMA,
+pub struct WasmBarBuilder {
+    inner: ferro_ta_core::streaming::BarBuilder,
 }
 
 #[wasm_bindgen]
-impl WasmStreamingSMA {
+impl WasmBarBuilder {
     #[wasm_bindgen(constructor)]
-    pub fn new(period: usize) -> Result<WasmStreamingSMA, JsError> {
-        let inner = ferro_ta_core::streaming::StreamingSMA::new(period)
+    pub fn new(
+        interval_secs: i32,
+        session_open_secs: i32,
+        session_close_secs: i32,
+        utc_offset_secs: i32,
+    ) -> Result<WasmBarBuilder, JsError> {
+        let spec = ferro_ta_core::streaming::BarSpec {
+            interval_secs: i64::from(interval_secs),
+            session_open_secs: i64::from(session_open_secs),
+            session_close_secs: i64::from(session_close_secs),
+            utc_offset_secs: i64::from(utc_offset_secs),
+        };
+        let inner = ferro_ta_core::streaming::BarBuilder::new(spec)
             .map_err(|e| JsError::new(&e.0))?;
         Ok(Self { inner })
     }
-    pub fn update(&mut self, value: f64) -> f64 { self.inner.update(value) }
-    pub fn reset(&mut self) { self.inner.reset(); }
-    #[wasm_bindgen(getter)]
-    pub fn period(&self) -> usize { self.inner.period() }
-}
 
-/// Streaming Exponential Moving Average.
-#[wasm_bindgen]
-pub struct WasmStreamingEMA {
-    inner: ferro_ta_core::streaming::StreamingEMA,
-}
-
-#[wasm_bindgen]
-impl WasmStreamingEMA {
-    #[wasm_bindgen(constructor)]
-    pub fn new(period: usize) -> Result<WasmStreamingEMA, JsError> {
-        let inner = ferro_ta_core::streaming::StreamingEMA::new(period)
-            .map_err(|e| JsError::new(&e.0))?;
+    /// NSE preset: 09:15-15:30 IST.
+    pub fn nse(interval_secs: i32) -> Result<WasmBarBuilder, JsError> {
+        let inner = ferro_ta_core::streaming::BarBuilder::new(
+            ferro_ta_core::streaming::BarSpec::nse(i64::from(interval_secs)),
+        )
+        .map_err(|e| JsError::new(&e.0))?;
         Ok(Self { inner })
     }
-    pub fn update(&mut self, value: f64) -> f64 { self.inner.update(value) }
-    pub fn reset(&mut self) { self.inner.reset(); }
+
+    /// Feed one tick; returns `{status, closed}` where `closed` is the bar
+    /// this tick closed (or undefined).
+    #[wasm_bindgen(js_name = onTick)]
+    pub fn on_tick(&mut self, ts_ms: f64, price: f64, qty: f64) -> JsValue {
+        let (status, closed) = if ts_ms.is_finite() {
+            self.inner.on_tick(ts_ms as i64, price, qty)
+        } else {
+            (ferro_ta_core::streaming::TickStatus::Invalid, None)
+        };
+        let obj = js_sys::Object::new();
+        let _ = js_sys::Reflect::set(&obj, &"status".into(), &status.as_str().into());
+        let _ = js_sys::Reflect::set(&obj, &"closed".into(), &opt_bar_to_js(closed));
+        obj.into()
+    }
+
+    /// Close the forming bar once `nowMs` reaches its end; returns it or undefined.
+    #[wasm_bindgen(js_name = onTime)]
+    pub fn on_time(&mut self, now_ms: f64) -> JsValue {
+        if !now_ms.is_finite() {
+            return JsValue::UNDEFINED;
+        }
+        opt_bar_to_js(self.inner.on_time(now_ms as i64))
+    }
+
+    /// The bar being built, or undefined.
     #[wasm_bindgen(getter)]
-    pub fn period(&self) -> usize { self.inner.period() }
-}
+    pub fn forming(&self) -> JsValue {
+        opt_bar_to_js(self.inner.forming())
+    }
 
-/// Streaming Relative Strength Index.
-#[wasm_bindgen]
-pub struct WasmStreamingRSI {
-    inner: ferro_ta_core::streaming::StreamingRSI,
-}
+    pub fn reset(&mut self) {
+        self.inner.reset();
+    }
 
-#[wasm_bindgen]
-impl WasmStreamingRSI {
-    #[wasm_bindgen(constructor)]
-    pub fn new(period: usize) -> Result<WasmStreamingRSI, JsError> {
-        let inner = ferro_ta_core::streaming::StreamingRSI::new(period)
-            .map_err(|e| JsError::new(&e.0))?;
+    /// Versioned JSON snapshot, including the forming bar.
+    #[cfg(feature = "snapshot")]
+            #[wasm_bindgen(js_name = saveState)]
+    pub fn save_state(&self) -> Result<String, JsError> {
+        self.inner.save().map_err(|e| JsError::new(&e.0))
+    }
+
+    /// Restore a snapshot made by `saveState`.
+    #[cfg(feature = "snapshot")]
+            #[wasm_bindgen(js_name = loadState)]
+    pub fn load_state(json: &str) -> Result<WasmBarBuilder, JsError> {
+        let inner = ferro_ta_core::streaming::BarBuilder::load(json).map_err(|e| JsError::new(&e.0))?;
         Ok(Self { inner })
     }
-    pub fn update(&mut self, value: f64) -> f64 { self.inner.update(value) }
-    pub fn reset(&mut self) { self.inner.reset(); }
-    #[wasm_bindgen(getter)]
-    pub fn period(&self) -> usize { self.inner.period() }
-}
-
-/// Streaming Average True Range.
-#[wasm_bindgen]
-pub struct WasmStreamingATR {
-    inner: ferro_ta_core::streaming::StreamingATR,
-}
-
-#[wasm_bindgen]
-impl WasmStreamingATR {
-    #[wasm_bindgen(constructor)]
-    pub fn new(period: usize) -> Result<WasmStreamingATR, JsError> {
-        let inner = ferro_ta_core::streaming::StreamingATR::new(period)
-            .map_err(|e| JsError::new(&e.0))?;
-        Ok(Self { inner })
-    }
-    pub fn update(&mut self, high: f64, low: f64, close: f64) -> f64 {
-        self.inner.update(high, low, close)
-    }
-    pub fn reset(&mut self) { self.inner.reset(); }
-    #[wasm_bindgen(getter)]
-    pub fn period(&self) -> usize { self.inner.period() }
-}
-
-/// Streaming Bollinger Bands. Returns [upper, middle, lower] from `update()`.
-#[wasm_bindgen]
-pub struct WasmStreamingBBands {
-    inner: ferro_ta_core::streaming::StreamingBBands,
-}
-
-#[wasm_bindgen]
-impl WasmStreamingBBands {
-    #[wasm_bindgen(constructor)]
-    pub fn new(period: usize, nbdevup: f64, nbdevdn: f64) -> Result<WasmStreamingBBands, JsError> {
-        let inner = ferro_ta_core::streaming::StreamingBBands::new(period, nbdevup, nbdevdn)
-            .map_err(|e| JsError::new(&e.0))?;
-        Ok(Self { inner })
-    }
-    pub fn update(&mut self, value: f64) -> Array {
-        let (u, m, l) = self.inner.update(value);
-        let out = Array::new();
-        out.push(&JsValue::from_f64(u));
-        out.push(&JsValue::from_f64(m));
-        out.push(&JsValue::from_f64(l));
-        out
-    }
-    pub fn reset(&mut self) { self.inner.reset(); }
-    #[wasm_bindgen(getter)]
-    pub fn period(&self) -> usize { self.inner.period() }
-}
-
-/// Streaming MACD. Returns [macd, signal, histogram] from `update()`.
-#[wasm_bindgen]
-pub struct WasmStreamingMACD {
-    inner: ferro_ta_core::streaming::StreamingMACD,
-}
-
-#[wasm_bindgen]
-impl WasmStreamingMACD {
-    #[wasm_bindgen(constructor)]
-    pub fn new(fastperiod: usize, slowperiod: usize, signalperiod: usize) -> Result<WasmStreamingMACD, JsError> {
-        let inner = ferro_ta_core::streaming::StreamingMACD::new(fastperiod, slowperiod, signalperiod)
-            .map_err(|e| JsError::new(&e.0))?;
-        Ok(Self { inner })
-    }
-    pub fn update(&mut self, value: f64) -> Array {
-        let (m, s, h) = self.inner.update(value);
-        let out = Array::new();
-        out.push(&JsValue::from_f64(m));
-        out.push(&JsValue::from_f64(s));
-        out.push(&JsValue::from_f64(h));
-        out
-    }
-    pub fn reset(&mut self) { self.inner.reset(); }
-    #[wasm_bindgen(getter)]
-    pub fn fast_period(&self) -> usize { self.inner.fast_period() }
-    #[wasm_bindgen(getter)]
-    pub fn slow_period(&self) -> usize { self.inner.slow_period() }
-    #[wasm_bindgen(getter)]
-    pub fn signal_period(&self) -> usize { self.inner.signal_period() }
-}
-
-/// Streaming Stochastic Oscillator. Returns [slowk, slowd] from `update()`.
-#[wasm_bindgen]
-pub struct WasmStreamingStoch {
-    inner: ferro_ta_core::streaming::StreamingStoch,
-}
-
-#[wasm_bindgen]
-impl WasmStreamingStoch {
-    #[wasm_bindgen(constructor)]
-    pub fn new(fastk_period: usize, slowk_period: usize, slowd_period: usize) -> Result<WasmStreamingStoch, JsError> {
-        let inner = ferro_ta_core::streaming::StreamingStoch::new(fastk_period, slowk_period, slowd_period)
-            .map_err(|e| JsError::new(&e.0))?;
-        Ok(Self { inner })
-    }
-    pub fn update(&mut self, high: f64, low: f64, close: f64) -> Array {
-        let (sk, sd) = self.inner.update(high, low, close);
-        let out = Array::new();
-        out.push(&JsValue::from_f64(sk));
-        out.push(&JsValue::from_f64(sd));
-        out
-    }
-    pub fn reset(&mut self) { self.inner.reset(); }
-    #[wasm_bindgen(getter)]
-    pub fn period(&self) -> usize { self.inner.period() }
-}
-
-/// Streaming cumulative VWAP.
-#[wasm_bindgen]
-pub struct WasmStreamingVWAP {
-    inner: ferro_ta_core::streaming::StreamingVWAP,
-}
-
-impl Default for WasmStreamingVWAP {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-#[wasm_bindgen]
-impl WasmStreamingVWAP {
-    #[wasm_bindgen(constructor)]
-    pub fn new() -> WasmStreamingVWAP {
-        Self { inner: ferro_ta_core::streaming::StreamingVWAP::new() }
-    }
-    pub fn update(&mut self, high: f64, low: f64, close: f64, volume: f64) -> f64 {
-        self.inner.update(high, low, close, volume)
-    }
-    pub fn reset(&mut self) { self.inner.reset(); }
-}
-
-/// Streaming Supertrend. Returns [line, direction] from `update()`.
-#[wasm_bindgen]
-pub struct WasmStreamingSupertrend {
-    inner: ferro_ta_core::streaming::StreamingSupertrend,
-}
-
-#[wasm_bindgen]
-impl WasmStreamingSupertrend {
-    #[wasm_bindgen(constructor)]
-    pub fn new(period: usize, multiplier: f64) -> Result<WasmStreamingSupertrend, JsError> {
-        let inner = ferro_ta_core::streaming::StreamingSupertrend::new(period, multiplier)
-            .map_err(|e| JsError::new(&e.0))?;
-        Ok(Self { inner })
-    }
-    pub fn update(&mut self, high: f64, low: f64, close: f64) -> Array {
-        let (line, dir) = self.inner.update(high, low, close);
-        let out = Array::new();
-        out.push(&JsValue::from_f64(line));
-        out.push(&JsValue::from_f64(dir as f64));
-        out
-    }
-    pub fn reset(&mut self) { self.inner.reset(); }
-    #[wasm_bindgen(getter)]
-    pub fn period(&self) -> usize { self.inner.period() }
 }
 
 // ===========================================================================
@@ -5480,5 +5608,117 @@ mod tests {
         let loss = s.max_loss().unwrap();
         assert_eq!(js_sys::Reflect::get(&loss, &"unlimited".into()).unwrap().as_bool(), Some(true));
         assert!(s.add_option(1.0, "straddle", 100.0, 1.0, 0.25, 0.2, 1.0).is_err());
+    }
+
+    #[wasm_bindgen_test]
+    fn test_streaming_peek_previews_without_committing() {
+        let mut sma = WasmStreamingSMA::new(3).unwrap();
+        for v in [1.0, 2.0, 3.0] {
+            sma.update(v);
+        }
+        assert_eq!(sma.peek(50.0), (2.0 + 3.0 + 50.0) / 3.0);
+        let preview = sma.peek(9.0);
+        assert_eq!(sma.count(), 3);
+        assert_eq!(sma.update(9.0), preview);
+        assert_eq!(sma.count(), 4);
+        assert!(sma.is_ready());
+    }
+
+    #[wasm_bindgen_test]
+    fn test_streaming_nan_tick_is_skipped() {
+        let mut sma = WasmStreamingSMA::new(2).unwrap();
+        sma.update(1.0);
+        assert!(sma.update(f64::NAN).is_nan());
+        assert_eq!(sma.update(3.0), 2.0);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_streaming_tuple_peek_matches_update() {
+        let mut bb = WasmStreamingBBands::new(3, 2.0, 2.0).unwrap();
+        for v in [1.0, 2.0, 3.0, 4.0] {
+            bb.update(v);
+        }
+        let preview = bb.peek(7.0);
+        let got = bb.update(7.0);
+        for i in 0..3 {
+            assert_eq!(preview.get(i).as_f64(), got.get(i).as_f64());
+        }
+    }
+
+    #[wasm_bindgen_test]
+    fn test_streaming_cross_fires_once_inside_band() {
+        let mut cross = WasmStreamingCross::new(0.5).unwrap();
+        let got: Vec<i8> = [-1.0, 0.2, -0.2, 0.6, 0.1, 0.7]
+            .iter()
+            .map(|&d| cross.update(d, 0.0))
+            .collect();
+        assert_eq!(got, vec![0, 0, 0, 1, 0, 0]);
+        assert_eq!(cross.peek(-1.0, 0.0), -1);
+        assert_eq!(cross.count(), 6);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_streaming_streak_and_cooldown() {
+        let mut streak = WasmStreamingStreak::new(2).unwrap();
+        assert_eq!(streak.update(1.0), 0);
+        assert_eq!(streak.update(1.0), 1);
+        let mut cooldown = WasmStreamingCooldown::new(1).unwrap();
+        assert_eq!(cooldown.update(1.0), 1);
+        assert_eq!(cooldown.update(1.0), 0);
+        assert_eq!(cooldown.update(-1.0), -1);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_streaming_option_greeks_round_trips_iv() {
+        let contract = ferro_ta_core::options::OptionContract {
+            model: ferro_ta_core::options::PricingModel::BlackScholes,
+            underlying: 102.0,
+            strike: 100.0,
+            rate: 0.05,
+            carry: 0.0,
+            time_to_expiry: 0.5,
+            kind: ferro_ta_core::options::OptionKind::Call,
+        };
+        let price = ferro_ta_core::options::pricing::model_price(
+            ferro_ta_core::options::OptionEvaluation { contract, volatility: 0.25 },
+        );
+        let mut s = WasmStreamingOptionGreeks::new(100.0, "call", "bsm", 0.05, 0.0).unwrap();
+        let out = s.update(price, 102.0, 0.5);
+        assert_eq!(out.length(), 6);
+        assert!((out.get(0).as_f64().unwrap() - 0.25).abs() < 1e-8);
+        assert_eq!(s.count(), 1);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_bar_builder_closes_on_boundary() {
+        let ist = |h: i64, m: i64| (20_377 * 86_400_000 + (h * 60 + m) * 60_000 - 19_800_000) as f64;
+        let mut b = WasmBarBuilder::nse(300).unwrap();
+        let first = b.on_tick(ist(9, 16), 100.0, 1.0);
+        let status = js_sys::Reflect::get(&first, &"status".into()).unwrap();
+        assert_eq!(status.as_string().as_deref(), Some("accepted"));
+        let next = b.on_tick(ist(9, 20), 101.0, 1.0);
+        let closed = js_sys::Reflect::get(&next, &"closed".into()).unwrap();
+        let end = js_sys::Reflect::get(&closed, &"endMs".into()).unwrap();
+        assert_eq!(end.as_f64(), Some(ist(9, 20)));
+        let late = b.on_tick(f64::NAN, 1.0, 1.0);
+        let status = js_sys::Reflect::get(&late, &"status".into()).unwrap();
+        assert_eq!(status.as_string().as_deref(), Some("invalid"));
+        assert!(b.on_time(ist(9, 24)).is_undefined());
+        assert!(!b.on_time(ist(9, 25)).is_undefined());
+    }
+
+    #[cfg(feature = "snapshot")]
+    #[wasm_bindgen_test]
+    fn test_streaming_save_load_round_trip() {
+        let mut a = WasmStreamingRSI::new(5).unwrap();
+        for v in [1.0, 2.0, 1.5, 3.0, 2.5, 4.0, 3.5] {
+            a.update(v);
+        }
+        let mut b = WasmStreamingRSI::load_state(&a.save_state().unwrap()).unwrap();
+        assert_eq!(b.count(), a.count());
+        for v in [5.0, 4.0, 6.0] {
+            assert_eq!(a.update(v).to_bits(), b.update(v).to_bits());
+        }
+        assert!(WasmStreamingEMA::load_state(&a.save_state().unwrap()).is_err());
     }
 }

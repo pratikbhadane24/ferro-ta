@@ -363,12 +363,21 @@ impl Default for OhlcvState {
 
 /// Stateful streaming backtester — feed one bar at a time.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct StreamingBacktest {
     pub commission_per_trade: f64,
     pub slippage_bps: f64,
     pub position: f64,
+    #[cfg_attr(
+        feature = "serde",
+        serde(with = "crate::streaming::snapshot::nan_as_null")
+    )]
     pub entry_price: f64,
     pub equity: f64,
+    #[cfg_attr(
+        feature = "serde",
+        serde(with = "crate::streaming::snapshot::nan_as_null")
+    )]
     pub prev_close: f64,
     pub total_commission: f64,
     pub n_trades: usize,

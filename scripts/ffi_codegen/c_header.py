@@ -61,6 +61,52 @@ int32_t ft_strategy_greeks(const FtLeg *legs, size_t n_legs, double spot, double
 /** Mark-to-model P&L, row-major [vol_shift][spot] into out[n_shifts*n_spots]. */
 int32_t ft_strategy_scenario_grid(const FtLeg *legs, size_t n_legs, const double *spots, size_t n_spots, const double *vol_shifts, size_t n_shifts, double days_forward, double rate, double carry, double *out);"""
 
+# Hand-written in crates/ferro_ta_ffi/src/bars.rs: timestamped input and an
+# optional struct output don't fit the generated stream shape.
+BAR_BUILDER_BLOCK = """/* ---- bar builder ----------------------------------------------------- */
+
+/* ft_bar_builder_on_tick status codes (int32_t). */
+#define FT_TICK_ACCEPTED 0
+#define FT_TICK_LATE 1
+#define FT_TICK_DUPLICATE 2
+#define FT_TICK_OUT_OF_SESSION 3
+#define FT_TICK_INVALID 4
+
+/** One OHLCV bar covering [start_ms, end_ms) in UTC epoch milliseconds. */
+typedef struct FtBar {
+    int64_t start_ms;
+    int64_t end_ms;
+    double open;
+    double high;
+    double low;
+    double close;
+    double volume;
+    uint32_t ticks;
+} FtBar;
+
+/**
+ * Session-aligned tick -> bar builder: bars start at session_open + k*interval
+ * (last bar cut at session_close); gaps produce no bars. Session times are
+ * seconds after local midnight; local = UTC + utc_offset_secs (fixed offset,
+ * no DST: create a new builder when a market's offset changes).
+ * Requires: 0 < interval_secs <= 86400; 0 <= session_open_secs <
+ * session_close_secs <= 86400; |utc_offset_secs| <= 50400.
+ */
+typedef struct FtBarBuilder FtBarBuilder;
+int32_t ft_bar_builder_new(int64_t interval_secs, int64_t session_open_secs, int64_t session_close_secs, int64_t utc_offset_secs, FtBarBuilder **out_handle);
+/** Feed a tick; *out_status is FT_TICK_*; *out_closed is 1 with *out_bar set when it closed a bar. */
+int32_t ft_bar_builder_on_tick(FtBarBuilder *handle, int64_t ts_ms, double price, double qty, int32_t *out_status, int32_t *out_closed, FtBar *out_bar);
+/** Close the forming bar once now_ms reaches its end; *out_closed is 1 with *out_bar set if so. */
+int32_t ft_bar_builder_on_time(FtBarBuilder *handle, int64_t now_ms, int32_t *out_closed, FtBar *out_bar);
+/** The bar being built: *out_has is 1 with *out_bar set, else 0. */
+int32_t ft_bar_builder_forming(FtBarBuilder *handle, int32_t *out_has, FtBar *out_bar);
+int32_t ft_bar_builder_reset(FtBarBuilder *handle);
+/** Versioned JSON snapshot; same contract as the stream *_save functions. */
+int32_t ft_bar_builder_save(FtBarBuilder *handle, char *buf, size_t cap, size_t *out_len);
+/** New builder from an ft_bar_builder_save snapshot; else FT_ERR_INVALID_PARAM. */
+int32_t ft_bar_builder_load(const char *json, size_t len, FtBarBuilder **out_handle);
+void ft_bar_builder_free(FtBarBuilder *handle);"""
+
 
 def c_function(fn: dict) -> str:
     args = [f"const double *{name}" for name in fn["inputs"]]
@@ -82,7 +128,13 @@ def c_stream(stream: dict) -> list[str]:
         f"typedef struct {handle} {handle};",
         f"int32_t {stream['new_fn']}({', '.join(new_args)});",
         f"int32_t {stream['update_fn']}({', '.join(update_args)});",
+        f"int32_t {stream['peek_fn']}({', '.join(update_args)});",
         f"int32_t {stream['reset_fn']}({handle} *handle);",
+        "/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length."
+        " cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */",
+        f"int32_t {stream['save_fn']}({handle} *handle, char *buf, size_t cap, size_t *out_len);",
+        "/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */",
+        f"int32_t {stream['load_fn']}(const char *json, size_t len, {handle} **out_handle);",
         f"void {stream['free_fn']}({handle} *handle);",
     ]
 
@@ -214,6 +266,7 @@ def render_header(spec: dict) -> str:
     for stream in spec["streams"]:
         out += ["", *c_stream(stream)]
     out += ["", STRATEGY_BLOCK]
+    out += ["", BAR_BUILDER_BLOCK]
     out += [
         "",
         "#ifdef __cplusplus",

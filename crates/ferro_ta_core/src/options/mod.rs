@@ -18,6 +18,7 @@ pub mod surface;
 
 /// Option side.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum OptionKind {
     /// Call option.
     Call,
@@ -37,6 +38,7 @@ impl OptionKind {
 
 /// Supported pricing models.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum PricingModel {
     /// Black-Scholes-Merton with continuous carry/dividend yield.
     BlackScholes,

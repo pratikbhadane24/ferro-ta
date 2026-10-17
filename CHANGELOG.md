@@ -9,17 +9,6 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-### Changed
-
-- OHLCV engine: a same-side position change (e.g. 0.5 → 1.0 from fractional
-  sizing) now charges commission on the traded amount instead of a full exit
-  plus re-entry. It also averages the entry price (used by stops) instead of
-  resetting it to the latest fill, keeps the trailing-stop anchor, and resizes
-  the margin requirement to the new position. Results change only for
-  fractional same-sign signal changes with commission, stops or leverage.
-  With ±1/0 signals the engine output is bit-identical to before (covered by
-  golden tests).
-
 ### Added
 
 - **Option strategy API** (`ferro_ta_core::options::strategy`, all bindings):
@@ -30,6 +19,28 @@ and the project uses [Semantic Versioning](https://semver.org/).
   `WasmOptionStrategy`, C `ft_strategy_*` over an `FtLeg` array, Go
   `Strategy*` functions. Legs are validated at construction; expiry analytics
   reject mixed-expiry strategies.
+- **Live-bar streaming.** Every streaming indicator accepts
+  `update(..., closed=False)` (Python) / `peek(...)` (WASM) /
+  `ft_stream_*_peek` (C) / `Stream*.Peek` (Go) to preview the still-forming bar
+  without mutating state; committed output stays bit-identical.
+- Streaming introspection: `count` and `is_ready` (Python), `count` and
+  `isReady` (WASM). Python streaming classes support `copy.copy` /
+  `copy.deepcopy` snapshots.
+- Core: `StreamingIndicator` trait, `Live<T>` wrapper and `Clone`/`Debug` on
+  all streaming state structs.
+- **Tick → bar builder** (`BarBuilder`, all bindings): session-aligned OHLCV
+  bars (NSE preset 09:15–15:30 IST, any session/offset), close on a boundary
+  tick or on time, late/duplicate/out-of-session/invalid ticks rejected with a
+  status, no synthetic bars for gaps.
+- **Streaming conditions**: `StreamingCross` (dead-band cross),
+  `StreamingStreak` (N bars in a row), `StreamingCooldown`.
+- **`StreamingOptionGreeks`**: live implied volatility + delta/gamma/vega/
+  theta/rho per contract, solver seeded with the previous IV.
+- **Save/restore streaming state**: versioned JSON snapshots
+  (`to_json`/`from_json`/pickle in Python, `ft_stream_*_save`/`_load` in C,
+  `Save`/`Load*` in Go, `saveState`/`loadState` in WASM behind the opt-in
+  `snapshot` feature) that restore bit-identically and reject a mismatched
+  kind or format.
 - **Parallel parameter sweeps** — `ferro_ta.analysis.sweep.sweep(close,
   strategy, param_grid)` backtests every combination (Cartesian dict or list
   of dicts) in Rayon-parallel Rust with the GIL released. `SweepResult` keeps
@@ -93,8 +104,29 @@ and the project uses [Semantic Versioning](https://semver.org/).
 - `ferro_ta_core::options::normal::inv_cdf` (Acklam, rel. error < 1.2e-9)
   and `BacktestMetrics::scalar_fields()`.
 
+### Changed
+
+- OHLCV engine: a same-side position change (e.g. 0.5 → 1.0 from fractional
+  sizing) now charges commission on the traded amount instead of a full exit
+  plus re-entry. It also averages the entry price (used by stops) instead of
+  resetting it to the latest fill, keeps the trailing-stop anchor, and resizes
+  the margin requirement to the new position. Results change only for
+  fractional same-sign signal changes with commission, stops or leverage.
+  With ±1/0 signals the engine output is bit-identical to before (covered by
+  golden tests).
+
+### Fixed
+
+- A NaN or ±inf input no longer poisons streaming state forever (SMA/BBands
+  running sums, EMA/RSI/ATR recursions, VWAP accumulators). Such ticks now return NaN
+  and are skipped — state, `count` and the last value are left untouched.
+
+
 ### Performance
 
+- Streaming previews (`closed=False` / `peek`) no longer allocate for SMA,
+  Bollinger Bands and Stochastic: 92 → 43, 156 → 65 and 360 → 105 ns per call
+  (Python).
 - **WASM EMA ~6x faster** (and DEMA/TEMA/TRIX/T3/PPO, which build on it):
   wasm32 has no scalar f64 FMA instruction, so the EMA recurrence's `mul_add`
   lowered to a software `fma` routine (15.3 ms → 2.5 ms per 1M bars, Node 25
