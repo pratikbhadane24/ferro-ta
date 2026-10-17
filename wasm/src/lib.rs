@@ -2578,6 +2578,13 @@ impl IntoJsOutput for f64 {
     }
 }
 
+impl IntoJsOutput for i8 {
+    type Js = i8;
+    fn into_js(self) -> i8 {
+        self
+    }
+}
+
 impl IntoJsOutput for (f64, f64) {
     type Js = Array;
     fn into_js(self) -> Array {
@@ -2593,6 +2600,14 @@ impl IntoJsOutput for (f64, f64, f64) {
             &JsValue::from_f64(self.1),
             &JsValue::from_f64(self.2),
         )
+    }
+}
+
+impl IntoJsOutput for (f64, f64, f64, f64, f64, f64) {
+    type Js = Array;
+    fn into_js(self) -> Array {
+        let (a, b, c, d, e, f) = self;
+        [a, b, c, d, e, f].iter().map(|&v| JsValue::from_f64(v)).collect()
     }
 }
 
@@ -2638,6 +2653,19 @@ macro_rules! wasm_streaming_class {
                 self.inner.update(($($input),+), false).into_js()
             }
             pub fn reset(&mut self) { self.inner.reset(); }
+            /// Versioned JSON snapshot of the full state.
+            #[cfg(feature = "snapshot")]
+            #[wasm_bindgen(js_name = saveState)]
+            pub fn save_state(&self) -> Result<String, JsError> {
+                self.inner.save().map_err(|e| JsError::new(&e.0))
+            }
+            /// Restore a snapshot made by `saveState` of this same class.
+            #[cfg(feature = "snapshot")]
+            #[wasm_bindgen(js_name = loadState)]
+            pub fn load_state(json: &str) -> Result<$name, JsError> {
+                let inner = ferro_ta_core::streaming::Live::load(json).map_err(|e| JsError::new(&e.0))?;
+                Ok(Self { inner })
+            }
             /// Number of committed bars.
             #[wasm_bindgen(getter)]
             pub fn count(&self) -> usize { self.inner.count() }
@@ -2726,6 +2754,159 @@ wasm_streaming_class! {
         ferro_ta_core::streaming::StreamingSupertrend::new(period, multiplier),
     update(high, low, close) -> Array,
     getters(period),
+}
+
+wasm_streaming_class! {
+    /// Dead-band cross of `a` over `b`. Returns 1 (up), -1 (down) or 0.
+    WasmStreamingCross wraps StreamingCross,
+    new(dead_band: f64) => ferro_ta_core::streaming::StreamingCross::new(dead_band),
+    update(a, b) -> i8,
+    getters(),
+}
+
+wasm_streaming_class! {
+    /// "N bars in a row": returns 1 while the run of non-zero inputs is >= n.
+    WasmStreamingStreak wraps StreamingStreak,
+    new(n: usize) => ferro_ta_core::streaming::StreamingStreak::new(n),
+    update(condition) -> i8,
+    getters(n),
+}
+
+wasm_streaming_class! {
+    /// Passes the first non-zero signal's sign, then mutes the next `bars` bars.
+    WasmStreamingCooldown wraps StreamingCooldown,
+    new(bars: usize) => ferro_ta_core::streaming::StreamingCooldown::new(bars),
+    update(signal) -> i8,
+    getters(bars),
+}
+
+wasm_streaming_class! {
+    /// Live IV + greeks for one option contract.
+    /// `update(optionPrice, underlying, timeToExpiry)` returns
+    /// [iv, delta, gamma, vega, theta, rho]; the IV solver is seeded with the
+    /// previous tick's IV.
+    WasmStreamingOptionGreeks wraps StreamingOptionGreeks,
+    new(strike: f64, option_type: &str, model: &str, rate: f64, carry: f64) =>
+        ferro_ta_core::streaming::StreamingOptionGreeks::new(
+            parse_pricing_model(model),
+            parse_option_kind(option_type),
+            strike,
+            rate,
+            carry,
+        ),
+    update(option_price, underlying, time_to_expiry) -> Array,
+    getters(),
+}
+
+/// JS object for a bar: {startMs, endMs, open, high, low, close, volume, ticks}.
+fn bar_to_js(bar: ferro_ta_core::streaming::Bar) -> JsValue {
+    let obj = js_sys::Object::new();
+    let fields = [
+        ("startMs", bar.start_ms as f64),
+        ("endMs", bar.end_ms as f64),
+        ("open", bar.open),
+        ("high", bar.high),
+        ("low", bar.low),
+        ("close", bar.close),
+        ("volume", bar.volume),
+        ("ticks", f64::from(bar.ticks)),
+    ];
+    for (key, value) in fields {
+        // Setting a plain data property on a fresh Object cannot fail.
+        let _ = js_sys::Reflect::set(&obj, &JsValue::from_str(key), &JsValue::from_f64(value));
+    }
+    obj.into()
+}
+
+fn opt_bar_to_js(bar: Option<ferro_ta_core::streaming::Bar>) -> JsValue {
+    bar.map_or(JsValue::UNDEFINED, bar_to_js)
+}
+
+/// Session-aligned tick -> bar builder. Timestamps are UTC epoch milliseconds
+/// as JS numbers (`Date.now()`); session times are seconds after local
+/// midnight. Gaps produce no bars.
+#[wasm_bindgen]
+pub struct WasmBarBuilder {
+    inner: ferro_ta_core::streaming::BarBuilder,
+}
+
+#[wasm_bindgen]
+impl WasmBarBuilder {
+    #[wasm_bindgen(constructor)]
+    pub fn new(
+        interval_secs: i32,
+        session_open_secs: i32,
+        session_close_secs: i32,
+        utc_offset_secs: i32,
+    ) -> Result<WasmBarBuilder, JsError> {
+        let spec = ferro_ta_core::streaming::BarSpec {
+            interval_secs: i64::from(interval_secs),
+            session_open_secs: i64::from(session_open_secs),
+            session_close_secs: i64::from(session_close_secs),
+            utc_offset_secs: i64::from(utc_offset_secs),
+        };
+        let inner = ferro_ta_core::streaming::BarBuilder::new(spec)
+            .map_err(|e| JsError::new(&e.0))?;
+        Ok(Self { inner })
+    }
+
+    /// NSE preset: 09:15-15:30 IST.
+    pub fn nse(interval_secs: i32) -> Result<WasmBarBuilder, JsError> {
+        let inner = ferro_ta_core::streaming::BarBuilder::new(
+            ferro_ta_core::streaming::BarSpec::nse(i64::from(interval_secs)),
+        )
+        .map_err(|e| JsError::new(&e.0))?;
+        Ok(Self { inner })
+    }
+
+    /// Feed one tick; returns `{status, closed}` where `closed` is the bar
+    /// this tick closed (or undefined).
+    #[wasm_bindgen(js_name = onTick)]
+    pub fn on_tick(&mut self, ts_ms: f64, price: f64, qty: f64) -> JsValue {
+        let (status, closed) = if ts_ms.is_finite() {
+            self.inner.on_tick(ts_ms as i64, price, qty)
+        } else {
+            (ferro_ta_core::streaming::TickStatus::Invalid, None)
+        };
+        let obj = js_sys::Object::new();
+        let _ = js_sys::Reflect::set(&obj, &"status".into(), &status.as_str().into());
+        let _ = js_sys::Reflect::set(&obj, &"closed".into(), &opt_bar_to_js(closed));
+        obj.into()
+    }
+
+    /// Close the forming bar once `nowMs` reaches its end; returns it or undefined.
+    #[wasm_bindgen(js_name = onTime)]
+    pub fn on_time(&mut self, now_ms: f64) -> JsValue {
+        if !now_ms.is_finite() {
+            return JsValue::UNDEFINED;
+        }
+        opt_bar_to_js(self.inner.on_time(now_ms as i64))
+    }
+
+    /// The bar being built, or undefined.
+    #[wasm_bindgen(getter)]
+    pub fn forming(&self) -> JsValue {
+        opt_bar_to_js(self.inner.forming())
+    }
+
+    pub fn reset(&mut self) {
+        self.inner.reset();
+    }
+
+    /// Versioned JSON snapshot, including the forming bar.
+    #[cfg(feature = "snapshot")]
+            #[wasm_bindgen(js_name = saveState)]
+    pub fn save_state(&self) -> Result<String, JsError> {
+        self.inner.save().map_err(|e| JsError::new(&e.0))
+    }
+
+    /// Restore a snapshot made by `saveState`.
+    #[cfg(feature = "snapshot")]
+            #[wasm_bindgen(js_name = loadState)]
+    pub fn load_state(json: &str) -> Result<WasmBarBuilder, JsError> {
+        let inner = ferro_ta_core::streaming::BarBuilder::load(json).map_err(|e| JsError::new(&e.0))?;
+        Ok(Self { inner })
+    }
 }
 
 // ===========================================================================
@@ -5335,5 +5516,82 @@ mod tests {
         for i in 0..3 {
             assert_eq!(preview.get(i).as_f64(), got.get(i).as_f64());
         }
+    }
+
+    #[wasm_bindgen_test]
+    fn test_streaming_cross_fires_once_inside_band() {
+        let mut cross = WasmStreamingCross::new(0.5).unwrap();
+        let got: Vec<i8> = [-1.0, 0.2, -0.2, 0.6, 0.1, 0.7]
+            .iter()
+            .map(|&d| cross.update(d, 0.0))
+            .collect();
+        assert_eq!(got, vec![0, 0, 0, 1, 0, 0]);
+        assert_eq!(cross.peek(-1.0, 0.0), -1);
+        assert_eq!(cross.count(), 6);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_streaming_streak_and_cooldown() {
+        let mut streak = WasmStreamingStreak::new(2).unwrap();
+        assert_eq!(streak.update(1.0), 0);
+        assert_eq!(streak.update(1.0), 1);
+        let mut cooldown = WasmStreamingCooldown::new(1).unwrap();
+        assert_eq!(cooldown.update(1.0), 1);
+        assert_eq!(cooldown.update(1.0), 0);
+        assert_eq!(cooldown.update(-1.0), -1);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_streaming_option_greeks_round_trips_iv() {
+        let contract = ferro_ta_core::options::OptionContract {
+            model: ferro_ta_core::options::PricingModel::BlackScholes,
+            underlying: 102.0,
+            strike: 100.0,
+            rate: 0.05,
+            carry: 0.0,
+            time_to_expiry: 0.5,
+            kind: ferro_ta_core::options::OptionKind::Call,
+        };
+        let price = ferro_ta_core::options::pricing::model_price(
+            ferro_ta_core::options::OptionEvaluation { contract, volatility: 0.25 },
+        );
+        let mut s = WasmStreamingOptionGreeks::new(100.0, "call", "bsm", 0.05, 0.0).unwrap();
+        let out = s.update(price, 102.0, 0.5);
+        assert_eq!(out.length(), 6);
+        assert!((out.get(0).as_f64().unwrap() - 0.25).abs() < 1e-8);
+        assert_eq!(s.count(), 1);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_bar_builder_closes_on_boundary() {
+        let ist = |h: i64, m: i64| (20_377 * 86_400_000 + (h * 60 + m) * 60_000 - 19_800_000) as f64;
+        let mut b = WasmBarBuilder::nse(300).unwrap();
+        let first = b.on_tick(ist(9, 16), 100.0, 1.0);
+        let status = js_sys::Reflect::get(&first, &"status".into()).unwrap();
+        assert_eq!(status.as_string().as_deref(), Some("accepted"));
+        let next = b.on_tick(ist(9, 20), 101.0, 1.0);
+        let closed = js_sys::Reflect::get(&next, &"closed".into()).unwrap();
+        let end = js_sys::Reflect::get(&closed, &"endMs".into()).unwrap();
+        assert_eq!(end.as_f64(), Some(ist(9, 20)));
+        let late = b.on_tick(f64::NAN, 1.0, 1.0);
+        let status = js_sys::Reflect::get(&late, &"status".into()).unwrap();
+        assert_eq!(status.as_string().as_deref(), Some("invalid"));
+        assert!(b.on_time(ist(9, 24)).is_undefined());
+        assert!(!b.on_time(ist(9, 25)).is_undefined());
+    }
+
+    #[cfg(feature = "snapshot")]
+    #[wasm_bindgen_test]
+    fn test_streaming_save_load_round_trip() {
+        let mut a = WasmStreamingRSI::new(5).unwrap();
+        for v in [1.0, 2.0, 1.5, 3.0, 2.5, 4.0, 3.5] {
+            a.update(v);
+        }
+        let mut b = WasmStreamingRSI::load_state(&a.save_state().unwrap()).unwrap();
+        assert_eq!(b.count(), a.count());
+        for v in [5.0, 4.0, 6.0] {
+            assert_eq!(a.update(v).to_bits(), b.update(v).to_bits());
+        }
+        assert!(WasmStreamingEMA::load_state(&a.save_state().unwrap()).is_err());
     }
 }

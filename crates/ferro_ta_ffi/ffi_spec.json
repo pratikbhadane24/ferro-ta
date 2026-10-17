@@ -9249,6 +9249,7 @@
       "inputs": [
         "value"
       ],
+      "load_fn": "ft_stream_sma_load",
       "name": "sma",
       "new_fn": "ft_stream_sma_new",
       "outputs": [
@@ -9268,6 +9269,7 @@
       ],
       "peek_fn": "ft_stream_sma_peek",
       "reset_fn": "ft_stream_sma_reset",
+      "save_fn": "ft_stream_sma_save",
       "update_fn": "ft_stream_sma_update"
     },
     {
@@ -9277,6 +9279,7 @@
       "inputs": [
         "value"
       ],
+      "load_fn": "ft_stream_ema_load",
       "name": "ema",
       "new_fn": "ft_stream_ema_new",
       "outputs": [
@@ -9296,6 +9299,7 @@
       ],
       "peek_fn": "ft_stream_ema_peek",
       "reset_fn": "ft_stream_ema_reset",
+      "save_fn": "ft_stream_ema_save",
       "update_fn": "ft_stream_ema_update"
     },
     {
@@ -9305,6 +9309,7 @@
       "inputs": [
         "value"
       ],
+      "load_fn": "ft_stream_rsi_load",
       "name": "rsi",
       "new_fn": "ft_stream_rsi_new",
       "outputs": [
@@ -9324,6 +9329,7 @@
       ],
       "peek_fn": "ft_stream_rsi_peek",
       "reset_fn": "ft_stream_rsi_reset",
+      "save_fn": "ft_stream_rsi_save",
       "update_fn": "ft_stream_rsi_update"
     },
     {
@@ -9335,6 +9341,7 @@
         "low",
         "close"
       ],
+      "load_fn": "ft_stream_atr_load",
       "name": "atr",
       "new_fn": "ft_stream_atr_new",
       "outputs": [
@@ -9354,6 +9361,7 @@
       ],
       "peek_fn": "ft_stream_atr_peek",
       "reset_fn": "ft_stream_atr_reset",
+      "save_fn": "ft_stream_atr_save",
       "update_fn": "ft_stream_atr_update"
     },
     {
@@ -9363,6 +9371,7 @@
       "inputs": [
         "value"
       ],
+      "load_fn": "ft_stream_bbands_load",
       "name": "bbands",
       "new_fn": "ft_stream_bbands_new",
       "outputs": [
@@ -9402,6 +9411,7 @@
       ],
       "peek_fn": "ft_stream_bbands_peek",
       "reset_fn": "ft_stream_bbands_reset",
+      "save_fn": "ft_stream_bbands_save",
       "update_fn": "ft_stream_bbands_update"
     },
     {
@@ -9411,6 +9421,7 @@
       "inputs": [
         "value"
       ],
+      "load_fn": "ft_stream_macd_load",
       "name": "macd",
       "new_fn": "ft_stream_macd_new",
       "outputs": [
@@ -9452,6 +9463,7 @@
       ],
       "peek_fn": "ft_stream_macd_peek",
       "reset_fn": "ft_stream_macd_reset",
+      "save_fn": "ft_stream_macd_save",
       "update_fn": "ft_stream_macd_update"
     },
     {
@@ -9463,6 +9475,7 @@
         "low",
         "close"
       ],
+      "load_fn": "ft_stream_stoch_load",
       "name": "stoch",
       "new_fn": "ft_stream_stoch_new",
       "outputs": [
@@ -9499,6 +9512,7 @@
       ],
       "peek_fn": "ft_stream_stoch_peek",
       "reset_fn": "ft_stream_stoch_reset",
+      "save_fn": "ft_stream_stoch_save",
       "update_fn": "ft_stream_stoch_update"
     },
     {
@@ -9511,6 +9525,7 @@
         "close",
         "volume"
       ],
+      "load_fn": "ft_stream_vwap_load",
       "name": "vwap",
       "new_fn": "ft_stream_vwap_new",
       "outputs": [
@@ -9523,6 +9538,7 @@
       "params": [],
       "peek_fn": "ft_stream_vwap_peek",
       "reset_fn": "ft_stream_vwap_reset",
+      "save_fn": "ft_stream_vwap_save",
       "update_fn": "ft_stream_vwap_update"
     },
     {
@@ -9533,6 +9549,7 @@
         "close",
         "signal"
       ],
+      "load_fn": "ft_stream_backtest_load",
       "name": "backtest",
       "new_fn": "ft_stream_backtest_new",
       "outputs": [
@@ -9596,6 +9613,7 @@
       ],
       "peek_fn": "ft_stream_backtest_peek",
       "reset_fn": "ft_stream_backtest_reset",
+      "save_fn": "ft_stream_backtest_save",
       "update_fn": "ft_stream_backtest_update"
     },
     {
@@ -9607,6 +9625,7 @@
         "low",
         "close"
       ],
+      "load_fn": "ft_stream_supertrend_load",
       "name": "supertrend",
       "new_fn": "ft_stream_supertrend_new",
       "outputs": [
@@ -9636,7 +9655,176 @@
       ],
       "peek_fn": "ft_stream_supertrend_peek",
       "reset_fn": "ft_stream_supertrend_reset",
+      "save_fn": "ft_stream_supertrend_save",
       "update_fn": "ft_stream_supertrend_update"
+    },
+    {
+      "doc": "Dead-band cross of `a` over `b`: `out` is 1 (up), -1 (down) or 0.\nInside `±dead_band` the side is unchanged, so noise fires at most once.",
+      "free_fn": "ft_stream_cross_free",
+      "handle": "FtStreamCross",
+      "inputs": [
+        "a",
+        "b"
+      ],
+      "load_fn": "ft_stream_cross_load",
+      "name": "cross",
+      "new_fn": "ft_stream_cross_new",
+      "outputs": [
+        {
+          "c_type": "int8_t",
+          "elem": "i8",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "dead_band"
+        }
+      ],
+      "peek_fn": "ft_stream_cross_peek",
+      "reset_fn": "ft_stream_cross_reset",
+      "save_fn": "ft_stream_cross_save",
+      "update_fn": "ft_stream_cross_update"
+    },
+    {
+      "doc": "\"N bars in a row\": `out` is 1 while the run of non-zero inputs is >= n.",
+      "free_fn": "ft_stream_streak_free",
+      "handle": "FtStreamStreak",
+      "inputs": [
+        "condition"
+      ],
+      "load_fn": "ft_stream_streak_load",
+      "name": "streak",
+      "new_fn": "ft_stream_streak_new",
+      "outputs": [
+        {
+          "c_type": "int8_t",
+          "elem": "i8",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "n"
+        }
+      ],
+      "peek_fn": "ft_stream_streak_peek",
+      "reset_fn": "ft_stream_streak_reset",
+      "save_fn": "ft_stream_streak_save",
+      "update_fn": "ft_stream_streak_update"
+    },
+    {
+      "doc": "Passes the first non-zero signal's sign, then mutes the next `bars` bars.",
+      "free_fn": "ft_stream_cooldown_free",
+      "handle": "FtStreamCooldown",
+      "inputs": [
+        "signal"
+      ],
+      "load_fn": "ft_stream_cooldown_load",
+      "name": "cooldown",
+      "new_fn": "ft_stream_cooldown_new",
+      "outputs": [
+        {
+          "c_type": "int8_t",
+          "elem": "i8",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "count",
+          "min": 0,
+          "name": "bars"
+        }
+      ],
+      "peek_fn": "ft_stream_cooldown_peek",
+      "reset_fn": "ft_stream_cooldown_reset",
+      "save_fn": "ft_stream_cooldown_save",
+      "update_fn": "ft_stream_cooldown_update"
+    },
+    {
+      "doc": "Live implied volatility and greeks for one option contract. The IV\nsolver is seeded with the previous tick's IV; an unsolvable price\n(e.g. below intrinsic) writes NaN everywhere and keeps the seed.",
+      "free_fn": "ft_stream_option_greeks_free",
+      "handle": "FtStreamOptionGreeks",
+      "inputs": [
+        "option_price",
+        "underlying",
+        "time_to_expiry"
+      ],
+      "load_fn": "ft_stream_option_greeks_load",
+      "name": "option_greeks",
+      "new_fn": "ft_stream_option_greeks_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_iv"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_delta"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_gamma"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_vega"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_theta"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_rho"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int32_t",
+          "enum": "PricingModel",
+          "kind": "enum",
+          "name": "model"
+        },
+        {
+          "c_type": "int32_t",
+          "enum": "OptionKind",
+          "kind": "enum",
+          "name": "kind"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "strike"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "rate"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "carry"
+        }
+      ],
+      "peek_fn": "ft_stream_option_greeks_peek",
+      "reset_fn": "ft_stream_option_greeks_reset",
+      "save_fn": "ft_stream_option_greeks_save",
+      "update_fn": "ft_stream_option_greeks_update"
     }
   ],
   "version": "1.4.0"

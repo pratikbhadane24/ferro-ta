@@ -1699,6 +1699,10 @@ int32_t ft_stream_sma_new(int64_t period, FtStreamSma **out_handle);
 int32_t ft_stream_sma_update(FtStreamSma *handle, double value, double *out);
 int32_t ft_stream_sma_peek(FtStreamSma *handle, double value, double *out);
 int32_t ft_stream_sma_reset(FtStreamSma *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_sma_save(FtStreamSma *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_sma_load(const char *json, size_t len, FtStreamSma **out_handle);
 void ft_stream_sma_free(FtStreamSma *handle);
 
 /**
@@ -1709,6 +1713,10 @@ int32_t ft_stream_ema_new(int64_t period, FtStreamEma **out_handle);
 int32_t ft_stream_ema_update(FtStreamEma *handle, double value, double *out);
 int32_t ft_stream_ema_peek(FtStreamEma *handle, double value, double *out);
 int32_t ft_stream_ema_reset(FtStreamEma *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_ema_save(FtStreamEma *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_ema_load(const char *json, size_t len, FtStreamEma **out_handle);
 void ft_stream_ema_free(FtStreamEma *handle);
 
 /**
@@ -1719,6 +1727,10 @@ int32_t ft_stream_rsi_new(int64_t period, FtStreamRsi **out_handle);
 int32_t ft_stream_rsi_update(FtStreamRsi *handle, double value, double *out);
 int32_t ft_stream_rsi_peek(FtStreamRsi *handle, double value, double *out);
 int32_t ft_stream_rsi_reset(FtStreamRsi *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_rsi_save(FtStreamRsi *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_rsi_load(const char *json, size_t len, FtStreamRsi **out_handle);
 void ft_stream_rsi_free(FtStreamRsi *handle);
 
 /**
@@ -1729,6 +1741,10 @@ int32_t ft_stream_atr_new(int64_t period, FtStreamAtr **out_handle);
 int32_t ft_stream_atr_update(FtStreamAtr *handle, double high, double low, double close, double *out);
 int32_t ft_stream_atr_peek(FtStreamAtr *handle, double high, double low, double close, double *out);
 int32_t ft_stream_atr_reset(FtStreamAtr *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_atr_save(FtStreamAtr *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_atr_load(const char *json, size_t len, FtStreamAtr **out_handle);
 void ft_stream_atr_free(FtStreamAtr *handle);
 
 /**
@@ -1739,6 +1755,10 @@ int32_t ft_stream_bbands_new(int64_t period, double nbdevup, double nbdevdn, FtS
 int32_t ft_stream_bbands_update(FtStreamBbands *handle, double value, double *out_upper, double *out_middle, double *out_lower);
 int32_t ft_stream_bbands_peek(FtStreamBbands *handle, double value, double *out_upper, double *out_middle, double *out_lower);
 int32_t ft_stream_bbands_reset(FtStreamBbands *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_bbands_save(FtStreamBbands *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_bbands_load(const char *json, size_t len, FtStreamBbands **out_handle);
 void ft_stream_bbands_free(FtStreamBbands *handle);
 
 /**
@@ -1749,6 +1769,10 @@ int32_t ft_stream_macd_new(int64_t fastperiod, int64_t slowperiod, int64_t signa
 int32_t ft_stream_macd_update(FtStreamMacd *handle, double value, double *out_macd, double *out_signal, double *out_hist);
 int32_t ft_stream_macd_peek(FtStreamMacd *handle, double value, double *out_macd, double *out_signal, double *out_hist);
 int32_t ft_stream_macd_reset(FtStreamMacd *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_macd_save(FtStreamMacd *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_macd_load(const char *json, size_t len, FtStreamMacd **out_handle);
 void ft_stream_macd_free(FtStreamMacd *handle);
 
 /**
@@ -1759,6 +1783,10 @@ int32_t ft_stream_stoch_new(int64_t fastk_period, int64_t slowk_period, int64_t 
 int32_t ft_stream_stoch_update(FtStreamStoch *handle, double high, double low, double close, double *out_slowk, double *out_slowd);
 int32_t ft_stream_stoch_peek(FtStreamStoch *handle, double high, double low, double close, double *out_slowk, double *out_slowd);
 int32_t ft_stream_stoch_reset(FtStreamStoch *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_stoch_save(FtStreamStoch *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_stoch_load(const char *json, size_t len, FtStreamStoch **out_handle);
 void ft_stream_stoch_free(FtStreamStoch *handle);
 
 /**
@@ -1769,6 +1797,10 @@ int32_t ft_stream_vwap_new(FtStreamVwap **out_handle);
 int32_t ft_stream_vwap_update(FtStreamVwap *handle, double high, double low, double close, double volume, double *out);
 int32_t ft_stream_vwap_peek(FtStreamVwap *handle, double high, double low, double close, double volume, double *out);
 int32_t ft_stream_vwap_reset(FtStreamVwap *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_vwap_save(FtStreamVwap *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_vwap_load(const char *json, size_t len, FtStreamVwap **out_handle);
 void ft_stream_vwap_free(FtStreamVwap *handle);
 
 /**
@@ -1779,6 +1811,10 @@ int32_t ft_stream_backtest_new(double commission_per_trade, double slippage_bps,
 int32_t ft_stream_backtest_update(FtStreamBacktest *handle, double close, double signal, double *out_position, double *out_bar_return, double *out_equity, int64_t *out_n_trades, double *out_total_commission, double *out_win_rate, double *out_avg_win, double *out_avg_loss, double *out_kelly_fraction);
 int32_t ft_stream_backtest_peek(FtStreamBacktest *handle, double close, double signal, double *out_position, double *out_bar_return, double *out_equity, int64_t *out_n_trades, double *out_total_commission, double *out_win_rate, double *out_avg_win, double *out_avg_loss, double *out_kelly_fraction);
 int32_t ft_stream_backtest_reset(FtStreamBacktest *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_backtest_save(FtStreamBacktest *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_backtest_load(const char *json, size_t len, FtStreamBacktest **out_handle);
 void ft_stream_backtest_free(FtStreamBacktest *handle);
 
 /**
@@ -1789,7 +1825,114 @@ int32_t ft_stream_supertrend_new(int64_t period, double multiplier, FtStreamSupe
 int32_t ft_stream_supertrend_update(FtStreamSupertrend *handle, double high, double low, double close, double *out_line, int8_t *out_direction);
 int32_t ft_stream_supertrend_peek(FtStreamSupertrend *handle, double high, double low, double close, double *out_line, int8_t *out_direction);
 int32_t ft_stream_supertrend_reset(FtStreamSupertrend *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_supertrend_save(FtStreamSupertrend *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_supertrend_load(const char *json, size_t len, FtStreamSupertrend **out_handle);
 void ft_stream_supertrend_free(FtStreamSupertrend *handle);
+
+/**
+ * Dead-band cross of `a` over `b`: `out` is 1 (up), -1 (down) or 0.
+ * Inside `±dead_band` the side is unchanged, so noise fires at most once.
+ */
+typedef struct FtStreamCross FtStreamCross;
+int32_t ft_stream_cross_new(double dead_band, FtStreamCross **out_handle);
+int32_t ft_stream_cross_update(FtStreamCross *handle, double a, double b, int8_t *out);
+int32_t ft_stream_cross_peek(FtStreamCross *handle, double a, double b, int8_t *out);
+int32_t ft_stream_cross_reset(FtStreamCross *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cross_save(FtStreamCross *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cross_load(const char *json, size_t len, FtStreamCross **out_handle);
+void ft_stream_cross_free(FtStreamCross *handle);
+
+/**
+ * "N bars in a row": `out` is 1 while the run of non-zero inputs is >= n.
+ */
+typedef struct FtStreamStreak FtStreamStreak;
+int32_t ft_stream_streak_new(int64_t n, FtStreamStreak **out_handle);
+int32_t ft_stream_streak_update(FtStreamStreak *handle, double condition, int8_t *out);
+int32_t ft_stream_streak_peek(FtStreamStreak *handle, double condition, int8_t *out);
+int32_t ft_stream_streak_reset(FtStreamStreak *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_streak_save(FtStreamStreak *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_streak_load(const char *json, size_t len, FtStreamStreak **out_handle);
+void ft_stream_streak_free(FtStreamStreak *handle);
+
+/**
+ * Passes the first non-zero signal's sign, then mutes the next `bars` bars.
+ */
+typedef struct FtStreamCooldown FtStreamCooldown;
+int32_t ft_stream_cooldown_new(int64_t bars, FtStreamCooldown **out_handle);
+int32_t ft_stream_cooldown_update(FtStreamCooldown *handle, double signal, int8_t *out);
+int32_t ft_stream_cooldown_peek(FtStreamCooldown *handle, double signal, int8_t *out);
+int32_t ft_stream_cooldown_reset(FtStreamCooldown *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cooldown_save(FtStreamCooldown *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cooldown_load(const char *json, size_t len, FtStreamCooldown **out_handle);
+void ft_stream_cooldown_free(FtStreamCooldown *handle);
+
+/**
+ * Live implied volatility and greeks for one option contract. The IV
+ * solver is seeded with the previous tick's IV; an unsolvable price
+ * (e.g. below intrinsic) writes NaN everywhere and keeps the seed.
+ */
+typedef struct FtStreamOptionGreeks FtStreamOptionGreeks;
+int32_t ft_stream_option_greeks_new(int32_t model, int32_t kind, double strike, double rate, double carry, FtStreamOptionGreeks **out_handle);
+int32_t ft_stream_option_greeks_update(FtStreamOptionGreeks *handle, double option_price, double underlying, double time_to_expiry, double *out_iv, double *out_delta, double *out_gamma, double *out_vega, double *out_theta, double *out_rho);
+int32_t ft_stream_option_greeks_peek(FtStreamOptionGreeks *handle, double option_price, double underlying, double time_to_expiry, double *out_iv, double *out_delta, double *out_gamma, double *out_vega, double *out_theta, double *out_rho);
+int32_t ft_stream_option_greeks_reset(FtStreamOptionGreeks *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_option_greeks_save(FtStreamOptionGreeks *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_option_greeks_load(const char *json, size_t len, FtStreamOptionGreeks **out_handle);
+void ft_stream_option_greeks_free(FtStreamOptionGreeks *handle);
+
+/* ---- bar builder ----------------------------------------------------- */
+
+/* ft_bar_builder_on_tick status codes (int32_t). */
+#define FT_TICK_ACCEPTED 0
+#define FT_TICK_LATE 1
+#define FT_TICK_DUPLICATE 2
+#define FT_TICK_OUT_OF_SESSION 3
+#define FT_TICK_INVALID 4
+
+/** One OHLCV bar covering [start_ms, end_ms) in UTC epoch milliseconds. */
+typedef struct FtBar {
+    int64_t start_ms;
+    int64_t end_ms;
+    double open;
+    double high;
+    double low;
+    double close;
+    double volume;
+    uint32_t ticks;
+} FtBar;
+
+/**
+ * Session-aligned tick -> bar builder: bars start at session_open + k*interval
+ * (last bar cut at session_close); gaps produce no bars. Session times are
+ * seconds after local midnight; local = UTC + utc_offset_secs (fixed offset,
+ * no DST: create a new builder when a market's offset changes).
+ * Requires: 0 < interval_secs <= 86400; 0 <= session_open_secs <
+ * session_close_secs <= 86400; |utc_offset_secs| <= 50400.
+ */
+typedef struct FtBarBuilder FtBarBuilder;
+int32_t ft_bar_builder_new(int64_t interval_secs, int64_t session_open_secs, int64_t session_close_secs, int64_t utc_offset_secs, FtBarBuilder **out_handle);
+/** Feed a tick; *out_status is FT_TICK_*; *out_closed is 1 with *out_bar set when it closed a bar. */
+int32_t ft_bar_builder_on_tick(FtBarBuilder *handle, int64_t ts_ms, double price, double qty, int32_t *out_status, int32_t *out_closed, FtBar *out_bar);
+/** Close the forming bar once now_ms reaches its end; *out_closed is 1 with *out_bar set if so. */
+int32_t ft_bar_builder_on_time(FtBarBuilder *handle, int64_t now_ms, int32_t *out_closed, FtBar *out_bar);
+/** The bar being built: *out_has is 1 with *out_bar set, else 0. */
+int32_t ft_bar_builder_forming(FtBarBuilder *handle, int32_t *out_has, FtBar *out_bar);
+int32_t ft_bar_builder_reset(FtBarBuilder *handle);
+/** Versioned JSON snapshot; same contract as the stream *_save functions. */
+int32_t ft_bar_builder_save(FtBarBuilder *handle, char *buf, size_t cap, size_t *out_len);
+/** New builder from an ft_bar_builder_save snapshot; else FT_ERR_INVALID_PARAM. */
+int32_t ft_bar_builder_load(const char *json, size_t len, FtBarBuilder **out_handle);
+void ft_bar_builder_free(FtBarBuilder *handle);
 
 #ifdef __cplusplus
 }  /* extern "C" */

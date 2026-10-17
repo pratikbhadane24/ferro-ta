@@ -5,9 +5,11 @@
 //! last *committed* state without mutating it, so every tick of the forming
 //! bar replaces the previous preview. `closed = true` commits the bar.
 
+use super::StreamingError;
 use super::{
-    StreamingATR, StreamingBBands, StreamingEMA, StreamingMACD, StreamingRSI, StreamingSMA,
-    StreamingStoch, StreamingSupertrend, StreamingVWAP,
+    StreamingATR, StreamingBBands, StreamingCooldown, StreamingCross, StreamingEMA, StreamingMACD,
+    StreamingOptionGreeks, StreamingRSI, StreamingSMA, StreamingStoch, StreamingStreak,
+    StreamingSupertrend, StreamingVWAP,
 };
 
 // ---------------------------------------------------------------------------
@@ -22,6 +24,24 @@ pub trait StreamValue: Copy + std::fmt::Debug {
     fn all_finite(&self) -> bool;
     /// The "no value" sentinel emitted during warmup.
     fn nan() -> Self;
+    /// Components as numbers, NaN as `None` (for snapshots).
+    fn to_parts(&self) -> Vec<Option<f64>>;
+    /// Inverse of `to_parts`; `None` on a length mismatch.
+    fn from_parts(parts: &[Option<f64>]) -> Option<Self>;
+}
+
+fn part(v: f64) -> Option<f64> {
+    (!v.is_nan()).then_some(v)
+}
+
+fn unpart(p: Option<f64>) -> f64 {
+    p.unwrap_or(f64::NAN)
+}
+
+/// Exact small integer back to `i8` (event / direction codes).
+fn i8_from(v: f64) -> Option<i8> {
+    let n = v as i8;
+    (f64::from(n) == v).then_some(n)
 }
 
 impl StreamValue for f64 {
@@ -33,6 +53,15 @@ impl StreamValue for f64 {
     }
     fn nan() -> Self {
         f64::NAN
+    }
+    fn to_parts(&self) -> Vec<Option<f64>> {
+        vec![part(*self)]
+    }
+    fn from_parts(parts: &[Option<f64>]) -> Option<Self> {
+        match parts {
+            [a] => Some(unpart(*a)),
+            _ => None,
+        }
     }
 }
 
@@ -46,6 +75,15 @@ impl StreamValue for (f64, f64) {
     fn nan() -> Self {
         (f64::NAN, f64::NAN)
     }
+    fn to_parts(&self) -> Vec<Option<f64>> {
+        vec![part(self.0), part(self.1)]
+    }
+    fn from_parts(parts: &[Option<f64>]) -> Option<Self> {
+        match parts {
+            [a, b] => Some((unpart(*a), unpart(*b))),
+            _ => None,
+        }
+    }
 }
 
 impl StreamValue for (f64, f64, f64) {
@@ -58,6 +96,15 @@ impl StreamValue for (f64, f64, f64) {
     fn nan() -> Self {
         (f64::NAN, f64::NAN, f64::NAN)
     }
+    fn to_parts(&self) -> Vec<Option<f64>> {
+        vec![part(self.0), part(self.1), part(self.2)]
+    }
+    fn from_parts(parts: &[Option<f64>]) -> Option<Self> {
+        match parts {
+            [a, b, c] => Some((unpart(*a), unpart(*b), unpart(*c))),
+            _ => None,
+        }
+    }
 }
 
 impl StreamValue for (f64, f64, f64, f64) {
@@ -69,6 +116,72 @@ impl StreamValue for (f64, f64, f64, f64) {
     }
     fn nan() -> Self {
         (f64::NAN, f64::NAN, f64::NAN, f64::NAN)
+    }
+    fn to_parts(&self) -> Vec<Option<f64>> {
+        vec![part(self.0), part(self.1), part(self.2), part(self.3)]
+    }
+    fn from_parts(parts: &[Option<f64>]) -> Option<Self> {
+        match parts {
+            [a, b, c, d] => Some((unpart(*a), unpart(*b), unpart(*c), unpart(*d))),
+            _ => None,
+        }
+    }
+}
+
+/// Condition events (`StreamingCross` etc.): no NaN state; `0` = no event.
+impl StreamValue for i8 {
+    fn has_nan(&self) -> bool {
+        false
+    }
+    fn all_finite(&self) -> bool {
+        true
+    }
+    fn nan() -> Self {
+        0
+    }
+    fn to_parts(&self) -> Vec<Option<f64>> {
+        vec![Some(f64::from(*self))]
+    }
+    fn from_parts(parts: &[Option<f64>]) -> Option<Self> {
+        match parts {
+            [Some(a)] => i8_from(*a),
+            _ => None,
+        }
+    }
+}
+
+/// Option IV + greeks output: (iv, delta, gamma, vega, theta, rho).
+impl StreamValue for (f64, f64, f64, f64, f64, f64) {
+    fn has_nan(&self) -> bool {
+        [self.0, self.1, self.2, self.3, self.4, self.5]
+            .iter()
+            .any(|v| v.is_nan())
+    }
+    fn all_finite(&self) -> bool {
+        [self.0, self.1, self.2, self.3, self.4, self.5]
+            .iter()
+            .all(|v| v.is_finite())
+    }
+    fn nan() -> Self {
+        (f64::NAN, f64::NAN, f64::NAN, f64::NAN, f64::NAN, f64::NAN)
+    }
+    fn to_parts(&self) -> Vec<Option<f64>> {
+        [self.0, self.1, self.2, self.3, self.4, self.5]
+            .map(part)
+            .to_vec()
+    }
+    fn from_parts(parts: &[Option<f64>]) -> Option<Self> {
+        match parts {
+            [a, b, c, d, e, f] => Some((
+                unpart(*a),
+                unpart(*b),
+                unpart(*c),
+                unpart(*d),
+                unpart(*e),
+                unpart(*f),
+            )),
+            _ => None,
+        }
     }
 }
 
@@ -83,6 +196,15 @@ impl StreamValue for (f64, i8) {
     fn nan() -> Self {
         (f64::NAN, 0)
     }
+    fn to_parts(&self) -> Vec<Option<f64>> {
+        vec![part(self.0), Some(f64::from(self.1))]
+    }
+    fn from_parts(parts: &[Option<f64>]) -> Option<Self> {
+        match parts {
+            [a, Some(d)] => Some((unpart(*a), i8_from(*d)?)),
+            _ => None,
+        }
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -91,6 +213,8 @@ impl StreamValue for (f64, i8) {
 
 /// Common interface implemented by every streaming indicator.
 pub trait StreamingIndicator: Clone {
+    /// Stable type tag, used in snapshots (matches the C ABI stream name).
+    const KIND: &'static str;
     type Input: StreamValue;
     type Output: StreamValue;
 
@@ -100,6 +224,9 @@ pub trait StreamingIndicator: Clone {
     /// Restart from scratch.
     fn reset(&mut self);
 
+    /// Check parameters and buffer invariants (run when restoring state).
+    fn validate(&self) -> Result<(), StreamingError>;
+
     /// Value `update(input)` would return, without changing state.
     fn peek(&self, input: Self::Input) -> Self::Output {
         self.clone().update(input)
@@ -107,8 +234,12 @@ pub trait StreamingIndicator: Clone {
 }
 
 macro_rules! impl_streaming_indicator {
-    ($ty:ty, $input:ty, $output:ty, |$s:ident, $pat:pat_param| $call:expr) => {
+    (
+        $kind:literal => $ty:ty, $input:ty, $output:ty, |$s:ident, $pat:pat_param| $call:expr
+        $(, peek = |$ps:ident, $ppat:pat_param| $peek:expr)? $(,)?
+    ) => {
         impl StreamingIndicator for $ty {
+            const KIND: &'static str = $kind;
             type Input = $input;
             type Output = $output;
 
@@ -121,35 +252,67 @@ macro_rules! impl_streaming_indicator {
             fn reset(&mut self) {
                 <$ty>::reset(self)
             }
+
+            fn validate(&self) -> Result<(), StreamingError> {
+                <$ty>::validate(self)
+            }
+
+            $(
+                /// Allocation-free override of the clone-based default.
+                fn peek(&self, input: $input) -> $output {
+                    let $ps = self;
+                    let $ppat = input;
+                    $peek
+                }
+            )?
         }
     };
 }
 
-impl_streaming_indicator!(StreamingSMA, f64, f64, |s, v| s.update(v));
-impl_streaming_indicator!(StreamingEMA, f64, f64, |s, v| s.update(v));
-impl_streaming_indicator!(StreamingRSI, f64, f64, |s, v| s.update(v));
-impl_streaming_indicator!(StreamingBBands, f64, (f64, f64, f64), |s, v| s.update(v));
-impl_streaming_indicator!(StreamingMACD, f64, (f64, f64, f64), |s, v| s.update(v));
-impl_streaming_indicator!(StreamingATR, (f64, f64, f64), f64, |s, (h, l, c)| s
+impl_streaming_indicator!("sma" => StreamingSMA,
+    f64,
+    f64,
+    |s, v| s.update(v),
+    peek = |s, v| s.peek_value(v)
+);
+impl_streaming_indicator!("ema" => StreamingEMA, f64, f64, |s, v| s.update(v));
+impl_streaming_indicator!("rsi" => StreamingRSI, f64, f64, |s, v| s.update(v));
+impl_streaming_indicator!("bbands" => StreamingBBands,
+    f64,
+    (f64, f64, f64),
+    |s, v| s.update(v),
+    peek = |s, v| s.peek_value(v)
+);
+impl_streaming_indicator!("macd" => StreamingMACD, f64, (f64, f64, f64), |s, v| s.update(v));
+impl_streaming_indicator!("atr" => StreamingATR, (f64, f64, f64), f64, |s, (h, l, c)| s
     .update(h, l, c));
-impl_streaming_indicator!(
-    StreamingStoch,
+impl_streaming_indicator!("stoch" => StreamingStoch,
     (f64, f64, f64),
     (f64, f64),
-    |s, (h, l, c)| s.update(h, l, c)
+    |s, (h, l, c)| s.update(h, l, c),
+    peek = |s, (h, l, c)| s.peek_value(h, l, c)
 );
-impl_streaming_indicator!(StreamingSupertrend, (f64, f64, f64), (f64, i8), |s,
+impl_streaming_indicator!("supertrend" => StreamingSupertrend, (f64, f64, f64), (f64, i8), |s,
                                                                             (
     h,
     l,
     c,
 )| s
     .update(h, l, c));
-impl_streaming_indicator!(
-    StreamingVWAP,
+impl_streaming_indicator!("vwap" => StreamingVWAP,
     (f64, f64, f64, f64),
     f64,
     |s, (h, l, c, v)| s.update(h, l, c, v)
+);
+
+impl_streaming_indicator!("cross" => StreamingCross, (f64, f64), i8, |s, (a, b)| s.update(a, b));
+impl_streaming_indicator!("streak" => StreamingStreak, f64, i8, |s, v| s.update(v));
+impl_streaming_indicator!("cooldown" => StreamingCooldown, f64, i8, |s, v| s.update(v));
+
+impl_streaming_indicator!("option_greeks" => StreamingOptionGreeks,
+    (f64, f64, f64),
+    (f64, f64, f64, f64, f64, f64),
+    |s, (price, underlying, t)| s.update(price, underlying, t)
 );
 
 // ---------------------------------------------------------------------------
@@ -158,8 +321,17 @@ impl_streaming_indicator!(
 
 /// Wraps a streaming indicator with live-bar semantics and introspection.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serde",
+    serde(bound(
+        serialize = "T: serde::Serialize",
+        deserialize = "T: serde::Deserialize<'de>"
+    ))
+)]
 pub struct Live<T: StreamingIndicator> {
     inner: T,
+    #[cfg_attr(feature = "serde", serde(with = "super::snapshot::stream_value"))]
     last: T::Output,
     count: usize,
 }
@@ -221,9 +393,10 @@ impl<T: StreamingIndicator> Live<T> {
         self.last
     }
 
-    /// True once the last committed bar produced a non-NaN value.
+    /// True once at least one bar is committed and the last one produced a
+    /// non-NaN value.
     pub fn is_ready(&self) -> bool {
-        !self.last.has_nan()
+        self.count > 0 && !self.last.has_nan()
     }
 
     pub fn inner(&self) -> &T {
@@ -311,6 +484,23 @@ mod tests {
         assert_previews_are_pure(|| StreamingStoch::new(5, 3, 3).unwrap(), hlc);
         assert_previews_are_pure(|| StreamingSupertrend::new(7, 3.0).unwrap(), hlc);
         assert_previews_are_pure(StreamingVWAP::new, |b| b);
+        assert_previews_are_pure(|| StreamingCross::new(0.1).unwrap(), |b| (b.2, b.0 - 0.5));
+        assert_previews_are_pure(|| StreamingStreak::new(3).unwrap(), |b| b.2 - b.1 - 0.5);
+        assert_previews_are_pure(|| StreamingCooldown::new(2).unwrap(), |b| b.2 - 100.0);
+        assert_previews_are_pure(
+            || {
+                StreamingOptionGreeks::new(
+                    crate::options::PricingModel::BlackScholes,
+                    crate::options::OptionKind::Call,
+                    100.0,
+                    0.05,
+                    0.0,
+                )
+                .unwrap()
+            },
+            // Price wobbles with the bar so successive solves differ.
+            |b| (5.0 + (b.0 - b.1), b.2, 0.25),
+        );
     }
 
     #[test]
@@ -386,5 +576,50 @@ mod tests {
         for v in [3.0, 4.0, 5.0] {
             assert_eq!(live.update(v, true), reference.update(v));
         }
+    }
+
+    /// The allocation-free `peek_value` overrides must be bit-identical to the
+    /// clone-and-update reference at every bar, warm-up included.
+    #[test]
+    fn peek_matches_clone_update_without_allocating() {
+        let data = bars(N_BARS);
+        let mut sma = StreamingSMA::new(10).unwrap();
+        let mut bb = StreamingBBands::new(20, 2.0, 1.5).unwrap();
+        let mut stoch = StreamingStoch::new(5, 3, 3).unwrap();
+        for (i, &(h, l, c, _)) in data.iter().enumerate() {
+            let probe = c + 0.37;
+            assert!(
+                same(sma.peek_value(probe), sma.clone().update(probe)),
+                "sma bar {i}"
+            );
+            assert!(
+                same(bb.peek_value(probe), bb.clone().update(probe)),
+                "bbands bar {i}"
+            );
+            assert!(
+                same(
+                    stoch.peek_value(h + 0.2, l - 0.2, probe),
+                    stoch.clone().update(h + 0.2, l - 0.2, probe)
+                ),
+                "stoch bar {i}"
+            );
+            sma.update(c);
+            bb.update(c);
+            stoch.update(h, l, c);
+        }
+    }
+
+    /// i8 condition outputs have no NaN sentinel, so readiness must also
+    /// require at least one committed bar.
+    #[test]
+    fn condition_not_ready_before_first_bar() {
+        let mut live = Live::new(StreamingCooldown::new(2).unwrap());
+        assert!(!live.is_ready());
+        let _ = live.update(1.0, false);
+        assert!(!live.is_ready(), "previews do not count");
+        live.update(0.0, true);
+        assert!(live.is_ready());
+        live.reset();
+        assert!(!live.is_ready());
     }
 }

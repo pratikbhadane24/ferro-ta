@@ -142,6 +142,7 @@ impl_write_tuple!(A a pa, B b pb);
 impl_write_tuple!(A a pa, B b pb, C c pc);
 impl_write_tuple!(A a pa, B b pb, C c pc, D d pd);
 impl_write_tuple!(A a pa, B b pb, C c pc, D d pd, E e pe);
+impl_write_tuple!(A a pa, B b pb, C c pc, D d pd, E e pe, F f pf);
 
 /// Write a scalar result (single value or tuple) through output pointers.
 pub trait WriteScalars<P> {
@@ -150,15 +151,8 @@ pub trait WriteScalars<P> {
     unsafe fn write_to(self, ptrs: P);
 }
 
-impl WriteScalars<(*mut f64,)> for f64 {
-    unsafe fn write_to(self, ptrs: (*mut f64,)) {
-        // SAFETY: valid for one write per caller contract.
-        unsafe { ptrs.0.write(self) };
-    }
-}
-
-impl WriteScalars<(*mut i64,)> for i64 {
-    unsafe fn write_to(self, ptrs: (*mut i64,)) {
+impl<T> WriteScalars<(*mut T,)> for T {
+    unsafe fn write_to(self, ptrs: (*mut T,)) {
         // SAFETY: valid for one write per caller contract.
         unsafe { ptrs.0.write(self) };
     }

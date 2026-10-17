@@ -1,7 +1,7 @@
 # TA-Lib Compatibility
 
 `ferro-ta` implements **156 of TA-Lib 0.6.4's 161 functions**, plus 10 extended
-indicators and 9 streaming classes that TA-Lib does not provide. This file keeps
+indicators and 13 streaming classes plus a tick→bar builder that TA-Lib does not provide. This file keeps
 the full GitHub-facing parity matrix in one place so the root `README.md` can
 stay product-focused.
 

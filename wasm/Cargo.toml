@@ -21,3 +21,8 @@ wasm-bindgen-test = "0.3"
 [profile.release]
 opt-level = 3     # speed over size: ~3-10% faster, +14% gzipped .wasm
 lto = true
+
+[features]
+# Opt-in: saveState/loadState on streaming classes. Pulls in serde_json
+# (~+100 KB gzipped), so browser bundles stay lean by default.
+snapshot = ["ferro_ta_core/serde"]

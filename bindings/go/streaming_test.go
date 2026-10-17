@@ -155,3 +155,90 @@ func TestStreamPeekAfterClose(t *testing.T) {
 		t.Fatalf("got %v", err)
 	}
 }
+
+func TestStreamCrossWithCooldown(t *testing.T) {
+	cross, err := NewStreamCross(0.5)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer cross.Close()
+	var got []int8
+	for _, d := range []float64{-1, 0.2, -0.2, 0.3, 0.6, 0.1, 0.7} {
+		v, err := cross.Update(d, 0)
+		if err != nil {
+			t.Fatal(err)
+		}
+		got = append(got, v)
+	}
+	want := []int8{0, 0, 0, 0, 1, 0, 0}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Fatalf("events %v, want %v", got, want)
+		}
+	}
+	cd, err := NewStreamCooldown(1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer cd.Close()
+	for i, want := range []int8{1, 0, -1} {
+		in := []float64{1, 1, -1}[i]
+		if v, _ := cd.Update(in); v != want {
+			t.Fatalf("cooldown step %d: %v want %v", i, v, want)
+		}
+	}
+}
+
+func TestStreamOptionGreeksSolvesIV(t *testing.T) {
+	s, err := NewStreamOptionGreeks(ModelBlackScholes, OptionCall, 100, 0.05, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Close()
+	price, err := BlackScholesPrice(102, 100, 0.05, 0, 0.5, 0.25, OptionCall)
+	if err != nil {
+		t.Fatal(err)
+	}
+	iv, delta, _, _, _, _, err := s.Update(price, 102, 0.5)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if math.Abs(iv-0.25) > 1e-8 || delta <= 0 || delta >= 1 {
+		t.Fatalf("iv %v delta %v", iv, delta)
+	}
+	if iv2, _, _, _, _, _, _ := s.Peek(price*1.1, 102, 0.5); iv2 <= iv {
+		t.Fatalf("higher price should preview higher IV: %v <= %v", iv2, iv)
+	}
+}
+
+func TestStreamSaveLoad(t *testing.T) {
+	a, err := NewStreamEma(5)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer a.Close()
+	for _, x := range ramp(20) {
+		if _, err := a.Update(x); err != nil {
+			t.Fatal(err)
+		}
+	}
+	snap, err := a.Save()
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, err := LoadStreamEma(snap)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer b.Close()
+	for _, x := range []float64{30, 25, 40} {
+		va, _ := a.Update(x)
+		vb, _ := b.Update(x)
+		if math.Float64bits(va) != math.Float64bits(vb) {
+			t.Fatalf("diverged: %v vs %v", va, vb)
+		}
+	}
+	if _, err := LoadStreamSma(snap); !errors.Is(err, ErrInvalidParam) {
+		t.Fatalf("wrong-kind load: %v", err)
+	}
+}

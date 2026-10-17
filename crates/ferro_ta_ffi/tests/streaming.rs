@@ -259,6 +259,162 @@ fn nan_input_is_skipped_not_poisoning() {
     unsafe { ft_stream_sma_free(h) };
 }
 
+#[test]
+fn cross_stream_fires_once_inside_band() {
+    let mut h = ptr::null_mut();
+    assert_eq!(unsafe { ft_stream_cross_new(0.5, &mut h) }, FT_OK);
+    let mut events = Vec::new();
+    for d in [-1.0, 0.2, -0.2, 0.3, 0.6, 0.1, 0.7] {
+        let mut out = 9_i8;
+        assert_eq!(
+            unsafe { ft_stream_cross_update(h, d, 0.0, &mut out) },
+            FT_OK
+        );
+        events.push(out);
+    }
+    assert_eq!(events, vec![0, 0, 0, 0, 1, 0, 0]);
+    unsafe { ft_stream_cross_free(h) };
+}
+
+#[test]
+fn condition_streams_reject_bad_params() {
+    let mut h = ptr::null_mut();
+    assert_eq!(
+        unsafe { ft_stream_cross_new(-1.0, &mut h) },
+        FT_ERR_INVALID_PARAM
+    );
+    assert!(h.is_null());
+    let mut s = ptr::null_mut();
+    assert_eq!(
+        unsafe { ft_stream_streak_new(0, &mut s) },
+        FT_ERR_INVALID_PARAM
+    );
+    assert!(s.is_null());
+}
+
+#[test]
+fn option_greeks_stream_solves_iv_and_keeps_seed_on_failure() {
+    use ferro_ta_core::options::{
+        pricing::model_price, OptionContract, OptionEvaluation, OptionKind, PricingModel,
+    };
+    let contract = OptionContract {
+        model: PricingModel::BlackScholes,
+        underlying: 102.0,
+        strike: 100.0,
+        rate: 0.05,
+        carry: 0.0,
+        time_to_expiry: 0.5,
+        kind: OptionKind::Call,
+    };
+    let price = model_price(OptionEvaluation {
+        contract,
+        volatility: 0.25,
+    });
+    let mut h = ptr::null_mut();
+    assert_eq!(
+        unsafe { ft_stream_option_greeks_new(0, 0, 100.0, 0.05, 0.0, &mut h) },
+        FT_OK
+    );
+    let mut out = [0.0_f64; 6];
+    let [iv, delta, gamma, vega, theta, rho] = &mut out;
+    let feed = |p: f64, s: f64, o: (&mut f64, &mut f64, &mut f64, &mut f64, &mut f64, &mut f64)| unsafe {
+        ft_stream_option_greeks_update(h, p, s, 0.5, o.0, o.1, o.2, o.3, o.4, o.5)
+    };
+    assert_eq!(
+        feed(price, 102.0, (iv, delta, gamma, vega, theta, rho)),
+        FT_OK
+    );
+    assert!((*iv - 0.25).abs() < 1e-8);
+    assert!(*delta > 0.0 && *delta < 1.0);
+    assert_eq!(
+        feed(1.0, 125.0, (iv, delta, gamma, vega, theta, rho)),
+        FT_OK
+    );
+    assert!(iv.is_nan() && rho.is_nan(), "unsolvable price writes NaN");
+    unsafe { ft_stream_option_greeks_free(h) };
+}
+
+#[test]
+fn option_greeks_stream_rejects_bad_enum_and_strike() {
+    let mut h = ptr::null_mut();
+    assert_eq!(
+        unsafe { ft_stream_option_greeks_new(0, 7, 100.0, 0.0, 0.0, &mut h) },
+        FT_ERR_INVALID_PARAM
+    );
+    assert_eq!(
+        unsafe { ft_stream_option_greeks_new(0, 0, -1.0, 0.0, 0.0, &mut h) },
+        FT_ERR_INVALID_PARAM
+    );
+    assert!(h.is_null());
+}
+
+#[test]
+fn save_load_round_trip_continues_bit_identically() {
+    let close = series(80);
+    let mut h = ptr::null_mut();
+    assert_eq!(unsafe { ft_stream_rsi_new(14, &mut h) }, FT_OK);
+    let mut out = 0.0;
+    for x in &close[..40] {
+        unsafe { ft_stream_rsi_update(h, *x, &mut out) };
+    }
+    let mut need = 0usize;
+    assert_eq!(
+        unsafe { ft_stream_rsi_save(h, ptr::null_mut(), 0, &mut need) },
+        FT_ERR_LENGTH_MISMATCH
+    );
+    assert!(need > 0);
+    let mut buf = vec![0u8; need];
+    let mut len = 0usize;
+    assert_eq!(
+        unsafe { ft_stream_rsi_save(h, buf.as_mut_ptr().cast(), buf.len(), &mut len) },
+        FT_OK
+    );
+    assert_eq!(len, need);
+    let mut restored = ptr::null_mut();
+    assert_eq!(
+        unsafe { ft_stream_rsi_load(buf.as_ptr().cast(), len, &mut restored) },
+        FT_OK
+    );
+    for x in &close[40..] {
+        let (mut a, mut b) = (0.0, 0.0);
+        unsafe { ft_stream_rsi_update(h, *x, &mut a) };
+        unsafe { ft_stream_rsi_update(restored, *x, &mut b) };
+        assert!(same(a, b));
+    }
+    unsafe { ft_stream_rsi_free(h) };
+    unsafe { ft_stream_rsi_free(restored) };
+}
+
+#[test]
+fn load_rejects_wrong_stream_and_garbage() {
+    let mut h = ptr::null_mut();
+    assert_eq!(unsafe { ft_stream_sma_new(3, &mut h) }, FT_OK);
+    let mut buf = vec![0u8; 4096];
+    let mut len = 0usize;
+    assert_eq!(
+        unsafe { ft_stream_sma_save(h, buf.as_mut_ptr().cast(), buf.len(), &mut len) },
+        FT_OK
+    );
+    let mut ema = ptr::null_mut();
+    assert_eq!(
+        unsafe { ft_stream_ema_load(buf.as_ptr().cast(), len, &mut ema) },
+        FT_ERR_INVALID_PARAM
+    );
+    assert!(ema.is_null());
+    let junk = [0xFFu8, 0xFE];
+    let mut sma = ptr::null_mut();
+    assert_eq!(
+        unsafe { ft_stream_sma_load(junk.as_ptr().cast(), junk.len(), &mut sma) },
+        FT_ERR_INVALID_PARAM,
+        "non-UTF-8"
+    );
+    assert_eq!(
+        unsafe { ft_stream_sma_load(ptr::null(), 5, &mut sma) },
+        FT_ERR_NULL_PTR
+    );
+    unsafe { ft_stream_sma_free(h) };
+}
+
 /// The backtest stream gives NaN signals a meaning (flat), so the `Live`
 /// non-finite guard must not skip them; a non-finite close is still skipped.
 #[test]
@@ -289,4 +445,54 @@ fn backtest_stream_nan_signal_means_flat_through_live() {
         "state untouched by the skipped tick"
     );
     unsafe { ft_stream_backtest_free(h) };
+}
+
+#[test]
+fn backtest_stream_save_load_continues_identically() {
+    let close = series(60);
+    let signal = |i: usize| match i % 7 {
+        0..=2 => 1.0,
+        3 => f64::NAN,
+        _ => -1.0,
+    };
+    let run = |h, i: usize| {
+        let mut o = [0.0_f64; 8];
+        let mut n = 0_i64;
+        let [a, b, c, e, f, g, x, y] = &mut o;
+        unsafe {
+            ft_stream_backtest_update(h, close[i], signal(i), a, b, c, &mut n, e, f, g, x, y)
+        };
+        (o, n)
+    };
+    let mut h = ptr::null_mut();
+    assert_eq!(
+        unsafe { ft_stream_backtest_new(0.0005, 2.0, &mut h) },
+        FT_OK
+    );
+    for i in 0..30 {
+        run(h, i);
+    }
+    let mut need = 0usize;
+    unsafe { ft_stream_backtest_save(h, ptr::null_mut(), 0, &mut need) };
+    let mut buf = vec![0u8; need];
+    assert_eq!(
+        unsafe { ft_stream_backtest_save(h, buf.as_mut_ptr().cast(), need, &mut need) },
+        FT_OK
+    );
+    let mut restored = ptr::null_mut();
+    assert_eq!(
+        unsafe { ft_stream_backtest_load(buf.as_ptr().cast(), need, &mut restored) },
+        FT_OK
+    );
+    for i in 30..60 {
+        let (a, na) = run(h, i);
+        let (b, nb) = run(restored, i);
+        assert_eq!(na, nb);
+        assert!(
+            a.iter().zip(&b).all(|(x, y)| same(*x, *y)),
+            "bar {i}: {a:?} vs {b:?}"
+        );
+    }
+    unsafe { ft_stream_backtest_free(h) };
+    unsafe { ft_stream_backtest_free(restored) };
 }
