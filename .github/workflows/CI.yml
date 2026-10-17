@@ -205,14 +205,6 @@ jobs:
           args: --release --out dist
           manylinux: "2_17"
 
-      - name: Cross-build manylinux aarch64 wheel (release path)
-        uses: PyO3/maturin-action@v1
-        with:
-          command: build
-          target: aarch64
-          args: --release --out dist-aarch64
-          manylinux: "2_17"
-
       - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
@@ -233,6 +225,14 @@ jobs:
           [s.update(v) for v in x[:100]]
           print('portable OK on Nehalem:', ft.SMA(x, 14)[-1])
           "
+
+      - name: Cross-build manylinux aarch64 wheel (release path)
+        uses: PyO3/maturin-action@v1
+        with:
+          command: build
+          target: aarch64
+          args: --release --out dist-aarch64
+          manylinux: "2_17"
 
   build-wheels-musllinux:
     name: Build wheels (linux-musl / ${{ matrix.target }})
