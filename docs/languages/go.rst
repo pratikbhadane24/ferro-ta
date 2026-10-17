@@ -102,13 +102,44 @@ Options, futures and sizing
    iv, _ := ferrota.ImpliedVolatility(price, ferrota.ModelBlackScholes,
    	100, 105, 0.03, 0.02, 0.5, ferrota.OptionCall, 0.2, 1e-8, 100)
 
+Parameter sweeps and overfitting diagnostics
+--------------------------------------------
+
+Sweeps run entirely in Rust on all cores. Matrices are flat, row-major
+slices; a metric row has ``len(metrics)/nCombos`` columns (also
+``SweepNMetrics()``), indexed by the ``Metric*`` constants:
+
+.. code-block:: go
+
+   // SMA crossover over (fast, slow) pairs; invalid pairs (fast >= slow) are skipped.
+   combos := []float64{5, 50, 10, 50, 10, 100, 60, 50}
+   valid, returns, metrics, err := ferrota.SweepBuiltin(
+   	close, ferrota.StrategySmaCrossover, combos, 1.0, 2.0, 100_000, 252, 0)
+   cols := len(metrics) / len(valid)
+   for c := range valid {
+   	if valid[c] == 1 {
+   		sharpe := metrics[c*cols+int(ferrota.MetricSharpe)]
+   		_ = sharpe
+   	}
+   }
+
+   // How much of the winner's edge survives the search?
+   nCombos := len(valid)
+   pbo, _, _, _, _, _ := ferrota.PboCscv(returns, nCombos, 16) // P(overfit)
+   dsr, _ := ferrota.DeflatedSharpeRatio(bestColumn, nCombos, sharpeVariance)
+
+``returns`` is ``(n_bars, n_combos)``; columns of skipped combos are NaN.
+``SweepSignals`` backtests your own signal matrix the same way, and
+``SweepPlateauScores``, ``PurgedKfoldIndices``, ``ProbabilisticSharpeRatio``
+and ``PboNCombinations`` are also available.
+
 Not exported yet
 ----------------
 
-The C ABI covers same-length array functions, scalar functions and streaming
-handles. These core APIs need a different ABI pattern (variable-length or
-2-D results, nested structs) and are not in the Go module yet: backtest
-engines and performance metrics, batch/2-D portfolio functions, bar
+The C ABI covers same-length array functions, scalar functions, streaming
+handles and multi-shape kernels (sweeps, PBO). These core APIs are not in the
+Go module yet: the OHLCV backtest engine and performance metrics,
+batch/2-D portfolio functions, bar
 resampling and tick aggregation, volatility cones and smile metrics, option
 chain/strategy helpers, chunked processing helpers, ``pivot_points``,
 ``dtw_*``, ``calendar_spreads``. :doc:`coverage` lists every function per

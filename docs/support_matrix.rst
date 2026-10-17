@@ -114,7 +114,7 @@ generated :doc:`languages/coverage` table and must be refreshed with
      - TA-Lib-style API; abi3 wheels for CPython 3.10+.
    * - Rust
      - crates.io ``ferro_ta_core``
-     - 375 core symbols (functions + streaming types)
+     - 376 core symbols (functions + streaming types)
      - Direct ``&[f64]`` API; docs.rs ``ferro_ta_core``.
    * - WASM / Node
      - npm ``ferro-ta-wasm``
@@ -128,11 +128,12 @@ generated :doc:`languages/coverage` table and must be refreshed with
        131 names are present on all four surfaces.
    * - Go
      - Go module ``github.com/pratikbhadane24/ferro-ta/bindings/go``
-     - 259 C / Go coverage rows (262 C ABI exports; ``rolling_max`` and
+     - 270 C / Go coverage rows (273 C ABI exports; ``rolling_max`` and
        ``max`` share a row, as on every surface)
      - cgo over the ``ferro_ta_ffi`` C ABI; prebuilt static archives for
        Linux and macOS (amd64/arm64) and Windows (amd64), so ``go get`` needs
-       no Rust toolchain. Includes option pricing and streaming indicators.
+       no Rust toolchain. Includes option pricing, streaming indicators,
+       parameter sweeps and overfitting diagnostics.
    * - C / C++
      - GitHub Release assets (``ferro_ta.h`` + libraries)
      - Same surface as Go

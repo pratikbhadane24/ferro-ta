@@ -16,6 +16,9 @@
  *    result with FT_OK means the inputs are outside the model's domain
  *    (e.g. spot <= 0) or a solver found no solution.
  *  - Leading warm-up values are NaN; output length always equals input length.
+ *  - Kernel functions take arrays of different shapes: each array's row-major
+ *    element count is listed under 'Shapes:' as a product of size_t / integer
+ *    arguments. 'Derived sizes' must equal the named helper's result.
  *  - Streaming handles are not thread-safe; free each exactly once. After
  *    FT_ERR_PANIC from an update the handle's state is unspecified: reset it.
  */
@@ -54,6 +57,37 @@ const char *ft_version(void);
 /* PricingModel values (int32_t parameters of that kind). */
 #define FT_MODEL_BLACK_SCHOLES 0
 #define FT_MODEL_BLACK_76 1
+
+/* SweepStrategy values (int32_t parameters of that kind). */
+#define FT_STRATEGY_RSI_THRESHOLD 0
+#define FT_STRATEGY_SMA_CROSSOVER 1
+#define FT_STRATEGY_MACD_CROSSOVER 2
+
+/* SweepMetric values (int32_t parameters of that kind). */
+#define FT_METRIC_TOTAL_RETURN 0
+#define FT_METRIC_CAGR 1
+#define FT_METRIC_ANNUALIZED_VOL 2
+#define FT_METRIC_SHARPE 3
+#define FT_METRIC_SORTINO 4
+#define FT_METRIC_CALMAR 5
+#define FT_METRIC_MAX_DRAWDOWN 6
+#define FT_METRIC_AVG_DRAWDOWN 7
+#define FT_METRIC_MAX_DRAWDOWN_DURATION_BARS 8
+#define FT_METRIC_AVG_DRAWDOWN_DURATION_BARS 9
+#define FT_METRIC_ULCER_INDEX 10
+#define FT_METRIC_OMEGA_RATIO 11
+#define FT_METRIC_WIN_RATE 12
+#define FT_METRIC_PROFIT_FACTOR 13
+#define FT_METRIC_R_EXPECTANCY 14
+#define FT_METRIC_AVG_WIN 15
+#define FT_METRIC_AVG_LOSS 16
+#define FT_METRIC_TAIL_RATIO 17
+#define FT_METRIC_SKEWNESS 18
+#define FT_METRIC_KURTOSIS 19
+#define FT_METRIC_BEST_BAR 20
+#define FT_METRIC_WORST_BAR 21
+#define FT_METRIC_N_TRADES 22
+#define FT_METRIC_N_POSITION_CHANGES 23
 
 /* ---- overlap --------------------------------------------------------------- */
 
@@ -1374,6 +1408,101 @@ int32_t ft_kelly_fraction(double win_rate, double avg_win, double avg_loss, doub
  * Half-Kelly fraction (conservative position sizing).
  */
 int32_t ft_half_kelly_fraction(double win_rate, double avg_win, double avg_loss, double *out_value);
+
+/* ---- overfit (scalar) ------------------------------------------------------ */
+
+/**
+ * Expected maximum per-period Sharpe among `n_trials` zero-skill trials whose Sharpe estimates have variance `trial_sharpe_variance`.
+ */
+int32_t ft_expected_max_sharpe(int64_t n_trials, double trial_sharpe_variance, double *out_value);
+
+/**
+ * Number of IS/OOS combinations `ft_pbo_cscv` evaluates: C(n_splits, n_splits/2). n_splits must be even and at most 20.
+ */
+int32_t ft_pbo_n_combinations(int64_t n_splits, int64_t *out_value);
+
+/**
+ * Number of parameters (columns of `combos`) a built-in sweep strategy takes, in canonical order: RSI_THRESHOLD (timeperiod, oversold, overbought), SMA_CROSSOVER (fast, slow), MACD_CROSSOVER (fastperiod, slowperiod, signalperiod).
+ */
+int32_t ft_sweep_strategy_n_params(int32_t strategy, int64_t *out_value);
+
+/**
+ * Number of columns in the sweep metric matrices (FT_METRIC_* indices are below it). Pass it as `n_metric_cols` so a caller built against an older header can never under-allocate.
+ */
+int32_t ft_sweep_n_metrics(int64_t *out_value);
+
+/* ---- overfit (kernel) ------------------------------------------------------ */
+
+/**
+ * Probabilistic Sharpe Ratio: probability that the true per-period Sharpe of `returns` exceeds `benchmark_sharpe` (per-period), corrected for sample length, skewness and kurtosis. Needs n_obs >= 3 finite, non-constant returns.
+ * Shapes (row-major element counts):
+ *   returns[n_obs]
+ */
+int32_t ft_probabilistic_sharpe_ratio(const double *returns, size_t n_obs, double benchmark_sharpe, double *out_value);
+
+/**
+ * Deflated Sharpe Ratio of the selected strategy's `returns`, against the expected best of `n_trials` zero-skill trials whose per-period Sharpe ratios have variance `trial_sharpe_variance`.
+ * Shapes (row-major element counts):
+ *   returns[n_obs]
+ */
+int32_t ft_deflated_sharpe_ratio(const double *returns, size_t n_obs, int64_t n_trials, double trial_sharpe_variance, double *out_value);
+
+/**
+ * Probability of Backtest Overfitting via CSCV over a row-major (n_bars, n_strategies) returns matrix (one column per configuration). Per-combination arrays have ft_pbo_n_combinations(n_splits) entries: IS winner's OOS rank logit, its IS and OOS per-period Sharpe, and its column index.
+ * Shapes (row-major element counts):
+ *   returns[n_bars * n_strategies]
+ *   out_logits[n_combinations]
+ *   out_is_sharpe[n_combinations]
+ *   out_oos_sharpe[n_combinations]
+ *   out_best_index[n_combinations]
+ * Derived sizes (must match):
+ *   n_combinations = ft_pbo_n_combinations(n_splits)
+ */
+int32_t ft_pbo_cscv(const double *returns, size_t n_bars, size_t n_strategies, int64_t n_splits, size_t n_combinations, double *out_pbo, double *out_logits, double *out_is_sharpe, double *out_oos_sharpe, int64_t *out_best_index);
+
+/**
+ * Purged + embargoed k-fold boundaries: row-major (n_folds, 4) rows of [train_left_end, test_start, test_end, train_right_start]; train = [0, train_left_end) U [train_right_start, n_bars).
+ * Shapes (row-major element counts):
+ *   out[n_folds * 4]
+ */
+int32_t ft_purged_kfold_indices(int64_t n_bars, int64_t n_folds, int64_t purge_bars, int64_t embargo_bars, int64_t *out);
+
+/* ---- sweep (kernel) -------------------------------------------------------- */
+
+/**
+ * Backtest every column of a row-major (n_bars, n_combos) signal matrix against `close` (same semantics as backtest_core; NaN signals hold the position). Writes per-bar strategy returns (n_bars, n_combos) and a (n_combos, n_metric_cols) metric matrix indexed by FT_METRIC_*; n_metric_cols must equal ft_sweep_n_metrics().
+ * Shapes (row-major element counts):
+ *   close[n_bars]
+ *   signals[n_bars * n_combos]
+ *   out_returns[n_bars * n_combos]
+ *   out_metrics[n_combos * n_metric_cols]
+ * Derived sizes (must match):
+ *   n_metric_cols = ft_sweep_n_metrics()
+ */
+int32_t ft_sweep_signals(const double *close, size_t n_bars, const double *signals, size_t n_combos, double commission_per_trade, double slippage_bps, double initial_capital, double periods_per_year, double risk_free_rate, size_t n_metric_cols, double *out_returns, double *out_metrics);
+
+/**
+ * Whole sweep of a built-in strategy in Rust, signal generation included. `combos` is row-major (n_combos, n_params) in the strategy's canonical parameter order (see ft_sweep_strategy_n_params). Combos violating the strategy's constraints (e.g. fast >= slow, non-integer periods) get out_valid = 0 and NaN returns/metrics; FT_ERR_INVALID_PARAM if none is valid.
+ * Shapes (row-major element counts):
+ *   close[n_bars]
+ *   combos[n_combos * n_params]
+ *   out_valid[n_combos]
+ *   out_returns[n_bars * n_combos]
+ *   out_metrics[n_combos * n_metric_cols]
+ * Derived sizes (must match):
+ *   n_params = ft_sweep_strategy_n_params(strategy)
+ *   n_metric_cols = ft_sweep_n_metrics()
+ */
+int32_t ft_sweep_builtin(const double *close, size_t n_bars, int32_t strategy, const double *combos, size_t n_combos, size_t n_params, double commission_per_trade, double slippage_bps, double initial_capital, double periods_per_year, double risk_free_rate, size_t n_metric_cols, int8_t *out_valid, double *out_returns, double *out_metrics);
+
+/**
+ * Plateau-robust scores: mean of `values` over each combination's grid neighbourhood (combinations within `radius` steps on every axis; NaN ignored). `coords` is row-major (n_combos, n_axes) per-axis grid indices (>= 0).
+ * Shapes (row-major element counts):
+ *   values[n_combos]
+ *   coords[n_combos * n_axes]
+ *   out[n_combos]
+ */
+int32_t ft_sweep_plateau_scores(const double *values, size_t n_combos, const int64_t *coords, size_t n_axes, int64_t radius, double *out);
 
 /* ---- streaming ------------------------------------------------------------- */
 

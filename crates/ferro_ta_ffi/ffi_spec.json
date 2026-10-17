@@ -41,6 +41,126 @@
           "value": 1
         }
       ]
+    },
+    {
+      "c_prefix": "FT_STRATEGY",
+      "name": "SweepStrategy",
+      "values": [
+        {
+          "name": "RSI_THRESHOLD",
+          "value": 0
+        },
+        {
+          "name": "SMA_CROSSOVER",
+          "value": 1
+        },
+        {
+          "name": "MACD_CROSSOVER",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "c_prefix": "FT_METRIC",
+      "name": "SweepMetric",
+      "values": [
+        {
+          "name": "TOTAL_RETURN",
+          "value": 0
+        },
+        {
+          "name": "CAGR",
+          "value": 1
+        },
+        {
+          "name": "ANNUALIZED_VOL",
+          "value": 2
+        },
+        {
+          "name": "SHARPE",
+          "value": 3
+        },
+        {
+          "name": "SORTINO",
+          "value": 4
+        },
+        {
+          "name": "CALMAR",
+          "value": 5
+        },
+        {
+          "name": "MAX_DRAWDOWN",
+          "value": 6
+        },
+        {
+          "name": "AVG_DRAWDOWN",
+          "value": 7
+        },
+        {
+          "name": "MAX_DRAWDOWN_DURATION_BARS",
+          "value": 8
+        },
+        {
+          "name": "AVG_DRAWDOWN_DURATION_BARS",
+          "value": 9
+        },
+        {
+          "name": "ULCER_INDEX",
+          "value": 10
+        },
+        {
+          "name": "OMEGA_RATIO",
+          "value": 11
+        },
+        {
+          "name": "WIN_RATE",
+          "value": 12
+        },
+        {
+          "name": "PROFIT_FACTOR",
+          "value": 13
+        },
+        {
+          "name": "R_EXPECTANCY",
+          "value": 14
+        },
+        {
+          "name": "AVG_WIN",
+          "value": 15
+        },
+        {
+          "name": "AVG_LOSS",
+          "value": 16
+        },
+        {
+          "name": "TAIL_RATIO",
+          "value": 17
+        },
+        {
+          "name": "SKEWNESS",
+          "value": 18
+        },
+        {
+          "name": "KURTOSIS",
+          "value": 19
+        },
+        {
+          "name": "BEST_BAR",
+          "value": 20
+        },
+        {
+          "name": "WORST_BAR",
+          "value": 21
+        },
+        {
+          "name": "N_TRADES",
+          "value": 22
+        },
+        {
+          "name": "N_POSITION_CHANGES",
+          "value": 23
+        }
+      ]
     }
   ],
   "functions": [
@@ -6168,6 +6288,550 @@
       "requires": ""
     }
   ],
+  "kernels": [
+    {
+      "args": [
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_obs"
+            }
+          ],
+          "elem": "f64",
+          "name": "returns",
+          "role": "in"
+        },
+        {
+          "c_type": "size_t",
+          "derived": null,
+          "name": "n_obs",
+          "role": "size"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "benchmark_sharpe",
+          "role": "param"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_value",
+          "role": "out_scalar"
+        }
+      ],
+      "doc": "Probabilistic Sharpe Ratio: probability that the true per-period Sharpe of `returns` exceeds `benchmark_sharpe` (per-period), corrected for sample length, skewness and kurtosis. Needs n_obs >= 3 finite, non-constant returns.",
+      "group": "overfit",
+      "name": "ft_probabilistic_sharpe_ratio"
+    },
+    {
+      "args": [
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_obs"
+            }
+          ],
+          "elem": "f64",
+          "name": "returns",
+          "role": "in"
+        },
+        {
+          "c_type": "size_t",
+          "derived": null,
+          "name": "n_obs",
+          "role": "size"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "n_trials",
+          "role": "param"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "trial_sharpe_variance",
+          "role": "param"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_value",
+          "role": "out_scalar"
+        }
+      ],
+      "doc": "Deflated Sharpe Ratio of the selected strategy's `returns`, against the expected best of `n_trials` zero-skill trials whose per-period Sharpe ratios have variance `trial_sharpe_variance`.",
+      "group": "overfit",
+      "name": "ft_deflated_sharpe_ratio"
+    },
+    {
+      "args": [
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            },
+            {
+              "name": "n_strategies"
+            }
+          ],
+          "elem": "f64",
+          "name": "returns",
+          "role": "in"
+        },
+        {
+          "c_type": "size_t",
+          "derived": null,
+          "name": "n_bars",
+          "role": "size"
+        },
+        {
+          "c_type": "size_t",
+          "derived": null,
+          "name": "n_strategies",
+          "role": "size"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 2,
+          "name": "n_splits",
+          "role": "param"
+        },
+        {
+          "c_type": "size_t",
+          "derived": {
+            "params": [
+              "n_splits"
+            ],
+            "via": "ft_pbo_n_combinations"
+          },
+          "name": "n_combinations",
+          "role": "size"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_pbo",
+          "role": "out_scalar"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_combinations"
+            }
+          ],
+          "elem": "f64",
+          "name": "out_logits",
+          "role": "out"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_combinations"
+            }
+          ],
+          "elem": "f64",
+          "name": "out_is_sharpe",
+          "role": "out"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_combinations"
+            }
+          ],
+          "elem": "f64",
+          "name": "out_oos_sharpe",
+          "role": "out"
+        },
+        {
+          "c_type": "int64_t",
+          "dims": [
+            {
+              "name": "n_combinations"
+            }
+          ],
+          "elem": "i64",
+          "name": "out_best_index",
+          "role": "out"
+        }
+      ],
+      "doc": "Probability of Backtest Overfitting via CSCV over a row-major (n_bars, n_strategies) returns matrix (one column per configuration). Per-combination arrays have ft_pbo_n_combinations(n_splits) entries: IS winner's OOS rank logit, its IS and OOS per-period Sharpe, and its column index.",
+      "group": "overfit",
+      "name": "ft_pbo_cscv"
+    },
+    {
+      "args": [
+        {
+          "c_type": "int64_t",
+          "kind": "count",
+          "min": 0,
+          "name": "n_bars",
+          "role": "param"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 2,
+          "name": "n_folds",
+          "role": "param"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "count",
+          "min": 0,
+          "name": "purge_bars",
+          "role": "param"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "count",
+          "min": 0,
+          "name": "embargo_bars",
+          "role": "param"
+        },
+        {
+          "c_type": "int64_t",
+          "dims": [
+            {
+              "name": "n_folds"
+            },
+            {
+              "const": 4
+            }
+          ],
+          "elem": "i64",
+          "name": "out",
+          "role": "out"
+        }
+      ],
+      "doc": "Purged + embargoed k-fold boundaries: row-major (n_folds, 4) rows of [train_left_end, test_start, test_end, train_right_start]; train = [0, train_left_end) U [train_right_start, n_bars).",
+      "group": "overfit",
+      "name": "ft_purged_kfold_indices"
+    },
+    {
+      "args": [
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            }
+          ],
+          "elem": "f64",
+          "name": "close",
+          "role": "in"
+        },
+        {
+          "c_type": "size_t",
+          "derived": null,
+          "name": "n_bars",
+          "role": "size"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            },
+            {
+              "name": "n_combos"
+            }
+          ],
+          "elem": "f64",
+          "name": "signals",
+          "role": "in"
+        },
+        {
+          "c_type": "size_t",
+          "derived": null,
+          "name": "n_combos",
+          "role": "size"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "commission_per_trade",
+          "role": "param"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "slippage_bps",
+          "role": "param"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "initial_capital",
+          "role": "param"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "periods_per_year",
+          "role": "param"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "risk_free_rate",
+          "role": "param"
+        },
+        {
+          "c_type": "size_t",
+          "derived": {
+            "params": [],
+            "via": "ft_sweep_n_metrics"
+          },
+          "name": "n_metric_cols",
+          "role": "size"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            },
+            {
+              "name": "n_combos"
+            }
+          ],
+          "elem": "f64",
+          "name": "out_returns",
+          "role": "out"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_combos"
+            },
+            {
+              "name": "n_metric_cols"
+            }
+          ],
+          "elem": "f64",
+          "name": "out_metrics",
+          "role": "out"
+        }
+      ],
+      "doc": "Backtest every column of a row-major (n_bars, n_combos) signal matrix against `close` (same semantics as backtest_core; NaN signals hold the position). Writes per-bar strategy returns (n_bars, n_combos) and a (n_combos, n_metric_cols) metric matrix indexed by FT_METRIC_*; n_metric_cols must equal ft_sweep_n_metrics().",
+      "group": "sweep",
+      "name": "ft_sweep_signals"
+    },
+    {
+      "args": [
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            }
+          ],
+          "elem": "f64",
+          "name": "close",
+          "role": "in"
+        },
+        {
+          "c_type": "size_t",
+          "derived": null,
+          "name": "n_bars",
+          "role": "size"
+        },
+        {
+          "c_type": "int32_t",
+          "enum": "SweepStrategy",
+          "kind": "enum",
+          "name": "strategy",
+          "role": "param"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_combos"
+            },
+            {
+              "name": "n_params"
+            }
+          ],
+          "elem": "f64",
+          "name": "combos",
+          "role": "in"
+        },
+        {
+          "c_type": "size_t",
+          "derived": null,
+          "name": "n_combos",
+          "role": "size"
+        },
+        {
+          "c_type": "size_t",
+          "derived": {
+            "params": [
+              "strategy"
+            ],
+            "via": "ft_sweep_strategy_n_params"
+          },
+          "name": "n_params",
+          "role": "size"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "commission_per_trade",
+          "role": "param"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "slippage_bps",
+          "role": "param"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "initial_capital",
+          "role": "param"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "periods_per_year",
+          "role": "param"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "risk_free_rate",
+          "role": "param"
+        },
+        {
+          "c_type": "size_t",
+          "derived": {
+            "params": [],
+            "via": "ft_sweep_n_metrics"
+          },
+          "name": "n_metric_cols",
+          "role": "size"
+        },
+        {
+          "c_type": "int8_t",
+          "dims": [
+            {
+              "name": "n_combos"
+            }
+          ],
+          "elem": "i8",
+          "name": "out_valid",
+          "role": "out"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_bars"
+            },
+            {
+              "name": "n_combos"
+            }
+          ],
+          "elem": "f64",
+          "name": "out_returns",
+          "role": "out"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_combos"
+            },
+            {
+              "name": "n_metric_cols"
+            }
+          ],
+          "elem": "f64",
+          "name": "out_metrics",
+          "role": "out"
+        }
+      ],
+      "doc": "Whole sweep of a built-in strategy in Rust, signal generation included. `combos` is row-major (n_combos, n_params) in the strategy's canonical parameter order (see ft_sweep_strategy_n_params). Combos violating the strategy's constraints (e.g. fast >= slow, non-integer periods) get out_valid = 0 and NaN returns/metrics; FT_ERR_INVALID_PARAM if none is valid.",
+      "group": "sweep",
+      "name": "ft_sweep_builtin"
+    },
+    {
+      "args": [
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_combos"
+            }
+          ],
+          "elem": "f64",
+          "name": "values",
+          "role": "in"
+        },
+        {
+          "c_type": "size_t",
+          "derived": null,
+          "name": "n_combos",
+          "role": "size"
+        },
+        {
+          "c_type": "int64_t",
+          "dims": [
+            {
+              "name": "n_combos"
+            },
+            {
+              "name": "n_axes"
+            }
+          ],
+          "elem": "i64",
+          "name": "coords",
+          "role": "in"
+        },
+        {
+          "c_type": "size_t",
+          "derived": null,
+          "name": "n_axes",
+          "role": "size"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "count",
+          "min": 0,
+          "name": "radius",
+          "role": "param"
+        },
+        {
+          "c_type": "double",
+          "dims": [
+            {
+              "name": "n_combos"
+            }
+          ],
+          "elem": "f64",
+          "name": "out",
+          "role": "out"
+        }
+      ],
+      "doc": "Plateau-robust scores: mean of `values` over each combination's grid neighbourhood (combinations within `radius` steps on every axis; NaN ignored). `coords` is row-major (n_combos, n_axes) per-axis grid indices (>= 0).",
+      "group": "sweep",
+      "name": "ft_sweep_plateau_scores"
+    }
+  ],
   "scalars": [
     {
       "doc": "Black-Scholes-Merton price with continuous carry/dividend yield.",
@@ -7287,6 +7951,84 @@
           "name": "avg_loss"
         }
       ]
+    },
+    {
+      "doc": "Expected maximum per-period Sharpe among `n_trials` zero-skill trials whose Sharpe estimates have variance `trial_sharpe_variance`.",
+      "group": "overfit",
+      "name": "ft_expected_max_sharpe",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_value"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "n_trials"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "trial_sharpe_variance"
+        }
+      ]
+    },
+    {
+      "doc": "Number of IS/OOS combinations `ft_pbo_cscv` evaluates: C(n_splits, n_splits/2). n_splits must be even and at most 20.",
+      "group": "overfit",
+      "name": "ft_pbo_n_combinations",
+      "outputs": [
+        {
+          "c_type": "int64_t",
+          "elem": "i64",
+          "name": "out_value"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 2,
+          "name": "n_splits"
+        }
+      ]
+    },
+    {
+      "doc": "Number of parameters (columns of `combos`) a built-in sweep strategy takes, in canonical order: RSI_THRESHOLD (timeperiod, oversold, overbought), SMA_CROSSOVER (fast, slow), MACD_CROSSOVER (fastperiod, slowperiod, signalperiod).",
+      "group": "overfit",
+      "name": "ft_sweep_strategy_n_params",
+      "outputs": [
+        {
+          "c_type": "int64_t",
+          "elem": "i64",
+          "name": "out_value"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int32_t",
+          "enum": "SweepStrategy",
+          "kind": "enum",
+          "name": "strategy"
+        }
+      ]
+    },
+    {
+      "doc": "Number of columns in the sweep metric matrices (FT_METRIC_* indices are below it). Pass it as `n_metric_cols` so a caller built against an older header can never under-allocate.",
+      "group": "overfit",
+      "name": "ft_sweep_n_metrics",
+      "outputs": [
+        {
+          "c_type": "int64_t",
+          "elem": "i64",
+          "name": "out_value"
+        }
+      ],
+      "params": []
     }
   ],
   "status_codes": [

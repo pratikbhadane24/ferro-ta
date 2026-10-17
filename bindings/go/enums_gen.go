@@ -28,3 +28,44 @@ const (
 	ModelBlackScholes PricingModel = 0
 	ModelBlack76      PricingModel = 1
 )
+
+// SweepStrategy mirrors the C FT_STRATEGY_* constants.
+type SweepStrategy int32
+
+// SweepStrategy values.
+const (
+	StrategyRsiThreshold  SweepStrategy = 0
+	StrategySmaCrossover  SweepStrategy = 1
+	StrategyMacdCrossover SweepStrategy = 2
+)
+
+// SweepMetric mirrors the C FT_METRIC_* constants.
+type SweepMetric int32
+
+// SweepMetric values.
+const (
+	MetricTotalReturn             SweepMetric = 0
+	MetricCagr                    SweepMetric = 1
+	MetricAnnualizedVol           SweepMetric = 2
+	MetricSharpe                  SweepMetric = 3
+	MetricSortino                 SweepMetric = 4
+	MetricCalmar                  SweepMetric = 5
+	MetricMaxDrawdown             SweepMetric = 6
+	MetricAvgDrawdown             SweepMetric = 7
+	MetricMaxDrawdownDurationBars SweepMetric = 8
+	MetricAvgDrawdownDurationBars SweepMetric = 9
+	MetricUlcerIndex              SweepMetric = 10
+	MetricOmegaRatio              SweepMetric = 11
+	MetricWinRate                 SweepMetric = 12
+	MetricProfitFactor            SweepMetric = 13
+	MetricRExpectancy             SweepMetric = 14
+	MetricAvgWin                  SweepMetric = 15
+	MetricAvgLoss                 SweepMetric = 16
+	MetricTailRatio               SweepMetric = 17
+	MetricSkewness                SweepMetric = 18
+	MetricKurtosis                SweepMetric = 19
+	MetricBestBar                 SweepMetric = 20
+	MetricWorstBar                SweepMetric = 21
+	MetricNTrades                 SweepMetric = 22
+	MetricNPositionChanges        SweepMetric = 23
+)

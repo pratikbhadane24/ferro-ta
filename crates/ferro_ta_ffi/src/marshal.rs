@@ -150,6 +150,61 @@ impl WriteScalars<(*mut f64,)> for f64 {
     }
 }
 
+impl WriteScalars<(*mut i64,)> for i64 {
+    unsafe fn write_to(self, ptrs: (*mut i64,)) {
+        // SAFETY: valid for one write per caller contract.
+        unsafe { ptrs.0.write(self) };
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Kernel exports (multi-shape arrays)
+// ---------------------------------------------------------------------------
+
+/// Element count of a row-major shape; `InvalidParam` on overflow.
+pub fn elems(dims: &[usize]) -> Result<usize, Status> {
+    dims.iter()
+        .try_fold(1usize, |acc, &d| acc.checked_mul(d))
+        .ok_or(Status::InvalidParam)
+}
+
+/// View a kernel input of `count` elements (NULL allowed when `count == 0`).
+///
+/// # Safety
+/// When `count > 0`, `ptr` must be valid for `count` reads.
+pub unsafe fn kernel_in<'a, T>(ptr: *const T, count: usize) -> Result<&'a [T], Status> {
+    if count == 0 {
+        return Ok(&[]);
+    }
+    if ptr.is_null() {
+        return Err(Status::NullPtr);
+    }
+    // SAFETY: non-null and valid for `count` reads per contract.
+    Ok(unsafe { std::slice::from_raw_parts(ptr, count) })
+}
+
+/// Reject a NULL scalar output before computing.
+pub fn kernel_check_scalar<T>(ptr: *mut T) -> Result<(), Status> {
+    if ptr.is_null() {
+        return Err(Status::NullPtr);
+    }
+    Ok(())
+}
+
+/// Copy a computed result into a caller-allocated kernel output, checking the
+/// core produced exactly `count` elements.
+///
+/// # Safety
+/// `dst` must be valid for `count` writes.
+pub unsafe fn kernel_out<T: Copy>(dst: *mut T, src: &[T], count: usize) -> Result<(), Status> {
+    if src.len() != count {
+        return Err(Status::Internal);
+    }
+    // SAFETY: length verified; validity per caller contract.
+    unsafe { copy_out(src, dst) };
+    Ok(())
+}
+
 macro_rules! impl_write_scalars {
     ($($t:ident $v:ident $p:ident),+) => {
         impl<$($t),+> WriteScalars<($(*mut $t,)+)> for ($($t,)+) {

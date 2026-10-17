@@ -62,6 +62,13 @@ ABI conventions
 - Streaming indicators are opaque handles: ``ft_stream_<x>_new`` /
   ``_update`` / ``_reset`` / ``_free``. A handle is not thread-safe; free it
   exactly once (``free(NULL)`` is a no-op).
+- Kernel functions (``ft_sweep_*``, ``ft_pbo_cscv``, ...) take arrays of
+  different, row-major multi-dimensional shapes with explicit ``size_t``
+  dimensions; the header lists each array's element count under
+  ``Shapes:``. Sizes such as ``n_combinations`` must equal a companion
+  helper's result (``ft_pbo_n_combinations``). Metric matrices have
+  ``n_metric_cols`` columns, which must equal ``ft_sweep_n_metrics()``, and are
+  indexed by ``FT_METRIC_*``.
 - A panic inside the core is caught and returned as ``FT_ERR_PANIC``; it never
   unwinds into the caller.
 

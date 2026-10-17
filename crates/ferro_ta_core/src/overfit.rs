@@ -61,7 +61,7 @@ pub fn sharpe_moments(returns: &[f64]) -> Result<SharpeMoments, String> {
         (a + d2, b + d2 * d, c + d2 * d2)
     });
     let pop_var = m2 / nf;
-    if pop_var <= ZERO_VARIANCE_EPS {
+    if pop_var <= (RELATIVE_VARIANCE_EPS * mean * mean).max(ZERO_VARIANCE_EPS) {
         return Err("returns have zero variance".to_string());
     }
     let sample_std = (m2 / (nf - 1.0)).sqrt();
@@ -249,11 +249,7 @@ fn validate_pbo_inputs(len: usize, n_strategies: usize, n_splits: usize) -> Resu
             "returns length ({len}) is not a multiple of n_strategies ({n_strategies})"
         ));
     }
-    if n_splits < 2 || !n_splits.is_multiple_of(2) || n_splits > MAX_CSCV_SPLITS {
-        return Err(format!(
-            "n_splits must be even and in [2, {MAX_CSCV_SPLITS}]"
-        ));
-    }
+    cscv_combinations(n_splits)?;
     let n_bars = len / n_strategies;
     if n_bars < n_splits * MIN_ROWS_PER_SPLIT {
         return Err(format!(
@@ -262,6 +258,19 @@ fn validate_pbo_inputs(len: usize, n_strategies: usize, n_splits: usize) -> Resu
         ));
     }
     Ok(n_bars)
+}
+
+/// Number of IS/OOS combinations [`pbo_cscv`] evaluates for `n_splits`:
+/// C(n_splits, n_splits / 2). Errors unless `n_splits` is even and in
+/// `[2, 20]`.
+pub fn cscv_combinations(n_splits: usize) -> Result<usize, String> {
+    if n_splits < 2 || !n_splits.is_multiple_of(2) || n_splits > MAX_CSCV_SPLITS {
+        return Err(format!(
+            "n_splits must be even and in [2, {MAX_CSCV_SPLITS}]"
+        ));
+    }
+    let half = n_splits / 2;
+    Ok((0..half).fold(1usize, |acc, k| acc * (n_splits - k) / (k + 1)))
 }
 
 /// Probability of Backtest Overfitting via combinatorially symmetric CV.
@@ -370,6 +379,8 @@ mod tests {
         assert!(sharpe_moments(&[1.0, 2.0]).is_err());
         assert!(sharpe_moments(&[1.0, f64::NAN, 2.0]).is_err());
         assert!(sharpe_moments(&[0.5, 0.5, 0.5]).is_err());
+        // 0.1 * 3 is inexact: rounding leaves ~1e-34 variance, still constant.
+        assert!(sharpe_moments(&[0.1, 0.1, 0.1]).is_err());
     }
 
     #[test]
@@ -477,6 +488,15 @@ mod tests {
         let mut nan = m.clone();
         nan[5] = f64::NAN;
         assert!(pbo_cscv(&nan, 2, 4).is_err());
+    }
+
+    #[test]
+    fn cscv_combination_counts() {
+        assert_eq!(cscv_combinations(2), Ok(2));
+        assert_eq!(cscv_combinations(8), Ok(70));
+        assert_eq!(cscv_combinations(16), Ok(12_870));
+        assert_eq!(cscv_combinations(20), Ok(184_756));
+        assert!(cscv_combinations(3).is_err() && cscv_combinations(22).is_err());
     }
 
     #[test]

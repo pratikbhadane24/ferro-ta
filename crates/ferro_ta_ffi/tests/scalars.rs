@@ -124,8 +124,13 @@ fn every_scalar_spec_is_unique() {
             "{} collides with an array export",
             spec.name
         );
+        assert!(
+            all_kernel_specs().all(|k| k.name != spec.name),
+            "{} collides with a kernel export",
+            spec.name
+        );
     }
-    assert_eq!(seen.len(), 24);
+    assert_eq!(seen.len(), 28);
 }
 
 #[test]

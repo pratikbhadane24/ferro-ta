@@ -11,13 +11,13 @@
      - Flutter
      - Flutter excluded
      - C / Go
-   * - 402
-     - 375
+   * - 406
+     - 376
      - 247
      - 355
      - 194
      - 56
-     - 259
+     - 270
 
 .. list-table:: Cross-language indicator coverage
    :header-rows: 1
@@ -1108,6 +1108,13 @@
      - yes
      - yes
      - yes
+   * - ``cscv_combinations``
+     - overfit
+     - yes
+     - —
+     - —
+     - —
+     - —
    * - ``curve_slope``
      - futures
      - yes
@@ -1128,7 +1135,7 @@
      - —
      - yes
      - excluded
-     - —
+     - yes
    * - ``DEMA``
      - overlap
      - yes
@@ -1268,7 +1275,7 @@
      - —
      - yes
      - excluded
-     - —
+     - yes
    * - ``expected_move``
      - options
      - yes
@@ -1940,7 +1947,14 @@
      - —
      - yes
      - —
+     - yes
+   * - ``pbo_n_combinations``
+     - other
      - —
+     - —
+     - —
+     - —
+     - yes
    * - ``pdf``
      - options
      - yes
@@ -2017,14 +2031,14 @@
      - —
      - yes
      - excluded
-     - —
+     - yes
    * - ``purged_kfold_indices``
      - overfit
      - yes
      - —
      - yes
      - excluded
-     - —
+     - yes
    * - ``put_call_parity_deviation``
      - options
      - yes
@@ -2549,7 +2563,7 @@
      - —
      - yes
      - —
-     - —
+     - yes
    * - ``sweep_metric_names``
      - other
      - —
@@ -2557,20 +2571,34 @@
      - yes
      - —
      - —
+   * - ``sweep_n_metrics``
+     - other
+     - —
+     - —
+     - —
+     - —
+     - yes
    * - ``sweep_plateau_scores``
      - other
      - —
      - —
      - yes
      - excluded
-     - —
+     - yes
    * - ``sweep_signals``
      - sweep
      - yes
      - —
      - yes
      - —
+     - yes
+   * - ``sweep_strategy_n_params``
+     - other
      - —
+     - —
+     - —
+     - —
+     - yes
    * - ``synthetic_forward``
      - futures
      - yes

@@ -45,6 +45,44 @@ def c_scalar(fn: dict) -> str:
     return f"int32_t {fn['name']}({', '.join(args)});"
 
 
+def dims_text(dims: list[dict]) -> str:
+    """`[{"name": "n"}, {"const": 4}]` -> `n * 4`."""
+    return " * ".join(str(d["const"]) if "const" in d else d["name"] for d in dims)
+
+
+def kernel_doc(fn: dict) -> str:
+    """Kernel doc plus the element count of every array argument."""
+    shapes = [
+        f"  {a['name']}[{dims_text(a['dims'])}]"
+        for a in fn["args"]
+        if a["role"] in ("in", "out")
+    ]
+    derived = [
+        f"  {a['name']} = {a['derived']['via']}({', '.join(a['derived']['params'])})"
+        for a in fn["args"]
+        if a["role"] == "size" and a["derived"]
+    ]
+    out = fn["doc"]
+    if shapes:
+        out += "\nShapes (row-major element counts):\n" + "\n".join(shapes)
+    if derived:
+        out += "\nDerived sizes (must match):\n" + "\n".join(derived)
+    return out
+
+
+def c_kernel_arg(arg: dict) -> str:
+    role = arg["role"]
+    if role == "in":
+        return f"const {arg['c_type']} *{arg['name']}"
+    if role in ("out", "out_scalar"):
+        return f"{arg['c_type']} *{arg['name']}"
+    return f"{arg['c_type']} {arg['name']}"
+
+
+def c_kernel(fn: dict) -> str:
+    return f"int32_t {fn['name']}({', '.join(c_kernel_arg(a) for a in fn['args'])});"
+
+
 def c_enums(spec: dict) -> list[str]:
     out: list[str] = []
     for enum in spec["enums"]:
@@ -76,6 +114,9 @@ def render_header(spec: dict) -> str:
         " *    result with FT_OK means the inputs are outside the model's domain",
         " *    (e.g. spot <= 0) or a solver found no solution.",
         " *  - Leading warm-up values are NaN; output length always equals input length.",
+        " *  - Kernel functions take arrays of different shapes: each array's row-major",
+        " *    element count is listed under 'Shapes:' as a product of size_t / integer",
+        " *    arguments. 'Derived sizes' must equal the named helper's result.",
         " *  - Streaming handles are not thread-safe; free each exactly once. After",
         " *    FT_ERR_PANIC from an update the handle's state is unspecified: reset it.",
         " */",
@@ -114,6 +155,12 @@ def render_header(spec: dict) -> str:
             group = fn["group"]
             out += ["", f"/* ---- {group} (scalar) " + "-" * (61 - len(group)) + " */"]
         out += ["", *c_doc(fn["doc"]), c_scalar(fn)]
+    group = None
+    for fn in spec.get("kernels", []):
+        if fn["group"] != group:
+            group = fn["group"]
+            out += ["", f"/* ---- {group} (kernel) " + "-" * (61 - len(group)) + " */"]
+        out += ["", *c_doc(kernel_doc(fn)), c_kernel(fn)]
     out += ["", "/* ---- streaming " + "-" * 61 + " */"]
     for stream in spec["streams"]:
         out += ["", *c_stream(stream)]

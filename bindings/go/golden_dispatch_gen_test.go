@@ -1021,6 +1021,22 @@ var goldenScalars = map[string]func(map[string]float64) (map[string]any, error){
 		value, err := HalfKellyFraction(p["win_rate"], p["avg_win"], p["avg_loss"])
 		return map[string]any{"out_value": value}, err
 	},
+	"ft_expected_max_sharpe": func(p map[string]float64) (map[string]any, error) {
+		value, err := ExpectedMaxSharpe(int(p["n_trials"]), p["trial_sharpe_variance"])
+		return map[string]any{"out_value": value}, err
+	},
+	"ft_pbo_n_combinations": func(p map[string]float64) (map[string]any, error) {
+		value, err := PboNCombinations(int(p["n_splits"]))
+		return map[string]any{"out_value": value}, err
+	},
+	"ft_sweep_strategy_n_params": func(p map[string]float64) (map[string]any, error) {
+		value, err := SweepStrategyNParams(SweepStrategy(p["strategy"]))
+		return map[string]any{"out_value": value}, err
+	},
+	"ft_sweep_n_metrics": func(p map[string]float64) (map[string]any, error) {
+		value, err := SweepNMetrics()
+		return map[string]any{"out_value": value}, err
+	},
 }
 
 // goldenStreams builds each streaming wrapper for golden replay.
@@ -1383,6 +1399,10 @@ var goldenParamNames = []goldenParamList{
 	{"ft_parity_gap", []string{"call_price", "put_price", "spot", "strike", "rate", "carry", "time_to_expiry"}},
 	{"ft_kelly_fraction", []string{"win_rate", "avg_win", "avg_loss"}},
 	{"ft_half_kelly_fraction", []string{"win_rate", "avg_win", "avg_loss"}},
+	{"ft_expected_max_sharpe", []string{"n_trials", "trial_sharpe_variance"}},
+	{"ft_pbo_n_combinations", []string{"n_splits"}},
+	{"ft_sweep_strategy_n_params", []string{"strategy"}},
+	{"ft_sweep_n_metrics", []string{}},
 	{"sma", []string{"period"}},
 	{"ema", []string{"period"}},
 	{"rsi", []string{"period"}},

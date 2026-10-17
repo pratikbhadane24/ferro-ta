@@ -5715,7 +5715,7 @@
       ]
     },
     "rust_core": {
-      "public_function_count": 378,
+      "public_function_count": 379,
       "functions": [
         {
           "module": "aggregation",
@@ -6836,6 +6836,11 @@
           "module": "options.surface",
           "function": "term_structure_slope",
           "file": "options/surface.rs"
+        },
+        {
+          "module": "overfit",
+          "function": "cscv_combinations",
+          "file": "overfit.rs"
         },
         {
           "module": "overfit",
@@ -8239,7 +8244,7 @@
       ]
     },
     "c_abi_go": {
-      "export_count": 262,
+      "export_count": 273,
       "exports": [
         "StreamingATR",
         "StreamingBBANDS",
@@ -8353,6 +8358,7 @@
         "coppock",
         "correl",
         "crsi",
+        "deflated_sharpe_ratio",
         "dema",
         "detect_breaks_cusum",
         "digital_greeks",
@@ -8366,6 +8372,7 @@
         "elder_ray",
         "ema",
         "emv",
+        "expected_max_sharpe",
         "expected_move",
         "fisher",
         "force_index",
@@ -8427,12 +8434,16 @@
         "obv_smoothed",
         "parity_gap",
         "parkinson_vol",
+        "pbo_cscv",
+        "pbo_n_combinations",
         "plus_di",
         "plus_dm",
         "po",
         "ppo",
         "price_lower_bound",
         "price_upper_bound",
+        "probabilistic_sharpe_ratio",
+        "purged_kfold_indices",
         "put_call_parity_deviation",
         "pvi",
         "pvi_with_signal",
@@ -8476,6 +8487,11 @@
         "sub",
         "sum",
         "supertrend",
+        "sweep_builtin",
+        "sweep_n_metrics",
+        "sweep_plateau_scores",
+        "sweep_signals",
+        "sweep_strategy_n_params",
         "synthetic_forward",
         "synthetic_spot",
         "t3",
@@ -9078,13 +9094,13 @@
   },
   "coverage": {
     "counts": {
-      "row_count": 402,
-      "core_count": 375,
+      "row_count": 406,
+      "core_count": 376,
       "python_count": 247,
       "wasm_count": 355,
       "flutter_count": 194,
       "flutter_excluded_count": 56,
-      "go_count": 259,
+      "go_count": 270,
       "common_python_wasm_count": 231,
       "common_all_four_count": 131
     },
@@ -11554,6 +11570,22 @@
         "go_name": "crsi"
       },
       {
+        "key": "cscvcombinations",
+        "name": "cscv_combinations",
+        "category": "overfit",
+        "core": true,
+        "python": false,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": false,
+        "python_name": null,
+        "core_name": "cscv_combinations",
+        "wasm_name": null,
+        "flutter_name": null,
+        "go_name": null
+      },
+      {
         "key": "curveslope",
         "name": "curve_slope",
         "category": "futures",
@@ -11594,12 +11626,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
-        "go": false,
+        "go": true,
         "python_name": null,
         "core_name": "deflated_sharpe_ratio",
         "wasm_name": "deflated_sharpe_ratio",
         "flutter_name": null,
-        "go_name": null
+        "go_name": "deflated_sharpe_ratio"
       },
       {
         "key": "dema",
@@ -11914,12 +11946,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
-        "go": false,
+        "go": true,
         "python_name": null,
         "core_name": "expected_max_sharpe",
         "wasm_name": "expected_max_sharpe",
         "flutter_name": null,
-        "go_name": null
+        "go_name": "expected_max_sharpe"
       },
       {
         "key": "expectedmove",
@@ -13450,12 +13482,28 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
-        "go": false,
+        "go": true,
         "python_name": null,
         "core_name": "pbo_cscv",
         "wasm_name": "pbo_cscv",
         "flutter_name": null,
-        "go_name": null
+        "go_name": "pbo_cscv"
+      },
+      {
+        "key": "pboncombinations",
+        "name": "pbo_n_combinations",
+        "category": "other",
+        "core": false,
+        "python": false,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": null,
+        "core_name": null,
+        "wasm_name": null,
+        "flutter_name": null,
+        "go_name": "pbo_n_combinations"
       },
       {
         "key": "pdf",
@@ -13626,12 +13674,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
-        "go": false,
+        "go": true,
         "python_name": null,
         "core_name": "probabilistic_sharpe_ratio",
         "wasm_name": "probabilistic_sharpe_ratio",
         "flutter_name": null,
-        "go_name": null
+        "go_name": "probabilistic_sharpe_ratio"
       },
       {
         "key": "purgedkfoldindices",
@@ -13642,12 +13690,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
-        "go": false,
+        "go": true,
         "python_name": null,
         "core_name": "purged_kfold_indices",
         "wasm_name": "purged_kfold_indices",
         "flutter_name": null,
-        "go_name": null
+        "go_name": "purged_kfold_indices"
       },
       {
         "key": "putcallparitydeviation",
@@ -14842,12 +14890,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
-        "go": false,
+        "go": true,
         "python_name": null,
         "core_name": "sweep_builtin",
         "wasm_name": "sweep_builtin",
         "flutter_name": null,
-        "go_name": null
+        "go_name": "sweep_builtin"
       },
       {
         "key": "sweepmetricnames",
@@ -14866,6 +14914,22 @@
         "go_name": null
       },
       {
+        "key": "sweepnmetrics",
+        "name": "sweep_n_metrics",
+        "category": "other",
+        "core": false,
+        "python": false,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": null,
+        "core_name": null,
+        "wasm_name": null,
+        "flutter_name": null,
+        "go_name": "sweep_n_metrics"
+      },
+      {
         "key": "sweepplateauscores",
         "name": "sweep_plateau_scores",
         "category": "other",
@@ -14874,12 +14938,12 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": true,
-        "go": false,
+        "go": true,
         "python_name": null,
         "core_name": null,
         "wasm_name": "sweep_plateau_scores",
         "flutter_name": null,
-        "go_name": null
+        "go_name": "sweep_plateau_scores"
       },
       {
         "key": "sweepsignals",
@@ -14890,12 +14954,28 @@
         "wasm": true,
         "flutter": false,
         "flutter_excluded": false,
-        "go": false,
+        "go": true,
         "python_name": null,
         "core_name": "sweep_signals",
         "wasm_name": "sweep_signals",
         "flutter_name": null,
-        "go_name": null
+        "go_name": "sweep_signals"
+      },
+      {
+        "key": "sweepstrategynparams",
+        "name": "sweep_strategy_n_params",
+        "category": "other",
+        "core": false,
+        "python": false,
+        "wasm": false,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": null,
+        "core_name": null,
+        "wasm_name": null,
+        "flutter_name": null,
+        "go_name": "sweep_strategy_n_params"
       },
       {
         "key": "syntheticforward",

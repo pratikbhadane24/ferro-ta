@@ -92,7 +92,11 @@ def go_doc(name: str, summary: str, doc: str) -> list[str]:
     lines = [f"// {name} {summary}"]
     if doc:
         lines.append("//")
-        lines += [f"// {line}".rstrip() for line in doc.splitlines()]
+        # Tab-indented lines are gofmt list/code blocks: no space after //.
+        lines += [
+            ("//" + line if line.startswith("\t") else f"// {line}").rstrip()
+            for line in doc.splitlines()
+        ]
     return lines
 
 
@@ -424,9 +428,19 @@ def render_go(spec: dict, go_dir: Path) -> dict[Path, str]:
         files[go_dir / f"{group}_scalar_gen.go"] = go_file(
             ["unsafe"], [go_scalar(fn) for fn in fns]
         )
-    files[go_dir / "enums_gen.go"] = go_file(
-        [], [go_enum(e) for e in spec["enums"]], cgo=False
-    )
+    from .go_kernel import go_kernel, kernel_uses_unsafe
+
+    kernel_groups: dict[str, list[dict]] = {}
+    for fn in spec.get("kernels", []):
+        kernel_groups.setdefault(fn["group"], []).append(fn)
+    for group, fns in kernel_groups.items():
+        imports = ["unsafe"] if any(kernel_uses_unsafe(fn) for fn in fns) else []
+        files[go_dir / f"{group}_kernel_gen.go"] = go_file(
+            imports, [go_kernel(fn) for fn in fns]
+        )
+        files[go_dir / "enums_gen.go"] = go_file(
+            [], [go_enum(e) for e in spec["enums"]], cgo=False
+        )
     files[go_dir / "streaming_gen.go"] = go_file(
         ["runtime", "sync", "unsafe"], [go_stream(s) for s in spec["streams"]]
     )

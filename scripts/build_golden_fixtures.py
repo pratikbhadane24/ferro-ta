@@ -113,6 +113,8 @@ INPUT_COLUMNS = {
 
 # Period-like params whose relationships matter (fast < slow, etc.).
 PERIOD_VALUES = {
+    "n_splits": 8,  # ft_pbo_n_combinations: must be even
+    "n_trials": 50,
     "fastperiod": 3,
     "slowperiod": 8,
     "signalperiod": 4,
@@ -154,6 +156,7 @@ DEFAULT_PERIOD = 5
 DEFAULT_COUNT = 2
 
 FLOAT_VALUES = {
+    "trial_sharpe_variance": 0.004,
     "nbdevup": 2.0,
     "nbdevdn": 2.0,
     "nbdev": 1.0,

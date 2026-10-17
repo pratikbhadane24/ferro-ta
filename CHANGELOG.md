@@ -51,6 +51,20 @@ and the project uses [Semantic Versioning](https://semver.org/).
   and the new keywords on the PyO3 `backtest_ohlcv_core`,
   `BacktestEngine.with_volume_participation()` /
   `.with_atr_slippage()`, and WASM `backtest_ohlcv_volume`.
+- **C ABI / Go: kernel exports.** A new multi-shape export kind in
+  `ferro_ta_ffi` (`ffi_kernel_exports!`, `KernelSpec` in `ffi_spec.json`)
+  takes arrays of different row-major shapes, explicit sizes, and sizes
+  derived from helper exports. The C header and Go codegen are generated from
+  the same spec. New exports: `ft_sweep_builtin`, `ft_sweep_signals`,
+  `ft_sweep_plateau_scores`, `ft_pbo_cscv`, `ft_probabilistic_sharpe_ratio`,
+  `ft_deflated_sharpe_ratio`, `ft_purged_kfold_indices`, plus scalars
+  `ft_expected_max_sharpe`, `ft_pbo_n_combinations`,
+  `ft_sweep_strategy_n_params` and `ft_sweep_n_metrics`, plus
+  `FT_STRATEGY_*` / `FT_METRIC_*` enums. Metric matrices take an explicit
+  `n_metric_cols` that must equal `ft_sweep_n_metrics()`, so adding a metric
+  later can never overflow an older caller's buffer. Go gets the same
+  functions (`ferrota.SweepBuiltin`, `ferrota.PboCscv`, …), which guard
+  every integer that sizes a buffer. FFI sweeps run on all cores.
 - `ferro_ta_core::options::normal::inv_cdf` (Acklam, rel. error < 1.2e-9)
   and `BacktestMetrics::scalar_fields()`.
 
