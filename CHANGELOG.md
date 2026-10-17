@@ -9,6 +9,17 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.5.0] — 2026-10-17
+
+Highlights: live trading support for every streaming indicator (preview the
+forming bar, skip bad ticks, save and restore state), a session-aligned tick →
+bar builder, streaming conditions and option greeks, a multi-leg option
+strategy API (exact breakevens, max profit/loss with unlimited detection,
+probability of profit, scenario grids), parallel parameter sweeps with
+overfitting diagnostics, and the full backtesting toolkit on the C ABI / Go /
+WASM. All additions are backward compatible; behavior changes are listed under
+Changed and Fixed.
+
 ### Added
 
 - **Option strategy API** (`ferro_ta_core::options::strategy`, all bindings):
@@ -117,6 +128,8 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- `ferro_ta_ffi` builds with `--locked` again (a missing `Cargo.lock` entry
+  would have broken the Go module / C library publish).
 - A NaN or ±inf input no longer poisons streaming state forever (SMA/BBands
   running sums, EMA/RSI/ATR recursions, VWAP accumulators). Such ticks now return NaN
   and are skipped — state, `count` and the last value are left untouched.
@@ -815,7 +828,8 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ---
 
-[Unreleased]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.3.1...v1.4.0
 [1.3.1]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/pratikbhadane24/ferro-ta/compare/v1.2.0...v1.3.0

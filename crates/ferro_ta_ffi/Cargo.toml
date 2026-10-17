@@ -1,6 +1,6 @@
 [package]
 name = "ferro_ta_ffi"
-version = "1.4.0"
+version = "1.5.0"
 edition = "2021"
 description = "Stable C ABI over ferro_ta_core: the shared foundation for Go, C/C++, C#, JVM and other FFI bindings"
 license = "MIT"
@@ -14,7 +14,7 @@ name = "ferro_ta_ffi"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [dependencies]
-ferro_ta_core = { path = "../ferro_ta_core", version = "1.4.0", features = ["serde", "parallel"] }
+ferro_ta_core = { path = "../ferro_ta_core", version = "1.5.0", features = ["serde", "parallel"] }
 serde = { version = "1.0", features = ["derive"] }
 
 [dev-dependencies]
