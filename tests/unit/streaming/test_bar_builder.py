@@ -112,3 +112,21 @@ def test_drives_streaming_rsi_like_batch_over_closed_bars():
     assert len(closes) > 50
     batch = RSI(np.array(closes), timeperiod=14)
     np.testing.assert_allclose(streamed, batch, equal_nan=True, rtol=1e-12)
+
+
+def test_bar_is_constructible_and_introspectable():
+    import inspect
+
+    bar = Bar(
+        start_ms=0,
+        end_ms=60_000,
+        open=1.0,
+        high=2.0,
+        low=0.5,
+        close=1.5,
+        volume=3.0,
+        ticks=2,
+    )
+    assert (bar.high, bar.ticks) == (2.0, 2)
+    assert bar == Bar(0, 60_000, 1.0, 2.0, 0.5, 1.5, 3.0, 2)
+    assert "start_ms" in str(inspect.signature(Bar))

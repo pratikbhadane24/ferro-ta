@@ -992,6 +992,17 @@ class StreamingOptionGreeks:
     def __deepcopy__(self, memo: object) -> StreamingOptionGreeks: ...
 
 class Bar:
+    def __init__(
+        self,
+        start_ms: int,
+        end_ms: int,
+        open: float,
+        high: float,
+        low: float,
+        close: float,
+        volume: float,
+        ticks: int,
+    ) -> None: ...
     @property
     def start_ms(self) -> int: ...
     @property

@@ -24,13 +24,19 @@ upper, middle, lower, err := ferrota.Bbands(closes, 20, 2, 2, ferrota.MATypeSMA)
 
 rsi, err := ferrota.NewStreamRsi(14) // bar-by-bar
 defer rsi.Close()
-value, err := rsi.Update(lastPrice)
+value, err := rsi.Update(lastPrice)  // commits the bar
+live, err := rsi.Peek(tickPrice)     // previews the forming bar
+snapshot, err := rsi.Save()          // restore with ferrota.LoadStreamRsi
+
+bars, err := ferrota.NewNSEBarBuilder(300) // ticks -> 09:15, 09:20, ... bars
+status, closed, err := bars.OnTick(tsMs, price, qty)
 ```
 
 - 229 array functions (all TA indicators, candlestick patterns, IV, realized
   volatility, regime and portfolio series), 24 scalar functions (option
-  pricing and greeks, implied volatility, futures, Kelly sizing) and 9
-  streaming indicators.
+  pricing and greeks, implied volatility, futures, Kelly sizing), 13
+  streaming types (indicators, conditions, option IV/greeks) and a
+  session-aligned bar builder.
 - Outputs match input length with NaN warm-up; errors are `*ferrota.Error`,
   comparable with `errors.Is` (`ErrInvalidParam`, `ErrLengthMismatch`, ...).
 

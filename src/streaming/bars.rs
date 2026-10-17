@@ -38,6 +38,30 @@ impl From<core::Bar> for Bar {
 
 #[pymethods]
 impl Bar {
+    #[new]
+    #[allow(clippy::too_many_arguments)]
+    fn new(
+        start_ms: i64,
+        end_ms: i64,
+        open: f64,
+        high: f64,
+        low: f64,
+        close: f64,
+        volume: f64,
+        ticks: u32,
+    ) -> Self {
+        Self {
+            start_ms,
+            end_ms,
+            open,
+            high,
+            low,
+            close,
+            volume,
+            ticks,
+        }
+    }
+
     fn __repr__(&self) -> String {
         format!(
             "Bar(start_ms={}, end_ms={}, open={}, high={}, low={}, close={}, volume={}, ticks={})",

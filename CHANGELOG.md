@@ -20,6 +20,19 @@ and the project uses [Semantic Versioning](https://semver.org/).
   `copy.deepcopy` snapshots.
 - Core: `StreamingIndicator` trait, `Live<T>` wrapper and `Clone`/`Debug` on
   all streaming state structs.
+- **Tick → bar builder** (`BarBuilder`, all bindings): session-aligned OHLCV
+  bars (NSE preset 09:15–15:30 IST, any session/offset), close on a boundary
+  tick or on time, late/duplicate/out-of-session/invalid ticks rejected with a
+  status, no synthetic bars for gaps.
+- **Streaming conditions**: `StreamingCross` (dead-band cross),
+  `StreamingStreak` (N bars in a row), `StreamingCooldown`.
+- **`StreamingOptionGreeks`**: live implied volatility + delta/gamma/vega/
+  theta/rho per contract, solver seeded with the previous IV.
+- **Save/restore streaming state**: versioned JSON snapshots
+  (`to_json`/`from_json`/pickle in Python, `ft_stream_*_save`/`_load` in C,
+  `Save`/`Load*` in Go, `saveState`/`loadState` in WASM behind the opt-in
+  `snapshot` feature) that restore bit-identically and reject a mismatched
+  kind or format.
 
 ### Fixed
 
@@ -29,6 +42,9 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ### Performance
 
+- Streaming previews (`closed=False` / `peek`) no longer allocate for SMA,
+  Bollinger Bands and Stochastic: 92 → 43, 156 → 65 and 360 → 105 ns per call
+  (Python).
 - **WASM EMA ~6x faster** (and DEMA/TEMA/TRIX/T3/PPO, which build on it):
   wasm32 has no scalar f64 FMA instruction, so the EMA recurrence's `mul_add`
   lowered to a software `fma` routine (15.3 ms → 2.5 ms per 1M bars, Node 25
