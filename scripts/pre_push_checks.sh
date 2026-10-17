@@ -63,7 +63,7 @@ run_python_lint() {
 }
 
 run_rust_clippy()      { need_cmd cargo; run_cmd cargo clippy --release -- -D warnings; }
-run_rust_core()        { need_cmd cargo; run_cmd cargo build -p ferro_ta_core && run_cmd cargo test -p ferro_ta_core; }
+run_rust_core()        { need_cmd cargo; run_cmd cargo build -p ferro_ta_core && run_cmd cargo test -p ferro_ta_core && run_cmd cargo test -p ferro_ta_core --features serde --lib streaming; }
 run_rust_bench()       { need_cmd cargo; run_cmd cargo bench -p ferro_ta_core --no-run; }
 
 run_python_typecheck() {

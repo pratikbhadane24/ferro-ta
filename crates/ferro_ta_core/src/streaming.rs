@@ -37,6 +37,25 @@ impl std::fmt::Display for StreamingError {
 
 impl std::error::Error for StreamingError {}
 
+/// Reject a restored buffer longer than the window it belongs to.
+fn validate_buffer_len(len: usize, max: usize, name: &str) -> Result<(), StreamingError> {
+    if len > max {
+        return Err(StreamingError(format!(
+            "{name} holds {len} values but its window is {max}"
+        )));
+    }
+    Ok(())
+}
+
+fn validate_finite(value: f64, name: &str) -> Result<(), StreamingError> {
+    if !value.is_finite() {
+        return Err(StreamingError(format!(
+            "{name} must be finite, got {value}"
+        )));
+    }
+    Ok(())
+}
+
 fn validate_timeperiod(value: usize, name: &str, minimum: usize) -> Result<(), StreamingError> {
     if value < minimum {
         return Err(StreamingError(format!(
@@ -100,6 +119,12 @@ impl EmaState {
 
     pub fn period(&self) -> usize {
         self.period
+    }
+
+    /// Re-check invariants (used when restoring a snapshot).
+    pub fn validate(&self) -> Result<(), StreamingError> {
+        validate_timeperiod(self.period, "period", 1)?;
+        validate_buffer_len(self.seed_buf.len(), self.period, "seed buffer")
     }
 }
 
@@ -172,6 +197,12 @@ impl AtrState {
 
     pub fn period(&self) -> usize {
         self.period
+    }
+
+    /// Re-check invariants (used when restoring a snapshot).
+    pub fn validate(&self) -> Result<(), StreamingError> {
+        validate_timeperiod(self.period, "period", 1)?;
+        validate_buffer_len(self.tr_buf.len(), self.period, "true-range buffer")
     }
 }
 
@@ -246,6 +277,12 @@ impl StreamingSMA {
     pub fn period(&self) -> usize {
         self.period
     }
+
+    /// Re-check invariants (used when restoring a snapshot).
+    pub fn validate(&self) -> Result<(), StreamingError> {
+        validate_timeperiod(self.period, "period", 1)?;
+        validate_buffer_len(self.buf.len(), self.period, "window")
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -282,6 +319,11 @@ impl StreamingEMA {
 
     pub fn period(&self) -> usize {
         self.inner.period()
+    }
+
+    /// Re-check invariants (used when restoring a snapshot).
+    pub fn validate(&self) -> Result<(), StreamingError> {
+        self.inner.validate()
     }
 }
 
@@ -372,6 +414,13 @@ impl StreamingRSI {
     pub fn period(&self) -> usize {
         self.period
     }
+
+    /// Re-check invariants (used when restoring a snapshot).
+    pub fn validate(&self) -> Result<(), StreamingError> {
+        validate_timeperiod(self.period, "period", 1)?;
+        validate_buffer_len(self.gains.len(), self.period, "gain buffer")?;
+        validate_buffer_len(self.losses.len(), self.period, "loss buffer")
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -407,6 +456,11 @@ impl StreamingATR {
 
     pub fn period(&self) -> usize {
         self.inner.period()
+    }
+
+    /// Re-check invariants (used when restoring a snapshot).
+    pub fn validate(&self) -> Result<(), StreamingError> {
+        self.inner.validate()
     }
 }
 
@@ -521,6 +575,14 @@ impl StreamingBBands {
     pub fn period(&self) -> usize {
         self.period
     }
+
+    /// Re-check invariants (used when restoring a snapshot).
+    pub fn validate(&self) -> Result<(), StreamingError> {
+        validate_timeperiod(self.period, "period", 2)?;
+        validate_buffer_len(self.buf.len(), self.period, "window")?;
+        validate_finite(self.nbdevup, "nbdevup")?;
+        validate_finite(self.nbdevdn, "nbdevdn")
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -595,6 +657,19 @@ impl StreamingMACD {
 
     pub fn signal_period(&self) -> usize {
         self.signal.period()
+    }
+
+    /// Re-check invariants (used when restoring a snapshot).
+    pub fn validate(&self) -> Result<(), StreamingError> {
+        self.fast.validate()?;
+        self.slow.validate()?;
+        self.signal.validate()?;
+        if self.fast.period() >= self.slow.period() {
+            return Err(StreamingError(
+                "fastperiod must be < slowperiod".to_string(),
+            ));
+        }
+        Ok(())
     }
 }
 
@@ -754,6 +829,17 @@ impl StreamingStoch {
     pub fn period(&self) -> usize {
         self.fastk_period
     }
+
+    /// Re-check invariants (used when restoring a snapshot).
+    pub fn validate(&self) -> Result<(), StreamingError> {
+        validate_timeperiod(self.fastk_period, "fastk_period", 1)?;
+        validate_timeperiod(self.slowk_period, "slowk_period", 1)?;
+        validate_timeperiod(self.slowd_period, "slowd_period", 1)?;
+        validate_buffer_len(self.high_buf.len(), self.fastk_period, "high window")?;
+        validate_buffer_len(self.low_buf.len(), self.fastk_period, "low window")?;
+        validate_buffer_len(self.fastk_buf.len(), self.slowk_period, "fastk window")?;
+        validate_buffer_len(self.slowk_buf.len(), self.slowd_period, "slowk window")
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -795,6 +881,11 @@ impl StreamingVWAP {
     pub fn reset(&mut self) {
         self.cum_tpv = 0.0;
         self.cum_vol = 0.0;
+    }
+
+    /// Re-check invariants (used when restoring a snapshot).
+    pub fn validate(&self) -> Result<(), StreamingError> {
+        Ok(())
     }
 }
 
@@ -917,6 +1008,13 @@ impl StreamingSupertrend {
 
     pub fn period(&self) -> usize {
         self.period
+    }
+
+    /// Re-check invariants (used when restoring a snapshot).
+    pub fn validate(&self) -> Result<(), StreamingError> {
+        validate_timeperiod(self.period, "period", 1)?;
+        validate_finite(self.multiplier, "multiplier")?;
+        self.atr.validate()
     }
 }
 

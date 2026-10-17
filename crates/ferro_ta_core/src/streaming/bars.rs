@@ -24,7 +24,8 @@ pub struct BarSpec {
     pub session_open_secs: i64,
     /// Session close (exclusive), seconds after local midnight.
     pub session_close_secs: i64,
-    /// Local time = UTC + this offset.
+    /// Local time = UTC + this offset. Fixed: no time-zone or DST rules, so
+    /// for DST markets build a new builder when the offset changes.
     pub utc_offset_secs: i64,
 }
 
@@ -137,8 +138,10 @@ impl BarBuilder {
         if !price.is_finite() || !qty.is_finite() || qty < 0.0 {
             return (TickStatus::Invalid, None);
         }
-        let Some((start_ms, end_ms)) = self.bucket(ts_ms) else {
-            return (TickStatus::OutOfSession, None);
+        let (start_ms, end_ms) = match self.bucket(ts_ms) {
+            Ok(Some(bounds)) => bounds,
+            Ok(None) => return (TickStatus::OutOfSession, None),
+            Err(status) => return (status, None),
         };
         if ts_ms < self.closed_until_ms || self.last_tick.is_some_and(|(t, ..)| ts_ms < t) {
             return (TickStatus::Late, None);
@@ -201,21 +204,32 @@ impl BarBuilder {
         self.closed_until_ms = i64::MIN;
     }
 
-    /// `[start, end)` of the bar containing `ts_ms`, or `None` off-session.
-    fn bucket(&self, ts_ms: i64) -> Option<(i64, i64)> {
+    /// `[start, end)` of the bar containing `ts_ms`, `None` off-session, or
+    /// `Err(Invalid)` when the timestamp is too extreme to place.
+    fn bucket(&self, ts_ms: i64) -> Result<Option<(i64, i64)>, TickStatus> {
+        // Spec fields are validated to be within a day, so only arithmetic
+        // involving `ts_ms` can overflow; such timestamps are invalid.
+        let overflow = TickStatus::Invalid;
         let offset_ms = self.spec.utc_offset_secs * MS_PER_SEC;
-        let local = ts_ms.checked_add(offset_ms)?;
-        let day_start = local.div_euclid(MS_PER_DAY) * MS_PER_DAY;
+        let local = ts_ms.checked_add(offset_ms).ok_or(overflow)?;
+        let day_start = local
+            .div_euclid(MS_PER_DAY)
+            .checked_mul(MS_PER_DAY)
+            .ok_or(overflow)?;
         let time_of_day = local - day_start;
         let open = self.spec.session_open_secs * MS_PER_SEC;
         let close = self.spec.session_close_secs * MS_PER_SEC;
         if time_of_day < open || time_of_day >= close {
-            return None;
+            return Ok(None);
         }
         let interval = self.spec.interval_secs * MS_PER_SEC;
         let start = open + (time_of_day - open) / interval * interval;
         let end = (start + interval).min(close);
-        Some((day_start + start - offset_ms, day_start + end - offset_ms))
+        let to_utc = |t: i64| day_start.checked_add(t)?.checked_sub(offset_ms);
+        match (to_utc(start), to_utc(end)) {
+            (Some(s), Some(e)) => Ok(Some((s, e))),
+            _ => Err(overflow),
+        }
     }
 }
 
@@ -396,5 +410,24 @@ mod tests {
         assert!(BarBuilder::new(spec(300, -1, 55_800, 19_800)).is_err());
         assert!(BarBuilder::new(spec(300, 33_300, 86_401, 19_800)).is_err());
         assert!(BarBuilder::new(spec(300, 33_300, 55_800, 15 * 3600)).is_err());
+    }
+
+    #[test]
+    fn extreme_timestamps_rejected_not_wrapped() {
+        let full_day = BarSpec {
+            interval_secs: 3600,
+            session_open_secs: 0,
+            session_close_secs: 86_400,
+            utc_offset_secs: 19_800,
+        };
+        let mut b = BarBuilder::new(full_day).unwrap();
+        for ts in [i64::MAX, i64::MAX - 1_000, i64::MIN, i64::MIN + 1_000] {
+            assert_eq!(
+                b.on_tick(ts, 100.0, 1.0),
+                (TickStatus::Invalid, None),
+                "ts {ts}"
+            );
+        }
+        assert_eq!(b.forming(), None);
     }
 }

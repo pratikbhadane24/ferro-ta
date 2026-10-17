@@ -117,6 +117,11 @@ impl StreamingOptionGreeks {
     pub fn strike(&self) -> f64 {
         self.strike
     }
+
+    /// Re-check invariants (used when restoring a snapshot).
+    pub fn validate(&self) -> Result<(), StreamingError> {
+        Self::new(self.model, self.kind, self.strike, self.rate, self.carry).map(|_| ())
+    }
 }
 
 #[cfg(test)]

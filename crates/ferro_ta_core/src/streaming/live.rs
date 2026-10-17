@@ -5,6 +5,7 @@
 //! last *committed* state without mutating it, so every tick of the forming
 //! bar replaces the previous preview. `closed = true` commits the bar.
 
+use super::StreamingError;
 use super::{
     StreamingATR, StreamingBBands, StreamingCooldown, StreamingCross, StreamingEMA, StreamingMACD,
     StreamingOptionGreeks, StreamingRSI, StreamingSMA, StreamingStoch, StreamingStreak,
@@ -223,6 +224,9 @@ pub trait StreamingIndicator: Clone {
     /// Restart from scratch.
     fn reset(&mut self);
 
+    /// Check parameters and buffer invariants (run when restoring state).
+    fn validate(&self) -> Result<(), StreamingError>;
+
     /// Value `update(input)` would return, without changing state.
     fn peek(&self, input: Self::Input) -> Self::Output {
         self.clone().update(input)
@@ -247,6 +251,10 @@ macro_rules! impl_streaming_indicator {
 
             fn reset(&mut self) {
                 <$ty>::reset(self)
+            }
+
+            fn validate(&self) -> Result<(), StreamingError> {
+                <$ty>::validate(self)
             }
 
             $(
@@ -385,9 +393,10 @@ impl<T: StreamingIndicator> Live<T> {
         self.last
     }
 
-    /// True once the last committed bar produced a non-NaN value.
+    /// True once at least one bar is committed and the last one produced a
+    /// non-NaN value.
     pub fn is_ready(&self) -> bool {
-        !self.last.has_nan()
+        self.count > 0 && !self.last.has_nan()
     }
 
     pub fn inner(&self) -> &T {
@@ -598,5 +607,19 @@ mod tests {
             bb.update(c);
             stoch.update(h, l, c);
         }
+    }
+
+    /// i8 condition outputs have no NaN sentinel, so readiness must also
+    /// require at least one committed bar.
+    #[test]
+    fn condition_not_ready_before_first_bar() {
+        let mut live = Live::new(StreamingCooldown::new(2).unwrap());
+        assert!(!live.is_ready());
+        let _ = live.update(1.0, false);
+        assert!(!live.is_ready(), "previews do not count");
+        live.update(0.0, true);
+        assert!(live.is_ready());
+        live.reset();
+        assert!(!live.is_ready());
     }
 }

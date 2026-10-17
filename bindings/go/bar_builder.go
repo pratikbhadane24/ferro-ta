@@ -51,7 +51,8 @@ func barFromC(b C.FtBar) Bar {
 // BarBuilder builds session-aligned OHLCV bars from ticks: bars start at
 // sessionOpen + k*interval (the last bar is cut at sessionClose) and gaps
 // produce no bars. Session times are seconds after local midnight; local
-// time is UTC + utcOffsetSecs.
+// time is UTC + utcOffsetSecs, a fixed offset with no DST rules (create a new
+// builder when a market's offset changes).
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.

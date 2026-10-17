@@ -101,3 +101,9 @@ def test_bar_builder_round_trip():
     assert restored.on_tick(ist(20), 101.0) == b.on_tick(ist(20), 101.0)
     with pytest.raises(ValueError, match="kind"):
         StreamingSMA.from_json(b.to_json())
+
+
+def test_edited_snapshot_with_bad_params_raises_value_error():
+    snapshot = StreamingBBands(5).to_json().replace('"period":5', '"period":0', 1)
+    with pytest.raises(ValueError, match="period"):
+        StreamingBBands.from_json(snapshot)

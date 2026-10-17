@@ -68,6 +68,11 @@ impl StreamingCross {
     pub fn dead_band(&self) -> f64 {
         self.dead_band
     }
+
+    /// Re-check invariants (used when restoring a snapshot).
+    pub fn validate(&self) -> Result<(), StreamingError> {
+        Self::new(self.dead_band).map(|_| ())
+    }
 }
 
 /// "N bars in a row": emits `1` while the current run of true (non-zero)
@@ -99,6 +104,11 @@ impl StreamingStreak {
 
     pub fn n(&self) -> usize {
         self.n
+    }
+
+    /// Re-check invariants (used when restoring a snapshot).
+    pub fn validate(&self) -> Result<(), StreamingError> {
+        Self::new(self.n).map(|_| ())
     }
 }
 
@@ -141,6 +151,17 @@ impl StreamingCooldown {
 
     pub fn bars(&self) -> usize {
         self.bars
+    }
+
+    /// Re-check invariants (used when restoring a snapshot).
+    pub fn validate(&self) -> Result<(), StreamingError> {
+        if self.remaining > self.bars {
+            return Err(StreamingError(format!(
+                "cooldown remaining {} exceeds bars {}",
+                self.remaining, self.bars
+            )));
+        }
+        Ok(())
     }
 }
 

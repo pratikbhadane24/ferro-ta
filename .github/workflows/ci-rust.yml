@@ -71,6 +71,8 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - run: cargo build -p ferro_ta_core
       - run: cargo test -p ferro_ta_core
+      # Snapshot save/restore + golden snapshot fixtures need the serde feature.
+      - run: cargo test -p ferro_ta_core --features serde --lib streaming
 
   # -------------------------------------------------------------------------
   # Coverage (optional, cached)

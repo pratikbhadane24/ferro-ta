@@ -106,6 +106,9 @@ fn parse_clock(text: &str, name: &str) -> PyResult<i64> {
 /// last bar is cut at ``session_close``), so 5-minute NSE bars start at
 /// 09:15, 09:20, … Gaps without ticks produce no bars. Late, duplicate,
 /// out-of-session and invalid ticks are rejected with a status string.
+///
+/// ``utc_offset_minutes`` is fixed (no DST): for markets that observe daylight
+/// saving, create a new builder with the new offset when clocks change.
 #[pyclass(module = "ferro_ta._ferro_ta")]
 #[derive(Clone)]
 pub struct BarBuilder {

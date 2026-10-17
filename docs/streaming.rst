@@ -57,7 +57,12 @@ Defaults are NSE hours, 09:15–15:30 IST, so 5-minute bars start at 09:15, 09:2
   accepted ticks change state.
 - Gaps produce **no** bars, so no holiday calendar is needed.
 - Other sessions: ``BarBuilder(3600, session_open="09:30", session_close="16:00",
-  utc_offset_minutes=-300)``.
+  utc_offset_minutes=-240)`` for New York in summer.
+- ``utc_offset_minutes`` is a **fixed** offset; there is no time-zone or DST
+  handling. For a market that observes daylight saving time, create a new
+  builder with the new offset when the clocks change (between sessions, so no
+  forming bar is lost). With the wrong offset, the first or last hour of the
+  session is rejected as ``"out_of_session"``. NSE (IST) has no DST.
 
 Conditions
 ----------
@@ -67,7 +72,7 @@ Event helpers emit ``1`` / ``-1`` / ``0`` and support previews like any indicato
 - ``StreamingCross(dead_band)`` — cross of ``a`` over ``b`` with hysteresis:
   inside ``±dead_band`` the side is unchanged, so noise around a level fires at
   most once per real crossing (``dead_band=0`` matches batch ``check_cross``).
-- ``StreamingStreak(n)`` — ``1`` while the last ``n``+ inputs were all non-zero.
+- ``StreamingStreak(n)`` — ``1`` while the last ``n`` (or more) inputs were all non-zero.
 - ``StreamingCooldown(bars)`` — passes a signal, then mutes the next ``bars`` bars.
 
 .. code-block:: python

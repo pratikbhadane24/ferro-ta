@@ -69,8 +69,12 @@ where
     }
 
     /// Restore a snapshot made by [`Live::save`] for the same indicator type.
+    /// Parameters and buffers are re-validated, so an edited snapshot fails
+    /// here instead of misbehaving on the next update.
     pub fn load(json: &str) -> Result<Self, StreamingError> {
-        load_state(T::KIND, json)
+        let live: Self = load_state(T::KIND, json)?;
+        live.inner().validate().map_err(snapshot_err)?;
+        Ok(live)
     }
 }
 
@@ -268,5 +272,209 @@ mod tests {
             Live::<StreamingSMA>::load(&json).is_err(),
             "bar_builder is not sma"
         );
+    }
+
+    /// A well-formed snapshot with impossible parameters must be rejected at
+    /// load time, not panic on the next update.
+    #[test]
+    fn load_rejects_invalid_parameters() {
+        let edit = |json: String, from: &str, to: &str| {
+            assert!(json.contains(from), "fixture shape: {from}");
+            json.replacen(from, to, 1)
+        };
+        let bb = Live::new(StreamingBBands::new(5, 2.0, 2.0).unwrap())
+            .save()
+            .unwrap();
+        assert!(Live::<StreamingBBands>::load(&edit(bb, "\"period\":5", "\"period\":0")).is_err());
+
+        let mut sma = Live::new(StreamingSMA::new(2).unwrap());
+        for v in [1.0, 2.0] {
+            sma.update(v, true);
+        }
+        let json = edit(sma.save().unwrap(), "\"period\":2", "\"period\":1");
+        assert!(
+            Live::<StreamingSMA>::load(&json).is_err(),
+            "buffer longer than period"
+        );
+
+        let rsi = Live::new(StreamingRSI::new(3).unwrap()).save().unwrap();
+        assert!(Live::<StreamingRSI>::load(&edit(rsi, "\"period\":3", "\"period\":0")).is_err());
+
+        let macd = Live::new(StreamingMACD::new(3, 6, 2).unwrap())
+            .save()
+            .unwrap();
+        let swapped = edit(macd, "\"period\":3", "\"period\":9");
+        assert!(
+            Live::<StreamingMACD>::load(&swapped).is_err(),
+            "fast >= slow"
+        );
+
+        let cross = Live::new(StreamingCross::new(0.5).unwrap()).save().unwrap();
+        assert!(Live::<StreamingCross>::load(&edit(
+            cross,
+            "\"dead_band\":0.5",
+            "\"dead_band\":-1.0"
+        ))
+        .is_err());
+
+        let streak = Live::new(StreamingStreak::new(2).unwrap()).save().unwrap();
+        assert!(Live::<StreamingStreak>::load(&edit(streak, "\"n\":2", "\"n\":0")).is_err());
+
+        let greeks = Live::new(
+            StreamingOptionGreeks::new(
+                PricingModel::BlackScholes,
+                OptionKind::Call,
+                100.0,
+                0.0,
+                0.0,
+            )
+            .unwrap(),
+        )
+        .save()
+        .unwrap();
+        assert!(Live::<StreamingOptionGreeks>::load(&edit(
+            greeks,
+            "\"strike\":100.0",
+            "\"strike\":-1.0"
+        ))
+        .is_err());
+    }
+
+    /// Committed snapshot per kind for the current `STATE_FORMAT_VERSION`.
+    fn fixture_path() -> std::path::PathBuf {
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(format!(
+            "tests/fixtures/streaming_snapshots_v{STATE_FORMAT_VERSION}.json"
+        ))
+    }
+
+    /// Save after `WARM` bars; compare with (or record into) the fixture and
+    /// check the committed snapshot still loads and continues identically.
+    fn check_golden<T>(
+        fixtures: &mut std::collections::BTreeMap<String, String>,
+        record: bool,
+        make: impl Fn() -> T,
+        input_of: impl Fn((f64, f64, f64, f64)) -> T::Input,
+    ) where
+        T: StreamingIndicator + Serialize + DeserializeOwned,
+    {
+        let data = bars(2 * WARM);
+        let mut fresh = Live::new(make());
+        for &bar in &data[..WARM] {
+            fresh.update(input_of(bar), true);
+        }
+        let json = fresh.save().unwrap();
+        if record {
+            fixtures.insert(T::KIND.to_string(), json);
+            return;
+        }
+        let committed = fixtures.get(T::KIND).unwrap_or_else(|| {
+            panic!(
+                "no golden snapshot for {}; run with UPDATE_SNAPSHOT_FIXTURES=1",
+                T::KIND
+            )
+        });
+        assert_eq!(
+            &json,
+            committed,
+            "{} state layout changed: bump STATE_FORMAT_VERSION and regenerate \
+             (UPDATE_SNAPSHOT_FIXTURES=1 cargo test -p ferro_ta_core --features serde)",
+            T::KIND
+        );
+        let mut restored = Live::<T>::load(committed).unwrap();
+        for &bar in &data[WARM..] {
+            let a = fresh.update(input_of(bar), true);
+            let b = restored.update(input_of(bar), true);
+            assert!(same(a, b), "{}: committed snapshot diverges", T::KIND);
+        }
+    }
+
+    /// Guards the format-version rule: any change to a serialized state
+    /// struct breaks this until the version is bumped and fixtures recorded.
+    #[test]
+    fn golden_snapshots_match_current_format() {
+        let record = std::env::var_os("UPDATE_SNAPSHOT_FIXTURES").is_some();
+        let path = fixture_path();
+        let mut fixtures: std::collections::BTreeMap<String, String> = if record {
+            Default::default()
+        } else {
+            let text = std::fs::read_to_string(&path).unwrap_or_else(|_| {
+                panic!(
+                    "missing {}; run with UPDATE_SNAPSHOT_FIXTURES=1",
+                    path.display()
+                )
+            });
+            serde_json::from_str(&text).unwrap()
+        };
+        let close = |b: (f64, f64, f64, f64)| b.2;
+        let hlc = |b: (f64, f64, f64, f64)| (b.0, b.1, b.2);
+        let f = &mut fixtures;
+        check_golden(f, record, || StreamingSMA::new(10).unwrap(), close);
+        check_golden(f, record, || StreamingEMA::new(10).unwrap(), close);
+        check_golden(f, record, || StreamingRSI::new(14).unwrap(), close);
+        check_golden(
+            f,
+            record,
+            || StreamingBBands::new(20, 2.0, 2.0).unwrap(),
+            close,
+        );
+        check_golden(f, record, || StreamingMACD::new(12, 26, 9).unwrap(), close);
+        check_golden(f, record, || StreamingATR::new(14).unwrap(), hlc);
+        check_golden(f, record, || StreamingStoch::new(5, 3, 3).unwrap(), hlc);
+        check_golden(f, record, || StreamingSupertrend::new(7, 3.0).unwrap(), hlc);
+        check_golden(f, record, StreamingVWAP::new, |b| b);
+        check_golden(
+            f,
+            record,
+            || StreamingCross::new(0.1).unwrap(),
+            |b| (b.2, b.0 - 0.5),
+        );
+        check_golden(
+            f,
+            record,
+            || StreamingStreak::new(3).unwrap(),
+            |b| b.2 - b.1 - 0.5,
+        );
+        check_golden(
+            f,
+            record,
+            || StreamingCooldown::new(2).unwrap(),
+            |b| b.2 - 100.0,
+        );
+        check_golden(
+            f,
+            record,
+            || {
+                StreamingOptionGreeks::new(
+                    PricingModel::BlackScholes,
+                    OptionKind::Call,
+                    100.0,
+                    0.05,
+                    0.0,
+                )
+                .unwrap()
+            },
+            |b| (5.0 + (b.0 - b.1), b.2, 0.25),
+        );
+
+        let ist = |m: i64| 20_377 * 86_400_000 + (9 * 60 + m) * 60_000 - 19_800_000;
+        let mut builder = BarBuilder::new(BarSpec::nse(300)).unwrap();
+        for (k, &(_, _, c, v)) in bars(40).iter().enumerate() {
+            builder.on_tick(ist(k as i64), c, v);
+        }
+        let bar_json = builder.save().unwrap();
+        if record {
+            fixtures.insert("bar_builder".to_string(), bar_json);
+            let text = serde_json::to_string_pretty(&fixtures).unwrap() + "\n";
+            std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+            std::fs::write(&path, text).unwrap();
+        } else {
+            assert_eq!(
+                Some(&bar_json),
+                fixtures.get("bar_builder"),
+                "bar_builder layout changed"
+            );
+            let restored = BarBuilder::load(&fixtures["bar_builder"]).unwrap();
+            assert_eq!(restored.forming(), builder.forming());
+        }
     }
 }

@@ -40,7 +40,8 @@ typedef struct FtBar {
 /**
  * Session-aligned tick -> bar builder: bars start at session_open + k*interval
  * (last bar cut at session_close); gaps produce no bars. Session times are
- * seconds after local midnight; local = UTC + utc_offset_secs.
+ * seconds after local midnight; local = UTC + utc_offset_secs (fixed offset,
+ * no DST: create a new builder when a market's offset changes).
  * Requires: 0 < interval_secs <= 86400; 0 <= session_open_secs <
  * session_close_secs <= 86400; |utc_offset_secs| <= 50400.
  */
