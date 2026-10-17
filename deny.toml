@@ -65,7 +65,9 @@ ignore = [
     # migration (IntoPy/ToPyObject were removed in 0.26). Ignored here
     # because ferro-ta does NOT use either affected code path:
     #   * RUSTSEC-2026-0176 — OOB read in PyList/PyTuple nth/nth_back
-    #     iterators: the crate has zero PyList/PyTuple iterator usage.
+    #     iterators: the crate never calls nth/nth_back (or adapters such as
+    #     skip/step_by) on a PyList/PyTuple iterator; its only PyTuple
+    #     iteration is plain `for` loops over strategy legs, which use next().
     #   * RUSTSEC-2026-0177 — missing Sync bound on
     #     PyCFunction::new_closure: the crate uses #[pyfunction], never
     #     new_closure.
