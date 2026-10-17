@@ -13,6 +13,7 @@ pub mod normal;
 pub mod payoff;
 pub mod pricing;
 pub mod realized_vol;
+pub mod strategy;
 pub mod surface;
 
 /// Option side.
