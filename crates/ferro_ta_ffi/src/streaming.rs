@@ -1,14 +1,17 @@
 //! Opaque-handle exports for `ferro_ta_core::streaming`.
 //!
-//! Handles are heap-allocated core structs (`Box::into_raw`). A handle is not
+//! Handles are heap-allocated `Live<core struct>` (`Box::into_raw`), so NaN
+//! inputs are skipped without poisoning state and `_peek` can preview the
+//! forming bar. A handle is not
 //! thread-safe: callers must not use one handle from two threads at once.
 //! Every handle from `*_new` must be released exactly once with `*_free`.
 
 use crate::marshal::WriteScalars;
 use crate::status::Status;
 use ferro_ta_core::streaming::{
-    StreamingATR, StreamingBBands, StreamingEMA, StreamingError, StreamingMACD, StreamingRSI,
-    StreamingSMA, StreamingStoch, StreamingSupertrend, StreamingVWAP,
+    Live, StreamValue, StreamingATR, StreamingBBands, StreamingEMA, StreamingError,
+    StreamingIndicator, StreamingMACD, StreamingRSI, StreamingSMA, StreamingStoch,
+    StreamingSupertrend, StreamingVWAP,
 };
 
 /// Normalise core constructors (fallible or not) to `Result<T, Status>`.
@@ -24,6 +27,7 @@ impl<T> IntoCtorResult<T> for Result<T, StreamingError> {
 
 /// Bar-by-bar backtester handle: wraps the core `StreamingBacktest` so each
 /// update also reports the running summary.
+#[derive(Clone, Debug)]
 pub struct BacktestStream(ferro_ta_core::backtest::StreamingBacktest);
 
 impl BacktestStream {
@@ -62,6 +66,81 @@ impl BacktestStream {
     }
 }
 
+/// Backtest stream input. A NaN `signal` means "flat", so only a non-finite
+/// close (or an infinite signal) makes a tick unusable for the `Live` guard.
+#[derive(Clone, Copy, Debug)]
+pub struct BacktestBar {
+    pub close: f64,
+    pub signal: f64,
+}
+
+impl From<(f64, f64)> for BacktestBar {
+    fn from((close, signal): (f64, f64)) -> Self {
+        Self { close, signal }
+    }
+}
+
+impl StreamValue for BacktestBar {
+    fn has_nan(&self) -> bool {
+        self.close.is_nan()
+    }
+    fn all_finite(&self) -> bool {
+        self.close.is_finite() && !self.signal.is_infinite()
+    }
+    fn nan() -> Self {
+        Self {
+            close: f64::NAN,
+            signal: f64::NAN,
+        }
+    }
+}
+
+/// `(position, bar_return, equity, n_trades, total_commission, win_rate,
+/// avg_win, avg_loss, kelly_fraction)`.
+pub type BacktestTuple = (f64, f64, f64, i64, f64, f64, f64, f64, f64);
+
+/// Backtest stream output. Readiness tracks equity: the trade statistics
+/// are legitimately NaN until the first closed trade.
+#[derive(Clone, Copy, Debug)]
+pub struct BacktestOut(pub BacktestTuple);
+
+impl StreamValue for BacktestOut {
+    fn has_nan(&self) -> bool {
+        self.0 .2.is_nan()
+    }
+    fn all_finite(&self) -> bool {
+        let (a, b, c, _, e, f, g, h, i) = self.0;
+        [a, b, c, e, f, g, h, i].iter().all(|v| v.is_finite())
+    }
+    fn nan() -> Self {
+        let n = f64::NAN;
+        Self((n, n, n, 0, n, n, n, n, n))
+    }
+}
+
+impl<P> WriteScalars<P> for BacktestOut
+where
+    BacktestTuple: WriteScalars<P>,
+{
+    unsafe fn write_to(self, ptrs: P) {
+        // SAFETY: forwarded caller contract.
+        unsafe { self.0.write_to(ptrs) }
+    }
+}
+
+impl StreamingIndicator for BacktestStream {
+    type Input = BacktestBar;
+    type Output = BacktestOut;
+
+    fn update(&mut self, input: BacktestBar) -> BacktestOut {
+        BacktestOut(BacktestStream::update(self, input.close, input.signal))
+    }
+
+    fn reset(&mut self) {
+        BacktestStream::reset(self)
+    }
+}
+
 impl IntoCtorResult<BacktestStream> for BacktestStream {
     fn into_ctor_result(self) -> Result<BacktestStream, Status> {
         Ok(self)
@@ -74,6 +153,41 @@ impl IntoCtorResult<StreamingVWAP> for StreamingVWAP {
     }
 }
 
+/// Emits one `extern "C"` feed function (`_update` or `_peek`).
+macro_rules! ffi_stream_feed {
+    (
+        $(#[doc = $doc:literal])*
+        $fn_name:ident, $ty:ident, closed = $closed:literal,
+        ($($input:ident),+) -> ($($out:ident : $elem:ident),+)
+    ) => {
+        $(#[doc = $doc])*
+        ///
+        /// # Safety
+        /// `handle` must come from the matching `_new` and not be freed;
+        /// each output pointer must be valid for one write.
+        #[no_mangle]
+        pub unsafe extern "C" fn $fn_name(
+            handle: *mut Live<$ty>,
+            $($input: f64,)+
+            $($out: *mut $elem,)+
+        ) -> i32 {
+            $crate::status::guard(|| {
+                if handle.is_null() $(|| $out.is_null())+ {
+                    return Err(Status::NullPtr);
+                }
+                // SAFETY: live, exclusively-used handle per contract.
+                let state = unsafe { &mut *handle };
+                let raw = ($($input),+);
+                let input = <$ty as StreamingIndicator>::Input::from(raw);
+                let result = state.update(input, $closed);
+                // SAFETY: outputs checked non-null above.
+                unsafe { WriteScalars::write_to(result, ($($out,)+)) };
+                Ok(())
+            })
+        }
+    };
+}
+
 macro_rules! ffi_streams {
     (
         $(
@@ -81,6 +195,7 @@ macro_rules! ffi_streams {
             $name:ident: $ty:ident as $handle:ident {
                 $new_fn:ident ( $($param:ident : $kind:ident $($min:literal)?),* ),
                 $update_fn:ident ( $($input:ident),+ ) -> [ $($out:ident : $elem:ident),+ ],
+                $peek_fn:ident,
                 $reset_fn:ident,
                 $free_fn:ident $(,)?
             }
@@ -96,7 +211,7 @@ macro_rules! ffi_streams {
             #[no_mangle]
             pub unsafe extern "C" fn $new_fn(
                 $($param: $crate::ffi_cty!($kind),)*
-                out_handle: *mut *mut $ty,
+                out_handle: *mut *mut Live<$ty>,
             ) -> i32 {
                 if out_handle.is_null() {
                     return $crate::status::FT_ERR_NULL_PTR;
@@ -111,34 +226,23 @@ macro_rules! ffi_streams {
                         )?;
                     )*
                     let state = IntoCtorResult::into_ctor_result($ty::new($($param),*))?;
+                    let live = Box::new(Live::new(state));
                     // SAFETY: as above.
-                    unsafe { out_handle.write(Box::into_raw(Box::new(state))) };
+                    unsafe { out_handle.write(Box::into_raw(live)) };
                     Ok(())
                 })
             }
 
-            /// Feed one bar; writes this bar's value(s) (NaN during warm-up).
-            ///
-            /// # Safety
-            /// `handle` must come from the matching `_new` and not be freed;
-            /// each output pointer must be valid for one write.
-            #[no_mangle]
-            pub unsafe extern "C" fn $update_fn(
-                handle: *mut $ty,
-                $($input: f64,)+
-                $($out: *mut $elem,)+
-            ) -> i32 {
-                $crate::status::guard(|| {
-                    if handle.is_null() $(|| $out.is_null())+ {
-                        return Err(Status::NullPtr);
-                    }
-                    // SAFETY: live, exclusively-used handle per contract.
-                    let state = unsafe { &mut *handle };
-                    let result = state.update($($input),+);
-                    // SAFETY: outputs checked non-null above.
-                    unsafe { WriteScalars::write_to(result, ($($out,)+)) };
-                    Ok(())
-                })
+            ffi_stream_feed! {
+                /// Commit one bar; writes this bar's value(s) (NaN during
+                /// warm-up). A NaN/±inf input writes NaN and leaves state untouched.
+                $update_fn, $ty, closed = true, ($($input),+) -> ($($out: $elem),+)
+            }
+
+            ffi_stream_feed! {
+                /// Preview the still-forming bar: writes the value(s) `update`
+                /// would write for these inputs, without changing state.
+                $peek_fn, $ty, closed = false, ($($input),+) -> ($($out: $elem),+)
             }
 
             /// Clear all state; the next bars warm up again.
@@ -146,7 +250,7 @@ macro_rules! ffi_streams {
             /// # Safety
             /// `handle` must come from the matching `_new` and not be freed.
             #[no_mangle]
-            pub unsafe extern "C" fn $reset_fn(handle: *mut $ty) -> i32 {
+            pub unsafe extern "C" fn $reset_fn(handle: *mut Live<$ty>) -> i32 {
                 $crate::status::guard(|| {
                     if handle.is_null() {
                         return Err(Status::NullPtr);
@@ -163,7 +267,7 @@ macro_rules! ffi_streams {
             /// `handle` must come from the matching `_new` and must not be
             /// used (or freed) again afterwards.
             #[no_mangle]
-            pub unsafe extern "C" fn $free_fn(handle: *mut $ty) {
+            pub unsafe extern "C" fn $free_fn(handle: *mut Live<$ty>) {
                 if !handle.is_null() {
                     // SAFETY: produced by Box::into_raw in `_new`, freed once.
                     drop(unsafe { Box::from_raw(handle) });
@@ -180,6 +284,7 @@ macro_rules! ffi_streams {
                     doc: concat!($($doc, "\n",)*),
                     new_fn: stringify!($new_fn),
                     update_fn: stringify!($update_fn),
+                    peek_fn: stringify!($peek_fn),
                     reset_fn: stringify!($reset_fn),
                     free_fn: stringify!($free_fn),
                     params: &[$(
@@ -206,6 +311,7 @@ ffi_streams! {
     sma: StreamingSMA as FtStreamSma {
         ft_stream_sma_new(period: period),
         ft_stream_sma_update(value) -> [out: f64],
+        ft_stream_sma_peek,
         ft_stream_sma_reset,
         ft_stream_sma_free,
     }
@@ -213,6 +319,7 @@ ffi_streams! {
     ema: StreamingEMA as FtStreamEma {
         ft_stream_ema_new(period: period),
         ft_stream_ema_update(value) -> [out: f64],
+        ft_stream_ema_peek,
         ft_stream_ema_reset,
         ft_stream_ema_free,
     }
@@ -220,6 +327,7 @@ ffi_streams! {
     rsi: StreamingRSI as FtStreamRsi {
         ft_stream_rsi_new(period: period),
         ft_stream_rsi_update(value) -> [out: f64],
+        ft_stream_rsi_peek,
         ft_stream_rsi_reset,
         ft_stream_rsi_free,
     }
@@ -227,6 +335,7 @@ ffi_streams! {
     atr: StreamingATR as FtStreamAtr {
         ft_stream_atr_new(period: period),
         ft_stream_atr_update(high, low, close) -> [out: f64],
+        ft_stream_atr_peek,
         ft_stream_atr_reset,
         ft_stream_atr_free,
     }
@@ -234,6 +343,7 @@ ffi_streams! {
     bbands: StreamingBBands as FtStreamBbands {
         ft_stream_bbands_new(period: period, nbdevup: float, nbdevdn: float),
         ft_stream_bbands_update(value) -> [out_upper: f64, out_middle: f64, out_lower: f64],
+        ft_stream_bbands_peek,
         ft_stream_bbands_reset,
         ft_stream_bbands_free,
     }
@@ -241,6 +351,7 @@ ffi_streams! {
     macd: StreamingMACD as FtStreamMacd {
         ft_stream_macd_new(fastperiod: period, slowperiod: period, signalperiod: period),
         ft_stream_macd_update(value) -> [out_macd: f64, out_signal: f64, out_hist: f64],
+        ft_stream_macd_peek,
         ft_stream_macd_reset,
         ft_stream_macd_free,
     }
@@ -248,6 +359,7 @@ ffi_streams! {
     stoch: StreamingStoch as FtStreamStoch {
         ft_stream_stoch_new(fastk_period: period, slowk_period: period, slowd_period: period),
         ft_stream_stoch_update(high, low, close) -> [out_slowk: f64, out_slowd: f64],
+        ft_stream_stoch_peek,
         ft_stream_stoch_reset,
         ft_stream_stoch_free,
     }
@@ -255,6 +367,7 @@ ffi_streams! {
     vwap: StreamingVWAP as FtStreamVwap {
         ft_stream_vwap_new(),
         ft_stream_vwap_update(high, low, close, volume) -> [out: f64],
+        ft_stream_vwap_peek,
         ft_stream_vwap_reset,
         ft_stream_vwap_free,
     }
@@ -272,6 +385,7 @@ ffi_streams! {
             out_avg_loss: f64,
             out_kelly_fraction: f64
         ],
+        ft_stream_backtest_peek,
         ft_stream_backtest_reset,
         ft_stream_backtest_free,
     }
@@ -279,6 +393,7 @@ ffi_streams! {
     supertrend: StreamingSupertrend as FtStreamSupertrend {
         ft_stream_supertrend_new(period: period, multiplier: float),
         ft_stream_supertrend_update(high, low, close) -> [out_line: f64, out_direction: i8],
+        ft_stream_supertrend_peek,
         ft_stream_supertrend_reset,
         ft_stream_supertrend_free,
     }

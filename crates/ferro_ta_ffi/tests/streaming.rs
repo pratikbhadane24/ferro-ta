@@ -211,3 +211,82 @@ fn oversized_stream_period_is_rejected() {
     );
     assert!(h.is_null());
 }
+
+#[test]
+fn peek_previews_without_committing() {
+    let mut h = ptr::null_mut();
+    assert_eq!(unsafe { ft_stream_sma_new(3, &mut h) }, FT_OK);
+    let mut out = 0.0;
+    for x in [1.0, 2.0, 3.0] {
+        unsafe { ft_stream_sma_update(h, x, &mut out) };
+    }
+    let mut preview = 0.0;
+    for tick in [50.0, 9.0] {
+        assert_eq!(unsafe { ft_stream_sma_peek(h, tick, &mut preview) }, FT_OK);
+    }
+    assert_eq!(preview, (2.0 + 3.0 + 9.0) / 3.0);
+    unsafe { ft_stream_sma_update(h, 9.0, &mut out) };
+    assert_eq!(out, preview, "peek must equal the committed value");
+    unsafe { ft_stream_sma_free(h) };
+}
+
+#[test]
+fn peek_rejects_null_pointers() {
+    let mut h = ptr::null_mut();
+    assert_eq!(unsafe { ft_stream_sma_new(3, &mut h) }, FT_OK);
+    let mut out = 0.0;
+    assert_eq!(
+        unsafe { ft_stream_sma_peek(ptr::null_mut(), 1.0, &mut out) },
+        FT_ERR_NULL_PTR
+    );
+    assert_eq!(
+        unsafe { ft_stream_sma_peek(h, 1.0, ptr::null_mut()) },
+        FT_ERR_NULL_PTR
+    );
+    unsafe { ft_stream_sma_free(h) };
+}
+
+#[test]
+fn nan_input_is_skipped_not_poisoning() {
+    let mut h = ptr::null_mut();
+    assert_eq!(unsafe { ft_stream_sma_new(2, &mut h) }, FT_OK);
+    let mut out = 0.0;
+    unsafe { ft_stream_sma_update(h, 1.0, &mut out) };
+    unsafe { ft_stream_sma_update(h, f64::NAN, &mut out) };
+    assert!(out.is_nan(), "NaN tick reports NaN");
+    unsafe { ft_stream_sma_update(h, 3.0, &mut out) };
+    assert_eq!(out, 2.0, "state continues as if the NaN never arrived");
+    unsafe { ft_stream_sma_free(h) };
+}
+
+/// The backtest stream gives NaN signals a meaning (flat), so the `Live`
+/// non-finite guard must not skip them; a non-finite close is still skipped.
+#[test]
+fn backtest_stream_nan_signal_means_flat_through_live() {
+    let mut h = ptr::null_mut();
+    assert_eq!(unsafe { ft_stream_backtest_new(0.0, 0.0, &mut h) }, FT_OK);
+    let mut o = [0.0_f64; 8];
+    let mut n_trades = 0_i64;
+    let step = |close: f64, signal: f64, o: &mut [f64; 8], n: &mut i64| unsafe {
+        let [a, b, c, e, f, g, i, j] = o;
+        ft_stream_backtest_update(h, close, signal, a, b, c, n, e, f, g, i, j)
+    };
+    assert_eq!(step(100.0, 1.0, &mut o, &mut n_trades), FT_OK);
+    assert_eq!(o[0], 1.0, "long");
+    assert_eq!(step(110.0, f64::NAN, &mut o, &mut n_trades), FT_OK);
+    assert_eq!(o[0], 0.0, "NaN signal flattens");
+    assert!(
+        (o[2] - 1.1).abs() < 1e-12,
+        "equity marked to the 10% move: {}",
+        o[2]
+    );
+    assert_eq!(n_trades, 1);
+    assert_eq!(step(f64::NAN, 1.0, &mut o, &mut n_trades), FT_OK);
+    assert!(o[2].is_nan(), "non-finite close is skipped");
+    assert_eq!(step(120.0, 0.0, &mut o, &mut n_trades), FT_OK);
+    assert!(
+        (o[2] - 1.1).abs() < 1e-12,
+        "state untouched by the skipped tick"
+    );
+    unsafe { ft_stream_backtest_free(h) };
+}

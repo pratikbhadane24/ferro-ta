@@ -9266,6 +9266,7 @@
           "name": "period"
         }
       ],
+      "peek_fn": "ft_stream_sma_peek",
       "reset_fn": "ft_stream_sma_reset",
       "update_fn": "ft_stream_sma_update"
     },
@@ -9293,6 +9294,7 @@
           "name": "period"
         }
       ],
+      "peek_fn": "ft_stream_ema_peek",
       "reset_fn": "ft_stream_ema_reset",
       "update_fn": "ft_stream_ema_update"
     },
@@ -9320,6 +9322,7 @@
           "name": "period"
         }
       ],
+      "peek_fn": "ft_stream_rsi_peek",
       "reset_fn": "ft_stream_rsi_reset",
       "update_fn": "ft_stream_rsi_update"
     },
@@ -9349,6 +9352,7 @@
           "name": "period"
         }
       ],
+      "peek_fn": "ft_stream_atr_peek",
       "reset_fn": "ft_stream_atr_reset",
       "update_fn": "ft_stream_atr_update"
     },
@@ -9396,6 +9400,7 @@
           "name": "nbdevdn"
         }
       ],
+      "peek_fn": "ft_stream_bbands_peek",
       "reset_fn": "ft_stream_bbands_reset",
       "update_fn": "ft_stream_bbands_update"
     },
@@ -9445,6 +9450,7 @@
           "name": "signalperiod"
         }
       ],
+      "peek_fn": "ft_stream_macd_peek",
       "reset_fn": "ft_stream_macd_reset",
       "update_fn": "ft_stream_macd_update"
     },
@@ -9491,6 +9497,7 @@
           "name": "slowd_period"
         }
       ],
+      "peek_fn": "ft_stream_stoch_peek",
       "reset_fn": "ft_stream_stoch_reset",
       "update_fn": "ft_stream_stoch_update"
     },
@@ -9514,6 +9521,7 @@
         }
       ],
       "params": [],
+      "peek_fn": "ft_stream_vwap_peek",
       "reset_fn": "ft_stream_vwap_reset",
       "update_fn": "ft_stream_vwap_update"
     },
@@ -9586,6 +9594,7 @@
           "name": "slippage_bps"
         }
       ],
+      "peek_fn": "ft_stream_backtest_peek",
       "reset_fn": "ft_stream_backtest_reset",
       "update_fn": "ft_stream_backtest_update"
     },
@@ -9625,6 +9634,7 @@
           "name": "multiplier"
         }
       ],
+      "peek_fn": "ft_stream_supertrend_peek",
       "reset_fn": "ft_stream_supertrend_reset",
       "update_fn": "ft_stream_supertrend_update"
     }

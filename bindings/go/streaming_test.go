@@ -118,3 +118,40 @@ func TestStreamAbandonedHandlesAreSafeToCollect(t *testing.T) {
 	runtime.GC()
 	runtime.GC()
 }
+
+func TestStreamPeekDoesNotCommit(t *testing.T) {
+	s, err := NewStreamSma(3)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Close()
+	for _, x := range []float64{1, 2, 3} {
+		if _, err := s.Update(x); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, tick := range []float64{50, 9} {
+		if _, err := s.Peek(tick); err != nil {
+			t.Fatal(err)
+		}
+	}
+	preview, _ := s.Peek(9)
+	got, err := s.Update(9)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got != preview || got != (2.0+3.0+9.0)/3.0 {
+		t.Fatalf("peek %v, update %v", preview, got)
+	}
+}
+
+func TestStreamPeekAfterClose(t *testing.T) {
+	s, err := NewStreamSma(3)
+	if err != nil {
+		t.Fatal(err)
+	}
+	s.Close()
+	if _, err := s.Peek(1); !errors.Is(err, ErrClosed) {
+		t.Fatalf("got %v", err)
+	}
+}

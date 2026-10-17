@@ -117,6 +117,7 @@ fn main() {
                 "doc": doc(s.doc),
                 "new_fn": s.new_fn,
                 "update_fn": s.update_fn,
+                "peek_fn": s.peek_fn,
                 "reset_fn": s.reset_fn,
                 "free_fn": s.free_fn,
                 "params": s.params.iter().map(param).collect::<Vec<_>>(),

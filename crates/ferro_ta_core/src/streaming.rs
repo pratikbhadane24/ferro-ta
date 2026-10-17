@@ -8,6 +8,9 @@
 
 use std::collections::VecDeque;
 
+mod live;
+pub use live::{Live, StreamValue, StreamingIndicator};
+
 // ---------------------------------------------------------------------------
 // Error type
 // ---------------------------------------------------------------------------
@@ -40,6 +43,7 @@ fn validate_timeperiod(value: usize, name: &str, minimum: usize) -> Result<(), S
 
 /// SMA-seeded EMA state machine.  Not exposed directly — used by
 /// `StreamingEMA`, `StreamingMACD`, etc.
+#[derive(Clone, Debug)]
 pub(crate) struct EmaState {
     period: usize,
     alpha: f64,
@@ -68,6 +72,9 @@ impl EmaState {
             let seed = self.seed_buf.iter().sum::<f64>() / self.period as f64;
             self.ema = seed;
             self.seeded = true;
+            // Warm-up buffer is dead from here on; free it so clones (`peek`)
+            // stay allocation-free.
+            self.seed_buf = Vec::new();
             return seed;
         }
         self.ema += self.alpha * (value - self.ema);
@@ -91,6 +98,7 @@ impl EmaState {
 
 /// Wilder-smoothed ATR state machine.  Used by `StreamingATR` and
 /// `StreamingSupertrend`.
+#[derive(Clone, Debug)]
 pub(crate) struct AtrState {
     period: usize,
     /// `1 / period`, cached so `update` multiplies instead of dividing.
@@ -133,6 +141,7 @@ impl AtrState {
             // Emit the seed itself at index `period`, matching batch ATR.
             self.atr = self.tr_buf.iter().sum::<f64>() / self.period as f64;
             self.seeded = true;
+            self.tr_buf = Vec::new(); // dead after seeding; keeps clones cheap
             return self.atr;
         }
         // Same `* (1 / p)` form as batch `atr`, so the two stay bit-identical.
@@ -161,6 +170,7 @@ impl AtrState {
 /// Simple Moving Average — O(1) per update via running sum.
 ///
 /// Returns NaN during the first `period - 1` bars.
+#[derive(Clone, Debug)]
 pub struct StreamingSMA {
     period: usize,
     buf: VecDeque<f64>,
@@ -217,6 +227,7 @@ impl StreamingSMA {
 /// Uses a simple SMA for the first `period` bars to seed the EMA, then
 /// switches to the standard EMA formula (alpha = 2 / (period + 1)).
 /// Returns NaN during the warmup window.
+#[derive(Clone, Debug)]
 pub struct StreamingEMA {
     inner: EmaState,
 }
@@ -250,6 +261,7 @@ impl StreamingEMA {
 /// Relative Strength Index with TA-Lib-compatible Wilder seeding.
 ///
 /// Returns NaN during the first `period` bars.
+#[derive(Clone, Debug)]
 pub struct StreamingRSI {
     period: usize,
     prev: f64,
@@ -297,6 +309,9 @@ impl StreamingRSI {
             self.avg_gain = self.gains.iter().sum::<f64>() / self.period as f64;
             self.avg_loss = self.losses.iter().sum::<f64>() / self.period as f64;
             self.seeded = true;
+            // Dead after seeding; keeps clones cheap.
+            self.gains = Vec::new();
+            self.losses = Vec::new();
         } else {
             let pf = (self.period - 1) as f64;
             self.avg_gain = (self.avg_gain * pf + gain) / self.period as f64;
@@ -335,6 +350,7 @@ impl StreamingRSI {
 ///
 /// Accepts (high, low, close) per bar.
 /// Returns NaN during the first `period` bars.
+#[derive(Clone, Debug)]
 pub struct StreamingATR {
     inner: AtrState,
 }
@@ -369,6 +385,7 @@ impl StreamingATR {
 ///
 /// Returns (upper, middle, lower).
 /// NaN tuple during the warmup window.
+#[derive(Clone, Debug)]
 pub struct StreamingBBands {
     period: usize,
     nbdevup: f64,
@@ -449,6 +466,7 @@ impl StreamingBBands {
 ///
 /// Returns (macd_line, signal_line, histogram).
 /// NaN values during warmup.
+#[derive(Clone, Debug)]
 pub struct StreamingMACD {
     fast: EmaState,
     slow: EmaState,
@@ -522,6 +540,7 @@ impl StreamingMACD {
 ///
 /// Returns (slowk, slowd).
 /// NaN tuple during warmup.
+#[derive(Clone, Debug)]
 pub struct StreamingStoch {
     fastk_period: usize,
     slowk_period: usize,
@@ -622,7 +641,7 @@ impl StreamingStoch {
 ///
 /// Resets automatically when `reset()` is called (e.g. at session open).
 /// Accepts (high, low, close, volume) per bar.
-#[derive(Default)]
+#[derive(Clone, Debug, Default)]
 pub struct StreamingVWAP {
     cum_tpv: f64,
     cum_vol: f64,
@@ -664,6 +683,7 @@ impl StreamingVWAP {
 /// Accepts (high, low, close) per bar.
 /// Returns (supertrend_line, direction).
 /// direction: 1 = uptrend, -1 = downtrend, 0 = warmup.
+#[derive(Clone, Debug)]
 pub struct StreamingSupertrend {
     period: usize,
     multiplier: f64,

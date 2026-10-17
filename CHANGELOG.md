@@ -9,19 +9,17 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-### Changed
-
-- OHLCV engine: a same-side position change (e.g. 0.5 → 1.0 from fractional
-  sizing) now charges commission on the traded amount instead of a full exit
-  plus re-entry. It also averages the entry price (used by stops) instead of
-  resetting it to the latest fill, keeps the trailing-stop anchor, and resizes
-  the margin requirement to the new position. Results change only for
-  fractional same-sign signal changes with commission, stops or leverage.
-  With ±1/0 signals the engine output is bit-identical to before (covered by
-  golden tests).
-
 ### Added
 
+- **Live-bar streaming.** Every streaming indicator accepts
+  `update(..., closed=False)` (Python) / `peek(...)` (WASM) /
+  `ft_stream_*_peek` (C) / `Stream*.Peek` (Go) to preview the still-forming bar
+  without mutating state; committed output stays bit-identical.
+- Streaming introspection: `count` and `is_ready` (Python), `count` and
+  `isReady` (WASM). Python streaming classes support `copy.copy` /
+  `copy.deepcopy` snapshots.
+- Core: `StreamingIndicator` trait, `Live<T>` wrapper and `Clone`/`Debug` on
+  all streaming state structs.
 - **Parallel parameter sweeps** — `ferro_ta.analysis.sweep.sweep(close,
   strategy, param_grid)` backtests every combination (Cartesian dict or list
   of dicts) in Rayon-parallel Rust with the GIL released. `SweepResult` keeps
@@ -84,6 +82,24 @@ and the project uses [Semantic Versioning](https://semver.org/).
   `backtest_multi_asset` and `WasmStreamingBacktest`.
 - `ferro_ta_core::options::normal::inv_cdf` (Acklam, rel. error < 1.2e-9)
   and `BacktestMetrics::scalar_fields()`.
+
+### Changed
+
+- OHLCV engine: a same-side position change (e.g. 0.5 → 1.0 from fractional
+  sizing) now charges commission on the traded amount instead of a full exit
+  plus re-entry. It also averages the entry price (used by stops) instead of
+  resetting it to the latest fill, keeps the trailing-stop anchor, and resizes
+  the margin requirement to the new position. Results change only for
+  fractional same-sign signal changes with commission, stops or leverage.
+  With ±1/0 signals the engine output is bit-identical to before (covered by
+  golden tests).
+
+### Fixed
+
+- A NaN or ±inf input no longer poisons streaming state forever (SMA/BBands
+  running sums, EMA/RSI/ATR recursions, VWAP accumulators). Such ticks now return NaN
+  and are skipped — state, `count` and the last value are left untouched.
+
 
 ### Performance
 
