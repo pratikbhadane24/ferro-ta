@@ -17,6 +17,9 @@ jobs:
     timeout-minutes: 60
     env:
       RUSTFLAGS: ""  # override target-cpu=native from .cargo/config.toml
+      # Keep `uv run` from re-syncing the project (an editable build) over the
+      # release wheel installed below; benchmarks must measure the wheel.
+      UV_NO_SYNC: "1"
     steps:
       - uses: actions/checkout@v7
 
@@ -49,8 +52,11 @@ jobs:
         run: |
           uv sync --extra dev
           uv run maturin build --release --out dist
-          uv run pip install --force-reinstall dist/*.whl
-          uv run pip install "ta-lib<0.8"
+          # `uv run pip` has no pip inside the uv venv and fell through to the
+          # system interpreter, so neither the release wheel nor talib reached
+          # the environment `uv run` uses. Install into the uv venv directly.
+          uv pip install --force-reinstall dist/*.whl
+          uv pip install "ta-lib<0.8"
 
       - name: Fail if talib is unavailable (the vs-TA-Lib gate would be vacuous)
         run: uv run python -c "import talib; print('talib', talib.__version__)"
