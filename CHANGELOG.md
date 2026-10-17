@@ -9,6 +9,15 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- **`nan_policy="skip"`** on batch `SMA`, `EMA`, `WMA`, `DEMA`, `TEMA`,
+  `TRIMA`, `KAMA`, `T3`, `BBANDS`, `MACD`, `RSI`, `STOCH` and `ATR`: rows with
+  a non-finite input are dropped, the indicator runs on the rest, and NaN is
+  written back there, so one bad print no longer turns every later value into
+  NaN. Matches the streaming classes tick for tick. The default stays
+  `"propagate"` (TA-Lib semantics, unchanged).
+
 ## [1.5.0] — 2026-10-17
 
 Highlights: live trading support for every streaming indicator (preview the

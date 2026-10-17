@@ -19,15 +19,33 @@ __version__: str
 # Overlap Studies
 # ---------------------------------------------------------------------------
 
-def SMA(close: ArrayLike, timeperiod: int = 30) -> NDArray[np.float64]: ...
-def EMA(close: ArrayLike, timeperiod: int = 30) -> NDArray[np.float64]: ...
-def WMA(close: ArrayLike, timeperiod: int = 30) -> NDArray[np.float64]: ...
-def DEMA(close: ArrayLike, timeperiod: int = 30) -> NDArray[np.float64]: ...
-def TEMA(close: ArrayLike, timeperiod: int = 30) -> NDArray[np.float64]: ...
-def TRIMA(close: ArrayLike, timeperiod: int = 30) -> NDArray[np.float64]: ...
-def KAMA(close: ArrayLike, timeperiod: int = 30) -> NDArray[np.float64]: ...
+def SMA(
+    close: ArrayLike, timeperiod: int = 30, *, nan_policy: str = "propagate"
+) -> NDArray[np.float64]: ...
+def EMA(
+    close: ArrayLike, timeperiod: int = 30, *, nan_policy: str = "propagate"
+) -> NDArray[np.float64]: ...
+def WMA(
+    close: ArrayLike, timeperiod: int = 30, *, nan_policy: str = "propagate"
+) -> NDArray[np.float64]: ...
+def DEMA(
+    close: ArrayLike, timeperiod: int = 30, *, nan_policy: str = "propagate"
+) -> NDArray[np.float64]: ...
+def TEMA(
+    close: ArrayLike, timeperiod: int = 30, *, nan_policy: str = "propagate"
+) -> NDArray[np.float64]: ...
+def TRIMA(
+    close: ArrayLike, timeperiod: int = 30, *, nan_policy: str = "propagate"
+) -> NDArray[np.float64]: ...
+def KAMA(
+    close: ArrayLike, timeperiod: int = 30, *, nan_policy: str = "propagate"
+) -> NDArray[np.float64]: ...
 def T3(
-    close: ArrayLike, timeperiod: int = 5, vfactor: float = 0.7
+    close: ArrayLike,
+    timeperiod: int = 5,
+    vfactor: float = 0.7,
+    *,
+    nan_policy: str = "propagate",
 ) -> NDArray[np.float64]: ...
 def BBANDS(
     close: ArrayLike,
@@ -35,12 +53,16 @@ def BBANDS(
     nbdevup: float = 2.0,
     nbdevdn: float = 2.0,
     matype: int = 0,
+    *,
+    nan_policy: str = "propagate",
 ) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]: ...
 def MACD(
     close: ArrayLike,
     fastperiod: int = 12,
     slowperiod: int = 26,
     signalperiod: int = 9,
+    *,
+    nan_policy: str = "propagate",
 ) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]: ...
 def MACDFIX(
     close: ArrayLike,
@@ -137,7 +159,9 @@ def CHANDE_KROLL_STOP(
 # Momentum Indicators
 # ---------------------------------------------------------------------------
 
-def RSI(close: ArrayLike, timeperiod: int = 14) -> NDArray[np.float64]: ...
+def RSI(
+    close: ArrayLike, timeperiod: int = 14, *, nan_policy: str = "propagate"
+) -> NDArray[np.float64]: ...
 def MOM(close: ArrayLike, timeperiod: int = 10) -> NDArray[np.float64]: ...
 def ROC(close: ArrayLike, timeperiod: int = 10) -> NDArray[np.float64]: ...
 def ROCP(close: ArrayLike, timeperiod: int = 10) -> NDArray[np.float64]: ...
@@ -198,6 +222,8 @@ def STOCH(
     slowk_matype: int = 0,
     slowd_period: int = 3,
     slowd_matype: int = 0,
+    *,
+    nan_policy: str = "propagate",
 ) -> tuple[NDArray[np.float64], NDArray[np.float64]]: ...
 def STOCHRSI(
     close: ArrayLike,
@@ -472,6 +498,8 @@ def ATR(
     low: ArrayLike,
     close: ArrayLike,
     timeperiod: int = 14,
+    *,
+    nan_policy: str = "propagate",
 ) -> NDArray[np.float64]: ...
 def NATR(
     high: ArrayLike,

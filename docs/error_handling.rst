@@ -56,6 +56,36 @@ By default, ferro-ta **propagates** NaN and Inf in input arrays: output values
 that depend on a NaN/Inf input will themselves be NaN/Inf. No exception is
 raised for NaN or Inf in the input.
 
+For running sums and recursions this is permanent, exactly as in TA-Lib: one
+NaN in the middle of a series turns **every later** value of ``SMA``, ``EMA``,
+``RSI``, ``MACD``, ``STOCH`` (and the other moving averages) into NaN, because
+``sum - NaN`` and ``alpha * NaN`` never recover.
+
+``nan_policy="skip"``
+~~~~~~~~~~~~~~~~~~~~~
+
+The moving averages (``SMA``, ``EMA``, ``WMA``, ``DEMA``, ``TEMA``,
+``TRIMA``, ``KAMA``, ``T3``), ``BBANDS``, ``MACD``, ``RSI``, ``STOCH`` and
+``ATR`` take ``nan_policy="skip"``: rows with a non-finite value in any input
+are dropped, the indicator runs on the remaining rows, and NaN is written back
+at the dropped rows. Output stays the input's length and recovers right after
+the bad bar.
+
+.. code-block:: python
+
+    import numpy as np
+    import ferro_ta as ft
+
+    close = np.arange(1.0, 21.0)
+    close[5] = np.nan
+    ft.SMA(close, 3)                      # NaN from index 5 onward (TA-Lib)
+    ft.SMA(close, 3, nan_policy="skip")   # NaN only at index 5; recovers
+
+``"skip"`` is the same rule the streaming classes apply to a bad tick, so a
+batch result with ``nan_policy="skip"`` matches feeding the same data through
+``StreamingSMA`` etc. bar by bar. The default stays ``"propagate"`` for TA-Lib
+parity.
+
 If you need strict behaviour (no NaN/Inf), call
 :func:`ferro_ta.exceptions.check_finite` on your arrays before passing them to
 an indicator.

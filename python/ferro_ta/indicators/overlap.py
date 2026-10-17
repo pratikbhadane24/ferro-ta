@@ -118,11 +118,13 @@ from ferro_ta._ferro_ta import (
 from ferro_ta._ferro_ta import (
     zlema as _zlema,
 )
-from ferro_ta._utils import _to_f64
+from ferro_ta._utils import _to_f64, apply_nan_policy
 from ferro_ta.core.exceptions import _normalize_rust_error
 
 
-def SMA(close: ArrayLike, timeperiod: int = 30) -> np.ndarray:
+def SMA(
+    close: ArrayLike, timeperiod: int = 30, *, nan_policy: str = "propagate"
+) -> np.ndarray:
     """Simple Moving Average.
 
     Parameters
@@ -132,18 +134,28 @@ def SMA(close: ArrayLike, timeperiod: int = 30) -> np.ndarray:
     timeperiod : int, optional
         Number of periods (default 30).
 
+    nan_policy : {"propagate", "skip"}, optional
+        ``"propagate"`` (default, TA-Lib semantics): a NaN input poisons every
+        later value. ``"skip"``: rows with a non-finite input are dropped, the
+        indicator runs on the remaining rows, and NaN is written back at the
+        dropped rows (matches the streaming classes tick for tick).
+
     Returns
     -------
     numpy.ndarray
         Array of SMA values; leading ``timeperiod - 1`` entries are ``NaN``.
     """
     try:
-        return _sma(_to_f64(close), timeperiod)
+        return apply_nan_policy(
+            lambda c: _sma(c, timeperiod), (_to_f64(close),), nan_policy
+        )
     except ValueError as e:
         _normalize_rust_error(e)
 
 
-def EMA(close: ArrayLike, timeperiod: int = 30) -> np.ndarray:
+def EMA(
+    close: ArrayLike, timeperiod: int = 30, *, nan_policy: str = "propagate"
+) -> np.ndarray:
     """Exponential Moving Average.
 
     Parameters
@@ -153,18 +165,28 @@ def EMA(close: ArrayLike, timeperiod: int = 30) -> np.ndarray:
     timeperiod : int, optional
         Number of periods (default 30).
 
+    nan_policy : {"propagate", "skip"}, optional
+        ``"propagate"`` (default, TA-Lib semantics): a NaN input poisons every
+        later value. ``"skip"``: rows with a non-finite input are dropped, the
+        indicator runs on the remaining rows, and NaN is written back at the
+        dropped rows (matches the streaming classes tick for tick).
+
     Returns
     -------
     numpy.ndarray
         Array of EMA values; leading ``timeperiod - 1`` entries are ``NaN``.
     """
     try:
-        return _ema(_to_f64(close), timeperiod)
+        return apply_nan_policy(
+            lambda c: _ema(c, timeperiod), (_to_f64(close),), nan_policy
+        )
     except ValueError as e:
         _normalize_rust_error(e)
 
 
-def WMA(close: ArrayLike, timeperiod: int = 30) -> np.ndarray:
+def WMA(
+    close: ArrayLike, timeperiod: int = 30, *, nan_policy: str = "propagate"
+) -> np.ndarray:
     """Weighted Moving Average.
 
     Parameters
@@ -174,18 +196,28 @@ def WMA(close: ArrayLike, timeperiod: int = 30) -> np.ndarray:
     timeperiod : int, optional
         Number of periods (default 30).
 
+    nan_policy : {"propagate", "skip"}, optional
+        ``"propagate"`` (default, TA-Lib semantics): a NaN input poisons every
+        later value. ``"skip"``: rows with a non-finite input are dropped, the
+        indicator runs on the remaining rows, and NaN is written back at the
+        dropped rows (matches the streaming classes tick for tick).
+
     Returns
     -------
     numpy.ndarray
         Array of WMA values; leading ``timeperiod - 1`` entries are ``NaN``.
     """
     try:
-        return _wma(_to_f64(close), timeperiod)
+        return apply_nan_policy(
+            lambda c: _wma(c, timeperiod), (_to_f64(close),), nan_policy
+        )
     except ValueError as e:
         _normalize_rust_error(e)
 
 
-def DEMA(close: ArrayLike, timeperiod: int = 30) -> np.ndarray:
+def DEMA(
+    close: ArrayLike, timeperiod: int = 30, *, nan_policy: str = "propagate"
+) -> np.ndarray:
     """Double Exponential Moving Average.
 
     Parameters
@@ -195,18 +227,28 @@ def DEMA(close: ArrayLike, timeperiod: int = 30) -> np.ndarray:
     timeperiod : int, optional
         Number of periods (default 30).
 
+    nan_policy : {"propagate", "skip"}, optional
+        ``"propagate"`` (default, TA-Lib semantics): a NaN input poisons every
+        later value. ``"skip"``: rows with a non-finite input are dropped, the
+        indicator runs on the remaining rows, and NaN is written back at the
+        dropped rows (matches the streaming classes tick for tick).
+
     Returns
     -------
     numpy.ndarray
         Array of DEMA values; leading ``2 * (timeperiod - 1)`` entries are ``NaN``.
     """
     try:
-        return _dema(_to_f64(close), timeperiod)
+        return apply_nan_policy(
+            lambda c: _dema(c, timeperiod), (_to_f64(close),), nan_policy
+        )
     except ValueError as e:
         _normalize_rust_error(e)
 
 
-def TEMA(close: ArrayLike, timeperiod: int = 30) -> np.ndarray:
+def TEMA(
+    close: ArrayLike, timeperiod: int = 30, *, nan_policy: str = "propagate"
+) -> np.ndarray:
     """Triple Exponential Moving Average.
 
     Parameters
@@ -216,18 +258,28 @@ def TEMA(close: ArrayLike, timeperiod: int = 30) -> np.ndarray:
     timeperiod : int, optional
         Number of periods (default 30).
 
+    nan_policy : {"propagate", "skip"}, optional
+        ``"propagate"`` (default, TA-Lib semantics): a NaN input poisons every
+        later value. ``"skip"``: rows with a non-finite input are dropped, the
+        indicator runs on the remaining rows, and NaN is written back at the
+        dropped rows (matches the streaming classes tick for tick).
+
     Returns
     -------
     numpy.ndarray
         Array of TEMA values; leading ``3 * (timeperiod - 1)`` entries are ``NaN``.
     """
     try:
-        return _tema(_to_f64(close), timeperiod)
+        return apply_nan_policy(
+            lambda c: _tema(c, timeperiod), (_to_f64(close),), nan_policy
+        )
     except ValueError as e:
         _normalize_rust_error(e)
 
 
-def TRIMA(close: ArrayLike, timeperiod: int = 30) -> np.ndarray:
+def TRIMA(
+    close: ArrayLike, timeperiod: int = 30, *, nan_policy: str = "propagate"
+) -> np.ndarray:
     """Triangular Moving Average.
 
     Parameters
@@ -237,18 +289,28 @@ def TRIMA(close: ArrayLike, timeperiod: int = 30) -> np.ndarray:
     timeperiod : int, optional
         Number of periods (default 30).
 
+    nan_policy : {"propagate", "skip"}, optional
+        ``"propagate"`` (default, TA-Lib semantics): a NaN input poisons every
+        later value. ``"skip"``: rows with a non-finite input are dropped, the
+        indicator runs on the remaining rows, and NaN is written back at the
+        dropped rows (matches the streaming classes tick for tick).
+
     Returns
     -------
     numpy.ndarray
         Array of TRIMA values; leading ``timeperiod - 1`` entries are ``NaN``.
     """
     try:
-        return _trima(_to_f64(close), timeperiod)
+        return apply_nan_policy(
+            lambda c: _trima(c, timeperiod), (_to_f64(close),), nan_policy
+        )
     except ValueError as e:
         _normalize_rust_error(e)
 
 
-def KAMA(close: ArrayLike, timeperiod: int = 30) -> np.ndarray:
+def KAMA(
+    close: ArrayLike, timeperiod: int = 30, *, nan_policy: str = "propagate"
+) -> np.ndarray:
     """Kaufman Adaptive Moving Average.
 
     Parameters
@@ -258,18 +320,32 @@ def KAMA(close: ArrayLike, timeperiod: int = 30) -> np.ndarray:
     timeperiod : int, optional
         Efficiency Ratio lookback period (default 30).
 
+    nan_policy : {"propagate", "skip"}, optional
+        ``"propagate"`` (default, TA-Lib semantics): a NaN input poisons every
+        later value. ``"skip"``: rows with a non-finite input are dropped, the
+        indicator runs on the remaining rows, and NaN is written back at the
+        dropped rows (matches the streaming classes tick for tick).
+
     Returns
     -------
     numpy.ndarray
         Array of KAMA values; leading ``timeperiod - 1`` entries are ``NaN``.
     """
     try:
-        return _kama(_to_f64(close), timeperiod)
+        return apply_nan_policy(
+            lambda c: _kama(c, timeperiod), (_to_f64(close),), nan_policy
+        )
     except ValueError as e:
         _normalize_rust_error(e)
 
 
-def T3(close: ArrayLike, timeperiod: int = 5, vfactor: float = 0.7) -> np.ndarray:
+def T3(
+    close: ArrayLike,
+    timeperiod: int = 5,
+    vfactor: float = 0.7,
+    *,
+    nan_policy: str = "propagate",
+) -> np.ndarray:
     """Triple Exponential Moving Average (Tillson T3).
 
     Parameters
@@ -281,13 +357,21 @@ def T3(close: ArrayLike, timeperiod: int = 5, vfactor: float = 0.7) -> np.ndarra
     vfactor : float, optional
         Volume factor (default 0.7).
 
+    nan_policy : {"propagate", "skip"}, optional
+        ``"propagate"`` (default, TA-Lib semantics): a NaN input poisons every
+        later value. ``"skip"``: rows with a non-finite input are dropped, the
+        indicator runs on the remaining rows, and NaN is written back at the
+        dropped rows (matches the streaming classes tick for tick).
+
     Returns
     -------
     numpy.ndarray
         Array of T3 values.
     """
     try:
-        return _t3(_to_f64(close), timeperiod, vfactor)
+        return apply_nan_policy(
+            lambda c: _t3(c, timeperiod, vfactor), (_to_f64(close),), nan_policy
+        )
     except ValueError as e:
         _normalize_rust_error(e)
 
@@ -298,6 +382,8 @@ def BBANDS(
     nbdevup: float = 2.0,
     nbdevdn: float = 2.0,
     matype: int = 0,
+    *,
+    nan_policy: str = "propagate",
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Bollinger Bands.
 
@@ -334,6 +420,12 @@ def BBANDS(
         here where TA-Lib's ``7`` is MAMA.  MAMA is not reachable through any
         ``matype`` value -- call :func:`ferro_ta.MAMA` directly.  A value
         outside ``0``-``8`` raises :class:`ValueError`.
+
+    nan_policy : {"propagate", "skip"}, optional
+        ``"propagate"`` (default, TA-Lib semantics): a NaN input poisons every
+        later value. ``"skip"``: rows with a non-finite input are dropped, the
+        indicator runs on the remaining rows, and NaN is written back at the
+        dropped rows (matches the streaming classes tick for tick).
 
     Returns
     -------
@@ -382,7 +474,11 @@ def BBANDS(
     *close*.
     """
     try:
-        return _bbands(_to_f64(close), timeperiod, nbdevup, nbdevdn, matype)
+        return apply_nan_policy(
+            lambda c: _bbands(c, timeperiod, nbdevup, nbdevdn, matype),
+            (_to_f64(close),),
+            nan_policy,
+        )
     except ValueError as e:
         _normalize_rust_error(e)
 
@@ -392,6 +488,8 @@ def MACD(
     fastperiod: int = 12,
     slowperiod: int = 26,
     signalperiod: int = 9,
+    *,
+    nan_policy: str = "propagate",
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Moving Average Convergence/Divergence.
 
@@ -406,6 +504,12 @@ def MACD(
     signalperiod : int, optional
         Signal EMA period (default 9).
 
+    nan_policy : {"propagate", "skip"}, optional
+        ``"propagate"`` (default, TA-Lib semantics): a NaN input poisons every
+        later value. ``"skip"``: rows with a non-finite input are dropped, the
+        indicator runs on the remaining rows, and NaN is written back at the
+        dropped rows (matches the streaming classes tick for tick).
+
     Returns
     -------
     tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray]
@@ -413,7 +517,11 @@ def MACD(
         Leading values that cannot be computed are ``NaN``.
     """
     try:
-        return _macd(_to_f64(close), fastperiod, slowperiod, signalperiod)
+        return apply_nan_policy(
+            lambda c: _macd(c, fastperiod, slowperiod, signalperiod),
+            (_to_f64(close),),
+            nan_policy,
+        )
     except ValueError as e:
         _normalize_rust_error(e)
 

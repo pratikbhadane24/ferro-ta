@@ -5,7 +5,8 @@ Shared utility helpers for ferro_ta Python wrappers.
 from __future__ import annotations
 
 import functools
-from typing import Any, Optional
+from collections.abc import Callable, Sequence
+from typing import Any, Optional, TypeVar, cast
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -289,3 +290,50 @@ def polars_wrap(func):
 
     wrapper._polars_wrapped = True  # type: ignore[attr-defined]
     return wrapper
+
+
+NAN_POLICIES = ("propagate", "skip")
+
+_KernelResult = TypeVar("_KernelResult")
+
+
+def apply_nan_policy(
+    compute: Callable[..., _KernelResult],
+    inputs: Sequence[np.ndarray],
+    nan_policy: str,
+) -> _KernelResult:
+    """Run ``compute(*inputs)`` under a NaN policy.
+
+    ``"propagate"`` (default, TA-Lib semantics) passes inputs through, so a
+    NaN poisons every later value of a running sum or recursion.
+    ``"skip"`` drops the rows where any input is non-finite, computes on the
+    remaining rows, and writes NaN back at the dropped rows: the same rule the
+    streaming classes apply to a bad tick, so the two agree bar for bar.
+    """
+    if nan_policy == "propagate":
+        return compute(*inputs)
+    if nan_policy != "skip":
+        from ferro_ta.core.exceptions import FerroTAValueError
+
+        raise FerroTAValueError(
+            f"nan_policy must be one of {NAN_POLICIES}, got {nan_policy!r}"
+        )
+    arrays = [np.asarray(a, dtype=np.float64) for a in inputs]
+    n = len(arrays[0])
+    if any(len(a) != n for a in arrays):
+        return compute(*arrays)  # let the kernel report the length mismatch
+    good = np.ones(n, dtype=bool)
+    for a in arrays:
+        good &= np.isfinite(a)
+    if good.all():
+        return compute(*arrays)
+    result = compute(*(a[good] for a in arrays))
+
+    def scatter(values):
+        out = np.full(n, np.nan)
+        out[good] = values
+        return out
+
+    if isinstance(result, tuple):
+        return cast(_KernelResult, tuple(scatter(r) for r in result))
+    return cast(_KernelResult, scatter(result))

@@ -48,6 +48,10 @@ automatically.
   period at the start of an array. The number of ``NaN`` values is identical
   for all indicators marked **Exact** or **Close** in the accuracy table.
 - **Output length** — always equal to input length, matching TA-Lib.
+- **NaN inside the series** — like TA-Lib, a NaN mid-series poisons every
+  later value of running-sum / recursive indicators (SMA, EMA, RSI, MACD, …).
+  Pass ``nan_policy="skip"`` to step over bad bars instead; see
+  :doc:`error_handling`.
 - **Pandas Series** — ferro-ta transparently preserves the original index when
   a ``pd.Series`` is passed as input.
 

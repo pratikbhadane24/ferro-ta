@@ -50,7 +50,7 @@ from ferro_ta._ferro_ta import (
 from ferro_ta._ferro_ta import (
     ulcer_index as _ulcer_index,
 )
-from ferro_ta._utils import _to_f64
+from ferro_ta._utils import _to_f64, apply_nan_policy
 from ferro_ta.core.exceptions import _normalize_rust_error
 
 
@@ -59,6 +59,8 @@ def ATR(
     low: ArrayLike,
     close: ArrayLike,
     timeperiod: int = 14,
+    *,
+    nan_policy: str = "propagate",
 ) -> np.ndarray:
     """Average True Range.
 
@@ -73,13 +75,23 @@ def ATR(
     timeperiod : int, optional
         Smoothing period (default 14).
 
+    nan_policy : {"propagate", "skip"}, optional
+        ``"propagate"`` (default, TA-Lib semantics): a NaN input poisons every
+        later value. ``"skip"``: rows with a non-finite input are dropped, the
+        indicator runs on the remaining rows, and NaN is written back at the
+        dropped rows (matches the streaming classes tick for tick).
+
     Returns
     -------
     numpy.ndarray
         Array of ATR values; leading ``timeperiod - 1`` entries are ``NaN``.
     """
     try:
-        return _atr(_to_f64(high), _to_f64(low), _to_f64(close), timeperiod)
+        return apply_nan_policy(
+            lambda hi, lo, cl: _atr(hi, lo, cl, timeperiod),
+            (_to_f64(high), _to_f64(low), _to_f64(close)),
+            nan_policy,
+        )
     except ValueError as e:
         _normalize_rust_error(e)
 
