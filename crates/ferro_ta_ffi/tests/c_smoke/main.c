@@ -60,6 +60,72 @@ int main(void) {
     FtStreamMacd *bad = NULL;
     CHECK(ft_stream_macd_new(26, 12, 9, &bad) == FT_ERR_INVALID_PARAM && bad == NULL);
 
+    /* Kernels: derived size, row-major matrices, enum-indexed metrics. */
+    int64_t n_comb = 0;
+    CHECK(ft_pbo_n_combinations(4, &n_comb) == FT_OK && n_comb == 6);
+    CHECK(ft_pbo_n_combinations(5, &n_comb) == FT_ERR_INVALID_PARAM);
+
+    double prices[60];
+    for (size_t i = 0; i < 60; i++) {
+        prices[i] = 100.0 + 5.0 * sin((double)i * 0.3) + (double)i * 0.05;
+    }
+    const double combos[] = {3.0, 10.0, 12.0, 6.0}; /* (fast, slow); 2nd invalid */
+    int64_t n_params = 0;
+    CHECK(ft_sweep_strategy_n_params(FT_STRATEGY_SMA_CROSSOVER, &n_params) == FT_OK);
+    CHECK(n_params == 2);
+    int64_t n_metrics = 0;
+    CHECK(ft_sweep_n_metrics(&n_metrics) == FT_OK);
+    CHECK(n_metrics == FT_METRIC_N_POSITION_CHANGES + 1);
+    int8_t valid[2];
+    double sweep_returns[60 * 2];
+    double sweep_metrics[2 * (FT_METRIC_N_POSITION_CHANGES + 1)];
+    CHECK(ft_sweep_builtin(prices, 60, FT_STRATEGY_SMA_CROSSOVER, combos, 2, 2,
+                           0.0, 0.0, 100000.0, 252.0, 0.0, (size_t)n_metrics,
+                           valid, sweep_returns, sweep_metrics) == FT_OK);
+    CHECK(valid[0] == 1 && valid[1] == 0);
+    CHECK(!isnan(sweep_metrics[FT_METRIC_SHARPE]));
+    CHECK(isnan(sweep_returns[59 * 2 + 1]));
+
+    int64_t folds[3 * 4];
+    CHECK(ft_purged_kfold_indices(30, 3, 1, 1, folds) == FT_OK);
+    CHECK(folds[4] == 9 && folds[5] == 10 && folds[6] == 20 && folds[7] == 21);
+
+    /* Backtest engine via the settings vector. Always pass the array's own
+     * (compile-time) length: a newer library fills just that prefix. */
+    int64_t n_settings = 0;
+    CHECK(ft_backtest_n_settings(&n_settings) == FT_OK && n_settings > FT_BT_SHORT_BORROW_RATE_ANNUAL);
+    double settings[FT_BT_SHORT_BORROW_RATE_ANNUAL + 1];
+    const size_t n_set = sizeof settings / sizeof settings[0];
+    CHECK(ft_backtest_default_settings(n_set, settings) == FT_OK);
+    settings[FT_BT_FILL_MODE] = FT_FILL_MARKET_CLOSE;
+    double sig[60], pos[60], fills[60], bar_r[60], strat_r[60], equity[60];
+    for (size_t i = 0; i < 60; i++) {
+        sig[i] = 1.0;
+    }
+    CHECK(ft_backtest_ohlcv(prices, prices, prices, prices, NULL, sig, NULL, 60,
+                            settings, n_set, pos, fills, bar_r, strat_r, equity) == FT_OK);
+    CHECK(pos[0] == 0.0 && pos[59] == 1.0 && equity[0] == 1.0);
+    double row[FT_METRIC_N_POSITION_CHANGES + 1];
+    double bench_row[FT_BENCH_INFORMATION_RATIO + 1];
+    CHECK(ft_performance_metrics(strat_r, equity, bar_r, NULL, 60, 252.0, 0.0,
+                                 sizeof row / sizeof row[0],
+                                 sizeof bench_row / sizeof bench_row[0],
+                                 row, bench_row) == FT_OK);
+    CHECK(!isnan(bench_row[FT_BENCH_BETA]));
+
+    /* Streaming backtester handle. */
+    FtStreamBacktest *bt = NULL;
+    CHECK(ft_stream_backtest_new(0.0, 0.0, &bt) == FT_OK && bt != NULL);
+    double s_pos = 0, s_ret = 0, s_eq = 0, s_comm = 0, s_wr = 0, s_aw = 0, s_al = 0, s_k = 0;
+    int64_t s_trades = 0;
+    for (size_t i = 0; i < 60; i++) {
+        CHECK(ft_stream_backtest_update(bt, prices[i], 1.0, &s_pos, &s_ret, &s_eq, &s_trades,
+                                        &s_comm, &s_wr, &s_aw, &s_al, &s_k) == FT_OK);
+    }
+    /* One entry held to the end: no *closed* trade yet. */
+    CHECK(s_pos == 1.0 && s_trades == 0 && s_eq > 0.0);
+    ft_stream_backtest_free(bt);
+
     if (failures) {
         fprintf(stderr, "%d check(s) failed\n", failures);
         return 1;

@@ -97,6 +97,7 @@ INPUT_COLUMNS = {
     "next": "next",
     "next_weights": "weights",
     "adx": "oscillator",
+    "signal": "position",
     "atr": "range",
     "series": "returns",
     "asset": "returns",
@@ -113,6 +114,10 @@ INPUT_COLUMNS = {
 
 # Period-like params whose relationships matter (fast < slow, etc.).
 PERIOD_VALUES = {
+    "train_bars": 60,  # ft_walk_forward_n_folds
+    "test_bars": 20,
+    "n_splits": 8,  # ft_pbo_n_combinations: must be even
+    "n_trials": 50,
     "fastperiod": 3,
     "slowperiod": 8,
     "signalperiod": 4,
@@ -154,6 +159,9 @@ DEFAULT_PERIOD = 5
 DEFAULT_COUNT = 2
 
 FLOAT_VALUES = {
+    "commission_per_trade": 0.0005,  # stream backtest
+    "slippage_bps": 2.0,
+    "trial_sharpe_variance": 0.004,
     "nbdevup": 2.0,
     "nbdevdn": 2.0,
     "nbdev": 1.0,
@@ -210,7 +218,12 @@ FLOAT_VALUES = {
     "avg_loss": 1.0,
 }
 
-COUNT_VALUES = {"max_iterations": 100}
+COUNT_VALUES = {
+    "max_iterations": 100,
+    "n_bars": 300,  # ft_walk_forward_n_folds
+    "anchored": 1,
+    "step_bars": 0,
+}
 
 C_SCALAR = {
     "int64_t": ctypes.c_int64,
@@ -309,6 +322,8 @@ def param_value(param: dict) -> float | int:
     kind, name = param["kind"], param["name"]
     if kind == "period":
         return max(PERIOD_VALUES.get(name, DEFAULT_PERIOD), param["min"])
+    if kind == "seed":
+        return 42
     if kind == "count":
         return COUNT_VALUES.get(name, DEFAULT_COUNT)
     if kind in ("matype", "enum"):

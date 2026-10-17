@@ -22,6 +22,52 @@ impl<T> IntoCtorResult<T> for Result<T, StreamingError> {
     }
 }
 
+/// Bar-by-bar backtester handle: wraps the core `StreamingBacktest` so each
+/// update also reports the running summary.
+pub struct BacktestStream(ferro_ta_core::backtest::StreamingBacktest);
+
+impl BacktestStream {
+    pub fn new(commission_per_trade: f64, slippage_bps: f64) -> Self {
+        Self(ferro_ta_core::backtest::StreamingBacktest::new(
+            commission_per_trade,
+            slippage_bps,
+        ))
+    }
+
+    /// `(position, bar_return, equity, n_trades, total_commission, win_rate,
+    /// avg_win, avg_loss, kelly_fraction)` after this bar.
+    #[allow(clippy::type_complexity)]
+    pub fn update(
+        &mut self,
+        close: f64,
+        signal: f64,
+    ) -> (f64, f64, f64, i64, f64, f64, f64, f64, f64) {
+        let bar = self.0.on_bar(close, signal);
+        let s = self.0.summary();
+        (
+            bar.position,
+            bar.bar_return,
+            bar.equity,
+            bar.n_trades as i64,
+            s.total_commission,
+            s.win_rate,
+            s.avg_win,
+            s.avg_loss,
+            s.kelly_fraction,
+        )
+    }
+
+    pub fn reset(&mut self) {
+        self.0.reset();
+    }
+}
+
+impl IntoCtorResult<BacktestStream> for BacktestStream {
+    fn into_ctor_result(self) -> Result<BacktestStream, Status> {
+        Ok(self)
+    }
+}
+
 impl IntoCtorResult<StreamingVWAP> for StreamingVWAP {
     fn into_ctor_result(self) -> Result<StreamingVWAP, Status> {
         Ok(self)
@@ -211,6 +257,23 @@ ffi_streams! {
         ft_stream_vwap_update(high, low, close, volume) -> [out: f64],
         ft_stream_vwap_reset,
         ft_stream_vwap_free,
+    }
+    /// Streaming backtester: feed each bar's close and the target position for the next bar (NaN = flat). Reports the position, bar return, equity (starting at 1.0), the number of closed trades and running statistics over closed trades (win rate, average win/loss, Kelly fraction). commission_per_trade is subtracted from equity on each position change; slippage is in basis points.
+    backtest: BacktestStream as FtStreamBacktest {
+        ft_stream_backtest_new(commission_per_trade: float, slippage_bps: float),
+        ft_stream_backtest_update(close, signal) -> [
+            out_position: f64,
+            out_bar_return: f64,
+            out_equity: f64,
+            out_n_trades: i64,
+            out_total_commission: f64,
+            out_win_rate: f64,
+            out_avg_win: f64,
+            out_avg_loss: f64,
+            out_kelly_fraction: f64
+        ],
+        ft_stream_backtest_reset,
+        ft_stream_backtest_free,
     }
     /// Streaming Supertrend. `out_direction` is 1 (up) / -1 (down), 0 in warm-up.
     supertrend: StreamingSupertrend as FtStreamSupertrend {

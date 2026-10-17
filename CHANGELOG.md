@@ -9,6 +9,82 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- OHLCV engine: a same-side position change (e.g. 0.5 → 1.0 from fractional
+  sizing) now charges commission on the traded amount instead of a full exit
+  plus re-entry. It also averages the entry price (used by stops) instead of
+  resetting it to the latest fill, keeps the trailing-stop anchor, and resizes
+  the margin requirement to the new position. Results change only for
+  fractional same-sign signal changes with commission, stops or leverage.
+  With ±1/0 signals the engine output is bit-identical to before (covered by
+  golden tests).
+
+### Added
+
+- **Parallel parameter sweeps** — `ferro_ta.analysis.sweep.sweep(close,
+  strategy, param_grid)` backtests every combination (Cartesian dict or list
+  of dicts) in Rayon-parallel Rust with the GIL released. `SweepResult` keeps
+  the full `(n_bars, n_combos)` returns matrix plus 24 metrics per combo, with
+  `best_params()` (with `radius=` plateau-robust selection that prefers a
+  stable neighbourhood over an isolated spike), `pivot()` (heatmap-ready),
+  `to_frame()`,
+  `deflated_sharpe()` and `pbo()`. Each column matches `backtest()` exactly.
+- **Overfitting diagnostics** — new `ferro_ta.analysis.overfit` (Rust core
+  `ferro_ta_core::overfit`, also exported to WASM):
+  `probabilistic_sharpe_ratio`, `deflated_sharpe_ratio`,
+  `expected_max_sharpe`, `pbo` (Probability of Backtest Overfitting via
+  CSCV, up to 20 splits / 184 756 combinations using per-block sums), and
+  `purged_kfold` / `purged_kfold_indices` with purge and embargo gaps.
+- **Sweeps run fully in Rust** for built-in strategies: `ferro_ta_core::sweep`
+  gains a `BuiltinStrategy` registry (`sma_crossover`, `rsi_30_70`,
+  `macd_crossover`), `sweep_builtin` / `sweep_signals`, and `grid::expand_grid` /
+  `grid::plateau_scores`. A new optional `parallel` (Rayon) core feature
+  provides the threading, enabled for the Python wheel. WASM exports
+  `sweep_builtin`, `sweep_signals`, `sweep_metric_names`, `expand_grid` and
+  `sweep_plateau_scores`. Combinations that break a strategy's constraints
+  (e.g. `fast >= slow`) are skipped.
+- **Execution realism** in the OHLCV engine: `max_participation` caps each
+  signal-driven fill at a fraction of bar volume, with partial fills carried
+  across bars. `slippage_atr_mult` / `slippage_atr_period` set slippage from
+  the previous bar's ATR. New `backtest_ohlcv_volume_core` (core), `volume=`
+  and the new keywords on the PyO3 `backtest_ohlcv_core`,
+  `BacktestEngine.with_volume_participation()` /
+  `.with_atr_slippage()`, and WASM `backtest_ohlcv_volume`.
+- **C ABI / Go: kernel exports.** A new multi-shape export kind in
+  `ferro_ta_ffi` (`ffi_kernel_exports!`, `KernelSpec` in `ffi_spec.json`)
+  takes arrays of different row-major shapes, explicit sizes, and sizes
+  derived from helper exports. The C header and Go codegen are generated from
+  the same spec. New exports: `ft_sweep_builtin`, `ft_sweep_signals`,
+  `ft_sweep_plateau_scores`, `ft_pbo_cscv`, `ft_probabilistic_sharpe_ratio`,
+  `ft_deflated_sharpe_ratio`, `ft_purged_kfold_indices`, plus scalars
+  `ft_expected_max_sharpe`, `ft_pbo_n_combinations`,
+  `ft_sweep_strategy_n_params` and `ft_sweep_n_metrics`, plus
+  `FT_STRATEGY_*` / `FT_METRIC_*` enums. Metric matrices take an explicit
+  `n_metric_cols` that must equal `ft_sweep_n_metrics()`, so adding a metric
+  later can never overflow an older caller's buffer. Go gets the same
+  functions (`ferrota.SweepBuiltin`, `ferrota.PboCscv`, …), which guard
+  every integer that sizes a buffer. FFI sweeps run on all cores.
+- **C ABI / Go: OHLCV backtest engine.** `ft_backtest_ohlcv` and
+  `ft_performance_metrics`, configured through an append-only settings
+  vector (`FT_BT_*`, `ft_backtest_default_settings`, `ft_backtest_n_settings`)
+  that covers every engine knob and the full commission model. Optional
+  `volume` / `limit_prices` inputs may be NULL; this adds the `in_opt` kernel
+  argument role. Go: `BacktestOhlcv`, `PerformanceMetrics`,
+  `BacktestDefaultSettings` and the `Bt*` / `Fill*` constants.
+- **C ABI / Go: the rest of the backtesting toolkit.** `ft_backtest_close`
+  (close-only engine, same settings vector), `ft_sma_crossover_signals`,
+  `ft_macd_crossover_signals`, `ft_monte_carlo_bootstrap`,
+  `ft_walk_forward_indices` (+ `ft_walk_forward_n_folds`), `ft_extract_trades`
+  (columns of capacity `n_bars` plus `out_n_trades`), `ft_backtest_multi_asset`,
+  and a `FtStreamBacktest` streaming handle that reports position, equity and
+  running trade statistics each bar. `ft_performance_metrics` gains optional
+  `benchmark_returns` / `positions` inputs and an `FT_BENCH_*` row (alpha,
+  beta, tracking error, information ratio, …). WASM gains
+  `backtest_multi_asset` and `WasmStreamingBacktest`.
+- `ferro_ta_core::options::normal::inv_cdf` (Acklam, rel. error < 1.2e-9)
+  and `BacktestMetrics::scalar_fields()`.
+
 ### Performance
 
 - **WASM EMA ~6x faster** (and DEMA/TEMA/TRIX/T3/PPO, which build on it):

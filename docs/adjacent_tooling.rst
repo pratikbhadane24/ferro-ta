@@ -82,6 +82,96 @@ hot paths run entirely in Rust.
 - ``monte_carlo_bootstrap`` — parallel block bootstrap, returns (n_sims, n_bars)
 - ``walk_forward_indices`` — anchored/rolling fold index generator
 - ``kelly_fraction`` / ``half_kelly_fraction``
+- ``backtest_sweep_core`` — one close series × N signal columns, Rayon-parallel
+- ``probabilistic_sharpe_ratio`` / ``deflated_sharpe_ratio`` / ``expected_max_sharpe``
+- ``pbo_cscv`` — Probability of Backtest Overfitting via CSCV
+- ``purged_kfold_indices`` — k-fold boundaries with purge/embargo gaps
+
+.. _honest-optimization:
+
+Parameter sweeps and overfitting diagnostics
+--------------------------------------------
+
+Search enough parameter combinations and one will look brilliant by chance.
+``ferro_ta.analysis.sweep`` runs the whole grid in parallel Rust and keeps
+every combination's returns, so ``ferro_ta.analysis.overfit`` can tell you how
+much of the winner's edge survives the search:
+
+.. code-block:: python
+
+    from ferro_ta.analysis.sweep import sweep
+
+    res = sweep(close, "sma_crossover",
+                {"fast": [5, 10, 20, 30], "slow": [50, 100, 150, 200]},
+                commission_per_trade=1.0, slippage_bps=2)
+
+    res.best_params("sharpe")        # {'fast': 10, 'slow': 100}
+    res.best_params("sharpe", radius=1)   # best *neighbourhood*, not best spike
+    res.to_frame()                   # pandas: params + 24 metrics per combo
+    rows, cols, grid = res.pivot("sharpe", "fast", "slow")   # heatmap
+
+    res.deflated_sharpe()            # DSR of the winner vs all 16 trials
+    res.pbo(n_splits=16).pbo         # P(IS winner is below OOS median)
+
+How to read the numbers:
+
+- **Deflated Sharpe Ratio** (Bailey & López de Prado, 2014) is the probability
+  that the selected strategy's true Sharpe beats the best Sharpe you would
+  expect from the same number of *zero-skill* trials. Above ~0.95 suggests a
+  real edge; around 0.5 means the winner is indistinguishable from luck.
+- **PBO** (Bailey, Borwein, López de Prado & Zhu, 2017) splits the history into
+  ``n_splits`` blocks and, for every half/half split, checks where the
+  in-sample winner ranks out of sample. Pure noise gives ~0.5; a genuinely
+  dominant configuration gives ~0. ``PBOResult.is_sharpe`` / ``oos_sharpe``
+  expose the performance degradation, ``prob_oos_loss`` the chance the
+  winner loses money out of sample.
+- **Purged k-fold** (``purged_kfold``) drops ``purge_bars`` before and
+  ``embargo_bars`` after each test fold, for labels or features that span
+  multiple bars.
+
+All Sharpe ratios in ``overfit`` are per-period (not annualised). Sweep
+columns use exactly the same engine as ``backtest()``, so each column matches
+a single run bit-for-bit.
+
+**Everything runs in Rust.** With a built-in strategy name
+(``"sma_crossover"``, ``"rsi_30_70"``, ``"macd_crossover"``) the whole sweep
+(grid, signal generation, backtests, metrics) runs in
+``ferro_ta_core::sweep`` on a Rayon pool. Combinations that break a
+strategy's constraints (e.g. ``fast >= slow``) are skipped. The same core is
+exported to WASM (``sweep_builtin``, ``sweep_signals``, ``expand_grid``,
+``sweep_plateau_scores``) and is single-threaded there. Custom Python
+callables still generate their signals in Python, and their backtests run in
+Rust.
+
+.. _execution-realism:
+
+Execution realism
+-----------------
+
+The OHLCV engine can model capacity and volatility-dependent costs:
+
+.. code-block:: python
+
+    result = (
+        BacktestEngine()
+        .with_ohlcv(high=high, low=low, open_=open_)
+        .with_volume_participation(volume, max_participation=0.05)  # ≤5% of bar volume
+        .with_atr_slippage(0.1, period=14)       # slippage = 0.1 × ATR / price
+        .run(close, "sma_crossover")
+    )
+
+- **Volume participation** caps each signal-driven fill at
+  ``max_participation × volume[i]`` shares. The unfilled remainder carries
+  to later bars, so ``result.positions`` ramps toward the target. Scale-ins
+  average the entry price used by stops, and commission is charged on the
+  traded amount only. Stop, margin-call and circuit-breaker exits always
+  fill in full.
+- **ATR slippage** uses the *previous* bar's ATR, so there is no look-ahead.
+  During ATR warm-up it falls back to ``with_slippage`` /
+  ``with_slippage_pct_range``.
+
+Both are also on ``ferro_ta_core::backtest::backtest_ohlcv_volume_core`` and
+the WASM ``backtest_ohlcv_volume`` export.
 
 **Performance shape.** The signal → equity loop, commission and slippage
 application, all 23 metrics, trade extraction, the Monte Carlo bootstrap and the

@@ -2,6 +2,8 @@
 
 pub mod commission;
 pub mod currency;
+pub mod overfit;
+pub mod sweep;
 
 use commission::PyCommissionModel;
 use currency::PyCurrency;
@@ -243,6 +245,10 @@ pub fn backtest_core<'py>(
     margin_call_pct = 0.5,
     daily_loss_limit = 0.0,
     total_loss_limit = 0.0,
+    volume = None,
+    max_participation = 0.0,
+    slippage_atr_mult = 0.0,
+    slippage_atr_period = 14,
 ))]
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 pub fn backtest_ohlcv_core<'py>(
@@ -269,6 +275,10 @@ pub fn backtest_ohlcv_core<'py>(
     margin_call_pct: f64,
     daily_loss_limit: f64,
     total_loss_limit: f64,
+    volume: Option<PyReadonlyArray1<'py, f64>>,
+    max_participation: f64,
+    slippage_atr_mult: f64,
+    slippage_atr_period: usize,
 ) -> PyResult<(
     Bound<'py, PyArray1<f64>>,
     Bound<'py, PyArray1<f64>>,
@@ -308,11 +318,15 @@ pub fn backtest_ohlcv_core<'py>(
         daily_loss_limit,
         total_loss_limit,
         commission: commission.as_ref().map(|c| c.inner.clone()),
+        max_participation,
+        slippage_atr_mult,
+        slippage_atr_period,
     };
+    let vol = volume.as_ref().map(|v| v.as_slice()).transpose()?;
 
     let lp_opt: Option<&[f64]> = limit_prices.as_ref().and_then(|lp| lp.as_slice().ok());
 
-    let result = core_bt::backtest_ohlcv_core(o, h, l, c, s, &config, lp_opt)
+    let result = core_bt::backtest_ohlcv_volume_core(o, h, l, c, vol, s, &config, lp_opt)
         .map_err(PyValueError::new_err)?;
 
     Ok((
@@ -813,6 +827,8 @@ pub fn register(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(walk_forward_indices, m)?)?;
     m.add_function(wrap_pyfunction!(kelly_fraction, m)?)?;
     m.add_function(wrap_pyfunction!(half_kelly_fraction, m)?)?;
+    sweep::register(m)?;
+    overfit::register(m)?;
     m.add_class::<BacktestConfig>()?;
     m.add_class::<StreamingBacktest>()?;
     m.add_class::<PyCommissionModel>()?;
