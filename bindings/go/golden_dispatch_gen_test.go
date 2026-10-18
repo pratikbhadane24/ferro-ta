@@ -1867,6 +1867,677 @@ var goldenStreams = map[string]func(map[string]float64) (goldenStepper, error){
 		}
 		return goldenStepper{step: step, close: s.Close}, nil
 	},
+	"cdl2crows": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdl2crows()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdl3blackcrows": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdl3blackcrows()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdl3inside": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdl3inside()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdl3linestrike": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdl3linestrike()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdl3outside": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdl3outside()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdl3starsinsouth": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdl3starsinsouth()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdl3whitesoldiers": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdl3whitesoldiers()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdlabandonedbaby": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdlabandonedbaby()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdladvanceblock": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdladvanceblock()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdlbelthold": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdlbelthold()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdlbreakaway": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdlbreakaway()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdlclosingmarubozu": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdlclosingmarubozu()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdlconcealbabyswall": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdlconcealbabyswall()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdlcounterattack": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdlcounterattack()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdldarkcloudcover": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdldarkcloudcover()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdldoji": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdldoji()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdldojistar": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdldojistar()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdldragonflydoji": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdldragonflydoji()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdlengulfing": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdlengulfing()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdleveningdojistar": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdleveningdojistar()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdleveningstar": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdleveningstar()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdlgapsidesidewhite": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdlgapsidesidewhite()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdlgravestonedoji": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdlgravestonedoji()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdlhammer": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdlhammer()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdlhangingman": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdlhangingman()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdlharami": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdlharami()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdlharamicross": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdlharamicross()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdlhighwave": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdlhighwave()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdlhikkake": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdlhikkake()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdlhikkakemod": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdlhikkakemod()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdlhomingpigeon": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdlhomingpigeon()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdlidentical3crows": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdlidentical3crows()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdlinneck": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdlinneck()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdlinvertedhammer": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdlinvertedhammer()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdlkicking": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdlkicking()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdlkickingbylength": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdlkickingbylength()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdlladderbottom": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdlladderbottom()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdllongleggeddoji": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdllongleggeddoji()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdllongline": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdllongline()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdlmarubozu": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdlmarubozu()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdlmatchinglow": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdlmatchinglow()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdlmathold": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdlmathold()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdlmorningdojistar": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdlmorningdojistar()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdlmorningstar": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdlmorningstar()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdlonneck": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdlonneck()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdlpiercing": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdlpiercing()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdlrickshawman": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdlrickshawman()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdlrisefall3methods": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdlrisefall3methods()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdlseparatinglines": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdlseparatinglines()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdlshootingstar": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdlshootingstar()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdlshortline": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdlshortline()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdlspinningtop": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdlspinningtop()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdlstalledpattern": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdlstalledpattern()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdlsticksandwich": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdlsticksandwich()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdltakuri": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdltakuri()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdltasukigap": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdltasukigap()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdlthrusting": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdlthrusting()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdltristar": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdltristar()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdlunique3river": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdlunique3river()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdlupsidegap2crows": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdlupsidegap2crows()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"cdlxsidegap3methods": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCdlxsidegap3methods()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
 	"stddev": func(p map[string]float64) (goldenStepper, error) {
 		s, err := NewStreamStddev(int(p["timeperiod"]), p["nbdev"])
 		if err != nil {
@@ -2537,6 +3208,67 @@ var goldenParamNames = []goldenParamList{
 	{"obv", []string{}},
 	{"ad", []string{}},
 	{"adosc", []string{"fastperiod", "slowperiod"}},
+	{"cdl2crows", []string{}},
+	{"cdl3blackcrows", []string{}},
+	{"cdl3inside", []string{}},
+	{"cdl3linestrike", []string{}},
+	{"cdl3outside", []string{}},
+	{"cdl3starsinsouth", []string{}},
+	{"cdl3whitesoldiers", []string{}},
+	{"cdlabandonedbaby", []string{}},
+	{"cdladvanceblock", []string{}},
+	{"cdlbelthold", []string{}},
+	{"cdlbreakaway", []string{}},
+	{"cdlclosingmarubozu", []string{}},
+	{"cdlconcealbabyswall", []string{}},
+	{"cdlcounterattack", []string{}},
+	{"cdldarkcloudcover", []string{}},
+	{"cdldoji", []string{}},
+	{"cdldojistar", []string{}},
+	{"cdldragonflydoji", []string{}},
+	{"cdlengulfing", []string{}},
+	{"cdleveningdojistar", []string{}},
+	{"cdleveningstar", []string{}},
+	{"cdlgapsidesidewhite", []string{}},
+	{"cdlgravestonedoji", []string{}},
+	{"cdlhammer", []string{}},
+	{"cdlhangingman", []string{}},
+	{"cdlharami", []string{}},
+	{"cdlharamicross", []string{}},
+	{"cdlhighwave", []string{}},
+	{"cdlhikkake", []string{}},
+	{"cdlhikkakemod", []string{}},
+	{"cdlhomingpigeon", []string{}},
+	{"cdlidentical3crows", []string{}},
+	{"cdlinneck", []string{}},
+	{"cdlinvertedhammer", []string{}},
+	{"cdlkicking", []string{}},
+	{"cdlkickingbylength", []string{}},
+	{"cdlladderbottom", []string{}},
+	{"cdllongleggeddoji", []string{}},
+	{"cdllongline", []string{}},
+	{"cdlmarubozu", []string{}},
+	{"cdlmatchinglow", []string{}},
+	{"cdlmathold", []string{}},
+	{"cdlmorningdojistar", []string{}},
+	{"cdlmorningstar", []string{}},
+	{"cdlonneck", []string{}},
+	{"cdlpiercing", []string{}},
+	{"cdlrickshawman", []string{}},
+	{"cdlrisefall3methods", []string{}},
+	{"cdlseparatinglines", []string{}},
+	{"cdlshootingstar", []string{}},
+	{"cdlshortline", []string{}},
+	{"cdlspinningtop", []string{}},
+	{"cdlstalledpattern", []string{}},
+	{"cdlsticksandwich", []string{}},
+	{"cdltakuri", []string{}},
+	{"cdltasukigap", []string{}},
+	{"cdlthrusting", []string{}},
+	{"cdltristar", []string{}},
+	{"cdlunique3river", []string{}},
+	{"cdlupsidegap2crows", []string{}},
+	{"cdlxsidegap3methods", []string{}},
 	{"stddev", []string{"timeperiod", "nbdev"}},
 	{"var", []string{"timeperiod", "nbdev"}},
 	{"linearreg", []string{"timeperiod"}},

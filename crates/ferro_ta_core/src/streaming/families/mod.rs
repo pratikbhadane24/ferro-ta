@@ -8,6 +8,7 @@ pub mod markets;
 pub mod math;
 pub mod momentum;
 pub mod overlap;
+pub mod pattern;
 pub mod stats;
 pub mod volume;
 
@@ -17,6 +18,7 @@ pub use markets::*;
 pub use math::*;
 pub use momentum::*;
 pub use overlap::*;
+pub use pattern::*;
 pub use stats::*;
 pub use volume::*;
 

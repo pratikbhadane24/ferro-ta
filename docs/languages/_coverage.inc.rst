@@ -11,13 +11,13 @@
      - Flutter
      - Flutter excluded
      - C / Go
-   * - 511
-     - 470
-     - 343
-     - 453
+   * - 572
+     - 531
+     - 404
+     - 514
      - 194
      - 56
-     - 378
+     - 439
 
 .. list-table:: Cross-language indicator coverage
    :header-rows: 1
@@ -2628,6 +2628,433 @@
      - —
      - yes
    * - ``StreamingCci``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdl2crows``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdl3blackcrows``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdl3inside``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdl3linestrike``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdl3outside``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdl3starsinsouth``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdl3whitesoldiers``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdlabandonedbaby``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdladvanceblock``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdlbelthold``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdlbreakaway``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdlclosingmarubozu``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdlconcealbabyswall``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdlcounterattack``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdldarkcloudcover``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdldoji``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdldojistar``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdldragonflydoji``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdlengulfing``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdleveningdojistar``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdleveningstar``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdlgapsidesidewhite``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdlgravestonedoji``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdlhammer``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdlhangingman``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdlharami``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdlharamicross``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdlhighwave``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdlhikkake``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdlhikkakemod``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdlhomingpigeon``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdlidentical3crows``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdlinneck``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdlinvertedhammer``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdlkicking``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdlkickingbylength``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdlladderbottom``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdllongleggeddoji``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdllongline``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdlmarubozu``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdlmatchinglow``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdlmathold``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdlmorningdojistar``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdlmorningstar``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdlonneck``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdlpiercing``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdlrickshawman``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdlrisefall3methods``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdlseparatinglines``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdlshootingstar``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdlshortline``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdlspinningtop``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdlstalledpattern``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdlsticksandwich``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdltakuri``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdltasukigap``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdlthrusting``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdltristar``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdlunique3river``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdlupsidegap2crows``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCdlxsidegap3methods``
      - streaming
      - yes
      - yes

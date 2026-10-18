@@ -2731,6 +2731,860 @@ int32_t ft_stream_adosc_load(const char *json, size_t len, FtStreamAdosc **out_h
 void ft_stream_adosc_free(FtStreamAdosc *handle);
 
 /**
+ * Streaming Two Crows (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdl2crows FtStreamCdl2crows;
+int32_t ft_stream_cdl2crows_new(FtStreamCdl2crows **out_handle);
+int32_t ft_stream_cdl2crows_update(FtStreamCdl2crows *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdl2crows_peek(FtStreamCdl2crows *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdl2crows_reset(FtStreamCdl2crows *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdl2crows_save(FtStreamCdl2crows *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdl2crows_load(const char *json, size_t len, FtStreamCdl2crows **out_handle);
+void ft_stream_cdl2crows_free(FtStreamCdl2crows *handle);
+
+/**
+ * Streaming Three Black Crows (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdl3blackcrows FtStreamCdl3blackcrows;
+int32_t ft_stream_cdl3blackcrows_new(FtStreamCdl3blackcrows **out_handle);
+int32_t ft_stream_cdl3blackcrows_update(FtStreamCdl3blackcrows *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdl3blackcrows_peek(FtStreamCdl3blackcrows *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdl3blackcrows_reset(FtStreamCdl3blackcrows *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdl3blackcrows_save(FtStreamCdl3blackcrows *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdl3blackcrows_load(const char *json, size_t len, FtStreamCdl3blackcrows **out_handle);
+void ft_stream_cdl3blackcrows_free(FtStreamCdl3blackcrows *handle);
+
+/**
+ * Streaming Three Inside Up/Down candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdl3inside FtStreamCdl3inside;
+int32_t ft_stream_cdl3inside_new(FtStreamCdl3inside **out_handle);
+int32_t ft_stream_cdl3inside_update(FtStreamCdl3inside *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdl3inside_peek(FtStreamCdl3inside *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdl3inside_reset(FtStreamCdl3inside *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdl3inside_save(FtStreamCdl3inside *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdl3inside_load(const char *json, size_t len, FtStreamCdl3inside **out_handle);
+void ft_stream_cdl3inside_free(FtStreamCdl3inside *handle);
+
+/**
+ * Streaming Three-Line Strike candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdl3linestrike FtStreamCdl3linestrike;
+int32_t ft_stream_cdl3linestrike_new(FtStreamCdl3linestrike **out_handle);
+int32_t ft_stream_cdl3linestrike_update(FtStreamCdl3linestrike *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdl3linestrike_peek(FtStreamCdl3linestrike *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdl3linestrike_reset(FtStreamCdl3linestrike *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdl3linestrike_save(FtStreamCdl3linestrike *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdl3linestrike_load(const char *json, size_t len, FtStreamCdl3linestrike **out_handle);
+void ft_stream_cdl3linestrike_free(FtStreamCdl3linestrike *handle);
+
+/**
+ * Streaming Three Outside Up/Down candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdl3outside FtStreamCdl3outside;
+int32_t ft_stream_cdl3outside_new(FtStreamCdl3outside **out_handle);
+int32_t ft_stream_cdl3outside_update(FtStreamCdl3outside *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdl3outside_peek(FtStreamCdl3outside *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdl3outside_reset(FtStreamCdl3outside *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdl3outside_save(FtStreamCdl3outside *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdl3outside_load(const char *json, size_t len, FtStreamCdl3outside **out_handle);
+void ft_stream_cdl3outside_free(FtStreamCdl3outside *handle);
+
+/**
+ * Streaming Three Stars In The South (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdl3starsinsouth FtStreamCdl3starsinsouth;
+int32_t ft_stream_cdl3starsinsouth_new(FtStreamCdl3starsinsouth **out_handle);
+int32_t ft_stream_cdl3starsinsouth_update(FtStreamCdl3starsinsouth *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdl3starsinsouth_peek(FtStreamCdl3starsinsouth *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdl3starsinsouth_reset(FtStreamCdl3starsinsouth *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdl3starsinsouth_save(FtStreamCdl3starsinsouth *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdl3starsinsouth_load(const char *json, size_t len, FtStreamCdl3starsinsouth **out_handle);
+void ft_stream_cdl3starsinsouth_free(FtStreamCdl3starsinsouth *handle);
+
+/**
+ * Streaming Three Advancing White Soldiers (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdl3whitesoldiers FtStreamCdl3whitesoldiers;
+int32_t ft_stream_cdl3whitesoldiers_new(FtStreamCdl3whitesoldiers **out_handle);
+int32_t ft_stream_cdl3whitesoldiers_update(FtStreamCdl3whitesoldiers *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdl3whitesoldiers_peek(FtStreamCdl3whitesoldiers *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdl3whitesoldiers_reset(FtStreamCdl3whitesoldiers *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdl3whitesoldiers_save(FtStreamCdl3whitesoldiers *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdl3whitesoldiers_load(const char *json, size_t len, FtStreamCdl3whitesoldiers **out_handle);
+void ft_stream_cdl3whitesoldiers_free(FtStreamCdl3whitesoldiers *handle);
+
+/**
+ * Streaming Abandoned Baby candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdlabandonedbaby FtStreamCdlabandonedbaby;
+int32_t ft_stream_cdlabandonedbaby_new(FtStreamCdlabandonedbaby **out_handle);
+int32_t ft_stream_cdlabandonedbaby_update(FtStreamCdlabandonedbaby *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlabandonedbaby_peek(FtStreamCdlabandonedbaby *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlabandonedbaby_reset(FtStreamCdlabandonedbaby *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdlabandonedbaby_save(FtStreamCdlabandonedbaby *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdlabandonedbaby_load(const char *json, size_t len, FtStreamCdlabandonedbaby **out_handle);
+void ft_stream_cdlabandonedbaby_free(FtStreamCdlabandonedbaby *handle);
+
+/**
+ * Streaming Advance Block (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdladvanceblock FtStreamCdladvanceblock;
+int32_t ft_stream_cdladvanceblock_new(FtStreamCdladvanceblock **out_handle);
+int32_t ft_stream_cdladvanceblock_update(FtStreamCdladvanceblock *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdladvanceblock_peek(FtStreamCdladvanceblock *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdladvanceblock_reset(FtStreamCdladvanceblock *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdladvanceblock_save(FtStreamCdladvanceblock *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdladvanceblock_load(const char *json, size_t len, FtStreamCdladvanceblock **out_handle);
+void ft_stream_cdladvanceblock_free(FtStreamCdladvanceblock *handle);
+
+/**
+ * Streaming Belt-hold candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdlbelthold FtStreamCdlbelthold;
+int32_t ft_stream_cdlbelthold_new(FtStreamCdlbelthold **out_handle);
+int32_t ft_stream_cdlbelthold_update(FtStreamCdlbelthold *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlbelthold_peek(FtStreamCdlbelthold *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlbelthold_reset(FtStreamCdlbelthold *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdlbelthold_save(FtStreamCdlbelthold *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdlbelthold_load(const char *json, size_t len, FtStreamCdlbelthold **out_handle);
+void ft_stream_cdlbelthold_free(FtStreamCdlbelthold *handle);
+
+/**
+ * Streaming Breakaway candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdlbreakaway FtStreamCdlbreakaway;
+int32_t ft_stream_cdlbreakaway_new(FtStreamCdlbreakaway **out_handle);
+int32_t ft_stream_cdlbreakaway_update(FtStreamCdlbreakaway *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlbreakaway_peek(FtStreamCdlbreakaway *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlbreakaway_reset(FtStreamCdlbreakaway *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdlbreakaway_save(FtStreamCdlbreakaway *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdlbreakaway_load(const char *json, size_t len, FtStreamCdlbreakaway **out_handle);
+void ft_stream_cdlbreakaway_free(FtStreamCdlbreakaway *handle);
+
+/**
+ * Streaming Closing Marubozu candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdlclosingmarubozu FtStreamCdlclosingmarubozu;
+int32_t ft_stream_cdlclosingmarubozu_new(FtStreamCdlclosingmarubozu **out_handle);
+int32_t ft_stream_cdlclosingmarubozu_update(FtStreamCdlclosingmarubozu *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlclosingmarubozu_peek(FtStreamCdlclosingmarubozu *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlclosingmarubozu_reset(FtStreamCdlclosingmarubozu *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdlclosingmarubozu_save(FtStreamCdlclosingmarubozu *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdlclosingmarubozu_load(const char *json, size_t len, FtStreamCdlclosingmarubozu **out_handle);
+void ft_stream_cdlclosingmarubozu_free(FtStreamCdlclosingmarubozu *handle);
+
+/**
+ * Streaming Concealing Baby Swallow (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdlconcealbabyswall FtStreamCdlconcealbabyswall;
+int32_t ft_stream_cdlconcealbabyswall_new(FtStreamCdlconcealbabyswall **out_handle);
+int32_t ft_stream_cdlconcealbabyswall_update(FtStreamCdlconcealbabyswall *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlconcealbabyswall_peek(FtStreamCdlconcealbabyswall *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlconcealbabyswall_reset(FtStreamCdlconcealbabyswall *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdlconcealbabyswall_save(FtStreamCdlconcealbabyswall *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdlconcealbabyswall_load(const char *json, size_t len, FtStreamCdlconcealbabyswall **out_handle);
+void ft_stream_cdlconcealbabyswall_free(FtStreamCdlconcealbabyswall *handle);
+
+/**
+ * Streaming Counterattack candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdlcounterattack FtStreamCdlcounterattack;
+int32_t ft_stream_cdlcounterattack_new(FtStreamCdlcounterattack **out_handle);
+int32_t ft_stream_cdlcounterattack_update(FtStreamCdlcounterattack *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlcounterattack_peek(FtStreamCdlcounterattack *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlcounterattack_reset(FtStreamCdlcounterattack *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdlcounterattack_save(FtStreamCdlcounterattack *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdlcounterattack_load(const char *json, size_t len, FtStreamCdlcounterattack **out_handle);
+void ft_stream_cdlcounterattack_free(FtStreamCdlcounterattack *handle);
+
+/**
+ * Streaming Dark Cloud Cover (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdldarkcloudcover FtStreamCdldarkcloudcover;
+int32_t ft_stream_cdldarkcloudcover_new(FtStreamCdldarkcloudcover **out_handle);
+int32_t ft_stream_cdldarkcloudcover_update(FtStreamCdldarkcloudcover *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdldarkcloudcover_peek(FtStreamCdldarkcloudcover *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdldarkcloudcover_reset(FtStreamCdldarkcloudcover *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdldarkcloudcover_save(FtStreamCdldarkcloudcover *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdldarkcloudcover_load(const char *json, size_t len, FtStreamCdldarkcloudcover **out_handle);
+void ft_stream_cdldarkcloudcover_free(FtStreamCdldarkcloudcover *handle);
+
+/**
+ * Streaming Doji candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdldoji FtStreamCdldoji;
+int32_t ft_stream_cdldoji_new(FtStreamCdldoji **out_handle);
+int32_t ft_stream_cdldoji_update(FtStreamCdldoji *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdldoji_peek(FtStreamCdldoji *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdldoji_reset(FtStreamCdldoji *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdldoji_save(FtStreamCdldoji *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdldoji_load(const char *json, size_t len, FtStreamCdldoji **out_handle);
+void ft_stream_cdldoji_free(FtStreamCdldoji *handle);
+
+/**
+ * Streaming Doji Star candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdldojistar FtStreamCdldojistar;
+int32_t ft_stream_cdldojistar_new(FtStreamCdldojistar **out_handle);
+int32_t ft_stream_cdldojistar_update(FtStreamCdldojistar *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdldojistar_peek(FtStreamCdldojistar *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdldojistar_reset(FtStreamCdldojistar *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdldojistar_save(FtStreamCdldojistar *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdldojistar_load(const char *json, size_t len, FtStreamCdldojistar **out_handle);
+void ft_stream_cdldojistar_free(FtStreamCdldojistar *handle);
+
+/**
+ * Streaming Dragonfly Doji (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdldragonflydoji FtStreamCdldragonflydoji;
+int32_t ft_stream_cdldragonflydoji_new(FtStreamCdldragonflydoji **out_handle);
+int32_t ft_stream_cdldragonflydoji_update(FtStreamCdldragonflydoji *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdldragonflydoji_peek(FtStreamCdldragonflydoji *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdldragonflydoji_reset(FtStreamCdldragonflydoji *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdldragonflydoji_save(FtStreamCdldragonflydoji *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdldragonflydoji_load(const char *json, size_t len, FtStreamCdldragonflydoji **out_handle);
+void ft_stream_cdldragonflydoji_free(FtStreamCdldragonflydoji *handle);
+
+/**
+ * Streaming Engulfing candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdlengulfing FtStreamCdlengulfing;
+int32_t ft_stream_cdlengulfing_new(FtStreamCdlengulfing **out_handle);
+int32_t ft_stream_cdlengulfing_update(FtStreamCdlengulfing *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlengulfing_peek(FtStreamCdlengulfing *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlengulfing_reset(FtStreamCdlengulfing *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdlengulfing_save(FtStreamCdlengulfing *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdlengulfing_load(const char *json, size_t len, FtStreamCdlengulfing **out_handle);
+void ft_stream_cdlengulfing_free(FtStreamCdlengulfing *handle);
+
+/**
+ * Streaming Evening Doji Star (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdleveningdojistar FtStreamCdleveningdojistar;
+int32_t ft_stream_cdleveningdojistar_new(FtStreamCdleveningdojistar **out_handle);
+int32_t ft_stream_cdleveningdojistar_update(FtStreamCdleveningdojistar *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdleveningdojistar_peek(FtStreamCdleveningdojistar *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdleveningdojistar_reset(FtStreamCdleveningdojistar *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdleveningdojistar_save(FtStreamCdleveningdojistar *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdleveningdojistar_load(const char *json, size_t len, FtStreamCdleveningdojistar **out_handle);
+void ft_stream_cdleveningdojistar_free(FtStreamCdleveningdojistar *handle);
+
+/**
+ * Streaming Evening Star (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdleveningstar FtStreamCdleveningstar;
+int32_t ft_stream_cdleveningstar_new(FtStreamCdleveningstar **out_handle);
+int32_t ft_stream_cdleveningstar_update(FtStreamCdleveningstar *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdleveningstar_peek(FtStreamCdleveningstar *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdleveningstar_reset(FtStreamCdleveningstar *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdleveningstar_save(FtStreamCdleveningstar *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdleveningstar_load(const char *json, size_t len, FtStreamCdleveningstar **out_handle);
+void ft_stream_cdleveningstar_free(FtStreamCdleveningstar *handle);
+
+/**
+ * Streaming Up/Down-gap side-by-side white lines candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdlgapsidesidewhite FtStreamCdlgapsidesidewhite;
+int32_t ft_stream_cdlgapsidesidewhite_new(FtStreamCdlgapsidesidewhite **out_handle);
+int32_t ft_stream_cdlgapsidesidewhite_update(FtStreamCdlgapsidesidewhite *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlgapsidesidewhite_peek(FtStreamCdlgapsidesidewhite *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlgapsidesidewhite_reset(FtStreamCdlgapsidesidewhite *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdlgapsidesidewhite_save(FtStreamCdlgapsidesidewhite *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdlgapsidesidewhite_load(const char *json, size_t len, FtStreamCdlgapsidesidewhite **out_handle);
+void ft_stream_cdlgapsidesidewhite_free(FtStreamCdlgapsidesidewhite *handle);
+
+/**
+ * Streaming Gravestone Doji (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdlgravestonedoji FtStreamCdlgravestonedoji;
+int32_t ft_stream_cdlgravestonedoji_new(FtStreamCdlgravestonedoji **out_handle);
+int32_t ft_stream_cdlgravestonedoji_update(FtStreamCdlgravestonedoji *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlgravestonedoji_peek(FtStreamCdlgravestonedoji *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlgravestonedoji_reset(FtStreamCdlgravestonedoji *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdlgravestonedoji_save(FtStreamCdlgravestonedoji *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdlgravestonedoji_load(const char *json, size_t len, FtStreamCdlgravestonedoji **out_handle);
+void ft_stream_cdlgravestonedoji_free(FtStreamCdlgravestonedoji *handle);
+
+/**
+ * Streaming Hammer (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdlhammer FtStreamCdlhammer;
+int32_t ft_stream_cdlhammer_new(FtStreamCdlhammer **out_handle);
+int32_t ft_stream_cdlhammer_update(FtStreamCdlhammer *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlhammer_peek(FtStreamCdlhammer *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlhammer_reset(FtStreamCdlhammer *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdlhammer_save(FtStreamCdlhammer *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdlhammer_load(const char *json, size_t len, FtStreamCdlhammer **out_handle);
+void ft_stream_cdlhammer_free(FtStreamCdlhammer *handle);
+
+/**
+ * Streaming Hanging Man (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdlhangingman FtStreamCdlhangingman;
+int32_t ft_stream_cdlhangingman_new(FtStreamCdlhangingman **out_handle);
+int32_t ft_stream_cdlhangingman_update(FtStreamCdlhangingman *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlhangingman_peek(FtStreamCdlhangingman *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlhangingman_reset(FtStreamCdlhangingman *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdlhangingman_save(FtStreamCdlhangingman *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdlhangingman_load(const char *json, size_t len, FtStreamCdlhangingman **out_handle);
+void ft_stream_cdlhangingman_free(FtStreamCdlhangingman *handle);
+
+/**
+ * Streaming Harami candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdlharami FtStreamCdlharami;
+int32_t ft_stream_cdlharami_new(FtStreamCdlharami **out_handle);
+int32_t ft_stream_cdlharami_update(FtStreamCdlharami *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlharami_peek(FtStreamCdlharami *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlharami_reset(FtStreamCdlharami *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdlharami_save(FtStreamCdlharami *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdlharami_load(const char *json, size_t len, FtStreamCdlharami **out_handle);
+void ft_stream_cdlharami_free(FtStreamCdlharami *handle);
+
+/**
+ * Streaming Harami Cross candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdlharamicross FtStreamCdlharamicross;
+int32_t ft_stream_cdlharamicross_new(FtStreamCdlharamicross **out_handle);
+int32_t ft_stream_cdlharamicross_update(FtStreamCdlharamicross *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlharamicross_peek(FtStreamCdlharamicross *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlharamicross_reset(FtStreamCdlharamicross *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdlharamicross_save(FtStreamCdlharamicross *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdlharamicross_load(const char *json, size_t len, FtStreamCdlharamicross **out_handle);
+void ft_stream_cdlharamicross_free(FtStreamCdlharamicross *handle);
+
+/**
+ * Streaming High-Wave Candle candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdlhighwave FtStreamCdlhighwave;
+int32_t ft_stream_cdlhighwave_new(FtStreamCdlhighwave **out_handle);
+int32_t ft_stream_cdlhighwave_update(FtStreamCdlhighwave *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlhighwave_peek(FtStreamCdlhighwave *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlhighwave_reset(FtStreamCdlhighwave *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdlhighwave_save(FtStreamCdlhighwave *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdlhighwave_load(const char *json, size_t len, FtStreamCdlhighwave **out_handle);
+void ft_stream_cdlhighwave_free(FtStreamCdlhighwave *handle);
+
+/**
+ * Streaming Hikkake Pattern candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdlhikkake FtStreamCdlhikkake;
+int32_t ft_stream_cdlhikkake_new(FtStreamCdlhikkake **out_handle);
+int32_t ft_stream_cdlhikkake_update(FtStreamCdlhikkake *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlhikkake_peek(FtStreamCdlhikkake *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlhikkake_reset(FtStreamCdlhikkake *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdlhikkake_save(FtStreamCdlhikkake *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdlhikkake_load(const char *json, size_t len, FtStreamCdlhikkake **out_handle);
+void ft_stream_cdlhikkake_free(FtStreamCdlhikkake *handle);
+
+/**
+ * Streaming Modified Hikkake Pattern candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdlhikkakemod FtStreamCdlhikkakemod;
+int32_t ft_stream_cdlhikkakemod_new(FtStreamCdlhikkakemod **out_handle);
+int32_t ft_stream_cdlhikkakemod_update(FtStreamCdlhikkakemod *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlhikkakemod_peek(FtStreamCdlhikkakemod *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlhikkakemod_reset(FtStreamCdlhikkakemod *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdlhikkakemod_save(FtStreamCdlhikkakemod *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdlhikkakemod_load(const char *json, size_t len, FtStreamCdlhikkakemod **out_handle);
+void ft_stream_cdlhikkakemod_free(FtStreamCdlhikkakemod *handle);
+
+/**
+ * Streaming Homing Pigeon (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdlhomingpigeon FtStreamCdlhomingpigeon;
+int32_t ft_stream_cdlhomingpigeon_new(FtStreamCdlhomingpigeon **out_handle);
+int32_t ft_stream_cdlhomingpigeon_update(FtStreamCdlhomingpigeon *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlhomingpigeon_peek(FtStreamCdlhomingpigeon *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlhomingpigeon_reset(FtStreamCdlhomingpigeon *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdlhomingpigeon_save(FtStreamCdlhomingpigeon *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdlhomingpigeon_load(const char *json, size_t len, FtStreamCdlhomingpigeon **out_handle);
+void ft_stream_cdlhomingpigeon_free(FtStreamCdlhomingpigeon *handle);
+
+/**
+ * Streaming Identical Three Crows (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdlidentical3crows FtStreamCdlidentical3crows;
+int32_t ft_stream_cdlidentical3crows_new(FtStreamCdlidentical3crows **out_handle);
+int32_t ft_stream_cdlidentical3crows_update(FtStreamCdlidentical3crows *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlidentical3crows_peek(FtStreamCdlidentical3crows *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlidentical3crows_reset(FtStreamCdlidentical3crows *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdlidentical3crows_save(FtStreamCdlidentical3crows *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdlidentical3crows_load(const char *json, size_t len, FtStreamCdlidentical3crows **out_handle);
+void ft_stream_cdlidentical3crows_free(FtStreamCdlidentical3crows *handle);
+
+/**
+ * Streaming In-Neck Pattern (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdlinneck FtStreamCdlinneck;
+int32_t ft_stream_cdlinneck_new(FtStreamCdlinneck **out_handle);
+int32_t ft_stream_cdlinneck_update(FtStreamCdlinneck *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlinneck_peek(FtStreamCdlinneck *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlinneck_reset(FtStreamCdlinneck *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdlinneck_save(FtStreamCdlinneck *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdlinneck_load(const char *json, size_t len, FtStreamCdlinneck **out_handle);
+void ft_stream_cdlinneck_free(FtStreamCdlinneck *handle);
+
+/**
+ * Streaming Inverted Hammer (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdlinvertedhammer FtStreamCdlinvertedhammer;
+int32_t ft_stream_cdlinvertedhammer_new(FtStreamCdlinvertedhammer **out_handle);
+int32_t ft_stream_cdlinvertedhammer_update(FtStreamCdlinvertedhammer *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlinvertedhammer_peek(FtStreamCdlinvertedhammer *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlinvertedhammer_reset(FtStreamCdlinvertedhammer *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdlinvertedhammer_save(FtStreamCdlinvertedhammer *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdlinvertedhammer_load(const char *json, size_t len, FtStreamCdlinvertedhammer **out_handle);
+void ft_stream_cdlinvertedhammer_free(FtStreamCdlinvertedhammer *handle);
+
+/**
+ * Streaming Kicking candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdlkicking FtStreamCdlkicking;
+int32_t ft_stream_cdlkicking_new(FtStreamCdlkicking **out_handle);
+int32_t ft_stream_cdlkicking_update(FtStreamCdlkicking *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlkicking_peek(FtStreamCdlkicking *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlkicking_reset(FtStreamCdlkicking *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdlkicking_save(FtStreamCdlkicking *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdlkicking_load(const char *json, size_t len, FtStreamCdlkicking **out_handle);
+void ft_stream_cdlkicking_free(FtStreamCdlkicking *handle);
+
+/**
+ * Streaming Kicking — bull/bear determined by longer of the two marubozu candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdlkickingbylength FtStreamCdlkickingbylength;
+int32_t ft_stream_cdlkickingbylength_new(FtStreamCdlkickingbylength **out_handle);
+int32_t ft_stream_cdlkickingbylength_update(FtStreamCdlkickingbylength *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlkickingbylength_peek(FtStreamCdlkickingbylength *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlkickingbylength_reset(FtStreamCdlkickingbylength *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdlkickingbylength_save(FtStreamCdlkickingbylength *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdlkickingbylength_load(const char *json, size_t len, FtStreamCdlkickingbylength **out_handle);
+void ft_stream_cdlkickingbylength_free(FtStreamCdlkickingbylength *handle);
+
+/**
+ * Streaming Ladder Bottom (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdlladderbottom FtStreamCdlladderbottom;
+int32_t ft_stream_cdlladderbottom_new(FtStreamCdlladderbottom **out_handle);
+int32_t ft_stream_cdlladderbottom_update(FtStreamCdlladderbottom *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlladderbottom_peek(FtStreamCdlladderbottom *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlladderbottom_reset(FtStreamCdlladderbottom *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdlladderbottom_save(FtStreamCdlladderbottom *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdlladderbottom_load(const char *json, size_t len, FtStreamCdlladderbottom **out_handle);
+void ft_stream_cdlladderbottom_free(FtStreamCdlladderbottom *handle);
+
+/**
+ * Streaming Long Legged Doji candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdllongleggeddoji FtStreamCdllongleggeddoji;
+int32_t ft_stream_cdllongleggeddoji_new(FtStreamCdllongleggeddoji **out_handle);
+int32_t ft_stream_cdllongleggeddoji_update(FtStreamCdllongleggeddoji *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdllongleggeddoji_peek(FtStreamCdllongleggeddoji *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdllongleggeddoji_reset(FtStreamCdllongleggeddoji *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdllongleggeddoji_save(FtStreamCdllongleggeddoji *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdllongleggeddoji_load(const char *json, size_t len, FtStreamCdllongleggeddoji **out_handle);
+void ft_stream_cdllongleggeddoji_free(FtStreamCdllongleggeddoji *handle);
+
+/**
+ * Streaming Long Line Candle candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdllongline FtStreamCdllongline;
+int32_t ft_stream_cdllongline_new(FtStreamCdllongline **out_handle);
+int32_t ft_stream_cdllongline_update(FtStreamCdllongline *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdllongline_peek(FtStreamCdllongline *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdllongline_reset(FtStreamCdllongline *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdllongline_save(FtStreamCdllongline *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdllongline_load(const char *json, size_t len, FtStreamCdllongline **out_handle);
+void ft_stream_cdllongline_free(FtStreamCdllongline *handle);
+
+/**
+ * Streaming Marubozu candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdlmarubozu FtStreamCdlmarubozu;
+int32_t ft_stream_cdlmarubozu_new(FtStreamCdlmarubozu **out_handle);
+int32_t ft_stream_cdlmarubozu_update(FtStreamCdlmarubozu *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlmarubozu_peek(FtStreamCdlmarubozu *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlmarubozu_reset(FtStreamCdlmarubozu *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdlmarubozu_save(FtStreamCdlmarubozu *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdlmarubozu_load(const char *json, size_t len, FtStreamCdlmarubozu **out_handle);
+void ft_stream_cdlmarubozu_free(FtStreamCdlmarubozu *handle);
+
+/**
+ * Streaming Matching Low (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdlmatchinglow FtStreamCdlmatchinglow;
+int32_t ft_stream_cdlmatchinglow_new(FtStreamCdlmatchinglow **out_handle);
+int32_t ft_stream_cdlmatchinglow_update(FtStreamCdlmatchinglow *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlmatchinglow_peek(FtStreamCdlmatchinglow *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlmatchinglow_reset(FtStreamCdlmatchinglow *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdlmatchinglow_save(FtStreamCdlmatchinglow *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdlmatchinglow_load(const char *json, size_t len, FtStreamCdlmatchinglow **out_handle);
+void ft_stream_cdlmatchinglow_free(FtStreamCdlmatchinglow *handle);
+
+/**
+ * Streaming Mat Hold (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdlmathold FtStreamCdlmathold;
+int32_t ft_stream_cdlmathold_new(FtStreamCdlmathold **out_handle);
+int32_t ft_stream_cdlmathold_update(FtStreamCdlmathold *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlmathold_peek(FtStreamCdlmathold *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlmathold_reset(FtStreamCdlmathold *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdlmathold_save(FtStreamCdlmathold *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdlmathold_load(const char *json, size_t len, FtStreamCdlmathold **out_handle);
+void ft_stream_cdlmathold_free(FtStreamCdlmathold *handle);
+
+/**
+ * Streaming Morning Doji Star (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdlmorningdojistar FtStreamCdlmorningdojistar;
+int32_t ft_stream_cdlmorningdojistar_new(FtStreamCdlmorningdojistar **out_handle);
+int32_t ft_stream_cdlmorningdojistar_update(FtStreamCdlmorningdojistar *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlmorningdojistar_peek(FtStreamCdlmorningdojistar *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlmorningdojistar_reset(FtStreamCdlmorningdojistar *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdlmorningdojistar_save(FtStreamCdlmorningdojistar *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdlmorningdojistar_load(const char *json, size_t len, FtStreamCdlmorningdojistar **out_handle);
+void ft_stream_cdlmorningdojistar_free(FtStreamCdlmorningdojistar *handle);
+
+/**
+ * Streaming Morning Star (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdlmorningstar FtStreamCdlmorningstar;
+int32_t ft_stream_cdlmorningstar_new(FtStreamCdlmorningstar **out_handle);
+int32_t ft_stream_cdlmorningstar_update(FtStreamCdlmorningstar *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlmorningstar_peek(FtStreamCdlmorningstar *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlmorningstar_reset(FtStreamCdlmorningstar *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdlmorningstar_save(FtStreamCdlmorningstar *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdlmorningstar_load(const char *json, size_t len, FtStreamCdlmorningstar **out_handle);
+void ft_stream_cdlmorningstar_free(FtStreamCdlmorningstar *handle);
+
+/**
+ * Streaming On-Neck Pattern (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdlonneck FtStreamCdlonneck;
+int32_t ft_stream_cdlonneck_new(FtStreamCdlonneck **out_handle);
+int32_t ft_stream_cdlonneck_update(FtStreamCdlonneck *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlonneck_peek(FtStreamCdlonneck *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlonneck_reset(FtStreamCdlonneck *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdlonneck_save(FtStreamCdlonneck *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdlonneck_load(const char *json, size_t len, FtStreamCdlonneck **out_handle);
+void ft_stream_cdlonneck_free(FtStreamCdlonneck *handle);
+
+/**
+ * Streaming Piercing Pattern (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdlpiercing FtStreamCdlpiercing;
+int32_t ft_stream_cdlpiercing_new(FtStreamCdlpiercing **out_handle);
+int32_t ft_stream_cdlpiercing_update(FtStreamCdlpiercing *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlpiercing_peek(FtStreamCdlpiercing *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlpiercing_reset(FtStreamCdlpiercing *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdlpiercing_save(FtStreamCdlpiercing *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdlpiercing_load(const char *json, size_t len, FtStreamCdlpiercing **out_handle);
+void ft_stream_cdlpiercing_free(FtStreamCdlpiercing *handle);
+
+/**
+ * Streaming Rickshaw Man candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdlrickshawman FtStreamCdlrickshawman;
+int32_t ft_stream_cdlrickshawman_new(FtStreamCdlrickshawman **out_handle);
+int32_t ft_stream_cdlrickshawman_update(FtStreamCdlrickshawman *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlrickshawman_peek(FtStreamCdlrickshawman *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlrickshawman_reset(FtStreamCdlrickshawman *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdlrickshawman_save(FtStreamCdlrickshawman *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdlrickshawman_load(const char *json, size_t len, FtStreamCdlrickshawman **out_handle);
+void ft_stream_cdlrickshawman_free(FtStreamCdlrickshawman *handle);
+
+/**
+ * Streaming Rising/Falling Three Methods candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdlrisefall3methods FtStreamCdlrisefall3methods;
+int32_t ft_stream_cdlrisefall3methods_new(FtStreamCdlrisefall3methods **out_handle);
+int32_t ft_stream_cdlrisefall3methods_update(FtStreamCdlrisefall3methods *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlrisefall3methods_peek(FtStreamCdlrisefall3methods *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlrisefall3methods_reset(FtStreamCdlrisefall3methods *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdlrisefall3methods_save(FtStreamCdlrisefall3methods *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdlrisefall3methods_load(const char *json, size_t len, FtStreamCdlrisefall3methods **out_handle);
+void ft_stream_cdlrisefall3methods_free(FtStreamCdlrisefall3methods *handle);
+
+/**
+ * Streaming Separating Lines candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdlseparatinglines FtStreamCdlseparatinglines;
+int32_t ft_stream_cdlseparatinglines_new(FtStreamCdlseparatinglines **out_handle);
+int32_t ft_stream_cdlseparatinglines_update(FtStreamCdlseparatinglines *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlseparatinglines_peek(FtStreamCdlseparatinglines *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlseparatinglines_reset(FtStreamCdlseparatinglines *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdlseparatinglines_save(FtStreamCdlseparatinglines *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdlseparatinglines_load(const char *json, size_t len, FtStreamCdlseparatinglines **out_handle);
+void ft_stream_cdlseparatinglines_free(FtStreamCdlseparatinglines *handle);
+
+/**
+ * Streaming Shooting Star (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdlshootingstar FtStreamCdlshootingstar;
+int32_t ft_stream_cdlshootingstar_new(FtStreamCdlshootingstar **out_handle);
+int32_t ft_stream_cdlshootingstar_update(FtStreamCdlshootingstar *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlshootingstar_peek(FtStreamCdlshootingstar *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlshootingstar_reset(FtStreamCdlshootingstar *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdlshootingstar_save(FtStreamCdlshootingstar *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdlshootingstar_load(const char *json, size_t len, FtStreamCdlshootingstar **out_handle);
+void ft_stream_cdlshootingstar_free(FtStreamCdlshootingstar *handle);
+
+/**
+ * Streaming Short Line Candle candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdlshortline FtStreamCdlshortline;
+int32_t ft_stream_cdlshortline_new(FtStreamCdlshortline **out_handle);
+int32_t ft_stream_cdlshortline_update(FtStreamCdlshortline *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlshortline_peek(FtStreamCdlshortline *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlshortline_reset(FtStreamCdlshortline *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdlshortline_save(FtStreamCdlshortline *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdlshortline_load(const char *json, size_t len, FtStreamCdlshortline **out_handle);
+void ft_stream_cdlshortline_free(FtStreamCdlshortline *handle);
+
+/**
+ * Streaming Spinning Top candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdlspinningtop FtStreamCdlspinningtop;
+int32_t ft_stream_cdlspinningtop_new(FtStreamCdlspinningtop **out_handle);
+int32_t ft_stream_cdlspinningtop_update(FtStreamCdlspinningtop *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlspinningtop_peek(FtStreamCdlspinningtop *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlspinningtop_reset(FtStreamCdlspinningtop *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdlspinningtop_save(FtStreamCdlspinningtop *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdlspinningtop_load(const char *json, size_t len, FtStreamCdlspinningtop **out_handle);
+void ft_stream_cdlspinningtop_free(FtStreamCdlspinningtop *handle);
+
+/**
+ * Streaming Stalled Pattern (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdlstalledpattern FtStreamCdlstalledpattern;
+int32_t ft_stream_cdlstalledpattern_new(FtStreamCdlstalledpattern **out_handle);
+int32_t ft_stream_cdlstalledpattern_update(FtStreamCdlstalledpattern *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlstalledpattern_peek(FtStreamCdlstalledpattern *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlstalledpattern_reset(FtStreamCdlstalledpattern *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdlstalledpattern_save(FtStreamCdlstalledpattern *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdlstalledpattern_load(const char *json, size_t len, FtStreamCdlstalledpattern **out_handle);
+void ft_stream_cdlstalledpattern_free(FtStreamCdlstalledpattern *handle);
+
+/**
+ * Streaming Stick Sandwich (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdlsticksandwich FtStreamCdlsticksandwich;
+int32_t ft_stream_cdlsticksandwich_new(FtStreamCdlsticksandwich **out_handle);
+int32_t ft_stream_cdlsticksandwich_update(FtStreamCdlsticksandwich *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlsticksandwich_peek(FtStreamCdlsticksandwich *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlsticksandwich_reset(FtStreamCdlsticksandwich *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdlsticksandwich_save(FtStreamCdlsticksandwich *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdlsticksandwich_load(const char *json, size_t len, FtStreamCdlsticksandwich **out_handle);
+void ft_stream_cdlsticksandwich_free(FtStreamCdlsticksandwich *handle);
+
+/**
+ * Streaming Takuri (Dragonfly Doji with very long lower shadow) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdltakuri FtStreamCdltakuri;
+int32_t ft_stream_cdltakuri_new(FtStreamCdltakuri **out_handle);
+int32_t ft_stream_cdltakuri_update(FtStreamCdltakuri *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdltakuri_peek(FtStreamCdltakuri *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdltakuri_reset(FtStreamCdltakuri *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdltakuri_save(FtStreamCdltakuri *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdltakuri_load(const char *json, size_t len, FtStreamCdltakuri **out_handle);
+void ft_stream_cdltakuri_free(FtStreamCdltakuri *handle);
+
+/**
+ * Streaming Tasuki Gap candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdltasukigap FtStreamCdltasukigap;
+int32_t ft_stream_cdltasukigap_new(FtStreamCdltasukigap **out_handle);
+int32_t ft_stream_cdltasukigap_update(FtStreamCdltasukigap *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdltasukigap_peek(FtStreamCdltasukigap *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdltasukigap_reset(FtStreamCdltasukigap *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdltasukigap_save(FtStreamCdltasukigap *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdltasukigap_load(const char *json, size_t len, FtStreamCdltasukigap **out_handle);
+void ft_stream_cdltasukigap_free(FtStreamCdltasukigap *handle);
+
+/**
+ * Streaming Thrusting Pattern (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdlthrusting FtStreamCdlthrusting;
+int32_t ft_stream_cdlthrusting_new(FtStreamCdlthrusting **out_handle);
+int32_t ft_stream_cdlthrusting_update(FtStreamCdlthrusting *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlthrusting_peek(FtStreamCdlthrusting *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlthrusting_reset(FtStreamCdlthrusting *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdlthrusting_save(FtStreamCdlthrusting *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdlthrusting_load(const char *json, size_t len, FtStreamCdlthrusting **out_handle);
+void ft_stream_cdlthrusting_free(FtStreamCdlthrusting *handle);
+
+/**
+ * Streaming Tristar Pattern candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdltristar FtStreamCdltristar;
+int32_t ft_stream_cdltristar_new(FtStreamCdltristar **out_handle);
+int32_t ft_stream_cdltristar_update(FtStreamCdltristar *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdltristar_peek(FtStreamCdltristar *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdltristar_reset(FtStreamCdltristar *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdltristar_save(FtStreamCdltristar *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdltristar_load(const char *json, size_t len, FtStreamCdltristar **out_handle);
+void ft_stream_cdltristar_free(FtStreamCdltristar *handle);
+
+/**
+ * Streaming Unique 3 River (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdlunique3river FtStreamCdlunique3river;
+int32_t ft_stream_cdlunique3river_new(FtStreamCdlunique3river **out_handle);
+int32_t ft_stream_cdlunique3river_update(FtStreamCdlunique3river *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlunique3river_peek(FtStreamCdlunique3river *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlunique3river_reset(FtStreamCdlunique3river *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdlunique3river_save(FtStreamCdlunique3river *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdlunique3river_load(const char *json, size_t len, FtStreamCdlunique3river **out_handle);
+void ft_stream_cdlunique3river_free(FtStreamCdlunique3river *handle);
+
+/**
+ * Streaming Upside Gap Two Crows (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdlupsidegap2crows FtStreamCdlupsidegap2crows;
+int32_t ft_stream_cdlupsidegap2crows_new(FtStreamCdlupsidegap2crows **out_handle);
+int32_t ft_stream_cdlupsidegap2crows_update(FtStreamCdlupsidegap2crows *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlupsidegap2crows_peek(FtStreamCdlupsidegap2crows *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlupsidegap2crows_reset(FtStreamCdlupsidegap2crows *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdlupsidegap2crows_save(FtStreamCdlupsidegap2crows *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdlupsidegap2crows_load(const char *json, size_t len, FtStreamCdlupsidegap2crows **out_handle);
+void ft_stream_cdlupsidegap2crows_free(FtStreamCdlupsidegap2crows *handle);
+
+/**
+ * Streaming Upside/Downside Gap Three Methods candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ */
+typedef struct FtStreamCdlxsidegap3methods FtStreamCdlxsidegap3methods;
+int32_t ft_stream_cdlxsidegap3methods_new(FtStreamCdlxsidegap3methods **out_handle);
+int32_t ft_stream_cdlxsidegap3methods_update(FtStreamCdlxsidegap3methods *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlxsidegap3methods_peek(FtStreamCdlxsidegap3methods *handle, double open, double high, double low, double close, int32_t *out);
+int32_t ft_stream_cdlxsidegap3methods_reset(FtStreamCdlxsidegap3methods *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cdlxsidegap3methods_save(FtStreamCdlxsidegap3methods *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cdlxsidegap3methods_load(const char *json, size_t len, FtStreamCdlxsidegap3methods **out_handle);
+void ft_stream_cdlxsidegap3methods_free(FtStreamCdlxsidegap3methods *handle);
+
+/**
  * Streaming rolling population standard deviation over `timeperiod` bars, scaled by `nbdev`. Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).
  */
 typedef struct FtStreamStddev FtStreamStddev;

@@ -247,6 +247,8 @@ func scalarFloat(v any) float64 {
 		return x
 	case int8:
 		return float64(x)
+	case int32:
+		return float64(x)
 	case int64:
 		return float64(x)
 	}

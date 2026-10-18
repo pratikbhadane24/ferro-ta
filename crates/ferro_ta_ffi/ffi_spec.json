@@ -11781,6 +11781,1592 @@
       "update_fn": "ft_stream_adosc_update"
     },
     {
+      "doc": "Streaming Two Crows (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdl2crows_free",
+      "handle": "FtStreamCdl2crows",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdl2crows_load",
+      "name": "cdl2crows",
+      "new_fn": "ft_stream_cdl2crows_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdl2crows_peek",
+      "reset_fn": "ft_stream_cdl2crows_reset",
+      "save_fn": "ft_stream_cdl2crows_save",
+      "update_fn": "ft_stream_cdl2crows_update"
+    },
+    {
+      "doc": "Streaming Three Black Crows (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdl3blackcrows_free",
+      "handle": "FtStreamCdl3blackcrows",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdl3blackcrows_load",
+      "name": "cdl3blackcrows",
+      "new_fn": "ft_stream_cdl3blackcrows_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdl3blackcrows_peek",
+      "reset_fn": "ft_stream_cdl3blackcrows_reset",
+      "save_fn": "ft_stream_cdl3blackcrows_save",
+      "update_fn": "ft_stream_cdl3blackcrows_update"
+    },
+    {
+      "doc": "Streaming Three Inside Up/Down candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdl3inside_free",
+      "handle": "FtStreamCdl3inside",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdl3inside_load",
+      "name": "cdl3inside",
+      "new_fn": "ft_stream_cdl3inside_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdl3inside_peek",
+      "reset_fn": "ft_stream_cdl3inside_reset",
+      "save_fn": "ft_stream_cdl3inside_save",
+      "update_fn": "ft_stream_cdl3inside_update"
+    },
+    {
+      "doc": "Streaming Three-Line Strike candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdl3linestrike_free",
+      "handle": "FtStreamCdl3linestrike",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdl3linestrike_load",
+      "name": "cdl3linestrike",
+      "new_fn": "ft_stream_cdl3linestrike_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdl3linestrike_peek",
+      "reset_fn": "ft_stream_cdl3linestrike_reset",
+      "save_fn": "ft_stream_cdl3linestrike_save",
+      "update_fn": "ft_stream_cdl3linestrike_update"
+    },
+    {
+      "doc": "Streaming Three Outside Up/Down candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdl3outside_free",
+      "handle": "FtStreamCdl3outside",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdl3outside_load",
+      "name": "cdl3outside",
+      "new_fn": "ft_stream_cdl3outside_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdl3outside_peek",
+      "reset_fn": "ft_stream_cdl3outside_reset",
+      "save_fn": "ft_stream_cdl3outside_save",
+      "update_fn": "ft_stream_cdl3outside_update"
+    },
+    {
+      "doc": "Streaming Three Stars In The South (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdl3starsinsouth_free",
+      "handle": "FtStreamCdl3starsinsouth",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdl3starsinsouth_load",
+      "name": "cdl3starsinsouth",
+      "new_fn": "ft_stream_cdl3starsinsouth_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdl3starsinsouth_peek",
+      "reset_fn": "ft_stream_cdl3starsinsouth_reset",
+      "save_fn": "ft_stream_cdl3starsinsouth_save",
+      "update_fn": "ft_stream_cdl3starsinsouth_update"
+    },
+    {
+      "doc": "Streaming Three Advancing White Soldiers (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdl3whitesoldiers_free",
+      "handle": "FtStreamCdl3whitesoldiers",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdl3whitesoldiers_load",
+      "name": "cdl3whitesoldiers",
+      "new_fn": "ft_stream_cdl3whitesoldiers_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdl3whitesoldiers_peek",
+      "reset_fn": "ft_stream_cdl3whitesoldiers_reset",
+      "save_fn": "ft_stream_cdl3whitesoldiers_save",
+      "update_fn": "ft_stream_cdl3whitesoldiers_update"
+    },
+    {
+      "doc": "Streaming Abandoned Baby candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdlabandonedbaby_free",
+      "handle": "FtStreamCdlabandonedbaby",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlabandonedbaby_load",
+      "name": "cdlabandonedbaby",
+      "new_fn": "ft_stream_cdlabandonedbaby_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlabandonedbaby_peek",
+      "reset_fn": "ft_stream_cdlabandonedbaby_reset",
+      "save_fn": "ft_stream_cdlabandonedbaby_save",
+      "update_fn": "ft_stream_cdlabandonedbaby_update"
+    },
+    {
+      "doc": "Streaming Advance Block (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdladvanceblock_free",
+      "handle": "FtStreamCdladvanceblock",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdladvanceblock_load",
+      "name": "cdladvanceblock",
+      "new_fn": "ft_stream_cdladvanceblock_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdladvanceblock_peek",
+      "reset_fn": "ft_stream_cdladvanceblock_reset",
+      "save_fn": "ft_stream_cdladvanceblock_save",
+      "update_fn": "ft_stream_cdladvanceblock_update"
+    },
+    {
+      "doc": "Streaming Belt-hold candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdlbelthold_free",
+      "handle": "FtStreamCdlbelthold",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlbelthold_load",
+      "name": "cdlbelthold",
+      "new_fn": "ft_stream_cdlbelthold_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlbelthold_peek",
+      "reset_fn": "ft_stream_cdlbelthold_reset",
+      "save_fn": "ft_stream_cdlbelthold_save",
+      "update_fn": "ft_stream_cdlbelthold_update"
+    },
+    {
+      "doc": "Streaming Breakaway candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdlbreakaway_free",
+      "handle": "FtStreamCdlbreakaway",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlbreakaway_load",
+      "name": "cdlbreakaway",
+      "new_fn": "ft_stream_cdlbreakaway_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlbreakaway_peek",
+      "reset_fn": "ft_stream_cdlbreakaway_reset",
+      "save_fn": "ft_stream_cdlbreakaway_save",
+      "update_fn": "ft_stream_cdlbreakaway_update"
+    },
+    {
+      "doc": "Streaming Closing Marubozu candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdlclosingmarubozu_free",
+      "handle": "FtStreamCdlclosingmarubozu",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlclosingmarubozu_load",
+      "name": "cdlclosingmarubozu",
+      "new_fn": "ft_stream_cdlclosingmarubozu_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlclosingmarubozu_peek",
+      "reset_fn": "ft_stream_cdlclosingmarubozu_reset",
+      "save_fn": "ft_stream_cdlclosingmarubozu_save",
+      "update_fn": "ft_stream_cdlclosingmarubozu_update"
+    },
+    {
+      "doc": "Streaming Concealing Baby Swallow (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdlconcealbabyswall_free",
+      "handle": "FtStreamCdlconcealbabyswall",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlconcealbabyswall_load",
+      "name": "cdlconcealbabyswall",
+      "new_fn": "ft_stream_cdlconcealbabyswall_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlconcealbabyswall_peek",
+      "reset_fn": "ft_stream_cdlconcealbabyswall_reset",
+      "save_fn": "ft_stream_cdlconcealbabyswall_save",
+      "update_fn": "ft_stream_cdlconcealbabyswall_update"
+    },
+    {
+      "doc": "Streaming Counterattack candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdlcounterattack_free",
+      "handle": "FtStreamCdlcounterattack",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlcounterattack_load",
+      "name": "cdlcounterattack",
+      "new_fn": "ft_stream_cdlcounterattack_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlcounterattack_peek",
+      "reset_fn": "ft_stream_cdlcounterattack_reset",
+      "save_fn": "ft_stream_cdlcounterattack_save",
+      "update_fn": "ft_stream_cdlcounterattack_update"
+    },
+    {
+      "doc": "Streaming Dark Cloud Cover (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdldarkcloudcover_free",
+      "handle": "FtStreamCdldarkcloudcover",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdldarkcloudcover_load",
+      "name": "cdldarkcloudcover",
+      "new_fn": "ft_stream_cdldarkcloudcover_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdldarkcloudcover_peek",
+      "reset_fn": "ft_stream_cdldarkcloudcover_reset",
+      "save_fn": "ft_stream_cdldarkcloudcover_save",
+      "update_fn": "ft_stream_cdldarkcloudcover_update"
+    },
+    {
+      "doc": "Streaming Doji candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdldoji_free",
+      "handle": "FtStreamCdldoji",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdldoji_load",
+      "name": "cdldoji",
+      "new_fn": "ft_stream_cdldoji_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdldoji_peek",
+      "reset_fn": "ft_stream_cdldoji_reset",
+      "save_fn": "ft_stream_cdldoji_save",
+      "update_fn": "ft_stream_cdldoji_update"
+    },
+    {
+      "doc": "Streaming Doji Star candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdldojistar_free",
+      "handle": "FtStreamCdldojistar",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdldojistar_load",
+      "name": "cdldojistar",
+      "new_fn": "ft_stream_cdldojistar_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdldojistar_peek",
+      "reset_fn": "ft_stream_cdldojistar_reset",
+      "save_fn": "ft_stream_cdldojistar_save",
+      "update_fn": "ft_stream_cdldojistar_update"
+    },
+    {
+      "doc": "Streaming Dragonfly Doji (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdldragonflydoji_free",
+      "handle": "FtStreamCdldragonflydoji",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdldragonflydoji_load",
+      "name": "cdldragonflydoji",
+      "new_fn": "ft_stream_cdldragonflydoji_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdldragonflydoji_peek",
+      "reset_fn": "ft_stream_cdldragonflydoji_reset",
+      "save_fn": "ft_stream_cdldragonflydoji_save",
+      "update_fn": "ft_stream_cdldragonflydoji_update"
+    },
+    {
+      "doc": "Streaming Engulfing candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdlengulfing_free",
+      "handle": "FtStreamCdlengulfing",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlengulfing_load",
+      "name": "cdlengulfing",
+      "new_fn": "ft_stream_cdlengulfing_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlengulfing_peek",
+      "reset_fn": "ft_stream_cdlengulfing_reset",
+      "save_fn": "ft_stream_cdlengulfing_save",
+      "update_fn": "ft_stream_cdlengulfing_update"
+    },
+    {
+      "doc": "Streaming Evening Doji Star (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdleveningdojistar_free",
+      "handle": "FtStreamCdleveningdojistar",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdleveningdojistar_load",
+      "name": "cdleveningdojistar",
+      "new_fn": "ft_stream_cdleveningdojistar_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdleveningdojistar_peek",
+      "reset_fn": "ft_stream_cdleveningdojistar_reset",
+      "save_fn": "ft_stream_cdleveningdojistar_save",
+      "update_fn": "ft_stream_cdleveningdojistar_update"
+    },
+    {
+      "doc": "Streaming Evening Star (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdleveningstar_free",
+      "handle": "FtStreamCdleveningstar",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdleveningstar_load",
+      "name": "cdleveningstar",
+      "new_fn": "ft_stream_cdleveningstar_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdleveningstar_peek",
+      "reset_fn": "ft_stream_cdleveningstar_reset",
+      "save_fn": "ft_stream_cdleveningstar_save",
+      "update_fn": "ft_stream_cdleveningstar_update"
+    },
+    {
+      "doc": "Streaming Up/Down-gap side-by-side white lines candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdlgapsidesidewhite_free",
+      "handle": "FtStreamCdlgapsidesidewhite",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlgapsidesidewhite_load",
+      "name": "cdlgapsidesidewhite",
+      "new_fn": "ft_stream_cdlgapsidesidewhite_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlgapsidesidewhite_peek",
+      "reset_fn": "ft_stream_cdlgapsidesidewhite_reset",
+      "save_fn": "ft_stream_cdlgapsidesidewhite_save",
+      "update_fn": "ft_stream_cdlgapsidesidewhite_update"
+    },
+    {
+      "doc": "Streaming Gravestone Doji (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdlgravestonedoji_free",
+      "handle": "FtStreamCdlgravestonedoji",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlgravestonedoji_load",
+      "name": "cdlgravestonedoji",
+      "new_fn": "ft_stream_cdlgravestonedoji_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlgravestonedoji_peek",
+      "reset_fn": "ft_stream_cdlgravestonedoji_reset",
+      "save_fn": "ft_stream_cdlgravestonedoji_save",
+      "update_fn": "ft_stream_cdlgravestonedoji_update"
+    },
+    {
+      "doc": "Streaming Hammer (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdlhammer_free",
+      "handle": "FtStreamCdlhammer",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlhammer_load",
+      "name": "cdlhammer",
+      "new_fn": "ft_stream_cdlhammer_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlhammer_peek",
+      "reset_fn": "ft_stream_cdlhammer_reset",
+      "save_fn": "ft_stream_cdlhammer_save",
+      "update_fn": "ft_stream_cdlhammer_update"
+    },
+    {
+      "doc": "Streaming Hanging Man (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdlhangingman_free",
+      "handle": "FtStreamCdlhangingman",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlhangingman_load",
+      "name": "cdlhangingman",
+      "new_fn": "ft_stream_cdlhangingman_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlhangingman_peek",
+      "reset_fn": "ft_stream_cdlhangingman_reset",
+      "save_fn": "ft_stream_cdlhangingman_save",
+      "update_fn": "ft_stream_cdlhangingman_update"
+    },
+    {
+      "doc": "Streaming Harami candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdlharami_free",
+      "handle": "FtStreamCdlharami",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlharami_load",
+      "name": "cdlharami",
+      "new_fn": "ft_stream_cdlharami_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlharami_peek",
+      "reset_fn": "ft_stream_cdlharami_reset",
+      "save_fn": "ft_stream_cdlharami_save",
+      "update_fn": "ft_stream_cdlharami_update"
+    },
+    {
+      "doc": "Streaming Harami Cross candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdlharamicross_free",
+      "handle": "FtStreamCdlharamicross",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlharamicross_load",
+      "name": "cdlharamicross",
+      "new_fn": "ft_stream_cdlharamicross_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlharamicross_peek",
+      "reset_fn": "ft_stream_cdlharamicross_reset",
+      "save_fn": "ft_stream_cdlharamicross_save",
+      "update_fn": "ft_stream_cdlharamicross_update"
+    },
+    {
+      "doc": "Streaming High-Wave Candle candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdlhighwave_free",
+      "handle": "FtStreamCdlhighwave",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlhighwave_load",
+      "name": "cdlhighwave",
+      "new_fn": "ft_stream_cdlhighwave_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlhighwave_peek",
+      "reset_fn": "ft_stream_cdlhighwave_reset",
+      "save_fn": "ft_stream_cdlhighwave_save",
+      "update_fn": "ft_stream_cdlhighwave_update"
+    },
+    {
+      "doc": "Streaming Hikkake Pattern candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdlhikkake_free",
+      "handle": "FtStreamCdlhikkake",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlhikkake_load",
+      "name": "cdlhikkake",
+      "new_fn": "ft_stream_cdlhikkake_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlhikkake_peek",
+      "reset_fn": "ft_stream_cdlhikkake_reset",
+      "save_fn": "ft_stream_cdlhikkake_save",
+      "update_fn": "ft_stream_cdlhikkake_update"
+    },
+    {
+      "doc": "Streaming Modified Hikkake Pattern candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdlhikkakemod_free",
+      "handle": "FtStreamCdlhikkakemod",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlhikkakemod_load",
+      "name": "cdlhikkakemod",
+      "new_fn": "ft_stream_cdlhikkakemod_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlhikkakemod_peek",
+      "reset_fn": "ft_stream_cdlhikkakemod_reset",
+      "save_fn": "ft_stream_cdlhikkakemod_save",
+      "update_fn": "ft_stream_cdlhikkakemod_update"
+    },
+    {
+      "doc": "Streaming Homing Pigeon (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdlhomingpigeon_free",
+      "handle": "FtStreamCdlhomingpigeon",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlhomingpigeon_load",
+      "name": "cdlhomingpigeon",
+      "new_fn": "ft_stream_cdlhomingpigeon_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlhomingpigeon_peek",
+      "reset_fn": "ft_stream_cdlhomingpigeon_reset",
+      "save_fn": "ft_stream_cdlhomingpigeon_save",
+      "update_fn": "ft_stream_cdlhomingpigeon_update"
+    },
+    {
+      "doc": "Streaming Identical Three Crows (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdlidentical3crows_free",
+      "handle": "FtStreamCdlidentical3crows",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlidentical3crows_load",
+      "name": "cdlidentical3crows",
+      "new_fn": "ft_stream_cdlidentical3crows_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlidentical3crows_peek",
+      "reset_fn": "ft_stream_cdlidentical3crows_reset",
+      "save_fn": "ft_stream_cdlidentical3crows_save",
+      "update_fn": "ft_stream_cdlidentical3crows_update"
+    },
+    {
+      "doc": "Streaming In-Neck Pattern (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdlinneck_free",
+      "handle": "FtStreamCdlinneck",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlinneck_load",
+      "name": "cdlinneck",
+      "new_fn": "ft_stream_cdlinneck_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlinneck_peek",
+      "reset_fn": "ft_stream_cdlinneck_reset",
+      "save_fn": "ft_stream_cdlinneck_save",
+      "update_fn": "ft_stream_cdlinneck_update"
+    },
+    {
+      "doc": "Streaming Inverted Hammer (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdlinvertedhammer_free",
+      "handle": "FtStreamCdlinvertedhammer",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlinvertedhammer_load",
+      "name": "cdlinvertedhammer",
+      "new_fn": "ft_stream_cdlinvertedhammer_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlinvertedhammer_peek",
+      "reset_fn": "ft_stream_cdlinvertedhammer_reset",
+      "save_fn": "ft_stream_cdlinvertedhammer_save",
+      "update_fn": "ft_stream_cdlinvertedhammer_update"
+    },
+    {
+      "doc": "Streaming Kicking candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdlkicking_free",
+      "handle": "FtStreamCdlkicking",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlkicking_load",
+      "name": "cdlkicking",
+      "new_fn": "ft_stream_cdlkicking_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlkicking_peek",
+      "reset_fn": "ft_stream_cdlkicking_reset",
+      "save_fn": "ft_stream_cdlkicking_save",
+      "update_fn": "ft_stream_cdlkicking_update"
+    },
+    {
+      "doc": "Streaming Kicking — bull/bear determined by longer of the two marubozu candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdlkickingbylength_free",
+      "handle": "FtStreamCdlkickingbylength",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlkickingbylength_load",
+      "name": "cdlkickingbylength",
+      "new_fn": "ft_stream_cdlkickingbylength_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlkickingbylength_peek",
+      "reset_fn": "ft_stream_cdlkickingbylength_reset",
+      "save_fn": "ft_stream_cdlkickingbylength_save",
+      "update_fn": "ft_stream_cdlkickingbylength_update"
+    },
+    {
+      "doc": "Streaming Ladder Bottom (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdlladderbottom_free",
+      "handle": "FtStreamCdlladderbottom",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlladderbottom_load",
+      "name": "cdlladderbottom",
+      "new_fn": "ft_stream_cdlladderbottom_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlladderbottom_peek",
+      "reset_fn": "ft_stream_cdlladderbottom_reset",
+      "save_fn": "ft_stream_cdlladderbottom_save",
+      "update_fn": "ft_stream_cdlladderbottom_update"
+    },
+    {
+      "doc": "Streaming Long Legged Doji candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdllongleggeddoji_free",
+      "handle": "FtStreamCdllongleggeddoji",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdllongleggeddoji_load",
+      "name": "cdllongleggeddoji",
+      "new_fn": "ft_stream_cdllongleggeddoji_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdllongleggeddoji_peek",
+      "reset_fn": "ft_stream_cdllongleggeddoji_reset",
+      "save_fn": "ft_stream_cdllongleggeddoji_save",
+      "update_fn": "ft_stream_cdllongleggeddoji_update"
+    },
+    {
+      "doc": "Streaming Long Line Candle candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdllongline_free",
+      "handle": "FtStreamCdllongline",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdllongline_load",
+      "name": "cdllongline",
+      "new_fn": "ft_stream_cdllongline_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdllongline_peek",
+      "reset_fn": "ft_stream_cdllongline_reset",
+      "save_fn": "ft_stream_cdllongline_save",
+      "update_fn": "ft_stream_cdllongline_update"
+    },
+    {
+      "doc": "Streaming Marubozu candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdlmarubozu_free",
+      "handle": "FtStreamCdlmarubozu",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlmarubozu_load",
+      "name": "cdlmarubozu",
+      "new_fn": "ft_stream_cdlmarubozu_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlmarubozu_peek",
+      "reset_fn": "ft_stream_cdlmarubozu_reset",
+      "save_fn": "ft_stream_cdlmarubozu_save",
+      "update_fn": "ft_stream_cdlmarubozu_update"
+    },
+    {
+      "doc": "Streaming Matching Low (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdlmatchinglow_free",
+      "handle": "FtStreamCdlmatchinglow",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlmatchinglow_load",
+      "name": "cdlmatchinglow",
+      "new_fn": "ft_stream_cdlmatchinglow_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlmatchinglow_peek",
+      "reset_fn": "ft_stream_cdlmatchinglow_reset",
+      "save_fn": "ft_stream_cdlmatchinglow_save",
+      "update_fn": "ft_stream_cdlmatchinglow_update"
+    },
+    {
+      "doc": "Streaming Mat Hold (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdlmathold_free",
+      "handle": "FtStreamCdlmathold",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlmathold_load",
+      "name": "cdlmathold",
+      "new_fn": "ft_stream_cdlmathold_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlmathold_peek",
+      "reset_fn": "ft_stream_cdlmathold_reset",
+      "save_fn": "ft_stream_cdlmathold_save",
+      "update_fn": "ft_stream_cdlmathold_update"
+    },
+    {
+      "doc": "Streaming Morning Doji Star (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdlmorningdojistar_free",
+      "handle": "FtStreamCdlmorningdojistar",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlmorningdojistar_load",
+      "name": "cdlmorningdojistar",
+      "new_fn": "ft_stream_cdlmorningdojistar_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlmorningdojistar_peek",
+      "reset_fn": "ft_stream_cdlmorningdojistar_reset",
+      "save_fn": "ft_stream_cdlmorningdojistar_save",
+      "update_fn": "ft_stream_cdlmorningdojistar_update"
+    },
+    {
+      "doc": "Streaming Morning Star (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdlmorningstar_free",
+      "handle": "FtStreamCdlmorningstar",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlmorningstar_load",
+      "name": "cdlmorningstar",
+      "new_fn": "ft_stream_cdlmorningstar_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlmorningstar_peek",
+      "reset_fn": "ft_stream_cdlmorningstar_reset",
+      "save_fn": "ft_stream_cdlmorningstar_save",
+      "update_fn": "ft_stream_cdlmorningstar_update"
+    },
+    {
+      "doc": "Streaming On-Neck Pattern (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdlonneck_free",
+      "handle": "FtStreamCdlonneck",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlonneck_load",
+      "name": "cdlonneck",
+      "new_fn": "ft_stream_cdlonneck_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlonneck_peek",
+      "reset_fn": "ft_stream_cdlonneck_reset",
+      "save_fn": "ft_stream_cdlonneck_save",
+      "update_fn": "ft_stream_cdlonneck_update"
+    },
+    {
+      "doc": "Streaming Piercing Pattern (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdlpiercing_free",
+      "handle": "FtStreamCdlpiercing",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlpiercing_load",
+      "name": "cdlpiercing",
+      "new_fn": "ft_stream_cdlpiercing_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlpiercing_peek",
+      "reset_fn": "ft_stream_cdlpiercing_reset",
+      "save_fn": "ft_stream_cdlpiercing_save",
+      "update_fn": "ft_stream_cdlpiercing_update"
+    },
+    {
+      "doc": "Streaming Rickshaw Man candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdlrickshawman_free",
+      "handle": "FtStreamCdlrickshawman",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlrickshawman_load",
+      "name": "cdlrickshawman",
+      "new_fn": "ft_stream_cdlrickshawman_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlrickshawman_peek",
+      "reset_fn": "ft_stream_cdlrickshawman_reset",
+      "save_fn": "ft_stream_cdlrickshawman_save",
+      "update_fn": "ft_stream_cdlrickshawman_update"
+    },
+    {
+      "doc": "Streaming Rising/Falling Three Methods candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdlrisefall3methods_free",
+      "handle": "FtStreamCdlrisefall3methods",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlrisefall3methods_load",
+      "name": "cdlrisefall3methods",
+      "new_fn": "ft_stream_cdlrisefall3methods_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlrisefall3methods_peek",
+      "reset_fn": "ft_stream_cdlrisefall3methods_reset",
+      "save_fn": "ft_stream_cdlrisefall3methods_save",
+      "update_fn": "ft_stream_cdlrisefall3methods_update"
+    },
+    {
+      "doc": "Streaming Separating Lines candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdlseparatinglines_free",
+      "handle": "FtStreamCdlseparatinglines",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlseparatinglines_load",
+      "name": "cdlseparatinglines",
+      "new_fn": "ft_stream_cdlseparatinglines_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlseparatinglines_peek",
+      "reset_fn": "ft_stream_cdlseparatinglines_reset",
+      "save_fn": "ft_stream_cdlseparatinglines_save",
+      "update_fn": "ft_stream_cdlseparatinglines_update"
+    },
+    {
+      "doc": "Streaming Shooting Star (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdlshootingstar_free",
+      "handle": "FtStreamCdlshootingstar",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlshootingstar_load",
+      "name": "cdlshootingstar",
+      "new_fn": "ft_stream_cdlshootingstar_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlshootingstar_peek",
+      "reset_fn": "ft_stream_cdlshootingstar_reset",
+      "save_fn": "ft_stream_cdlshootingstar_save",
+      "update_fn": "ft_stream_cdlshootingstar_update"
+    },
+    {
+      "doc": "Streaming Short Line Candle candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdlshortline_free",
+      "handle": "FtStreamCdlshortline",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlshortline_load",
+      "name": "cdlshortline",
+      "new_fn": "ft_stream_cdlshortline_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlshortline_peek",
+      "reset_fn": "ft_stream_cdlshortline_reset",
+      "save_fn": "ft_stream_cdlshortline_save",
+      "update_fn": "ft_stream_cdlshortline_update"
+    },
+    {
+      "doc": "Streaming Spinning Top candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdlspinningtop_free",
+      "handle": "FtStreamCdlspinningtop",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlspinningtop_load",
+      "name": "cdlspinningtop",
+      "new_fn": "ft_stream_cdlspinningtop_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlspinningtop_peek",
+      "reset_fn": "ft_stream_cdlspinningtop_reset",
+      "save_fn": "ft_stream_cdlspinningtop_save",
+      "update_fn": "ft_stream_cdlspinningtop_update"
+    },
+    {
+      "doc": "Streaming Stalled Pattern (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdlstalledpattern_free",
+      "handle": "FtStreamCdlstalledpattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlstalledpattern_load",
+      "name": "cdlstalledpattern",
+      "new_fn": "ft_stream_cdlstalledpattern_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlstalledpattern_peek",
+      "reset_fn": "ft_stream_cdlstalledpattern_reset",
+      "save_fn": "ft_stream_cdlstalledpattern_save",
+      "update_fn": "ft_stream_cdlstalledpattern_update"
+    },
+    {
+      "doc": "Streaming Stick Sandwich (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdlsticksandwich_free",
+      "handle": "FtStreamCdlsticksandwich",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlsticksandwich_load",
+      "name": "cdlsticksandwich",
+      "new_fn": "ft_stream_cdlsticksandwich_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlsticksandwich_peek",
+      "reset_fn": "ft_stream_cdlsticksandwich_reset",
+      "save_fn": "ft_stream_cdlsticksandwich_save",
+      "update_fn": "ft_stream_cdlsticksandwich_update"
+    },
+    {
+      "doc": "Streaming Takuri (Dragonfly Doji with very long lower shadow) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdltakuri_free",
+      "handle": "FtStreamCdltakuri",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdltakuri_load",
+      "name": "cdltakuri",
+      "new_fn": "ft_stream_cdltakuri_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdltakuri_peek",
+      "reset_fn": "ft_stream_cdltakuri_reset",
+      "save_fn": "ft_stream_cdltakuri_save",
+      "update_fn": "ft_stream_cdltakuri_update"
+    },
+    {
+      "doc": "Streaming Tasuki Gap candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdltasukigap_free",
+      "handle": "FtStreamCdltasukigap",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdltasukigap_load",
+      "name": "cdltasukigap",
+      "new_fn": "ft_stream_cdltasukigap_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdltasukigap_peek",
+      "reset_fn": "ft_stream_cdltasukigap_reset",
+      "save_fn": "ft_stream_cdltasukigap_save",
+      "update_fn": "ft_stream_cdltasukigap_update"
+    },
+    {
+      "doc": "Streaming Thrusting Pattern (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdlthrusting_free",
+      "handle": "FtStreamCdlthrusting",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlthrusting_load",
+      "name": "cdlthrusting",
+      "new_fn": "ft_stream_cdlthrusting_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlthrusting_peek",
+      "reset_fn": "ft_stream_cdlthrusting_reset",
+      "save_fn": "ft_stream_cdlthrusting_save",
+      "update_fn": "ft_stream_cdlthrusting_update"
+    },
+    {
+      "doc": "Streaming Tristar Pattern candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdltristar_free",
+      "handle": "FtStreamCdltristar",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdltristar_load",
+      "name": "cdltristar",
+      "new_fn": "ft_stream_cdltristar_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdltristar_peek",
+      "reset_fn": "ft_stream_cdltristar_reset",
+      "save_fn": "ft_stream_cdltristar_save",
+      "update_fn": "ft_stream_cdltristar_update"
+    },
+    {
+      "doc": "Streaming Unique 3 River (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdlunique3river_free",
+      "handle": "FtStreamCdlunique3river",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlunique3river_load",
+      "name": "cdlunique3river",
+      "new_fn": "ft_stream_cdlunique3river_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlunique3river_peek",
+      "reset_fn": "ft_stream_cdlunique3river_reset",
+      "save_fn": "ft_stream_cdlunique3river_save",
+      "update_fn": "ft_stream_cdlunique3river_update"
+    },
+    {
+      "doc": "Streaming Upside Gap Two Crows (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdlupsidegap2crows_free",
+      "handle": "FtStreamCdlupsidegap2crows",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlupsidegap2crows_load",
+      "name": "cdlupsidegap2crows",
+      "new_fn": "ft_stream_cdlupsidegap2crows_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlupsidegap2crows_peek",
+      "reset_fn": "ft_stream_cdlupsidegap2crows_reset",
+      "save_fn": "ft_stream_cdlupsidegap2crows_save",
+      "update_fn": "ft_stream_cdlupsidegap2crows_update"
+    },
+    {
+      "doc": "Streaming Upside/Downside Gap Three Methods candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "free_fn": "ft_stream_cdlxsidegap3methods_free",
+      "handle": "FtStreamCdlxsidegap3methods",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlxsidegap3methods_load",
+      "name": "cdlxsidegap3methods",
+      "new_fn": "ft_stream_cdlxsidegap3methods_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlxsidegap3methods_peek",
+      "reset_fn": "ft_stream_cdlxsidegap3methods_reset",
+      "save_fn": "ft_stream_cdlxsidegap3methods_save",
+      "update_fn": "ft_stream_cdlxsidegap3methods_update"
+    },
+    {
       "doc": "Streaming rolling population standard deviation over `timeperiod` bars, scaled by `nbdev`. Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).",
       "free_fn": "ft_stream_stddev_free",
       "handle": "FtStreamStddev",

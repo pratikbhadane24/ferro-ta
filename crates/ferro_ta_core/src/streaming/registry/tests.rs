@@ -1,8 +1,12 @@
 //! Registry-driven tests: every entry is checked against its batch reference.
-use crate::streaming::fixtures::input_column;
+use crate::streaming::fixtures::{input_column, pattern_fixture, PATTERN_BARS};
 use crate::streaming::{Live, StreamValue, StreamingIndicator};
 
 const N_BARS: usize = 600;
+/// Fires every candlestick pattern must show on `pattern_fixture`.
+const MIN_PATTERN_FIRES: usize = 3;
+/// Candlestick streams in the registry.
+const PATTERN_STREAMS: usize = 61;
 const TICKS_PER_BAR: usize = 4;
 /// Parity tolerance from the streaming contract: `1e-9 · max(1, |b|)`.
 const REL_TOL: f64 = 1e-9;
@@ -238,31 +242,53 @@ fn parity_error(
     })
 }
 
+/// Input columns of a case on `fixture` bars: the pattern fixture for
+/// open / high / low / close, the usual per-name columns otherwise.
+fn pattern_columns(case: &Case) -> Vec<Vec<f64>> {
+    let (open, high, low, close) = pattern_fixture(PATTERN_BARS);
+    case.inputs
+        .iter()
+        .map(|n| match *n {
+            "open" => open.clone(),
+            "high" => high.clone(),
+            "low" => low.clone(),
+            "close" | "real" => close.clone(),
+            other => input_column(other, PATTERN_BARS),
+        })
+        .collect()
+}
+
 /// Every registry stream matches its batch function at every bar (NaN
 /// mask included), with default params, with every period doubled — which
 /// catches a lookback that is one bar short — and, for streams with a
-/// `matype` param, with every `matype` in `0..=8`. Reports the first
-/// mismatch of every failing stream.
+/// `matype` param, with every `matype` in `0..=8`. Every `i32` stream (the
+/// candlestick codes, which a random walk almost never fires) also runs on
+/// `pattern_fixture`. Reports the first mismatch of every failing stream.
 #[test]
 fn registry_parity_all_streams() {
     let cases = cases();
     assert!(!cases.is_empty());
     let mut failures = Vec::new();
     for case in &cases {
-        let cols = columns(case);
         let doubled = Variant {
             scale: 2,
             matype: None,
         };
         let mut variants = case.variants();
         variants.insert(1, doubled);
-        let first = variants.into_iter().find_map(|variant| {
-            let want = (case.batch)(&cols, variant);
-            assert_eq!(want.len(), N_BARS, "{}: batch length", case.name);
-            let mut stream = (case.stream)(variant);
-            want.iter().enumerate().find_map(|(i, w)| {
-                let got = stream.update(&row(&cols, i), true);
-                parity_error(case, i, &got, w).map(|e| format!("{e} ({variant:?})"))
+        let mut datasets = vec![(columns(case), N_BARS)];
+        if case.elems.contains(&"i32") {
+            datasets.push((pattern_columns(case), PATTERN_BARS));
+        }
+        let first = datasets.iter().find_map(|(cols, bars)| {
+            variants.iter().find_map(|&variant| {
+                let want = (case.batch)(cols, variant);
+                assert_eq!(want.len(), *bars, "{}: batch length", case.name);
+                let mut stream = (case.stream)(variant);
+                want.iter().enumerate().find_map(|(i, w)| {
+                    let got = stream.update(&row(cols, i), true);
+                    parity_error(case, i, &got, w).map(|e| format!("{e} ({variant:?})"))
+                })
             })
         });
         failures.extend(first);
@@ -271,6 +297,33 @@ fn registry_parity_all_streams() {
         failures.is_empty(),
         "parity failures:\n{}",
         failures.join("\n")
+    );
+}
+
+/// Candlestick streams (`i32` outputs over open / high / low / close) must
+/// fire at least [`MIN_PATTERN_FIRES`] times on `pattern_fixture`, otherwise
+/// the parity run on it proves nothing for that pattern.
+#[test]
+fn every_pattern_fires_on_fixture() {
+    let mut checked = 0;
+    let mut quiet = Vec::new();
+    for case in &cases() {
+        if !(case.elems == ["i32"] && case.inputs == ["open", "high", "low", "close"]) {
+            continue;
+        }
+        checked += 1;
+        let fires = (case.batch)(&pattern_columns(case), DEFAULTS)
+            .iter()
+            .filter(|p| p[0] != Some(0.0))
+            .count();
+        if fires < MIN_PATTERN_FIRES {
+            quiet.push(format!("{} ({fires})", case.name));
+        }
+    }
+    assert_eq!(checked, PATTERN_STREAMS, "pattern stream count");
+    assert!(
+        quiet.is_empty(),
+        "patterns firing < {MIN_PATTERN_FIRES}x: {quiet:?}"
     );
 }
 
