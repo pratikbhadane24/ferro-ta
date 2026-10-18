@@ -2731,7 +2731,7 @@ int32_t ft_stream_adosc_load(const char *json, size_t len, FtStreamAdosc **out_h
 void ft_stream_adosc_free(FtStreamAdosc *handle);
 
 /**
- * Streaming Two Crows (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Two Crows candlestick pattern: -100 (bearish) when matched, else 0.
  */
 typedef struct FtStreamCdl2crows FtStreamCdl2crows;
 int32_t ft_stream_cdl2crows_new(FtStreamCdl2crows **out_handle);
@@ -2745,7 +2745,7 @@ int32_t ft_stream_cdl2crows_load(const char *json, size_t len, FtStreamCdl2crows
 void ft_stream_cdl2crows_free(FtStreamCdl2crows *handle);
 
 /**
- * Streaming Three Black Crows (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Three Black Crows candlestick pattern: -100 (bearish) when matched, else 0.
  */
 typedef struct FtStreamCdl3blackcrows FtStreamCdl3blackcrows;
 int32_t ft_stream_cdl3blackcrows_new(FtStreamCdl3blackcrows **out_handle);
@@ -2759,7 +2759,7 @@ int32_t ft_stream_cdl3blackcrows_load(const char *json, size_t len, FtStreamCdl3
 void ft_stream_cdl3blackcrows_free(FtStreamCdl3blackcrows *handle);
 
 /**
- * Streaming Three Inside Up/Down candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Three Inside Up/Down candlestick pattern: 100 bullish, -100 bearish, else 0.
  */
 typedef struct FtStreamCdl3inside FtStreamCdl3inside;
 int32_t ft_stream_cdl3inside_new(FtStreamCdl3inside **out_handle);
@@ -2773,7 +2773,7 @@ int32_t ft_stream_cdl3inside_load(const char *json, size_t len, FtStreamCdl3insi
 void ft_stream_cdl3inside_free(FtStreamCdl3inside *handle);
 
 /**
- * Streaming Three-Line Strike candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Three-Line Strike candlestick pattern: 100 bullish, -100 bearish, else 0.
  */
 typedef struct FtStreamCdl3linestrike FtStreamCdl3linestrike;
 int32_t ft_stream_cdl3linestrike_new(FtStreamCdl3linestrike **out_handle);
@@ -2787,7 +2787,7 @@ int32_t ft_stream_cdl3linestrike_load(const char *json, size_t len, FtStreamCdl3
 void ft_stream_cdl3linestrike_free(FtStreamCdl3linestrike *handle);
 
 /**
- * Streaming Three Outside Up/Down candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Three Outside Up/Down candlestick pattern: 100 bullish, -100 bearish, else 0.
  */
 typedef struct FtStreamCdl3outside FtStreamCdl3outside;
 int32_t ft_stream_cdl3outside_new(FtStreamCdl3outside **out_handle);
@@ -2801,7 +2801,7 @@ int32_t ft_stream_cdl3outside_load(const char *json, size_t len, FtStreamCdl3out
 void ft_stream_cdl3outside_free(FtStreamCdl3outside *handle);
 
 /**
- * Streaming Three Stars In The South (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Three Stars In The South candlestick pattern: 100 (bullish) when matched, else 0.
  */
 typedef struct FtStreamCdl3starsinsouth FtStreamCdl3starsinsouth;
 int32_t ft_stream_cdl3starsinsouth_new(FtStreamCdl3starsinsouth **out_handle);
@@ -2815,7 +2815,7 @@ int32_t ft_stream_cdl3starsinsouth_load(const char *json, size_t len, FtStreamCd
 void ft_stream_cdl3starsinsouth_free(FtStreamCdl3starsinsouth *handle);
 
 /**
- * Streaming Three Advancing White Soldiers (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Three Advancing White Soldiers candlestick pattern: 100 (bullish) when matched, else 0.
  */
 typedef struct FtStreamCdl3whitesoldiers FtStreamCdl3whitesoldiers;
 int32_t ft_stream_cdl3whitesoldiers_new(FtStreamCdl3whitesoldiers **out_handle);
@@ -2829,7 +2829,7 @@ int32_t ft_stream_cdl3whitesoldiers_load(const char *json, size_t len, FtStreamC
 void ft_stream_cdl3whitesoldiers_free(FtStreamCdl3whitesoldiers *handle);
 
 /**
- * Streaming Abandoned Baby candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Abandoned Baby candlestick pattern: 100 bullish, -100 bearish, else 0.
  */
 typedef struct FtStreamCdlabandonedbaby FtStreamCdlabandonedbaby;
 int32_t ft_stream_cdlabandonedbaby_new(FtStreamCdlabandonedbaby **out_handle);
@@ -2843,7 +2843,7 @@ int32_t ft_stream_cdlabandonedbaby_load(const char *json, size_t len, FtStreamCd
 void ft_stream_cdlabandonedbaby_free(FtStreamCdlabandonedbaby *handle);
 
 /**
- * Streaming Advance Block (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Advance Block candlestick pattern: -100 (bearish) when matched, else 0.
  */
 typedef struct FtStreamCdladvanceblock FtStreamCdladvanceblock;
 int32_t ft_stream_cdladvanceblock_new(FtStreamCdladvanceblock **out_handle);
@@ -2857,7 +2857,7 @@ int32_t ft_stream_cdladvanceblock_load(const char *json, size_t len, FtStreamCdl
 void ft_stream_cdladvanceblock_free(FtStreamCdladvanceblock *handle);
 
 /**
- * Streaming Belt-hold candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Belt-hold candlestick pattern: 100 bullish, -100 bearish, else 0.
  */
 typedef struct FtStreamCdlbelthold FtStreamCdlbelthold;
 int32_t ft_stream_cdlbelthold_new(FtStreamCdlbelthold **out_handle);
@@ -2871,7 +2871,7 @@ int32_t ft_stream_cdlbelthold_load(const char *json, size_t len, FtStreamCdlbelt
 void ft_stream_cdlbelthold_free(FtStreamCdlbelthold *handle);
 
 /**
- * Streaming Breakaway candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Breakaway candlestick pattern: 100 bullish, -100 bearish, else 0.
  */
 typedef struct FtStreamCdlbreakaway FtStreamCdlbreakaway;
 int32_t ft_stream_cdlbreakaway_new(FtStreamCdlbreakaway **out_handle);
@@ -2885,7 +2885,7 @@ int32_t ft_stream_cdlbreakaway_load(const char *json, size_t len, FtStreamCdlbre
 void ft_stream_cdlbreakaway_free(FtStreamCdlbreakaway *handle);
 
 /**
- * Streaming Closing Marubozu candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Closing Marubozu candlestick pattern: 100 bullish, -100 bearish, else 0.
  */
 typedef struct FtStreamCdlclosingmarubozu FtStreamCdlclosingmarubozu;
 int32_t ft_stream_cdlclosingmarubozu_new(FtStreamCdlclosingmarubozu **out_handle);
@@ -2899,7 +2899,7 @@ int32_t ft_stream_cdlclosingmarubozu_load(const char *json, size_t len, FtStream
 void ft_stream_cdlclosingmarubozu_free(FtStreamCdlclosingmarubozu *handle);
 
 /**
- * Streaming Concealing Baby Swallow (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Concealing Baby Swallow candlestick pattern: 100 (bullish) when matched, else 0.
  */
 typedef struct FtStreamCdlconcealbabyswall FtStreamCdlconcealbabyswall;
 int32_t ft_stream_cdlconcealbabyswall_new(FtStreamCdlconcealbabyswall **out_handle);
@@ -2913,7 +2913,7 @@ int32_t ft_stream_cdlconcealbabyswall_load(const char *json, size_t len, FtStrea
 void ft_stream_cdlconcealbabyswall_free(FtStreamCdlconcealbabyswall *handle);
 
 /**
- * Streaming Counterattack candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Counterattack candlestick pattern: 100 bullish, -100 bearish, else 0.
  */
 typedef struct FtStreamCdlcounterattack FtStreamCdlcounterattack;
 int32_t ft_stream_cdlcounterattack_new(FtStreamCdlcounterattack **out_handle);
@@ -2927,7 +2927,7 @@ int32_t ft_stream_cdlcounterattack_load(const char *json, size_t len, FtStreamCd
 void ft_stream_cdlcounterattack_free(FtStreamCdlcounterattack *handle);
 
 /**
- * Streaming Dark Cloud Cover (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Dark Cloud Cover candlestick pattern: -100 (bearish) when matched, else 0.
  */
 typedef struct FtStreamCdldarkcloudcover FtStreamCdldarkcloudcover;
 int32_t ft_stream_cdldarkcloudcover_new(FtStreamCdldarkcloudcover **out_handle);
@@ -2941,7 +2941,7 @@ int32_t ft_stream_cdldarkcloudcover_load(const char *json, size_t len, FtStreamC
 void ft_stream_cdldarkcloudcover_free(FtStreamCdldarkcloudcover *handle);
 
 /**
- * Streaming Doji candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Doji candlestick pattern: 100 when the candle matches (pattern present, not a direction), else 0.
  */
 typedef struct FtStreamCdldoji FtStreamCdldoji;
 int32_t ft_stream_cdldoji_new(FtStreamCdldoji **out_handle);
@@ -2955,7 +2955,7 @@ int32_t ft_stream_cdldoji_load(const char *json, size_t len, FtStreamCdldoji **o
 void ft_stream_cdldoji_free(FtStreamCdldoji *handle);
 
 /**
- * Streaming Doji Star candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Doji Star candlestick pattern: 100 bullish, -100 bearish, else 0.
  */
 typedef struct FtStreamCdldojistar FtStreamCdldojistar;
 int32_t ft_stream_cdldojistar_new(FtStreamCdldojistar **out_handle);
@@ -2969,7 +2969,7 @@ int32_t ft_stream_cdldojistar_load(const char *json, size_t len, FtStreamCdldoji
 void ft_stream_cdldojistar_free(FtStreamCdldojistar *handle);
 
 /**
- * Streaming Dragonfly Doji (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Dragonfly Doji candlestick pattern: 100 when the candle matches (pattern present, not a direction), else 0.
  */
 typedef struct FtStreamCdldragonflydoji FtStreamCdldragonflydoji;
 int32_t ft_stream_cdldragonflydoji_new(FtStreamCdldragonflydoji **out_handle);
@@ -2983,7 +2983,7 @@ int32_t ft_stream_cdldragonflydoji_load(const char *json, size_t len, FtStreamCd
 void ft_stream_cdldragonflydoji_free(FtStreamCdldragonflydoji *handle);
 
 /**
- * Streaming Engulfing candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Engulfing candlestick pattern: 100 bullish, -100 bearish, else 0.
  */
 typedef struct FtStreamCdlengulfing FtStreamCdlengulfing;
 int32_t ft_stream_cdlengulfing_new(FtStreamCdlengulfing **out_handle);
@@ -2997,7 +2997,7 @@ int32_t ft_stream_cdlengulfing_load(const char *json, size_t len, FtStreamCdleng
 void ft_stream_cdlengulfing_free(FtStreamCdlengulfing *handle);
 
 /**
- * Streaming Evening Doji Star (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Evening Doji Star candlestick pattern: -100 (bearish) when matched, else 0.
  */
 typedef struct FtStreamCdleveningdojistar FtStreamCdleveningdojistar;
 int32_t ft_stream_cdleveningdojistar_new(FtStreamCdleveningdojistar **out_handle);
@@ -3011,7 +3011,7 @@ int32_t ft_stream_cdleveningdojistar_load(const char *json, size_t len, FtStream
 void ft_stream_cdleveningdojistar_free(FtStreamCdleveningdojistar *handle);
 
 /**
- * Streaming Evening Star (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Evening Star candlestick pattern: -100 (bearish) when matched, else 0.
  */
 typedef struct FtStreamCdleveningstar FtStreamCdleveningstar;
 int32_t ft_stream_cdleveningstar_new(FtStreamCdleveningstar **out_handle);
@@ -3025,7 +3025,7 @@ int32_t ft_stream_cdleveningstar_load(const char *json, size_t len, FtStreamCdle
 void ft_stream_cdleveningstar_free(FtStreamCdleveningstar *handle);
 
 /**
- * Streaming Up/Down-gap side-by-side white lines candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Up/Down-gap side-by-side white lines candlestick pattern: 100 bullish, -100 bearish, else 0.
  */
 typedef struct FtStreamCdlgapsidesidewhite FtStreamCdlgapsidesidewhite;
 int32_t ft_stream_cdlgapsidesidewhite_new(FtStreamCdlgapsidesidewhite **out_handle);
@@ -3039,7 +3039,7 @@ int32_t ft_stream_cdlgapsidesidewhite_load(const char *json, size_t len, FtStrea
 void ft_stream_cdlgapsidesidewhite_free(FtStreamCdlgapsidesidewhite *handle);
 
 /**
- * Streaming Gravestone Doji (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Gravestone Doji candlestick pattern: -100 (bearish) when matched, else 0.
  */
 typedef struct FtStreamCdlgravestonedoji FtStreamCdlgravestonedoji;
 int32_t ft_stream_cdlgravestonedoji_new(FtStreamCdlgravestonedoji **out_handle);
@@ -3053,7 +3053,7 @@ int32_t ft_stream_cdlgravestonedoji_load(const char *json, size_t len, FtStreamC
 void ft_stream_cdlgravestonedoji_free(FtStreamCdlgravestonedoji *handle);
 
 /**
- * Streaming Hammer (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Hammer candlestick pattern: 100 (bullish) when matched, else 0.
  */
 typedef struct FtStreamCdlhammer FtStreamCdlhammer;
 int32_t ft_stream_cdlhammer_new(FtStreamCdlhammer **out_handle);
@@ -3067,7 +3067,7 @@ int32_t ft_stream_cdlhammer_load(const char *json, size_t len, FtStreamCdlhammer
 void ft_stream_cdlhammer_free(FtStreamCdlhammer *handle);
 
 /**
- * Streaming Hanging Man (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Hanging Man candlestick pattern: -100 (bearish) when matched, else 0.
  */
 typedef struct FtStreamCdlhangingman FtStreamCdlhangingman;
 int32_t ft_stream_cdlhangingman_new(FtStreamCdlhangingman **out_handle);
@@ -3081,7 +3081,7 @@ int32_t ft_stream_cdlhangingman_load(const char *json, size_t len, FtStreamCdlha
 void ft_stream_cdlhangingman_free(FtStreamCdlhangingman *handle);
 
 /**
- * Streaming Harami candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Harami candlestick pattern: 100 bullish, -100 bearish, else 0.
  */
 typedef struct FtStreamCdlharami FtStreamCdlharami;
 int32_t ft_stream_cdlharami_new(FtStreamCdlharami **out_handle);
@@ -3095,7 +3095,7 @@ int32_t ft_stream_cdlharami_load(const char *json, size_t len, FtStreamCdlharami
 void ft_stream_cdlharami_free(FtStreamCdlharami *handle);
 
 /**
- * Streaming Harami Cross candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Harami Cross candlestick pattern: 100 bullish, -100 bearish, else 0.
  */
 typedef struct FtStreamCdlharamicross FtStreamCdlharamicross;
 int32_t ft_stream_cdlharamicross_new(FtStreamCdlharamicross **out_handle);
@@ -3109,7 +3109,7 @@ int32_t ft_stream_cdlharamicross_load(const char *json, size_t len, FtStreamCdlh
 void ft_stream_cdlharamicross_free(FtStreamCdlharamicross *handle);
 
 /**
- * Streaming High-Wave Candle candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming High-Wave Candle candlestick pattern: 100 bullish, -100 bearish, else 0.
  */
 typedef struct FtStreamCdlhighwave FtStreamCdlhighwave;
 int32_t ft_stream_cdlhighwave_new(FtStreamCdlhighwave **out_handle);
@@ -3123,7 +3123,7 @@ int32_t ft_stream_cdlhighwave_load(const char *json, size_t len, FtStreamCdlhigh
 void ft_stream_cdlhighwave_free(FtStreamCdlhighwave *handle);
 
 /**
- * Streaming Hikkake Pattern candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Hikkake Pattern candlestick pattern: 100 bullish, -100 bearish, else 0.
  */
 typedef struct FtStreamCdlhikkake FtStreamCdlhikkake;
 int32_t ft_stream_cdlhikkake_new(FtStreamCdlhikkake **out_handle);
@@ -3137,7 +3137,7 @@ int32_t ft_stream_cdlhikkake_load(const char *json, size_t len, FtStreamCdlhikka
 void ft_stream_cdlhikkake_free(FtStreamCdlhikkake *handle);
 
 /**
- * Streaming Modified Hikkake Pattern candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Modified Hikkake Pattern candlestick pattern: 100 bullish, -100 bearish, else 0.
  */
 typedef struct FtStreamCdlhikkakemod FtStreamCdlhikkakemod;
 int32_t ft_stream_cdlhikkakemod_new(FtStreamCdlhikkakemod **out_handle);
@@ -3151,7 +3151,7 @@ int32_t ft_stream_cdlhikkakemod_load(const char *json, size_t len, FtStreamCdlhi
 void ft_stream_cdlhikkakemod_free(FtStreamCdlhikkakemod *handle);
 
 /**
- * Streaming Homing Pigeon (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Homing Pigeon candlestick pattern: 100 (bullish) when matched, else 0.
  */
 typedef struct FtStreamCdlhomingpigeon FtStreamCdlhomingpigeon;
 int32_t ft_stream_cdlhomingpigeon_new(FtStreamCdlhomingpigeon **out_handle);
@@ -3165,7 +3165,7 @@ int32_t ft_stream_cdlhomingpigeon_load(const char *json, size_t len, FtStreamCdl
 void ft_stream_cdlhomingpigeon_free(FtStreamCdlhomingpigeon *handle);
 
 /**
- * Streaming Identical Three Crows (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Identical Three Crows candlestick pattern: -100 (bearish) when matched, else 0.
  */
 typedef struct FtStreamCdlidentical3crows FtStreamCdlidentical3crows;
 int32_t ft_stream_cdlidentical3crows_new(FtStreamCdlidentical3crows **out_handle);
@@ -3179,7 +3179,7 @@ int32_t ft_stream_cdlidentical3crows_load(const char *json, size_t len, FtStream
 void ft_stream_cdlidentical3crows_free(FtStreamCdlidentical3crows *handle);
 
 /**
- * Streaming In-Neck Pattern (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming In-Neck Pattern candlestick pattern: -100 (bearish) when matched, else 0.
  */
 typedef struct FtStreamCdlinneck FtStreamCdlinneck;
 int32_t ft_stream_cdlinneck_new(FtStreamCdlinneck **out_handle);
@@ -3193,7 +3193,7 @@ int32_t ft_stream_cdlinneck_load(const char *json, size_t len, FtStreamCdlinneck
 void ft_stream_cdlinneck_free(FtStreamCdlinneck *handle);
 
 /**
- * Streaming Inverted Hammer (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Inverted Hammer candlestick pattern: 100 (bullish) when matched, else 0.
  */
 typedef struct FtStreamCdlinvertedhammer FtStreamCdlinvertedhammer;
 int32_t ft_stream_cdlinvertedhammer_new(FtStreamCdlinvertedhammer **out_handle);
@@ -3207,7 +3207,7 @@ int32_t ft_stream_cdlinvertedhammer_load(const char *json, size_t len, FtStreamC
 void ft_stream_cdlinvertedhammer_free(FtStreamCdlinvertedhammer *handle);
 
 /**
- * Streaming Kicking candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Kicking candlestick pattern: 100 bullish, -100 bearish, else 0.
  */
 typedef struct FtStreamCdlkicking FtStreamCdlkicking;
 int32_t ft_stream_cdlkicking_new(FtStreamCdlkicking **out_handle);
@@ -3221,7 +3221,7 @@ int32_t ft_stream_cdlkicking_load(const char *json, size_t len, FtStreamCdlkicki
 void ft_stream_cdlkicking_free(FtStreamCdlkicking *handle);
 
 /**
- * Streaming Kicking — bull/bear determined by longer of the two marubozu candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Kicking by length (direction follows the longer marubozu) candlestick pattern: 100 bullish, -100 bearish, else 0.
  */
 typedef struct FtStreamCdlkickingbylength FtStreamCdlkickingbylength;
 int32_t ft_stream_cdlkickingbylength_new(FtStreamCdlkickingbylength **out_handle);
@@ -3235,7 +3235,7 @@ int32_t ft_stream_cdlkickingbylength_load(const char *json, size_t len, FtStream
 void ft_stream_cdlkickingbylength_free(FtStreamCdlkickingbylength *handle);
 
 /**
- * Streaming Ladder Bottom (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Ladder Bottom candlestick pattern: 100 (bullish) when matched, else 0.
  */
 typedef struct FtStreamCdlladderbottom FtStreamCdlladderbottom;
 int32_t ft_stream_cdlladderbottom_new(FtStreamCdlladderbottom **out_handle);
@@ -3249,7 +3249,7 @@ int32_t ft_stream_cdlladderbottom_load(const char *json, size_t len, FtStreamCdl
 void ft_stream_cdlladderbottom_free(FtStreamCdlladderbottom *handle);
 
 /**
- * Streaming Long Legged Doji candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Long Legged Doji candlestick pattern: 100 when the candle matches (pattern present, not a direction), else 0.
  */
 typedef struct FtStreamCdllongleggeddoji FtStreamCdllongleggeddoji;
 int32_t ft_stream_cdllongleggeddoji_new(FtStreamCdllongleggeddoji **out_handle);
@@ -3263,7 +3263,7 @@ int32_t ft_stream_cdllongleggeddoji_load(const char *json, size_t len, FtStreamC
 void ft_stream_cdllongleggeddoji_free(FtStreamCdllongleggeddoji *handle);
 
 /**
- * Streaming Long Line Candle candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Long Line Candle candlestick pattern: 100 bullish, -100 bearish, else 0.
  */
 typedef struct FtStreamCdllongline FtStreamCdllongline;
 int32_t ft_stream_cdllongline_new(FtStreamCdllongline **out_handle);
@@ -3277,7 +3277,7 @@ int32_t ft_stream_cdllongline_load(const char *json, size_t len, FtStreamCdllong
 void ft_stream_cdllongline_free(FtStreamCdllongline *handle);
 
 /**
- * Streaming Marubozu candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Marubozu candlestick pattern: 100 bullish, -100 bearish, else 0.
  */
 typedef struct FtStreamCdlmarubozu FtStreamCdlmarubozu;
 int32_t ft_stream_cdlmarubozu_new(FtStreamCdlmarubozu **out_handle);
@@ -3291,7 +3291,7 @@ int32_t ft_stream_cdlmarubozu_load(const char *json, size_t len, FtStreamCdlmaru
 void ft_stream_cdlmarubozu_free(FtStreamCdlmarubozu *handle);
 
 /**
- * Streaming Matching Low (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Matching Low candlestick pattern: 100 (bullish) when matched, else 0.
  */
 typedef struct FtStreamCdlmatchinglow FtStreamCdlmatchinglow;
 int32_t ft_stream_cdlmatchinglow_new(FtStreamCdlmatchinglow **out_handle);
@@ -3305,7 +3305,7 @@ int32_t ft_stream_cdlmatchinglow_load(const char *json, size_t len, FtStreamCdlm
 void ft_stream_cdlmatchinglow_free(FtStreamCdlmatchinglow *handle);
 
 /**
- * Streaming Mat Hold (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Mat Hold candlestick pattern: 100 (bullish) when matched, else 0.
  */
 typedef struct FtStreamCdlmathold FtStreamCdlmathold;
 int32_t ft_stream_cdlmathold_new(FtStreamCdlmathold **out_handle);
@@ -3319,7 +3319,7 @@ int32_t ft_stream_cdlmathold_load(const char *json, size_t len, FtStreamCdlmatho
 void ft_stream_cdlmathold_free(FtStreamCdlmathold *handle);
 
 /**
- * Streaming Morning Doji Star (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Morning Doji Star candlestick pattern: 100 (bullish) when matched, else 0.
  */
 typedef struct FtStreamCdlmorningdojistar FtStreamCdlmorningdojistar;
 int32_t ft_stream_cdlmorningdojistar_new(FtStreamCdlmorningdojistar **out_handle);
@@ -3333,7 +3333,7 @@ int32_t ft_stream_cdlmorningdojistar_load(const char *json, size_t len, FtStream
 void ft_stream_cdlmorningdojistar_free(FtStreamCdlmorningdojistar *handle);
 
 /**
- * Streaming Morning Star (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Morning Star candlestick pattern: 100 (bullish) when matched, else 0.
  */
 typedef struct FtStreamCdlmorningstar FtStreamCdlmorningstar;
 int32_t ft_stream_cdlmorningstar_new(FtStreamCdlmorningstar **out_handle);
@@ -3347,7 +3347,7 @@ int32_t ft_stream_cdlmorningstar_load(const char *json, size_t len, FtStreamCdlm
 void ft_stream_cdlmorningstar_free(FtStreamCdlmorningstar *handle);
 
 /**
- * Streaming On-Neck Pattern (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming On-Neck Pattern candlestick pattern: -100 (bearish) when matched, else 0.
  */
 typedef struct FtStreamCdlonneck FtStreamCdlonneck;
 int32_t ft_stream_cdlonneck_new(FtStreamCdlonneck **out_handle);
@@ -3361,7 +3361,7 @@ int32_t ft_stream_cdlonneck_load(const char *json, size_t len, FtStreamCdlonneck
 void ft_stream_cdlonneck_free(FtStreamCdlonneck *handle);
 
 /**
- * Streaming Piercing Pattern (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Piercing Pattern candlestick pattern: 100 (bullish) when matched, else 0.
  */
 typedef struct FtStreamCdlpiercing FtStreamCdlpiercing;
 int32_t ft_stream_cdlpiercing_new(FtStreamCdlpiercing **out_handle);
@@ -3375,7 +3375,7 @@ int32_t ft_stream_cdlpiercing_load(const char *json, size_t len, FtStreamCdlpier
 void ft_stream_cdlpiercing_free(FtStreamCdlpiercing *handle);
 
 /**
- * Streaming Rickshaw Man candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Rickshaw Man candlestick pattern: 100 when the candle matches (pattern present, not a direction), else 0.
  */
 typedef struct FtStreamCdlrickshawman FtStreamCdlrickshawman;
 int32_t ft_stream_cdlrickshawman_new(FtStreamCdlrickshawman **out_handle);
@@ -3389,7 +3389,7 @@ int32_t ft_stream_cdlrickshawman_load(const char *json, size_t len, FtStreamCdlr
 void ft_stream_cdlrickshawman_free(FtStreamCdlrickshawman *handle);
 
 /**
- * Streaming Rising/Falling Three Methods candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Rising/Falling Three Methods candlestick pattern: 100 bullish, -100 bearish, else 0.
  */
 typedef struct FtStreamCdlrisefall3methods FtStreamCdlrisefall3methods;
 int32_t ft_stream_cdlrisefall3methods_new(FtStreamCdlrisefall3methods **out_handle);
@@ -3403,7 +3403,7 @@ int32_t ft_stream_cdlrisefall3methods_load(const char *json, size_t len, FtStrea
 void ft_stream_cdlrisefall3methods_free(FtStreamCdlrisefall3methods *handle);
 
 /**
- * Streaming Separating Lines candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Separating Lines candlestick pattern: 100 bullish, -100 bearish, else 0.
  */
 typedef struct FtStreamCdlseparatinglines FtStreamCdlseparatinglines;
 int32_t ft_stream_cdlseparatinglines_new(FtStreamCdlseparatinglines **out_handle);
@@ -3417,7 +3417,7 @@ int32_t ft_stream_cdlseparatinglines_load(const char *json, size_t len, FtStream
 void ft_stream_cdlseparatinglines_free(FtStreamCdlseparatinglines *handle);
 
 /**
- * Streaming Shooting Star (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Shooting Star candlestick pattern: -100 (bearish) when matched, else 0.
  */
 typedef struct FtStreamCdlshootingstar FtStreamCdlshootingstar;
 int32_t ft_stream_cdlshootingstar_new(FtStreamCdlshootingstar **out_handle);
@@ -3431,7 +3431,7 @@ int32_t ft_stream_cdlshootingstar_load(const char *json, size_t len, FtStreamCdl
 void ft_stream_cdlshootingstar_free(FtStreamCdlshootingstar *handle);
 
 /**
- * Streaming Short Line Candle candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Short Line Candle candlestick pattern: 100 bullish, -100 bearish, else 0.
  */
 typedef struct FtStreamCdlshortline FtStreamCdlshortline;
 int32_t ft_stream_cdlshortline_new(FtStreamCdlshortline **out_handle);
@@ -3445,7 +3445,7 @@ int32_t ft_stream_cdlshortline_load(const char *json, size_t len, FtStreamCdlsho
 void ft_stream_cdlshortline_free(FtStreamCdlshortline *handle);
 
 /**
- * Streaming Spinning Top candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Spinning Top candlestick pattern: 100 bullish, -100 bearish, else 0.
  */
 typedef struct FtStreamCdlspinningtop FtStreamCdlspinningtop;
 int32_t ft_stream_cdlspinningtop_new(FtStreamCdlspinningtop **out_handle);
@@ -3459,7 +3459,7 @@ int32_t ft_stream_cdlspinningtop_load(const char *json, size_t len, FtStreamCdls
 void ft_stream_cdlspinningtop_free(FtStreamCdlspinningtop *handle);
 
 /**
- * Streaming Stalled Pattern (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Stalled Pattern candlestick pattern: -100 (bearish) when matched, else 0.
  */
 typedef struct FtStreamCdlstalledpattern FtStreamCdlstalledpattern;
 int32_t ft_stream_cdlstalledpattern_new(FtStreamCdlstalledpattern **out_handle);
@@ -3473,7 +3473,7 @@ int32_t ft_stream_cdlstalledpattern_load(const char *json, size_t len, FtStreamC
 void ft_stream_cdlstalledpattern_free(FtStreamCdlstalledpattern *handle);
 
 /**
- * Streaming Stick Sandwich (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Stick Sandwich candlestick pattern: 100 (bullish) when matched, else 0.
  */
 typedef struct FtStreamCdlsticksandwich FtStreamCdlsticksandwich;
 int32_t ft_stream_cdlsticksandwich_new(FtStreamCdlsticksandwich **out_handle);
@@ -3487,7 +3487,7 @@ int32_t ft_stream_cdlsticksandwich_load(const char *json, size_t len, FtStreamCd
 void ft_stream_cdlsticksandwich_free(FtStreamCdlsticksandwich *handle);
 
 /**
- * Streaming Takuri (Dragonfly Doji with very long lower shadow) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Takuri (Dragonfly Doji with very long lower shadow) candlestick pattern: 100 when the candle matches (pattern present, not a direction), else 0.
  */
 typedef struct FtStreamCdltakuri FtStreamCdltakuri;
 int32_t ft_stream_cdltakuri_new(FtStreamCdltakuri **out_handle);
@@ -3501,7 +3501,7 @@ int32_t ft_stream_cdltakuri_load(const char *json, size_t len, FtStreamCdltakuri
 void ft_stream_cdltakuri_free(FtStreamCdltakuri *handle);
 
 /**
- * Streaming Tasuki Gap candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Tasuki Gap candlestick pattern: 100 bullish, -100 bearish, else 0.
  */
 typedef struct FtStreamCdltasukigap FtStreamCdltasukigap;
 int32_t ft_stream_cdltasukigap_new(FtStreamCdltasukigap **out_handle);
@@ -3515,7 +3515,7 @@ int32_t ft_stream_cdltasukigap_load(const char *json, size_t len, FtStreamCdltas
 void ft_stream_cdltasukigap_free(FtStreamCdltasukigap *handle);
 
 /**
- * Streaming Thrusting Pattern (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Thrusting Pattern candlestick pattern: -100 (bearish) when matched, else 0.
  */
 typedef struct FtStreamCdlthrusting FtStreamCdlthrusting;
 int32_t ft_stream_cdlthrusting_new(FtStreamCdlthrusting **out_handle);
@@ -3529,7 +3529,7 @@ int32_t ft_stream_cdlthrusting_load(const char *json, size_t len, FtStreamCdlthr
 void ft_stream_cdlthrusting_free(FtStreamCdlthrusting *handle);
 
 /**
- * Streaming Tristar Pattern candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Tristar Pattern candlestick pattern: 100 bullish, -100 bearish, else 0.
  */
 typedef struct FtStreamCdltristar FtStreamCdltristar;
 int32_t ft_stream_cdltristar_new(FtStreamCdltristar **out_handle);
@@ -3543,7 +3543,7 @@ int32_t ft_stream_cdltristar_load(const char *json, size_t len, FtStreamCdltrist
 void ft_stream_cdltristar_free(FtStreamCdltristar *handle);
 
 /**
- * Streaming Unique 3 River (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Unique 3 River candlestick pattern: 100 (bullish) when matched, else 0.
  */
 typedef struct FtStreamCdlunique3river FtStreamCdlunique3river;
 int32_t ft_stream_cdlunique3river_new(FtStreamCdlunique3river **out_handle);
@@ -3557,7 +3557,7 @@ int32_t ft_stream_cdlunique3river_load(const char *json, size_t len, FtStreamCdl
 void ft_stream_cdlunique3river_free(FtStreamCdlunique3river *handle);
 
 /**
- * Streaming Upside Gap Two Crows (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Upside Gap Two Crows candlestick pattern: -100 (bearish) when matched, else 0.
  */
 typedef struct FtStreamCdlupsidegap2crows FtStreamCdlupsidegap2crows;
 int32_t ft_stream_cdlupsidegap2crows_new(FtStreamCdlupsidegap2crows **out_handle);
@@ -3571,7 +3571,7 @@ int32_t ft_stream_cdlupsidegap2crows_load(const char *json, size_t len, FtStream
 void ft_stream_cdlupsidegap2crows_free(FtStreamCdlupsidegap2crows *handle);
 
 /**
- * Streaming Upside/Downside Gap Three Methods candlestick pattern: 100 bullish, -100 bearish, 0 none.
+ * Streaming Upside/Downside Gap Three Methods candlestick pattern: 100 bullish, -100 bearish, else 0.
  */
 typedef struct FtStreamCdlxsidegap3methods FtStreamCdlxsidegap3methods;
 int32_t ft_stream_cdlxsidegap3methods_new(FtStreamCdlxsidegap3methods **out_handle);

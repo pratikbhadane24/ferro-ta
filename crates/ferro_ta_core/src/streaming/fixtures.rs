@@ -221,7 +221,8 @@ type Shape = &'static [[f64; 4]];
 /// (bullish where the rule has a direction): 2 crows, 3 black crows,
 /// 3-line strike, 3 stars in the south, 3 white soldiers, abandoned baby,
 /// concealing baby swallow, kicking (by length), mat hold / rising three
-/// methods, tri-star, on-neck.
+/// methods, tri-star, on-neck, counterattack, gap side-by-side white lines,
+/// unique three river, upside gap two crows, stick sandwich.
 const SHAPES: &[Shape] = &[
     &[
         [0.0, 5.5, -0.5, 5.0],
@@ -274,10 +275,31 @@ const SHAPES: &[Shape] = &[
         [9.0, 10.5, 7.5, 9.2],
     ],
     &[[10.0, 10.2, 4.0, 4.5], [3.0, 4.1, 2.9, 4.0]],
+    &[[10.0, 10.2, 4.0, 4.2], [-1.0, 4.4, -1.2, 4.2]],
+    &[
+        [0.0, 1.0, -0.2, 1.0],
+        [3.0, 5.2, 2.8, 5.0],
+        [3.2, 5.4, 3.0, 5.1],
+    ],
+    &[
+        [10.0, 10.2, 4.8, 5.0],
+        [4.5, 4.6, 3.0, 3.8],
+        [3.4, 4.0, 3.3, 3.7],
+    ],
+    &[
+        [0.0, 5.2, -0.1, 5.0],
+        [7.0, 7.2, 5.8, 6.0],
+        [7.5, 7.7, 5.3, 5.5],
+    ],
+    &[
+        [10.0, 10.2, 4.8, 5.0],
+        [6.0, 9.2, 5.8, 9.0],
+        [9.5, 9.7, 4.9, 5.0],
+    ],
 ];
 
 /// Bars between scripted shapes, and the first bar that may hold one.
-const SHAPE_STRIDE: usize = 40;
+const SHAPE_STRIDE: usize = 25;
 const SHAPE_FIRST: usize = 20;
 
 /// Write [`SHAPES`] over the random candles, cycling through them, so every

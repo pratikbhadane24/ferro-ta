@@ -8208,7 +8208,7 @@ func (s *StreamAdosc) Close() error {
 
 // StreamCdl2crows is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Two Crows (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Two Crows candlestick pattern: -100 (bearish) when matched, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -8319,7 +8319,7 @@ func (s *StreamCdl2crows) Close() error {
 
 // StreamCdl3blackcrows is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Three Black Crows (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Three Black Crows candlestick pattern: -100 (bearish) when matched, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -8430,7 +8430,7 @@ func (s *StreamCdl3blackcrows) Close() error {
 
 // StreamCdl3inside is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Three Inside Up/Down candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Three Inside Up/Down candlestick pattern: 100 bullish, -100 bearish, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -8541,7 +8541,7 @@ func (s *StreamCdl3inside) Close() error {
 
 // StreamCdl3linestrike is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Three-Line Strike candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Three-Line Strike candlestick pattern: 100 bullish, -100 bearish, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -8652,7 +8652,7 @@ func (s *StreamCdl3linestrike) Close() error {
 
 // StreamCdl3outside is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Three Outside Up/Down candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Three Outside Up/Down candlestick pattern: 100 bullish, -100 bearish, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -8763,7 +8763,7 @@ func (s *StreamCdl3outside) Close() error {
 
 // StreamCdl3starsinsouth is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Three Stars In The South (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Three Stars In The South candlestick pattern: 100 (bullish) when matched, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -8874,7 +8874,7 @@ func (s *StreamCdl3starsinsouth) Close() error {
 
 // StreamCdl3whitesoldiers is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Three Advancing White Soldiers (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Three Advancing White Soldiers candlestick pattern: 100 (bullish) when matched, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -8985,7 +8985,7 @@ func (s *StreamCdl3whitesoldiers) Close() error {
 
 // StreamCdlabandonedbaby is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Abandoned Baby candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Abandoned Baby candlestick pattern: 100 bullish, -100 bearish, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -9096,7 +9096,7 @@ func (s *StreamCdlabandonedbaby) Close() error {
 
 // StreamCdladvanceblock is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Advance Block (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Advance Block candlestick pattern: -100 (bearish) when matched, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -9207,7 +9207,7 @@ func (s *StreamCdladvanceblock) Close() error {
 
 // StreamCdlbelthold is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Belt-hold candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Belt-hold candlestick pattern: 100 bullish, -100 bearish, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -9318,7 +9318,7 @@ func (s *StreamCdlbelthold) Close() error {
 
 // StreamCdlbreakaway is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Breakaway candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Breakaway candlestick pattern: 100 bullish, -100 bearish, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -9429,7 +9429,7 @@ func (s *StreamCdlbreakaway) Close() error {
 
 // StreamCdlclosingmarubozu is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Closing Marubozu candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Closing Marubozu candlestick pattern: 100 bullish, -100 bearish, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -9540,7 +9540,7 @@ func (s *StreamCdlclosingmarubozu) Close() error {
 
 // StreamCdlconcealbabyswall is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Concealing Baby Swallow (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Concealing Baby Swallow candlestick pattern: 100 (bullish) when matched, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -9651,7 +9651,7 @@ func (s *StreamCdlconcealbabyswall) Close() error {
 
 // StreamCdlcounterattack is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Counterattack candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Counterattack candlestick pattern: 100 bullish, -100 bearish, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -9762,7 +9762,7 @@ func (s *StreamCdlcounterattack) Close() error {
 
 // StreamCdldarkcloudcover is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Dark Cloud Cover (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Dark Cloud Cover candlestick pattern: -100 (bearish) when matched, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -9873,7 +9873,7 @@ func (s *StreamCdldarkcloudcover) Close() error {
 
 // StreamCdldoji is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Doji candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Doji candlestick pattern: 100 when the candle matches (pattern present, not a direction), else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -9984,7 +9984,7 @@ func (s *StreamCdldoji) Close() error {
 
 // StreamCdldojistar is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Doji Star candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Doji Star candlestick pattern: 100 bullish, -100 bearish, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -10095,7 +10095,7 @@ func (s *StreamCdldojistar) Close() error {
 
 // StreamCdldragonflydoji is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Dragonfly Doji (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Dragonfly Doji candlestick pattern: 100 when the candle matches (pattern present, not a direction), else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -10206,7 +10206,7 @@ func (s *StreamCdldragonflydoji) Close() error {
 
 // StreamCdlengulfing is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Engulfing candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Engulfing candlestick pattern: 100 bullish, -100 bearish, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -10317,7 +10317,7 @@ func (s *StreamCdlengulfing) Close() error {
 
 // StreamCdleveningdojistar is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Evening Doji Star (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Evening Doji Star candlestick pattern: -100 (bearish) when matched, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -10428,7 +10428,7 @@ func (s *StreamCdleveningdojistar) Close() error {
 
 // StreamCdleveningstar is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Evening Star (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Evening Star candlestick pattern: -100 (bearish) when matched, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -10539,7 +10539,7 @@ func (s *StreamCdleveningstar) Close() error {
 
 // StreamCdlgapsidesidewhite is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Up/Down-gap side-by-side white lines candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Up/Down-gap side-by-side white lines candlestick pattern: 100 bullish, -100 bearish, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -10650,7 +10650,7 @@ func (s *StreamCdlgapsidesidewhite) Close() error {
 
 // StreamCdlgravestonedoji is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Gravestone Doji (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Gravestone Doji candlestick pattern: -100 (bearish) when matched, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -10761,7 +10761,7 @@ func (s *StreamCdlgravestonedoji) Close() error {
 
 // StreamCdlhammer is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Hammer (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Hammer candlestick pattern: 100 (bullish) when matched, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -10872,7 +10872,7 @@ func (s *StreamCdlhammer) Close() error {
 
 // StreamCdlhangingman is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Hanging Man (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Hanging Man candlestick pattern: -100 (bearish) when matched, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -10983,7 +10983,7 @@ func (s *StreamCdlhangingman) Close() error {
 
 // StreamCdlharami is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Harami candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Harami candlestick pattern: 100 bullish, -100 bearish, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -11094,7 +11094,7 @@ func (s *StreamCdlharami) Close() error {
 
 // StreamCdlharamicross is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Harami Cross candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Harami Cross candlestick pattern: 100 bullish, -100 bearish, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -11205,7 +11205,7 @@ func (s *StreamCdlharamicross) Close() error {
 
 // StreamCdlhighwave is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming High-Wave Candle candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming High-Wave Candle candlestick pattern: 100 bullish, -100 bearish, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -11316,7 +11316,7 @@ func (s *StreamCdlhighwave) Close() error {
 
 // StreamCdlhikkake is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Hikkake Pattern candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Hikkake Pattern candlestick pattern: 100 bullish, -100 bearish, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -11427,7 +11427,7 @@ func (s *StreamCdlhikkake) Close() error {
 
 // StreamCdlhikkakemod is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Modified Hikkake Pattern candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Modified Hikkake Pattern candlestick pattern: 100 bullish, -100 bearish, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -11538,7 +11538,7 @@ func (s *StreamCdlhikkakemod) Close() error {
 
 // StreamCdlhomingpigeon is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Homing Pigeon (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Homing Pigeon candlestick pattern: 100 (bullish) when matched, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -11649,7 +11649,7 @@ func (s *StreamCdlhomingpigeon) Close() error {
 
 // StreamCdlidentical3crows is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Identical Three Crows (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Identical Three Crows candlestick pattern: -100 (bearish) when matched, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -11760,7 +11760,7 @@ func (s *StreamCdlidentical3crows) Close() error {
 
 // StreamCdlinneck is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming In-Neck Pattern (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming In-Neck Pattern candlestick pattern: -100 (bearish) when matched, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -11871,7 +11871,7 @@ func (s *StreamCdlinneck) Close() error {
 
 // StreamCdlinvertedhammer is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Inverted Hammer (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Inverted Hammer candlestick pattern: 100 (bullish) when matched, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -11982,7 +11982,7 @@ func (s *StreamCdlinvertedhammer) Close() error {
 
 // StreamCdlkicking is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Kicking candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Kicking candlestick pattern: 100 bullish, -100 bearish, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -12093,7 +12093,7 @@ func (s *StreamCdlkicking) Close() error {
 
 // StreamCdlkickingbylength is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Kicking — bull/bear determined by longer of the two marubozu candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Kicking by length (direction follows the longer marubozu) candlestick pattern: 100 bullish, -100 bearish, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -12204,7 +12204,7 @@ func (s *StreamCdlkickingbylength) Close() error {
 
 // StreamCdlladderbottom is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Ladder Bottom (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Ladder Bottom candlestick pattern: 100 (bullish) when matched, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -12315,7 +12315,7 @@ func (s *StreamCdlladderbottom) Close() error {
 
 // StreamCdllongleggeddoji is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Long Legged Doji candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Long Legged Doji candlestick pattern: 100 when the candle matches (pattern present, not a direction), else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -12426,7 +12426,7 @@ func (s *StreamCdllongleggeddoji) Close() error {
 
 // StreamCdllongline is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Long Line Candle candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Long Line Candle candlestick pattern: 100 bullish, -100 bearish, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -12537,7 +12537,7 @@ func (s *StreamCdllongline) Close() error {
 
 // StreamCdlmarubozu is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Marubozu candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Marubozu candlestick pattern: 100 bullish, -100 bearish, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -12648,7 +12648,7 @@ func (s *StreamCdlmarubozu) Close() error {
 
 // StreamCdlmatchinglow is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Matching Low (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Matching Low candlestick pattern: 100 (bullish) when matched, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -12759,7 +12759,7 @@ func (s *StreamCdlmatchinglow) Close() error {
 
 // StreamCdlmathold is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Mat Hold (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Mat Hold candlestick pattern: 100 (bullish) when matched, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -12870,7 +12870,7 @@ func (s *StreamCdlmathold) Close() error {
 
 // StreamCdlmorningdojistar is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Morning Doji Star (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Morning Doji Star candlestick pattern: 100 (bullish) when matched, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -12981,7 +12981,7 @@ func (s *StreamCdlmorningdojistar) Close() error {
 
 // StreamCdlmorningstar is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Morning Star (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Morning Star candlestick pattern: 100 (bullish) when matched, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -13092,7 +13092,7 @@ func (s *StreamCdlmorningstar) Close() error {
 
 // StreamCdlonneck is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming On-Neck Pattern (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming On-Neck Pattern candlestick pattern: -100 (bearish) when matched, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -13203,7 +13203,7 @@ func (s *StreamCdlonneck) Close() error {
 
 // StreamCdlpiercing is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Piercing Pattern (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Piercing Pattern candlestick pattern: 100 (bullish) when matched, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -13314,7 +13314,7 @@ func (s *StreamCdlpiercing) Close() error {
 
 // StreamCdlrickshawman is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Rickshaw Man candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Rickshaw Man candlestick pattern: 100 when the candle matches (pattern present, not a direction), else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -13425,7 +13425,7 @@ func (s *StreamCdlrickshawman) Close() error {
 
 // StreamCdlrisefall3methods is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Rising/Falling Three Methods candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Rising/Falling Three Methods candlestick pattern: 100 bullish, -100 bearish, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -13536,7 +13536,7 @@ func (s *StreamCdlrisefall3methods) Close() error {
 
 // StreamCdlseparatinglines is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Separating Lines candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Separating Lines candlestick pattern: 100 bullish, -100 bearish, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -13647,7 +13647,7 @@ func (s *StreamCdlseparatinglines) Close() error {
 
 // StreamCdlshootingstar is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Shooting Star (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Shooting Star candlestick pattern: -100 (bearish) when matched, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -13758,7 +13758,7 @@ func (s *StreamCdlshootingstar) Close() error {
 
 // StreamCdlshortline is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Short Line Candle candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Short Line Candle candlestick pattern: 100 bullish, -100 bearish, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -13869,7 +13869,7 @@ func (s *StreamCdlshortline) Close() error {
 
 // StreamCdlspinningtop is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Spinning Top candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Spinning Top candlestick pattern: 100 bullish, -100 bearish, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -13980,7 +13980,7 @@ func (s *StreamCdlspinningtop) Close() error {
 
 // StreamCdlstalledpattern is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Stalled Pattern (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Stalled Pattern candlestick pattern: -100 (bearish) when matched, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -14091,7 +14091,7 @@ func (s *StreamCdlstalledpattern) Close() error {
 
 // StreamCdlsticksandwich is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Stick Sandwich (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Stick Sandwich candlestick pattern: 100 (bullish) when matched, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -14202,7 +14202,7 @@ func (s *StreamCdlsticksandwich) Close() error {
 
 // StreamCdltakuri is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Takuri (Dragonfly Doji with very long lower shadow) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Takuri (Dragonfly Doji with very long lower shadow) candlestick pattern: 100 when the candle matches (pattern present, not a direction), else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -14313,7 +14313,7 @@ func (s *StreamCdltakuri) Close() error {
 
 // StreamCdltasukigap is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Tasuki Gap candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Tasuki Gap candlestick pattern: 100 bullish, -100 bearish, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -14424,7 +14424,7 @@ func (s *StreamCdltasukigap) Close() error {
 
 // StreamCdlthrusting is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Thrusting Pattern (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Thrusting Pattern candlestick pattern: -100 (bearish) when matched, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -14535,7 +14535,7 @@ func (s *StreamCdlthrusting) Close() error {
 
 // StreamCdltristar is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Tristar Pattern candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Tristar Pattern candlestick pattern: 100 bullish, -100 bearish, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -14646,7 +14646,7 @@ func (s *StreamCdltristar) Close() error {
 
 // StreamCdlunique3river is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Unique 3 River (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Unique 3 River candlestick pattern: 100 (bullish) when matched, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -14757,7 +14757,7 @@ func (s *StreamCdlunique3river) Close() error {
 
 // StreamCdlupsidegap2crows is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Upside Gap Two Crows (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Upside Gap Two Crows candlestick pattern: -100 (bearish) when matched, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -14868,7 +14868,7 @@ func (s *StreamCdlupsidegap2crows) Close() error {
 
 // StreamCdlxsidegap3methods is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Upside/Downside Gap Three Methods candlestick pattern: 100 bullish, -100 bearish, 0 none.
+// Streaming Upside/Downside Gap Three Methods candlestick pattern: 100 bullish, -100 bearish, else 0.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.

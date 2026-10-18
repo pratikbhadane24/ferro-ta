@@ -11781,7 +11781,7 @@
       "update_fn": "ft_stream_adosc_update"
     },
     {
-      "doc": "Streaming Two Crows (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Two Crows candlestick pattern: -100 (bearish) when matched, else 0.",
       "free_fn": "ft_stream_cdl2crows_free",
       "handle": "FtStreamCdl2crows",
       "inputs": [
@@ -11807,7 +11807,7 @@
       "update_fn": "ft_stream_cdl2crows_update"
     },
     {
-      "doc": "Streaming Three Black Crows (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Three Black Crows candlestick pattern: -100 (bearish) when matched, else 0.",
       "free_fn": "ft_stream_cdl3blackcrows_free",
       "handle": "FtStreamCdl3blackcrows",
       "inputs": [
@@ -11833,7 +11833,7 @@
       "update_fn": "ft_stream_cdl3blackcrows_update"
     },
     {
-      "doc": "Streaming Three Inside Up/Down candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Three Inside Up/Down candlestick pattern: 100 bullish, -100 bearish, else 0.",
       "free_fn": "ft_stream_cdl3inside_free",
       "handle": "FtStreamCdl3inside",
       "inputs": [
@@ -11859,7 +11859,7 @@
       "update_fn": "ft_stream_cdl3inside_update"
     },
     {
-      "doc": "Streaming Three-Line Strike candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Three-Line Strike candlestick pattern: 100 bullish, -100 bearish, else 0.",
       "free_fn": "ft_stream_cdl3linestrike_free",
       "handle": "FtStreamCdl3linestrike",
       "inputs": [
@@ -11885,7 +11885,7 @@
       "update_fn": "ft_stream_cdl3linestrike_update"
     },
     {
-      "doc": "Streaming Three Outside Up/Down candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Three Outside Up/Down candlestick pattern: 100 bullish, -100 bearish, else 0.",
       "free_fn": "ft_stream_cdl3outside_free",
       "handle": "FtStreamCdl3outside",
       "inputs": [
@@ -11911,7 +11911,7 @@
       "update_fn": "ft_stream_cdl3outside_update"
     },
     {
-      "doc": "Streaming Three Stars In The South (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Three Stars In The South candlestick pattern: 100 (bullish) when matched, else 0.",
       "free_fn": "ft_stream_cdl3starsinsouth_free",
       "handle": "FtStreamCdl3starsinsouth",
       "inputs": [
@@ -11937,7 +11937,7 @@
       "update_fn": "ft_stream_cdl3starsinsouth_update"
     },
     {
-      "doc": "Streaming Three Advancing White Soldiers (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Three Advancing White Soldiers candlestick pattern: 100 (bullish) when matched, else 0.",
       "free_fn": "ft_stream_cdl3whitesoldiers_free",
       "handle": "FtStreamCdl3whitesoldiers",
       "inputs": [
@@ -11963,7 +11963,7 @@
       "update_fn": "ft_stream_cdl3whitesoldiers_update"
     },
     {
-      "doc": "Streaming Abandoned Baby candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Abandoned Baby candlestick pattern: 100 bullish, -100 bearish, else 0.",
       "free_fn": "ft_stream_cdlabandonedbaby_free",
       "handle": "FtStreamCdlabandonedbaby",
       "inputs": [
@@ -11989,7 +11989,7 @@
       "update_fn": "ft_stream_cdlabandonedbaby_update"
     },
     {
-      "doc": "Streaming Advance Block (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Advance Block candlestick pattern: -100 (bearish) when matched, else 0.",
       "free_fn": "ft_stream_cdladvanceblock_free",
       "handle": "FtStreamCdladvanceblock",
       "inputs": [
@@ -12015,7 +12015,7 @@
       "update_fn": "ft_stream_cdladvanceblock_update"
     },
     {
-      "doc": "Streaming Belt-hold candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Belt-hold candlestick pattern: 100 bullish, -100 bearish, else 0.",
       "free_fn": "ft_stream_cdlbelthold_free",
       "handle": "FtStreamCdlbelthold",
       "inputs": [
@@ -12041,7 +12041,7 @@
       "update_fn": "ft_stream_cdlbelthold_update"
     },
     {
-      "doc": "Streaming Breakaway candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Breakaway candlestick pattern: 100 bullish, -100 bearish, else 0.",
       "free_fn": "ft_stream_cdlbreakaway_free",
       "handle": "FtStreamCdlbreakaway",
       "inputs": [
@@ -12067,7 +12067,7 @@
       "update_fn": "ft_stream_cdlbreakaway_update"
     },
     {
-      "doc": "Streaming Closing Marubozu candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Closing Marubozu candlestick pattern: 100 bullish, -100 bearish, else 0.",
       "free_fn": "ft_stream_cdlclosingmarubozu_free",
       "handle": "FtStreamCdlclosingmarubozu",
       "inputs": [
@@ -12093,7 +12093,7 @@
       "update_fn": "ft_stream_cdlclosingmarubozu_update"
     },
     {
-      "doc": "Streaming Concealing Baby Swallow (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Concealing Baby Swallow candlestick pattern: 100 (bullish) when matched, else 0.",
       "free_fn": "ft_stream_cdlconcealbabyswall_free",
       "handle": "FtStreamCdlconcealbabyswall",
       "inputs": [
@@ -12119,7 +12119,7 @@
       "update_fn": "ft_stream_cdlconcealbabyswall_update"
     },
     {
-      "doc": "Streaming Counterattack candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Counterattack candlestick pattern: 100 bullish, -100 bearish, else 0.",
       "free_fn": "ft_stream_cdlcounterattack_free",
       "handle": "FtStreamCdlcounterattack",
       "inputs": [
@@ -12145,7 +12145,7 @@
       "update_fn": "ft_stream_cdlcounterattack_update"
     },
     {
-      "doc": "Streaming Dark Cloud Cover (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Dark Cloud Cover candlestick pattern: -100 (bearish) when matched, else 0.",
       "free_fn": "ft_stream_cdldarkcloudcover_free",
       "handle": "FtStreamCdldarkcloudcover",
       "inputs": [
@@ -12171,7 +12171,7 @@
       "update_fn": "ft_stream_cdldarkcloudcover_update"
     },
     {
-      "doc": "Streaming Doji candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Doji candlestick pattern: 100 when the candle matches (pattern present, not a direction), else 0.",
       "free_fn": "ft_stream_cdldoji_free",
       "handle": "FtStreamCdldoji",
       "inputs": [
@@ -12197,7 +12197,7 @@
       "update_fn": "ft_stream_cdldoji_update"
     },
     {
-      "doc": "Streaming Doji Star candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Doji Star candlestick pattern: 100 bullish, -100 bearish, else 0.",
       "free_fn": "ft_stream_cdldojistar_free",
       "handle": "FtStreamCdldojistar",
       "inputs": [
@@ -12223,7 +12223,7 @@
       "update_fn": "ft_stream_cdldojistar_update"
     },
     {
-      "doc": "Streaming Dragonfly Doji (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Dragonfly Doji candlestick pattern: 100 when the candle matches (pattern present, not a direction), else 0.",
       "free_fn": "ft_stream_cdldragonflydoji_free",
       "handle": "FtStreamCdldragonflydoji",
       "inputs": [
@@ -12249,7 +12249,7 @@
       "update_fn": "ft_stream_cdldragonflydoji_update"
     },
     {
-      "doc": "Streaming Engulfing candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Engulfing candlestick pattern: 100 bullish, -100 bearish, else 0.",
       "free_fn": "ft_stream_cdlengulfing_free",
       "handle": "FtStreamCdlengulfing",
       "inputs": [
@@ -12275,7 +12275,7 @@
       "update_fn": "ft_stream_cdlengulfing_update"
     },
     {
-      "doc": "Streaming Evening Doji Star (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Evening Doji Star candlestick pattern: -100 (bearish) when matched, else 0.",
       "free_fn": "ft_stream_cdleveningdojistar_free",
       "handle": "FtStreamCdleveningdojistar",
       "inputs": [
@@ -12301,7 +12301,7 @@
       "update_fn": "ft_stream_cdleveningdojistar_update"
     },
     {
-      "doc": "Streaming Evening Star (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Evening Star candlestick pattern: -100 (bearish) when matched, else 0.",
       "free_fn": "ft_stream_cdleveningstar_free",
       "handle": "FtStreamCdleveningstar",
       "inputs": [
@@ -12327,7 +12327,7 @@
       "update_fn": "ft_stream_cdleveningstar_update"
     },
     {
-      "doc": "Streaming Up/Down-gap side-by-side white lines candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Up/Down-gap side-by-side white lines candlestick pattern: 100 bullish, -100 bearish, else 0.",
       "free_fn": "ft_stream_cdlgapsidesidewhite_free",
       "handle": "FtStreamCdlgapsidesidewhite",
       "inputs": [
@@ -12353,7 +12353,7 @@
       "update_fn": "ft_stream_cdlgapsidesidewhite_update"
     },
     {
-      "doc": "Streaming Gravestone Doji (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Gravestone Doji candlestick pattern: -100 (bearish) when matched, else 0.",
       "free_fn": "ft_stream_cdlgravestonedoji_free",
       "handle": "FtStreamCdlgravestonedoji",
       "inputs": [
@@ -12379,7 +12379,7 @@
       "update_fn": "ft_stream_cdlgravestonedoji_update"
     },
     {
-      "doc": "Streaming Hammer (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Hammer candlestick pattern: 100 (bullish) when matched, else 0.",
       "free_fn": "ft_stream_cdlhammer_free",
       "handle": "FtStreamCdlhammer",
       "inputs": [
@@ -12405,7 +12405,7 @@
       "update_fn": "ft_stream_cdlhammer_update"
     },
     {
-      "doc": "Streaming Hanging Man (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Hanging Man candlestick pattern: -100 (bearish) when matched, else 0.",
       "free_fn": "ft_stream_cdlhangingman_free",
       "handle": "FtStreamCdlhangingman",
       "inputs": [
@@ -12431,7 +12431,7 @@
       "update_fn": "ft_stream_cdlhangingman_update"
     },
     {
-      "doc": "Streaming Harami candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Harami candlestick pattern: 100 bullish, -100 bearish, else 0.",
       "free_fn": "ft_stream_cdlharami_free",
       "handle": "FtStreamCdlharami",
       "inputs": [
@@ -12457,7 +12457,7 @@
       "update_fn": "ft_stream_cdlharami_update"
     },
     {
-      "doc": "Streaming Harami Cross candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Harami Cross candlestick pattern: 100 bullish, -100 bearish, else 0.",
       "free_fn": "ft_stream_cdlharamicross_free",
       "handle": "FtStreamCdlharamicross",
       "inputs": [
@@ -12483,7 +12483,7 @@
       "update_fn": "ft_stream_cdlharamicross_update"
     },
     {
-      "doc": "Streaming High-Wave Candle candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming High-Wave Candle candlestick pattern: 100 bullish, -100 bearish, else 0.",
       "free_fn": "ft_stream_cdlhighwave_free",
       "handle": "FtStreamCdlhighwave",
       "inputs": [
@@ -12509,7 +12509,7 @@
       "update_fn": "ft_stream_cdlhighwave_update"
     },
     {
-      "doc": "Streaming Hikkake Pattern candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Hikkake Pattern candlestick pattern: 100 bullish, -100 bearish, else 0.",
       "free_fn": "ft_stream_cdlhikkake_free",
       "handle": "FtStreamCdlhikkake",
       "inputs": [
@@ -12535,7 +12535,7 @@
       "update_fn": "ft_stream_cdlhikkake_update"
     },
     {
-      "doc": "Streaming Modified Hikkake Pattern candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Modified Hikkake Pattern candlestick pattern: 100 bullish, -100 bearish, else 0.",
       "free_fn": "ft_stream_cdlhikkakemod_free",
       "handle": "FtStreamCdlhikkakemod",
       "inputs": [
@@ -12561,7 +12561,7 @@
       "update_fn": "ft_stream_cdlhikkakemod_update"
     },
     {
-      "doc": "Streaming Homing Pigeon (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Homing Pigeon candlestick pattern: 100 (bullish) when matched, else 0.",
       "free_fn": "ft_stream_cdlhomingpigeon_free",
       "handle": "FtStreamCdlhomingpigeon",
       "inputs": [
@@ -12587,7 +12587,7 @@
       "update_fn": "ft_stream_cdlhomingpigeon_update"
     },
     {
-      "doc": "Streaming Identical Three Crows (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Identical Three Crows candlestick pattern: -100 (bearish) when matched, else 0.",
       "free_fn": "ft_stream_cdlidentical3crows_free",
       "handle": "FtStreamCdlidentical3crows",
       "inputs": [
@@ -12613,7 +12613,7 @@
       "update_fn": "ft_stream_cdlidentical3crows_update"
     },
     {
-      "doc": "Streaming In-Neck Pattern (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming In-Neck Pattern candlestick pattern: -100 (bearish) when matched, else 0.",
       "free_fn": "ft_stream_cdlinneck_free",
       "handle": "FtStreamCdlinneck",
       "inputs": [
@@ -12639,7 +12639,7 @@
       "update_fn": "ft_stream_cdlinneck_update"
     },
     {
-      "doc": "Streaming Inverted Hammer (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Inverted Hammer candlestick pattern: 100 (bullish) when matched, else 0.",
       "free_fn": "ft_stream_cdlinvertedhammer_free",
       "handle": "FtStreamCdlinvertedhammer",
       "inputs": [
@@ -12665,7 +12665,7 @@
       "update_fn": "ft_stream_cdlinvertedhammer_update"
     },
     {
-      "doc": "Streaming Kicking candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Kicking candlestick pattern: 100 bullish, -100 bearish, else 0.",
       "free_fn": "ft_stream_cdlkicking_free",
       "handle": "FtStreamCdlkicking",
       "inputs": [
@@ -12691,7 +12691,7 @@
       "update_fn": "ft_stream_cdlkicking_update"
     },
     {
-      "doc": "Streaming Kicking — bull/bear determined by longer of the two marubozu candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Kicking by length (direction follows the longer marubozu) candlestick pattern: 100 bullish, -100 bearish, else 0.",
       "free_fn": "ft_stream_cdlkickingbylength_free",
       "handle": "FtStreamCdlkickingbylength",
       "inputs": [
@@ -12717,7 +12717,7 @@
       "update_fn": "ft_stream_cdlkickingbylength_update"
     },
     {
-      "doc": "Streaming Ladder Bottom (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Ladder Bottom candlestick pattern: 100 (bullish) when matched, else 0.",
       "free_fn": "ft_stream_cdlladderbottom_free",
       "handle": "FtStreamCdlladderbottom",
       "inputs": [
@@ -12743,7 +12743,7 @@
       "update_fn": "ft_stream_cdlladderbottom_update"
     },
     {
-      "doc": "Streaming Long Legged Doji candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Long Legged Doji candlestick pattern: 100 when the candle matches (pattern present, not a direction), else 0.",
       "free_fn": "ft_stream_cdllongleggeddoji_free",
       "handle": "FtStreamCdllongleggeddoji",
       "inputs": [
@@ -12769,7 +12769,7 @@
       "update_fn": "ft_stream_cdllongleggeddoji_update"
     },
     {
-      "doc": "Streaming Long Line Candle candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Long Line Candle candlestick pattern: 100 bullish, -100 bearish, else 0.",
       "free_fn": "ft_stream_cdllongline_free",
       "handle": "FtStreamCdllongline",
       "inputs": [
@@ -12795,7 +12795,7 @@
       "update_fn": "ft_stream_cdllongline_update"
     },
     {
-      "doc": "Streaming Marubozu candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Marubozu candlestick pattern: 100 bullish, -100 bearish, else 0.",
       "free_fn": "ft_stream_cdlmarubozu_free",
       "handle": "FtStreamCdlmarubozu",
       "inputs": [
@@ -12821,7 +12821,7 @@
       "update_fn": "ft_stream_cdlmarubozu_update"
     },
     {
-      "doc": "Streaming Matching Low (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Matching Low candlestick pattern: 100 (bullish) when matched, else 0.",
       "free_fn": "ft_stream_cdlmatchinglow_free",
       "handle": "FtStreamCdlmatchinglow",
       "inputs": [
@@ -12847,7 +12847,7 @@
       "update_fn": "ft_stream_cdlmatchinglow_update"
     },
     {
-      "doc": "Streaming Mat Hold (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Mat Hold candlestick pattern: 100 (bullish) when matched, else 0.",
       "free_fn": "ft_stream_cdlmathold_free",
       "handle": "FtStreamCdlmathold",
       "inputs": [
@@ -12873,7 +12873,7 @@
       "update_fn": "ft_stream_cdlmathold_update"
     },
     {
-      "doc": "Streaming Morning Doji Star (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Morning Doji Star candlestick pattern: 100 (bullish) when matched, else 0.",
       "free_fn": "ft_stream_cdlmorningdojistar_free",
       "handle": "FtStreamCdlmorningdojistar",
       "inputs": [
@@ -12899,7 +12899,7 @@
       "update_fn": "ft_stream_cdlmorningdojistar_update"
     },
     {
-      "doc": "Streaming Morning Star (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Morning Star candlestick pattern: 100 (bullish) when matched, else 0.",
       "free_fn": "ft_stream_cdlmorningstar_free",
       "handle": "FtStreamCdlmorningstar",
       "inputs": [
@@ -12925,7 +12925,7 @@
       "update_fn": "ft_stream_cdlmorningstar_update"
     },
     {
-      "doc": "Streaming On-Neck Pattern (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming On-Neck Pattern candlestick pattern: -100 (bearish) when matched, else 0.",
       "free_fn": "ft_stream_cdlonneck_free",
       "handle": "FtStreamCdlonneck",
       "inputs": [
@@ -12951,7 +12951,7 @@
       "update_fn": "ft_stream_cdlonneck_update"
     },
     {
-      "doc": "Streaming Piercing Pattern (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Piercing Pattern candlestick pattern: 100 (bullish) when matched, else 0.",
       "free_fn": "ft_stream_cdlpiercing_free",
       "handle": "FtStreamCdlpiercing",
       "inputs": [
@@ -12977,7 +12977,7 @@
       "update_fn": "ft_stream_cdlpiercing_update"
     },
     {
-      "doc": "Streaming Rickshaw Man candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Rickshaw Man candlestick pattern: 100 when the candle matches (pattern present, not a direction), else 0.",
       "free_fn": "ft_stream_cdlrickshawman_free",
       "handle": "FtStreamCdlrickshawman",
       "inputs": [
@@ -13003,7 +13003,7 @@
       "update_fn": "ft_stream_cdlrickshawman_update"
     },
     {
-      "doc": "Streaming Rising/Falling Three Methods candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Rising/Falling Three Methods candlestick pattern: 100 bullish, -100 bearish, else 0.",
       "free_fn": "ft_stream_cdlrisefall3methods_free",
       "handle": "FtStreamCdlrisefall3methods",
       "inputs": [
@@ -13029,7 +13029,7 @@
       "update_fn": "ft_stream_cdlrisefall3methods_update"
     },
     {
-      "doc": "Streaming Separating Lines candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Separating Lines candlestick pattern: 100 bullish, -100 bearish, else 0.",
       "free_fn": "ft_stream_cdlseparatinglines_free",
       "handle": "FtStreamCdlseparatinglines",
       "inputs": [
@@ -13055,7 +13055,7 @@
       "update_fn": "ft_stream_cdlseparatinglines_update"
     },
     {
-      "doc": "Streaming Shooting Star (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Shooting Star candlestick pattern: -100 (bearish) when matched, else 0.",
       "free_fn": "ft_stream_cdlshootingstar_free",
       "handle": "FtStreamCdlshootingstar",
       "inputs": [
@@ -13081,7 +13081,7 @@
       "update_fn": "ft_stream_cdlshootingstar_update"
     },
     {
-      "doc": "Streaming Short Line Candle candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Short Line Candle candlestick pattern: 100 bullish, -100 bearish, else 0.",
       "free_fn": "ft_stream_cdlshortline_free",
       "handle": "FtStreamCdlshortline",
       "inputs": [
@@ -13107,7 +13107,7 @@
       "update_fn": "ft_stream_cdlshortline_update"
     },
     {
-      "doc": "Streaming Spinning Top candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Spinning Top candlestick pattern: 100 bullish, -100 bearish, else 0.",
       "free_fn": "ft_stream_cdlspinningtop_free",
       "handle": "FtStreamCdlspinningtop",
       "inputs": [
@@ -13133,7 +13133,7 @@
       "update_fn": "ft_stream_cdlspinningtop_update"
     },
     {
-      "doc": "Streaming Stalled Pattern (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Stalled Pattern candlestick pattern: -100 (bearish) when matched, else 0.",
       "free_fn": "ft_stream_cdlstalledpattern_free",
       "handle": "FtStreamCdlstalledpattern",
       "inputs": [
@@ -13159,7 +13159,7 @@
       "update_fn": "ft_stream_cdlstalledpattern_update"
     },
     {
-      "doc": "Streaming Stick Sandwich (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Stick Sandwich candlestick pattern: 100 (bullish) when matched, else 0.",
       "free_fn": "ft_stream_cdlsticksandwich_free",
       "handle": "FtStreamCdlsticksandwich",
       "inputs": [
@@ -13185,7 +13185,7 @@
       "update_fn": "ft_stream_cdlsticksandwich_update"
     },
     {
-      "doc": "Streaming Takuri (Dragonfly Doji with very long lower shadow) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Takuri (Dragonfly Doji with very long lower shadow) candlestick pattern: 100 when the candle matches (pattern present, not a direction), else 0.",
       "free_fn": "ft_stream_cdltakuri_free",
       "handle": "FtStreamCdltakuri",
       "inputs": [
@@ -13211,7 +13211,7 @@
       "update_fn": "ft_stream_cdltakuri_update"
     },
     {
-      "doc": "Streaming Tasuki Gap candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Tasuki Gap candlestick pattern: 100 bullish, -100 bearish, else 0.",
       "free_fn": "ft_stream_cdltasukigap_free",
       "handle": "FtStreamCdltasukigap",
       "inputs": [
@@ -13237,7 +13237,7 @@
       "update_fn": "ft_stream_cdltasukigap_update"
     },
     {
-      "doc": "Streaming Thrusting Pattern (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Thrusting Pattern candlestick pattern: -100 (bearish) when matched, else 0.",
       "free_fn": "ft_stream_cdlthrusting_free",
       "handle": "FtStreamCdlthrusting",
       "inputs": [
@@ -13263,7 +13263,7 @@
       "update_fn": "ft_stream_cdlthrusting_update"
     },
     {
-      "doc": "Streaming Tristar Pattern candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Tristar Pattern candlestick pattern: 100 bullish, -100 bearish, else 0.",
       "free_fn": "ft_stream_cdltristar_free",
       "handle": "FtStreamCdltristar",
       "inputs": [
@@ -13289,7 +13289,7 @@
       "update_fn": "ft_stream_cdltristar_update"
     },
     {
-      "doc": "Streaming Unique 3 River (bullish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Unique 3 River candlestick pattern: 100 (bullish) when matched, else 0.",
       "free_fn": "ft_stream_cdlunique3river_free",
       "handle": "FtStreamCdlunique3river",
       "inputs": [
@@ -13315,7 +13315,7 @@
       "update_fn": "ft_stream_cdlunique3river_update"
     },
     {
-      "doc": "Streaming Upside Gap Two Crows (bearish) candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Upside Gap Two Crows candlestick pattern: -100 (bearish) when matched, else 0.",
       "free_fn": "ft_stream_cdlupsidegap2crows_free",
       "handle": "FtStreamCdlupsidegap2crows",
       "inputs": [
@@ -13341,7 +13341,7 @@
       "update_fn": "ft_stream_cdlupsidegap2crows_update"
     },
     {
-      "doc": "Streaming Upside/Downside Gap Three Methods candlestick pattern: 100 bullish, -100 bearish, 0 none.",
+      "doc": "Streaming Upside/Downside Gap Three Methods candlestick pattern: 100 bullish, -100 bearish, else 0.",
       "free_fn": "ft_stream_cdlxsidegap3methods_free",
       "handle": "FtStreamCdlxsidegap3methods",
       "inputs": [
