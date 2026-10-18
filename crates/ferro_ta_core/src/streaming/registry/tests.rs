@@ -280,6 +280,8 @@ fn registry_parity_all_streams() {
 #[test]
 fn signal_streams_are_not_degenerate_on_the_fixture() {
     const FLOAT_CODED: &[&str] = &["rsi_threshold_signals"];
+    /// Streams whose fixture must produce all of -1, 0 and 1.
+    const FULL_TRINARY: &[&str] = &["check_cross", "rsi_threshold_signals"];
     let mut checked = 0;
     for case in &cases() {
         if !(case.elems.contains(&"i8") || FLOAT_CODED.contains(&case.name)) {
@@ -290,9 +292,18 @@ fn signal_streams_are_not_degenerate_on_the_fixture() {
         let mut stream = (case.stream)(DEFAULTS);
         let mut distinct = std::collections::BTreeSet::new();
         for i in 0..N_BARS {
+            // `None` parts are NaN (warm-up) and are not signal values.
             for part in stream.update(&row(&cols, i), true).into_iter().flatten() {
                 distinct.insert(part as i64);
             }
+        }
+        if FULL_TRINARY.contains(&case.name) {
+            let want: std::collections::BTreeSet<i64> = [-1, 0, 1].into();
+            assert_eq!(
+                distinct, want,
+                "{}: fixture must show -1, 0 and 1",
+                case.name
+            );
         }
         assert!(
             distinct.len() >= 2,

@@ -21,6 +21,8 @@ pub use stats::*;
 pub use volume::*;
 
 #[cfg(test)]
+mod drift_tests;
+#[cfg(test)]
 mod markets_tests;
 #[cfg(test)]
 mod momentum_tests;

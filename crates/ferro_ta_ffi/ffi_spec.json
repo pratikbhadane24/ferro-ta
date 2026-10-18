@@ -11781,7 +11781,7 @@
       "update_fn": "ft_stream_adosc_update"
     },
     {
-      "doc": "Streaming rolling population standard deviation over `timeperiod` bars, scaled by `nbdev`.",
+      "doc": "Streaming rolling population standard deviation over `timeperiod` bars, scaled by `nbdev`. Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).",
       "free_fn": "ft_stream_stddev_free",
       "handle": "FtStreamStddev",
       "inputs": [
@@ -11816,7 +11816,7 @@
       "update_fn": "ft_stream_stddev_update"
     },
     {
-      "doc": "Streaming rolling population variance over `timeperiod` bars, scaled by `nbdev**2`.",
+      "doc": "Streaming rolling population variance over `timeperiod` bars, scaled by `nbdev**2`. Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).",
       "free_fn": "ft_stream_var_free",
       "handle": "FtStreamVar",
       "inputs": [
@@ -11881,7 +11881,7 @@
       "update_fn": "ft_stream_linearreg_update"
     },
     {
-      "doc": "Streaming slope of the rolling linear regression line.",
+      "doc": "Streaming slope of the rolling linear regression line. Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).",
       "free_fn": "ft_stream_linearreg_slope_free",
       "handle": "FtStreamLinearregSlope",
       "inputs": [
@@ -11941,7 +11941,7 @@
       "update_fn": "ft_stream_linearreg_intercept_update"
     },
     {
-      "doc": "Streaming angle of the rolling regression line in degrees.",
+      "doc": "Streaming angle of the rolling regression line in degrees. Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).",
       "free_fn": "ft_stream_linearreg_angle_free",
       "handle": "FtStreamLinearregAngle",
       "inputs": [
@@ -12032,7 +12032,7 @@
       "update_fn": "ft_stream_beta_update"
     },
     {
-      "doc": "Streaming rolling Pearson correlation of two series over `timeperiod` bars.",
+      "doc": "Streaming rolling Pearson correlation of two series over `timeperiod` bars. Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).",
       "free_fn": "ft_stream_correl_free",
       "handle": "FtStreamCorrel",
       "inputs": [

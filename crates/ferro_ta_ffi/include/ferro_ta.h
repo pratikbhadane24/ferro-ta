@@ -2731,7 +2731,7 @@ int32_t ft_stream_adosc_load(const char *json, size_t len, FtStreamAdosc **out_h
 void ft_stream_adosc_free(FtStreamAdosc *handle);
 
 /**
- * Streaming rolling population standard deviation over `timeperiod` bars, scaled by `nbdev`.
+ * Streaming rolling population standard deviation over `timeperiod` bars, scaled by `nbdev`. Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).
  */
 typedef struct FtStreamStddev FtStreamStddev;
 int32_t ft_stream_stddev_new(int64_t timeperiod, double nbdev, FtStreamStddev **out_handle);
@@ -2745,7 +2745,7 @@ int32_t ft_stream_stddev_load(const char *json, size_t len, FtStreamStddev **out
 void ft_stream_stddev_free(FtStreamStddev *handle);
 
 /**
- * Streaming rolling population variance over `timeperiod` bars, scaled by `nbdev**2`.
+ * Streaming rolling population variance over `timeperiod` bars, scaled by `nbdev**2`. Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).
  */
 typedef struct FtStreamVar FtStreamVar;
 int32_t ft_stream_var_new(int64_t timeperiod, double nbdev, FtStreamVar **out_handle);
@@ -2773,7 +2773,7 @@ int32_t ft_stream_linearreg_load(const char *json, size_t len, FtStreamLinearreg
 void ft_stream_linearreg_free(FtStreamLinearreg *handle);
 
 /**
- * Streaming slope of the rolling linear regression line.
+ * Streaming slope of the rolling linear regression line. Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).
  */
 typedef struct FtStreamLinearregSlope FtStreamLinearregSlope;
 int32_t ft_stream_linearreg_slope_new(int64_t timeperiod, FtStreamLinearregSlope **out_handle);
@@ -2801,7 +2801,7 @@ int32_t ft_stream_linearreg_intercept_load(const char *json, size_t len, FtStrea
 void ft_stream_linearreg_intercept_free(FtStreamLinearregIntercept *handle);
 
 /**
- * Streaming angle of the rolling regression line in degrees.
+ * Streaming angle of the rolling regression line in degrees. Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).
  */
 typedef struct FtStreamLinearregAngle FtStreamLinearregAngle;
 int32_t ft_stream_linearreg_angle_new(int64_t timeperiod, FtStreamLinearregAngle **out_handle);
@@ -2843,7 +2843,7 @@ int32_t ft_stream_beta_load(const char *json, size_t len, FtStreamBeta **out_han
 void ft_stream_beta_free(FtStreamBeta *handle);
 
 /**
- * Streaming rolling Pearson correlation of two series over `timeperiod` bars.
+ * Streaming rolling Pearson correlation of two series over `timeperiod` bars. Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).
  */
 typedef struct FtStreamCorrel FtStreamCorrel;
 int32_t ft_stream_correl_new(int64_t timeperiod, FtStreamCorrel **out_handle);

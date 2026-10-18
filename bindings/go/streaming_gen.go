@@ -8208,7 +8208,7 @@ func (s *StreamAdosc) Close() error {
 
 // StreamStddev is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming rolling population standard deviation over `timeperiod` bars, scaled by `nbdev`.
+// Streaming rolling population standard deviation over `timeperiod` bars, scaled by `nbdev`. Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -8319,7 +8319,7 @@ func (s *StreamStddev) Close() error {
 
 // StreamVar is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming rolling population variance over `timeperiod` bars, scaled by `nbdev**2`.
+// Streaming rolling population variance over `timeperiod` bars, scaled by `nbdev**2`. Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -8541,7 +8541,7 @@ func (s *StreamLinearreg) Close() error {
 
 // StreamLinearregSlope is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming slope of the rolling linear regression line.
+// Streaming slope of the rolling linear regression line. Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -8763,7 +8763,7 @@ func (s *StreamLinearregIntercept) Close() error {
 
 // StreamLinearregAngle is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming angle of the rolling regression line in degrees.
+// Streaming angle of the rolling regression line in degrees. Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -9096,7 +9096,7 @@ func (s *StreamBeta) Close() error {
 
 // StreamCorrel is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming rolling Pearson correlation of two series over `timeperiod` bars.
+// Streaming rolling Pearson correlation of two series over `timeperiod` bars. Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
