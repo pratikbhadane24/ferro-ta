@@ -73,7 +73,7 @@ const TA_EPSILON: f64 = 1e-14;
 /// *behaviour* change on residue-carrying plateaus, so this kernel will need
 /// revisiting when the pinned TA-Lib moves past 0.6.4.
 #[inline(always)]
-fn efficiency_ratio(period_roc: f64, volatility: f64) -> f64 {
+pub(crate) fn efficiency_ratio(period_roc: f64, volatility: f64) -> f64 {
     if volatility <= period_roc || (-TA_EPSILON < volatility && volatility < TA_EPSILON) {
         1.0
     } else {

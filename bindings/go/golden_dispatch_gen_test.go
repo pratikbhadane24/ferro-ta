@@ -1405,6 +1405,171 @@ var goldenStreams = map[string]func(map[string]float64) (goldenStepper, error){
 		}
 		return goldenStepper{step: step, close: s.Close}, nil
 	},
+	"dema": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamDema(int(p["timeperiod"]))
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"tema": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamTema(int(p["timeperiod"]))
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"t3": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamT3(int(p["timeperiod"]), p["vfactor"])
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"trima": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamTrima(int(p["timeperiod"]))
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"wma": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamWma(int(p["timeperiod"]))
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"midpoint": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamMidpoint(int(p["timeperiod"]))
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"midprice": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamMidprice(int(p["timeperiod"]))
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["high"], bar["low"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"kama": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamKama(int(p["timeperiod"]))
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"ma": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamMa(int(p["timeperiod"]), MAType(p["matype"]))
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"mavp": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamMavp(int(p["minperiod"]), int(p["maxperiod"]), MAType(p["matype"]))
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["close"], bar["periods"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"macdfix": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamMacdfix(int(p["signalperiod"]))
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			macd, signal, hist, err := s.Update(bar["close"])
+			return map[string]any{"out_macd": macd, "out_signal": signal, "out_hist": hist}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"macdext": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamMacdext(int(p["fastperiod"]), MAType(p["fastmatype"]), int(p["slowperiod"]), MAType(p["slowmatype"]), int(p["signalperiod"]), MAType(p["signalmatype"]))
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			macd, signal, hist, err := s.Update(bar["close"])
+			return map[string]any{"out_macd": macd, "out_signal": signal, "out_hist": hist}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"apo": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamApo(int(p["fastperiod"]), int(p["slowperiod"]), MAType(p["matype"]))
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"ppo": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamPpo(int(p["fastperiod"]), int(p["slowperiod"]), int(p["signalperiod"]), MAType(p["matype"]))
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			ppo, signal, hist, err := s.Update(bar["close"])
+			return map[string]any{"out_ppo": ppo, "out_signal": signal, "out_hist": hist}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"trix": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamTrix(int(p["timeperiod"]))
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
 }
 
 // goldenParamNames lists each export's parameters, so a fixture whose
@@ -1703,4 +1868,19 @@ var goldenParamNames = []goldenParamList{
 	{"rolling_min", []string{"timeperiod"}},
 	{"rolling_maxindex", []string{"timeperiod"}},
 	{"rolling_minindex", []string{"timeperiod"}},
+	{"dema", []string{"timeperiod"}},
+	{"tema", []string{"timeperiod"}},
+	{"t3", []string{"timeperiod", "vfactor"}},
+	{"trima", []string{"timeperiod"}},
+	{"wma", []string{"timeperiod"}},
+	{"midpoint", []string{"timeperiod"}},
+	{"midprice", []string{"timeperiod"}},
+	{"kama", []string{"timeperiod"}},
+	{"ma", []string{"timeperiod", "matype"}},
+	{"mavp", []string{"minperiod", "maxperiod", "matype"}},
+	{"macdfix", []string{"signalperiod"}},
+	{"macdext", []string{"fastperiod", "fastmatype", "slowperiod", "slowmatype", "signalperiod", "signalmatype"}},
+	{"apo", []string{"fastperiod", "slowperiod", "matype"}},
+	{"ppo", []string{"fastperiod", "slowperiod", "signalperiod", "matype"}},
+	{"trix", []string{"timeperiod"}},
 }

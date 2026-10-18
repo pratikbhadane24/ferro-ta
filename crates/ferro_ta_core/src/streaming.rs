@@ -15,6 +15,7 @@ mod families;
 pub(crate) mod fixtures;
 mod live;
 mod option_greeks;
+pub(crate) mod primitives;
 mod registry;
 #[cfg(feature = "serde")]
 pub(crate) mod snapshot;

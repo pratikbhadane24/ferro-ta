@@ -10321,6 +10321,578 @@
       "reset_fn": "ft_stream_rolling_minindex_reset",
       "save_fn": "ft_stream_rolling_minindex_save",
       "update_fn": "ft_stream_rolling_minindex_update"
+    },
+    {
+      "doc": "Streaming double exponential moving average: 2*EMA - EMA(EMA).",
+      "free_fn": "ft_stream_dema_free",
+      "handle": "FtStreamDema",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_dema_load",
+      "name": "dema",
+      "new_fn": "ft_stream_dema_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_dema_peek",
+      "reset_fn": "ft_stream_dema_reset",
+      "save_fn": "ft_stream_dema_save",
+      "update_fn": "ft_stream_dema_update"
+    },
+    {
+      "doc": "Streaming triple exponential moving average: 3*EMA - 3*EMA(EMA) + EMA(EMA(EMA)).",
+      "free_fn": "ft_stream_tema_free",
+      "handle": "FtStreamTema",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_tema_load",
+      "name": "tema",
+      "new_fn": "ft_stream_tema_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_tema_peek",
+      "reset_fn": "ft_stream_tema_reset",
+      "save_fn": "ft_stream_tema_save",
+      "update_fn": "ft_stream_tema_update"
+    },
+    {
+      "doc": "Streaming Tillson T3: six cascaded EMAs combined with volume factor `vfactor`.",
+      "free_fn": "ft_stream_t3_free",
+      "handle": "FtStreamT3",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_t3_load",
+      "name": "t3",
+      "new_fn": "ft_stream_t3_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "vfactor"
+        }
+      ],
+      "peek_fn": "ft_stream_t3_peek",
+      "reset_fn": "ft_stream_t3_reset",
+      "save_fn": "ft_stream_t3_save",
+      "update_fn": "ft_stream_t3_update"
+    },
+    {
+      "doc": "Streaming triangular moving average over `timeperiod` bars.",
+      "free_fn": "ft_stream_trima_free",
+      "handle": "FtStreamTrima",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_trima_load",
+      "name": "trima",
+      "new_fn": "ft_stream_trima_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_trima_peek",
+      "reset_fn": "ft_stream_trima_reset",
+      "save_fn": "ft_stream_trima_save",
+      "update_fn": "ft_stream_trima_update"
+    },
+    {
+      "doc": "Streaming linearly weighted moving average over `timeperiod` bars.",
+      "free_fn": "ft_stream_wma_free",
+      "handle": "FtStreamWma",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_wma_load",
+      "name": "wma",
+      "new_fn": "ft_stream_wma_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_wma_peek",
+      "reset_fn": "ft_stream_wma_reset",
+      "save_fn": "ft_stream_wma_save",
+      "update_fn": "ft_stream_wma_update"
+    },
+    {
+      "doc": "Streaming midpoint: (max(close) + min(close)) / 2 over `timeperiod` bars.",
+      "free_fn": "ft_stream_midpoint_free",
+      "handle": "FtStreamMidpoint",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_midpoint_load",
+      "name": "midpoint",
+      "new_fn": "ft_stream_midpoint_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_midpoint_peek",
+      "reset_fn": "ft_stream_midpoint_reset",
+      "save_fn": "ft_stream_midpoint_save",
+      "update_fn": "ft_stream_midpoint_update"
+    },
+    {
+      "doc": "Streaming midprice: (highest high + lowest low) / 2 over `timeperiod` bars.",
+      "free_fn": "ft_stream_midprice_free",
+      "handle": "FtStreamMidprice",
+      "inputs": [
+        "high",
+        "low"
+      ],
+      "load_fn": "ft_stream_midprice_load",
+      "name": "midprice",
+      "new_fn": "ft_stream_midprice_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_midprice_peek",
+      "reset_fn": "ft_stream_midprice_reset",
+      "save_fn": "ft_stream_midprice_save",
+      "update_fn": "ft_stream_midprice_update"
+    },
+    {
+      "doc": "Streaming Kaufman adaptive moving average (TA-Lib); first value at bar `timeperiod`.",
+      "free_fn": "ft_stream_kama_free",
+      "handle": "FtStreamKama",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_kama_load",
+      "name": "kama",
+      "new_fn": "ft_stream_kama_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_kama_peek",
+      "reset_fn": "ft_stream_kama_reset",
+      "save_fn": "ft_stream_kama_save",
+      "update_fn": "ft_stream_kama_update"
+    },
+    {
+      "doc": "Streaming moving average of type `matype` (0=SMA, 1=EMA, 2=WMA, 3=DEMA, 4=TEMA, 5=TRIMA, 6=KAMA, 7/8=T3).",
+      "free_fn": "ft_stream_ma_free",
+      "handle": "FtStreamMa",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_ma_load",
+      "name": "ma",
+      "new_fn": "ft_stream_ma_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "int32_t",
+          "kind": "matype",
+          "max": 8,
+          "min": 0,
+          "name": "matype"
+        }
+      ],
+      "peek_fn": "ft_stream_ma_peek",
+      "reset_fn": "ft_stream_ma_reset",
+      "save_fn": "ft_stream_ma_save",
+      "update_fn": "ft_stream_ma_update"
+    },
+    {
+      "doc": "Streaming moving average with a per-bar period: `periods` is rounded and clamped to [minperiod, maxperiod].",
+      "free_fn": "ft_stream_mavp_free",
+      "handle": "FtStreamMavp",
+      "inputs": [
+        "close",
+        "periods"
+      ],
+      "load_fn": "ft_stream_mavp_load",
+      "name": "mavp",
+      "new_fn": "ft_stream_mavp_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "minperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "maxperiod"
+        },
+        {
+          "c_type": "int32_t",
+          "kind": "matype",
+          "max": 8,
+          "min": 0,
+          "name": "matype"
+        }
+      ],
+      "peek_fn": "ft_stream_mavp_peek",
+      "reset_fn": "ft_stream_mavp_reset",
+      "save_fn": "ft_stream_mavp_save",
+      "update_fn": "ft_stream_mavp_update"
+    },
+    {
+      "doc": "Streaming MACD with fixed 12/26 EMAs: (macd, signal, hist), NaN until the signal is valid.",
+      "free_fn": "ft_stream_macdfix_free",
+      "handle": "FtStreamMacdfix",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_macdfix_load",
+      "name": "macdfix",
+      "new_fn": "ft_stream_macdfix_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_macd"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_signal"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_hist"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "signalperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_macdfix_peek",
+      "reset_fn": "ft_stream_macdfix_reset",
+      "save_fn": "ft_stream_macdfix_save",
+      "update_fn": "ft_stream_macdfix_update"
+    },
+    {
+      "doc": "Streaming MACD with a moving-average type per leg: (macd, signal, hist), NaN until the signal is valid.",
+      "free_fn": "ft_stream_macdext_free",
+      "handle": "FtStreamMacdext",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_macdext_load",
+      "name": "macdext",
+      "new_fn": "ft_stream_macdext_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_macd"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_signal"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_hist"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "fastperiod"
+        },
+        {
+          "c_type": "int32_t",
+          "kind": "matype",
+          "max": 8,
+          "min": 0,
+          "name": "fastmatype"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "slowperiod"
+        },
+        {
+          "c_type": "int32_t",
+          "kind": "matype",
+          "max": 8,
+          "min": 0,
+          "name": "slowmatype"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "signalperiod"
+        },
+        {
+          "c_type": "int32_t",
+          "kind": "matype",
+          "max": 8,
+          "min": 0,
+          "name": "signalmatype"
+        }
+      ],
+      "peek_fn": "ft_stream_macdext_peek",
+      "reset_fn": "ft_stream_macdext_reset",
+      "save_fn": "ft_stream_macdext_save",
+      "update_fn": "ft_stream_macdext_update"
+    },
+    {
+      "doc": "Streaming absolute price oscillator: fast MA - slow MA (both of type `matype`).",
+      "free_fn": "ft_stream_apo_free",
+      "handle": "FtStreamApo",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_apo_load",
+      "name": "apo",
+      "new_fn": "ft_stream_apo_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "fastperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "slowperiod"
+        },
+        {
+          "c_type": "int32_t",
+          "kind": "matype",
+          "max": 8,
+          "min": 0,
+          "name": "matype"
+        }
+      ],
+      "peek_fn": "ft_stream_apo_peek",
+      "reset_fn": "ft_stream_apo_reset",
+      "save_fn": "ft_stream_apo_save",
+      "update_fn": "ft_stream_apo_update"
+    },
+    {
+      "doc": "Streaming percentage price oscillator: (ppo, signal, hist); the signal is an EMA of the PPO line.",
+      "free_fn": "ft_stream_ppo_free",
+      "handle": "FtStreamPpo",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_ppo_load",
+      "name": "ppo",
+      "new_fn": "ft_stream_ppo_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_ppo"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_signal"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_hist"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "fastperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "slowperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "signalperiod"
+        },
+        {
+          "c_type": "int32_t",
+          "kind": "matype",
+          "max": 8,
+          "min": 0,
+          "name": "matype"
+        }
+      ],
+      "peek_fn": "ft_stream_ppo_peek",
+      "reset_fn": "ft_stream_ppo_reset",
+      "save_fn": "ft_stream_ppo_save",
+      "update_fn": "ft_stream_ppo_update"
+    },
+    {
+      "doc": "Streaming TRIX: one-bar percent rate of change of a triple EMA.",
+      "free_fn": "ft_stream_trix_free",
+      "handle": "FtStreamTrix",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_trix_load",
+      "name": "trix",
+      "new_fn": "ft_stream_trix_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_trix_peek",
+      "reset_fn": "ft_stream_trix_reset",
+      "save_fn": "ft_stream_trix_save",
+      "update_fn": "ft_stream_trix_update"
     }
   ],
   "version": "1.5.1"

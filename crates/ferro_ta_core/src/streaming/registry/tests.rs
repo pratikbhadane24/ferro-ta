@@ -156,47 +156,59 @@ fn row(cols: &[Vec<f64>], i: usize) -> Vec<f64> {
     cols.iter().map(|c| c[i]).collect()
 }
 
-fn assert_parity(case: &Case, bar: usize, got: &[Option<f64>], want: &[Option<f64>]) {
-    assert_eq!(
-        got.len(),
-        want.len(),
-        "{} bar {bar}: output arity",
-        case.name
-    );
-    for (k, (g, w)) in got.iter().zip(want).enumerate() {
+/// First mismatch between a stream bar and its batch bar, if any.
+fn parity_error(
+    case: &Case,
+    bar: usize,
+    got: &[Option<f64>],
+    want: &[Option<f64>],
+) -> Option<String> {
+    if got.len() != want.len() {
+        return Some(format!("{} bar {bar}: output arity", case.name));
+    }
+    got.iter().zip(want).enumerate().find_map(|(k, (g, w))| {
         let ok = match (g, w) {
             (None, None) => true,
             (Some(g), Some(w)) if case.exact[k] => g == w,
             (Some(g), Some(w)) => (g - w).abs() <= REL_TOL * w.abs().max(1.0),
             _ => false,
         };
-        assert!(
-            ok,
-            "{} bar {bar} output {k}: stream {g:?} != batch {w:?}",
-            case.name
-        );
-    }
+        (!ok).then(|| {
+            format!(
+                "{} bar {bar} output {k}: stream {g:?} != batch {w:?}",
+                case.name
+            )
+        })
+    })
 }
 
 /// Every registry stream matches its batch function at every bar (NaN
 /// mask included), with default params and with every period doubled —
-/// the second run catches a lookback that is one bar short.
+/// the second run catches a lookback that is one bar short. Reports the
+/// first mismatch of every failing stream.
 #[test]
 fn registry_parity_all_streams() {
     let cases = cases();
     assert!(!cases.is_empty());
+    let mut failures = Vec::new();
     for case in &cases {
         let cols = columns(case);
-        for scale in [1, 2] {
+        let first = [1, 2].into_iter().find_map(|scale| {
             let want = (case.batch)(&cols, scale);
             assert_eq!(want.len(), N_BARS, "{}: batch length", case.name);
             let mut stream = (case.stream)(scale);
-            for (i, w) in want.iter().enumerate() {
+            want.iter().enumerate().find_map(|(i, w)| {
                 let got = stream.update(&row(&cols, i), true);
-                assert_parity(case, i, &got, w);
-            }
-        }
+                parity_error(case, i, &got, w).map(|e| format!("{e} (period scale {scale})"))
+            })
+        });
+        failures.extend(first);
     }
+    assert!(
+        failures.is_empty(),
+        "parity failures:\n{}",
+        failures.join("\n")
+    );
 }
 
 fn same(a: &[Option<f64>], b: &[Option<f64>]) -> bool {
@@ -388,6 +400,8 @@ const STREAMING_MODULES: &[&str] = &[
     "option_greeks",
     "primitives",
     "math",
+    "overlap",
+    "ma_osc",
 ];
 
 #[test]

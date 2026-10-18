@@ -75,7 +75,11 @@ macro_rules! for_each_stream {
             []
             gen = $gen;
             acc = [];
-            rest = [$crate::stream_family_math;];
+            rest = [
+                $crate::stream_family_math;
+                $crate::stream_family_overlap;
+                $crate::stream_family_ma_osc;
+            ];
         }
     };
 }

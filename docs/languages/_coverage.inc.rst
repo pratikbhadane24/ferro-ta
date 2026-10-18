@@ -11,13 +11,13 @@
      - Flutter
      - Flutter excluded
      - C / Go
-   * - 439
-     - 398
-     - 271
-     - 381
+   * - 454
+     - 413
+     - 286
+     - 396
      - 194
      - 56
-     - 306
+     - 321
 
 .. list-table:: Cross-language indicator coverage
    :header-rows: 1
@@ -2536,6 +2536,13 @@
      - yes
      - —
      - yes
+   * - ``StreamingApo``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
    * - ``StreamingATR``
      - streaming
      - yes
@@ -2578,6 +2585,13 @@
      - yes
      - —
      - yes
+   * - ``StreamingDema``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
    * - ``StreamingDiv``
      - streaming
      - yes
@@ -2592,7 +2606,42 @@
      - yes
      - —
      - yes
+   * - ``StreamingKama``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingMa``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
    * - ``StreamingMACD``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingMacdext``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingMacdfix``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingMavp``
      - streaming
      - yes
      - yes
@@ -2607,6 +2656,20 @@
      - —
      - yes
    * - ``StreamingMedprice``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingMidpoint``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingMidprice``
      - streaming
      - yes
      - yes
@@ -2628,6 +2691,13 @@
      - —
      - yes
    * - ``StreamingOptionGreeks``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingPpo``
      - streaming
      - yes
      - yes
@@ -2732,6 +2802,34 @@
      - yes
      - —
      - yes
+   * - ``StreamingT3``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingTema``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingTrima``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingTrix``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
    * - ``StreamingTypprice``
      - streaming
      - yes
@@ -2747,6 +2845,13 @@
      - —
      - yes
    * - ``StreamingWclprice``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingWma``
      - streaming
      - yes
      - yes

@@ -7,7 +7,7 @@
 /// `fma` routine that measured ~7x slower per bar than the unfused form; wasm
 /// builds use plain multiply-add instead. Results differ by at most rounding.
 #[inline(always)]
-fn ema_step(prev: f64, x: f64, k: f64) -> f64 {
+pub(crate) fn ema_step(prev: f64, x: f64, k: f64) -> f64 {
     #[cfg(not(target_arch = "wasm32"))]
     {
         prev.mul_add(1.0 - k, x * k)
