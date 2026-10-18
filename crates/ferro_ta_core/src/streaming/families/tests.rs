@@ -128,6 +128,9 @@ fn invalid_params_are_rejected() {
     assert!(StreamingT3::new(5, f64::INFINITY).is_err());
     assert!(StreamingDema::new(0).is_err());
     assert_eq!(StreamingMavp::new(2, 30, 3).unwrap().maxperiod(), 30);
+    assert!(StreamingMavp::new(1, MAX_MAVP_RANGE, 7).is_ok());
+    assert!(StreamingMavp::new(1, MAX_MAVP_RANGE + 1, 0).is_err());
+    assert!(StreamingMavp::new(1, crate::streaming::MAX_STREAM_PERIOD, 7).is_err());
 }
 
 /// A snapshot cannot swap the average type or count under the params.
@@ -146,9 +149,33 @@ fn restore_rejects_state_that_contradicts_params() {
     let ma = Live::new(StreamingMa::new(5, 0).unwrap());
     assert!(load_edited(&ma, |_| {}));
     assert!(!load_edited(&ma, |s| s["matype"] = serde_json::json!(2)));
-    let mavp = Live::new(StreamingMavp::new(2, 4, 0).unwrap());
+    let mavp = Live::new(StreamingMavp::new(2, 4, 1).unwrap());
     assert!(load_edited(&mavp, |_| {}));
     assert!(!load_edited(&mavp, |s| s["maxperiod"] = serde_json::json!(5)));
+    let range = Live::new(StreamingMavp::new(1, MAX_MAVP_RANGE, 1).unwrap());
+    assert!(load_edited(&range, |_| {}));
+    assert!(!load_edited(&range, |s| s["maxperiod"] =
+        serde_json::json!(MAX_MAVP_RANGE + 1)));
+    let kama = Live::new(StreamingMavp::new(2, 5, 6).unwrap());
+    assert!(!load_edited(&kama, |s| s["bars"] = serde_json::json!(3)));
+    // A cascade with no stages must be rejected, not index-panic.
+    let empty = serde_json::json!([]);
+    let dema = Live::new(StreamingDema::new(3).unwrap());
+    assert!(!load_edited(&dema, |s| s["inner"]["Dema"]["stages"] = empty.clone()));
+    let tema = Live::new(StreamingTema::new(3).unwrap());
+    assert!(!load_edited(&tema, |s| s["inner"]["Tema"]["stages"] = empty.clone()));
+    let t3 = Live::new(StreamingT3::new(3, 0.7).unwrap());
+    assert!(!load_edited(&t3, |s| s["inner"]["cascade"]["stages"] = empty.clone()));
+    let ma_t3 = Live::new(StreamingMa::new(3, 7).unwrap());
+    assert!(!load_edited(&ma_t3, |s| s["inner"]["T3"]["cascade"]
+        ["stages"] = empty.clone()));
+    let trix = Live::new(StreamingTrix::new(3).unwrap());
+    assert!(!load_edited(&trix, |s| s["cascade"]["stages"] = empty.clone()));
+    let apo = Live::new(StreamingApo::new(2, 3, 3).unwrap());
+    assert!(!load_edited(&apo, |s| s["legs"]["slow"]["Dema"]
+        ["stages"] = empty.clone()));
     let macdext = Live::new(StreamingMacdext::new(3, 1, 6, 1, 2, 1).unwrap());
+    let dema_legs = Live::new(StreamingMacdext::new(3, 3, 6, 4, 2, 7).unwrap());
+    assert!(!load_edited(&dema_legs, |s| s["fast"]["Dema"]["stages"] = empty.clone()));
     assert!(!load_edited(&macdext, |s| s["slowmatype"] = serde_json::json!(4)));
 }

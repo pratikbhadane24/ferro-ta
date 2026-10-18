@@ -24,6 +24,9 @@ trait DynStream {
     fn save(&self) -> String;
     #[cfg(feature = "serde")]
     fn restore(&self, json: &str) -> Box<dyn DynStream>;
+    /// `Live::load` of a possibly corrupt snapshot (`None` on `Err`).
+    #[cfg(feature = "serde")]
+    fn try_restore(&self, json: &str) -> Option<Box<dyn DynStream>>;
 }
 
 struct Erased<T: StreamingIndicator> {
@@ -46,6 +49,14 @@ impl<T: StreamingIndicator + Snap + 'static> DynStream for Erased<T> {
             input_of: self.input_of,
         })
     }
+    #[cfg(feature = "serde")]
+    fn try_restore(&self, json: &str) -> Option<Box<dyn DynStream>> {
+        let live = Live::<T>::load(json).ok()?;
+        Some(Box::new(Erased::<T> {
+            live,
+            input_of: self.input_of,
+        }))
+    }
 }
 
 /// One bar's output as `StreamValue::to_parts`.
@@ -56,8 +67,21 @@ fn batch_rows<O: StreamValue, B: crate::streaming::BatchOutput<O>>(b: &B) -> Vec
     (0..b.bars()).map(|i| b.at(i).to_parts()).collect()
 }
 
-/// One registry entry, type-erased. `scale` multiplies every
-/// `period`-kind parameter (1 = defaults).
+/// Parameter set a harness runs: `scale` multiplies every `period`-kind
+/// parameter, `matype` (if set) replaces every `matype`-kind parameter;
+/// everything else stays at its default.
+#[derive(Clone, Copy, Debug)]
+struct Variant {
+    scale: usize,
+    matype: Option<u8>,
+}
+
+const DEFAULTS: Variant = Variant {
+    scale: 1,
+    matype: None,
+};
+
+/// One registry entry, type-erased.
 struct Case {
     name: &'static str,
     ty: &'static str,
@@ -65,19 +89,47 @@ struct Case {
     params: &'static [&'static str],
     inputs: &'static [&'static str],
     exact: &'static [bool],
+    /// Has a `matype`-kind parameter (swept over `0..=8`).
+    has_matype: bool,
     /// Snapshot save points; only the `serde` tests read it.
     #[cfg_attr(not(feature = "serde"), allow(dead_code))]
-    lookback: fn(usize) -> usize,
-    batch: fn(&[Vec<f64>], usize) -> Vec<Parts>,
-    stream: fn(usize) -> Box<dyn DynStream>,
+    lookback: fn(Variant) -> usize,
+    batch: fn(&[Vec<f64>], Variant) -> Vec<Parts>,
+    stream: fn(Variant) -> Box<dyn DynStream>,
 }
 
-macro_rules! scaled {
-    (period, $default:expr, $scale:expr) => {
-        $default * $scale
+impl Case {
+    /// Defaults, then (for `matype` streams) every `matype` at scale 1.
+    fn variants(&self) -> Vec<Variant> {
+        let sweep = (0..=8u8).map(|m| Variant {
+            scale: 1,
+            matype: Some(m),
+        });
+        std::iter::once(DEFAULTS)
+            .chain(sweep.filter(|_| self.has_matype))
+            .collect()
+    }
+}
+
+/// A parameter's value under a [`Variant`].
+macro_rules! param {
+    (period, $default:expr, $v:expr) => {
+        $default * $v.scale
     };
-    ($other:ident, $default:expr, $scale:expr) => {
+    (matype, $default:expr, $v:expr) => {
+        $v.matype.unwrap_or($default)
+    };
+    ($other:ident, $default:expr, $v:expr) => {
         $default
+    };
+}
+
+macro_rules! is_matype {
+    (matype) => {
+        true
+    };
+    ($other:ident) => {
+        false
     };
 }
 
@@ -109,20 +161,21 @@ macro_rules! registry_cases {
                     params: &[$(stringify!($p)),*],
                     inputs: &[$(stringify!($i)),+],
                     exact: &[$(exact!($elem)),+],
-                    lookback: |scale| {
-                        $(let $p: $crate::__stream_param_ty!($kind) = scaled!($kind, $default, scale);)*
+                    has_matype: false $(|| is_matype!($kind))*,
+                    lookback: |variant| {
+                        $(let $p: $crate::__stream_param_ty!($kind) = param!($kind, $default, variant);)*
                         $lb
                     },
-                    batch: |cols, scale| {
-                        $(let $p: $crate::__stream_param_ty!($kind) = scaled!($kind, $default, scale);)*
+                    batch: |cols, variant| {
+                        $(let $p: $crate::__stream_param_ty!($kind) = param!($kind, $default, variant);)*
                         let slices: Vec<&[f64]> = cols.iter().map(Vec::as_slice).collect();
                         let &[$($i),+] = slices.as_slice() else {
                             panic!("{}: wrong input count", stringify!($name))
                         };
                         batch_rows::<<crate::streaming::$Ty as StreamingIndicator>::Output, _>(&$batch)
                     },
-                    stream: |scale| {
-                        $(let $p: $crate::__stream_param_ty!($kind) = scaled!($kind, $default, scale);)*
+                    stream: |variant| {
+                        $(let $p: $crate::__stream_param_ty!($kind) = param!($kind, $default, variant);)*
                         let inner = crate::streaming::$Ty::new($($p),*).unwrap();
                         Box::new(Erased {
                             live: Live::new(inner),
@@ -183,9 +236,10 @@ fn parity_error(
 }
 
 /// Every registry stream matches its batch function at every bar (NaN
-/// mask included), with default params and with every period doubled —
-/// the second run catches a lookback that is one bar short. Reports the
-/// first mismatch of every failing stream.
+/// mask included), with default params, with every period doubled — which
+/// catches a lookback that is one bar short — and, for streams with a
+/// `matype` param, with every `matype` in `0..=8`. Reports the first
+/// mismatch of every failing stream.
 #[test]
 fn registry_parity_all_streams() {
     let cases = cases();
@@ -193,13 +247,19 @@ fn registry_parity_all_streams() {
     let mut failures = Vec::new();
     for case in &cases {
         let cols = columns(case);
-        let first = [1, 2].into_iter().find_map(|scale| {
-            let want = (case.batch)(&cols, scale);
+        let doubled = Variant {
+            scale: 2,
+            matype: None,
+        };
+        let mut variants = case.variants();
+        variants.insert(1, doubled);
+        let first = variants.into_iter().find_map(|variant| {
+            let want = (case.batch)(&cols, variant);
             assert_eq!(want.len(), N_BARS, "{}: batch length", case.name);
-            let mut stream = (case.stream)(scale);
+            let mut stream = (case.stream)(variant);
             want.iter().enumerate().find_map(|(i, w)| {
                 let got = stream.update(&row(&cols, i), true);
-                parity_error(case, i, &got, w).map(|e| format!("{e} (period scale {scale})"))
+                parity_error(case, i, &got, w).map(|e| format!("{e} ({variant:?})"))
             })
         });
         failures.extend(first);
@@ -220,24 +280,27 @@ fn same(a: &[Option<f64>], b: &[Option<f64>]) -> bool {
 fn previews_are_pure_all_streams() {
     for case in &cases() {
         let cols = columns(case);
-        let mut plain = (case.stream)(1);
-        let mut live = (case.stream)(1);
-        for i in 0..N_BARS {
-            let bar = row(&cols, i);
-            for t in 0..TICKS_PER_BAR {
-                let wobble = 0.01 * (t as f64 + 1.0);
-                let tick: Vec<f64> = bar
-                    .iter()
-                    .zip(case.inputs)
-                    .map(|(&v, &name)| if name == "periods" { v } else { v + wobble })
-                    .collect();
-                let _ = live.update(&tick, false);
+        for variant in case.variants() {
+            let mut plain = (case.stream)(variant);
+            let mut live = (case.stream)(variant);
+            for i in 0..N_BARS {
+                let bar = row(&cols, i);
+                for t in 0..TICKS_PER_BAR {
+                    let wobble = 0.01 * (t as f64 + 1.0);
+                    let tick: Vec<f64> = bar
+                        .iter()
+                        .zip(case.inputs)
+                        .map(|(&v, &name)| if name == "periods" { v } else { v + wobble })
+                        .collect();
+                    let _ = live.update(&tick, false);
+                }
+                let expected = plain.update(&bar, true);
+                let preview = live.update(&bar, false);
+                let got = live.update(&bar, true);
+                let label = format!("{} {variant:?} bar {i}", case.name);
+                assert!(same(&preview, &expected), "{label}: preview");
+                assert!(same(&got, &expected), "{label}: commit");
             }
-            let expected = plain.update(&bar, true);
-            let preview = live.update(&bar, false);
-            let got = live.update(&bar, true);
-            assert!(same(&preview, &expected), "{} bar {i}: preview", case.name);
-            assert!(same(&got, &expected), "{} bar {i}: commit", case.name);
         }
     }
 }
@@ -249,31 +312,37 @@ fn previews_are_pure_all_streams() {
 fn snapshot_round_trip_all_streams() {
     for case in &cases() {
         let cols = columns(case);
-        let lookback = (case.lookback)(1);
-        // Warm-up edges, then just after the first buffer drain (windowed
-        // buffers hold at most 2 · lookback bars), then the end.
-        let points = [
-            0,
-            lookback.saturating_sub(1),
-            lookback,
-            2 * lookback,
-            2 * lookback + 1,
-            N_BARS - 1,
-        ];
-        for save_at in points.into_iter().filter(|&k| k < N_BARS) {
-            let mut original = (case.stream)(1);
-            for i in 0..save_at {
-                original.update(&row(&cols, i), true);
-            }
-            let mut restored = original.restore(&original.save());
-            for i in save_at..N_BARS {
-                let a = original.update(&row(&cols, i), true);
-                let b = restored.update(&row(&cols, i), true);
-                assert!(same(&a, &b), "{} saved at {save_at}, bar {i}", case.name);
+        for variant in case.variants() {
+            let lookback = (case.lookback)(variant);
+            // Warm-up edges, then just after the first buffer drain (windowed
+            // buffers hold at most 2 · lookback bars), then the end.
+            let points = [
+                0,
+                lookback.saturating_sub(1),
+                lookback,
+                2 * lookback,
+                2 * lookback + 1,
+                N_BARS - 1,
+            ];
+            for save_at in points.into_iter().filter(|&k| k < N_BARS) {
+                let mut original = (case.stream)(variant);
+                for i in 0..save_at {
+                    original.update(&row(&cols, i), true);
+                }
+                let mut restored = original.restore(&original.save());
+                for i in save_at..N_BARS {
+                    let a = original.update(&row(&cols, i), true);
+                    let b = restored.update(&row(&cols, i), true);
+                    let label = format!("{} {variant:?} saved at {save_at}, bar {i}", case.name);
+                    assert!(same(&a, &b), "{label}");
+                }
             }
         }
     }
 }
+
+#[cfg(feature = "serde")]
+mod snapshot_fuzz;
 
 /// A windowed snapshot holding more than `2 · lookback` bars is corrupt.
 #[cfg(feature = "serde")]

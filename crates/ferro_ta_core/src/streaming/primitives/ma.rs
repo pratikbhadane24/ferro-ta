@@ -118,29 +118,57 @@ impl Trima {
         if self.window.values.len() < p {
             return f64::NAN;
         }
-        let half = p.div_ceil(2);
-        let weight = |i: usize| (if i <= half { i } else { p + 1 - i }) as f64;
-        let weight_sum: f64 = (1..=p).map(weight).sum();
-        let dot: f64 = self
-            .window
-            .values
-            .iter()
-            .enumerate()
-            .map(|(j, &v)| v * weight(j + 1))
-            .sum();
-        dot * (1.0 / weight_sum)
+        trima_value(self.window.values.iter().copied(), p)
     }
 }
 
-/// `overlap::kama` (TA-Lib): rolling `|Δclose|` volatility over `p + 1`
-/// bars with the subtract-then-add order, exact re-sum every
-/// `RESEED_INTERVAL` bars or once a non-finite value leaves the window, the
-/// 1e-14 band efficiency ratio on the *signed* `close - close[p]`; first
-/// output at bar `p`, seeded from `close[p - 1]`.
+/// Triangular weight sum of `p` bars, `a * b` with `a = p/2 + 1`,
+/// `b = p + 1 - a` — the integer the batch kernel's float sum of the weights
+/// equals exactly (it is far below 2^53), in O(1).
+fn trima_weight_sum(p: usize) -> f64 {
+    let a = p / 2 + 1;
+    (a * (p + 1 - a)) as f64
+}
+
+/// The batch TRIMA's exact dot product over one `p`-bar window (oldest
+/// first), times `1 / weight_sum`.
+fn trima_value(window: impl Iterator<Item = f64>, p: usize) -> f64 {
+    let half = p.div_ceil(2);
+    let weight = |i: usize| (if i <= half { i } else { p + 1 - i }) as f64;
+    let dot: f64 = window.enumerate().map(|(j, v)| v * weight(j + 1)).sum();
+    dot * (1.0 / trima_weight_sum(p))
+}
+
+/// One bar of a *window* moving average (`matype` 0 SMA, 2 WMA, 5 TRIMA)
+/// over the last `p` values of `ring`, from scratch: SMA is the batch MAVP's
+/// own window sum, WMA the exact weighted sum, TRIMA the exact dot product.
+/// `None` for any other `matype` or a ring shorter than `p`.
+pub(crate) fn window_ma(matype: u8, ring: &VecDeque<f64>, p: usize) -> Option<f64> {
+    let start = ring.len().checked_sub(p)?;
+    let window = ring.range(start..).copied();
+    match matype {
+        0 => Some(window.sum::<f64>() / p as f64),
+        2 => {
+            let t: f64 = window.enumerate().map(|(j, v)| (j + 1) as f64 * v).sum();
+            Some(t * (1.0 / (p * (p + 1) / 2) as f64))
+        }
+        5 => Some(trima_value(window, p)),
+        _ => None,
+    }
+}
+
+/// `overlap::kama` (TA-Lib) recurrence for one period, reading prices from
+/// a ring the caller owns (so MAVP can share one ring across periods):
+/// rolling `|Δclose|` volatility over `p + 1` bars with the subtract-then-add
+/// order, exact re-sum every `RESEED_INTERVAL` bars or once a non-finite
+/// value leaves the window, the 1e-14 band efficiency ratio on the *signed*
+/// `close - close[p]`; first output at bar `p`, seeded from `close[p - 1]`.
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub(crate) struct Kama {
-    window: Window,
+pub(crate) struct KamaCore {
+    period: usize,
+    /// Bars seen, saturating at `period + 1`.
+    seen: usize,
     #[cfg_attr(
         feature = "serde",
         serde(with = "crate::streaming::snapshot::nan_as_null")
@@ -156,10 +184,17 @@ pub(crate) struct Kama {
     contaminated: bool,
 }
 
-impl Kama {
-    fn new(period: usize) -> Result<Self, StreamingError> {
+impl KamaCore {
+    /// Ring length the caller must keep: `period + 2` values.
+    pub(crate) fn ring_len(period: usize) -> usize {
+        period.saturating_add(2)
+    }
+
+    pub(crate) fn new(period: usize) -> Result<Self, StreamingError> {
+        check_period(period, "timeperiod", 1)?;
         Ok(Self {
-            window: Window::new(period)?,
+            period,
+            seen: 0,
             value: f64::NAN,
             volatility: 0.0,
             since_reseed: 0,
@@ -168,32 +203,38 @@ impl Kama {
         })
     }
 
-    fn abs_diff_sum(values: &VecDeque<f64>) -> f64 {
-        values
-            .iter()
-            .zip(values.iter().skip(1))
-            .map(|(a, b)| (b - a).abs())
-            .sum()
+    pub(crate) fn period(&self) -> usize {
+        self.period
     }
 
-    fn update(&mut self, x: f64) -> f64 {
-        let p = self.window.period;
-        let full = self.window.values.len() == p + 1;
-        if !full {
-            self.window.push(x, p + 1);
-            if !x.is_finite() {
-                self.non_finite_inside += 1;
-            }
-            if self.window.values.len() <= p {
-                return f64::NAN;
-            }
+    /// Exact `Σ |Δ|` over the last `p + 1` values.
+    fn volatility_of(ring: &VecDeque<f64>, p: usize) -> f64 {
+        let w = ring.range(ring.len() - 1 - p..);
+        w.clone().zip(w.skip(1)).map(|(a, b)| (b - a).abs()).sum()
+    }
+
+    /// Commit the bar whose price `ring` ends with. `ring` is this state's
+    /// price history (newest last) and holds at least
+    /// `min(seen + 1, period + 2)` values — guaranteed after [`validate`]
+    /// when the caller pushes before updating and keeps `ring_len` values.
+    pub(crate) fn update(&mut self, ring: &VecDeque<f64>) -> f64 {
+        let p = self.period;
+        let back = |k: usize| ring[ring.len() - 1 - k];
+        let x = back(0);
+        if self.seen < p {
+            self.seen += 1;
+            self.non_finite_inside += usize::from(!x.is_finite());
+            return f64::NAN;
+        }
+        if self.seen == p {
             // Bar `p`: the first full `p + 1` window.
-            self.volatility = Self::abs_diff_sum(&self.window.values);
+            self.seen += 1;
+            self.non_finite_inside += usize::from(!x.is_finite());
+            self.volatility = Self::volatility_of(ring, p);
             self.contaminated = self.non_finite_inside > 0;
-            self.value = self.window.values[p - 1];
+            self.value = back(1);
         } else {
-            let (old, old_next) = (self.window.values[0], self.window.values[1]);
-            let last = self.window.values[p];
+            let (old, old_next, last) = (back(p + 1), back(p), back(1));
             self.volatility -= (old - old_next).abs();
             self.volatility += (x - last).abs();
             self.since_reseed += 1;
@@ -204,33 +245,81 @@ impl Kama {
             if !old.is_finite() {
                 self.non_finite_inside -= 1;
             }
-            self.window.push(x, p + 1);
             if self.since_reseed >= RESEED_INTERVAL
                 || (self.contaminated && self.non_finite_inside == 0)
             {
-                self.volatility = Self::abs_diff_sum(&self.window.values);
+                self.volatility = Self::volatility_of(ring, p);
                 self.since_reseed = 0;
                 self.contaminated = self.non_finite_inside > 0;
             }
         }
-        let period_roc = x - self.window.values[0];
-        let er = crate::overlap::efficiency_ratio(period_roc, self.volatility);
+        let er = crate::overlap::efficiency_ratio(x - back(p), self.volatility);
         let (fast_sc, slow_sc) = (2.0 / 3.0_f64, 2.0 / 31.0_f64);
         let sc = (er * (fast_sc - slow_sc) + slow_sc).powi(2);
         self.value += sc * (x - self.value);
         self.value
     }
 
-    fn validate(&self) -> Result<(), StreamingError> {
-        let p = self.window.period;
-        self.window.validate(p + 1)?;
-        let non_finite = self.window.values.iter().filter(|v| !v.is_finite()).count();
-        if non_finite != self.non_finite_inside || self.since_reseed > RESEED_INTERVAL {
+    pub(crate) fn reset(&mut self) {
+        *self = Self {
+            period: self.period,
+            ..Self::new(1).expect("period 1 is valid")
+        };
+    }
+
+    /// Period cap, counters in range, and `ring` (before the next push)
+    /// long enough and holding as many non-finite values as counted.
+    pub(crate) fn validate(&self, ring: &VecDeque<f64>) -> Result<(), StreamingError> {
+        check_period(self.period, "timeperiod", 1)?;
+        let inside = self.seen.min(self.period + 1);
+        let consistent = self.seen <= self.period + 1
+            && self.since_reseed <= RESEED_INTERVAL
+            && ring.len() >= inside
+            && ring
+                .range(ring.len() - inside..)
+                .filter(|v| !v.is_finite())
+                .count()
+                == self.non_finite_inside;
+        if !consistent {
             return Err(StreamingError(
                 "KAMA counters are inconsistent with its window".to_string(),
             ));
         }
         Ok(())
+    }
+}
+
+/// [`KamaCore`] with its own `period + 2` price ring.
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub(crate) struct Kama {
+    ring: VecDeque<f64>,
+    core: KamaCore,
+}
+
+impl Kama {
+    fn new(period: usize) -> Result<Self, StreamingError> {
+        Ok(Self {
+            ring: VecDeque::new(),
+            core: KamaCore::new(period)?,
+        })
+    }
+
+    fn update(&mut self, x: f64) -> f64 {
+        self.ring.push_back(x);
+        if self.ring.len() > KamaCore::ring_len(self.core.period) {
+            self.ring.pop_front();
+        }
+        self.core.update(&self.ring)
+    }
+
+    fn validate(&self) -> Result<(), StreamingError> {
+        validate_buffer_len(
+            self.ring.len(),
+            KamaCore::ring_len(self.core.period),
+            "KAMA window",
+        )?;
+        self.core.validate(&self.ring)
     }
 }
 
@@ -354,8 +443,8 @@ impl MaStream {
         match self {
             Self::Sma(Sma { window, .. })
             | Self::Wma(Wma { window, .. })
-            | Self::Trima(Trima { window })
-            | Self::Kama(Kama { window, .. }) => window.period,
+            | Self::Trima(Trima { window }) => window.period,
+            Self::Kama(s) => s.core.period,
             Self::Ema(s) => s.period(),
             Self::Dema(c) | Self::Tema(c) => c.period(),
             Self::T3(s) => s.period(),
@@ -387,18 +476,11 @@ impl MaStream {
     /// `MaStream::new(period, matype)` would build — so a snapshot cannot
     /// swap the average type or period under its owner's parameters.
     pub(crate) fn validate_as(&self, period: usize, matype: u8) -> Result<(), StreamingError> {
-        check_period(period, "timeperiod", 1)?;
-        check_matype(matype, "matype")?;
-        let same_type = self.matype() == matype || (self.matype() == 7 && matype == 8);
-        if !same_type || self.period() != period {
-            return Err(StreamingError(format!(
-                "moving-average state does not match period {period}, matype {matype}"
-            )));
-        }
+        // Structure first: the accessors below assume a well-formed state.
         match self {
             Self::Sma(Sma { window, .. })
             | Self::Wma(Wma { window, .. })
-            | Self::Trima(Trima { window }) => window.validate(period),
+            | Self::Trima(Trima { window }) => window.validate(window.period),
             Self::Ema(s) => s.validate(),
             Self::Dema(c) => c.validate(2),
             Self::Tema(c) => c.validate(3),
@@ -407,6 +489,15 @@ impl MaStream {
             Self::T3(_) => Err(StreamingError(
                 "moving-average T3 must use vfactor 0.7".to_string(),
             )),
+        }?;
+        check_period(period, "timeperiod", 1)?;
+        check_matype(matype, "matype")?;
+        let same_type = self.matype() == matype || (self.matype() == 7 && matype == 8);
+        if !same_type || self.period() != period {
+            return Err(StreamingError(format!(
+                "moving-average state does not match period {period}, matype {matype}"
+            )));
         }
+        Ok(())
     }
 }

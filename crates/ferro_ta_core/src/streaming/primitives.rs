@@ -28,7 +28,7 @@ mod ma;
 #[cfg(test)]
 pub(crate) mod tests;
 
-pub(crate) use ma::{MaStream, T3};
+pub(crate) use ma::{window_ma, KamaCore, MaStream, T3};
 
 /// EMA smoothing factor, as every batch EMA computes it.
 #[inline(always)]
@@ -274,8 +274,10 @@ impl EmaCascade {
         })
     }
 
+    /// The stages' period (`0` for a corrupt, stage-less snapshot, which
+    /// `check_period` then rejects).
     pub(crate) fn period(&self) -> usize {
-        self.stages[0].period()
+        self.stages.first().map_or(0, EmaFirstFinite::period)
     }
 
     /// Every stage's value for `x` (`out[k]` = stage `k + 1`; unused slots NaN).

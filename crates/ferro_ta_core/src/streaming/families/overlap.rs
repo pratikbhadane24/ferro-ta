@@ -2,7 +2,9 @@
 //! MA and MAVP.
 
 use crate::overlap::ma_lookback;
-use crate::streaming::primitives::{MaStream, T3};
+use std::collections::VecDeque;
+
+use crate::streaming::primitives::{window_ma, KamaCore, MaStream, T3};
 use crate::streaming::registry::{check_matype, check_period};
 use crate::streaming::StreamingError;
 
@@ -190,37 +192,81 @@ impl StreamingMa {
 // Native: MAVP
 // ---------------------------------------------------------------------------
 
+/// Largest `maxperiod - minperiod + 1` [`StreamingMavp`] accepts (checked at
+/// construction and on snapshot restore): it keeps recursive state per period
+/// in the range, so the range bounds its memory and per-bar work.
+pub const MAX_MAVP_RANGE: usize = 4096;
+
+/// Per-period state of a recursive MAVP `matype`.
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+enum MavpLeg {
+    /// EMA, DEMA, TEMA, T3: O(1) state of their own.
+    Ma(MaStream),
+    /// KAMA: reads prices from the shared ring.
+    Kama(KamaCore),
+}
+
 /// Streaming moving average with a per-bar period (`overlap::mavp`).
 ///
-/// Holds one [`MaStream`] per period in `[minperiod, maxperiod]`, all fed
-/// every bar (as the batch kernel runs a full MA per requested period), and
-/// emits the one `periods` selects — rounded, then clamped. NaN for the first
-/// `ma_lookback(maxperiod, matype)` bars whatever the per-bar period.
+/// All periods share one price ring of `maxperiod` values (`+ 2` for
+/// KAMA). Window types (SMA, WMA, TRIMA) compute the selected period from
+/// the ring on demand; recursive types keep O(1) state per period in
+/// `[minperiod, maxperiod]`, all updated every bar as the batch kernel runs
+/// a full MA per period. `periods` is rounded, then clamped. NaN for the
+/// first `ma_lookback(maxperiod, matype)` bars whatever the per-bar period.
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct StreamingMavp {
     minperiod: usize,
     maxperiod: usize,
     matype: u8,
-    /// `mas[k]` has period `minperiod + k`.
-    mas: Vec<MaStream>,
+    /// Latest prices, newest last; `min(bars, ring_cap)` of them.
+    ring: VecDeque<f64>,
     /// Committed bars (saturating).
     bars: usize,
+    /// `legs[k]` has period `minperiod + k`; empty for the window types.
+    legs: Vec<MavpLeg>,
 }
 
 impl StreamingMavp {
     pub fn new(minperiod: usize, maxperiod: usize, matype: u8) -> Result<Self, StreamingError> {
         Self::check(minperiod, maxperiod, matype)?;
-        let mas = (minperiod..=maxperiod)
-            .map(|p| MaStream::new(p, matype))
-            .collect::<Result<_, _>>()?;
+        let legs = if Self::is_window_type(matype) {
+            Vec::new()
+        } else {
+            (minperiod..=maxperiod)
+                .map(|p| Self::leg(p, matype))
+                .collect::<Result<_, _>>()?
+        };
         Ok(Self {
             minperiod,
             maxperiod,
             matype,
-            mas,
+            ring: VecDeque::new(),
             bars: 0,
+            legs,
         })
+    }
+
+    fn is_window_type(matype: u8) -> bool {
+        matches!(matype, 0 | 2 | 5)
+    }
+
+    fn leg(period: usize, matype: u8) -> Result<MavpLeg, StreamingError> {
+        Ok(if matype == 6 {
+            MavpLeg::Kama(KamaCore::new(period)?)
+        } else {
+            MavpLeg::Ma(MaStream::new(period, matype)?)
+        })
+    }
+
+    fn ring_cap(&self) -> usize {
+        if self.matype == 6 {
+            KamaCore::ring_len(self.maxperiod)
+        } else {
+            self.maxperiod
+        }
     }
 
     fn check(minperiod: usize, maxperiod: usize, matype: u8) -> Result<(), StreamingError> {
@@ -232,6 +278,12 @@ impl StreamingMavp {
                 "maxperiod must be >= minperiod, got {maxperiod} < {minperiod}"
             )));
         }
+        let range = maxperiod - minperiod + 1;
+        if range > MAX_MAVP_RANGE {
+            return Err(StreamingError(format!(
+                "maxperiod - minperiod + 1 must be <= {MAX_MAVP_RANGE}, got {range}"
+            )));
+        }
         Ok(())
     }
 
@@ -240,10 +292,17 @@ impl StreamingMavp {
     pub fn update(&mut self, close: f64, periods: f64) -> f64 {
         let i = self.bars;
         self.bars = self.bars.saturating_add(1);
+        self.ring.push_back(close);
+        if self.ring.len() > self.ring_cap() {
+            self.ring.pop_front();
+        }
         let chosen = (periods.round() as usize).clamp(self.minperiod, self.maxperiod);
         let mut out = f64::NAN;
-        for (period, ma) in (self.minperiod..).zip(&mut self.mas) {
-            let v = ma.update(close);
+        for (period, leg) in (self.minperiod..).zip(&mut self.legs) {
+            let v = match leg {
+                MavpLeg::Ma(ma) => ma.update(close),
+                MavpLeg::Kama(core) => core.update(&self.ring),
+            };
             if period == chosen {
                 out = v;
             }
@@ -251,26 +310,52 @@ impl StreamingMavp {
         if i < ma_lookback(self.maxperiod, self.matype) {
             return f64::NAN;
         }
-        out
+        window_ma(self.matype, &self.ring, chosen).unwrap_or(out)
     }
 
     pub fn reset(&mut self) {
-        self.mas.iter_mut().for_each(MaStream::reset);
+        self.ring.clear();
         self.bars = 0;
+        for leg in &mut self.legs {
+            match leg {
+                MavpLeg::Ma(ma) => ma.reset(),
+                MavpLeg::Kama(core) => core.reset(),
+            }
+        }
     }
 
     pub fn validate(&self) -> Result<(), StreamingError> {
         Self::check(self.minperiod, self.maxperiod, self.matype)?;
-        if self.mas.len() != self.maxperiod - self.minperiod + 1 {
+        if self.ring.len() != self.bars.min(self.ring_cap()) {
             return Err(StreamingError(format!(
-                "mavp holds {} averages, expected {}",
-                self.mas.len(),
-                self.maxperiod - self.minperiod + 1
+                "mavp ring holds {} prices after {} bars",
+                self.ring.len(),
+                self.bars
+            )));
+        }
+        let expected = if Self::is_window_type(self.matype) {
+            0
+        } else {
+            self.maxperiod - self.minperiod + 1
+        };
+        if self.legs.len() != expected {
+            return Err(StreamingError(format!(
+                "mavp holds {} averages, expected {expected}",
+                self.legs.len()
             )));
         }
         (self.minperiod..)
-            .zip(&self.mas)
-            .try_for_each(|(p, ma)| ma.validate_as(p, self.matype))
+            .zip(&self.legs)
+            .try_for_each(|(p, leg)| match leg {
+                MavpLeg::Ma(ma) if self.matype != 6 => ma.validate_as(p, self.matype),
+                MavpLeg::Kama(core) if self.matype == 6 && core.period() == p => {
+                    core.validate(&self.ring)
+                }
+                _ => Err(StreamingError(format!(
+                    "mavp state for period {p} does not match matype {}",
+                    self.matype
+                ))),
+            })
     }
 
     pub fn minperiod(&self) -> usize {
