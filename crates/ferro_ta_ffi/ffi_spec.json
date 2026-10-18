@@ -9825,6 +9825,502 @@
       "reset_fn": "ft_stream_option_greeks_reset",
       "save_fn": "ft_stream_option_greeks_save",
       "update_fn": "ft_stream_option_greeks_update"
+    },
+    {
+      "doc": "Streaming average price: (open + high + low + close) / 4.",
+      "free_fn": "ft_stream_avgprice_free",
+      "handle": "FtStreamAvgprice",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_avgprice_load",
+      "name": "avgprice",
+      "new_fn": "ft_stream_avgprice_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_avgprice_peek",
+      "reset_fn": "ft_stream_avgprice_reset",
+      "save_fn": "ft_stream_avgprice_save",
+      "update_fn": "ft_stream_avgprice_update"
+    },
+    {
+      "doc": "Streaming median price: (high + low) / 2.",
+      "free_fn": "ft_stream_medprice_free",
+      "handle": "FtStreamMedprice",
+      "inputs": [
+        "high",
+        "low"
+      ],
+      "load_fn": "ft_stream_medprice_load",
+      "name": "medprice",
+      "new_fn": "ft_stream_medprice_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_medprice_peek",
+      "reset_fn": "ft_stream_medprice_reset",
+      "save_fn": "ft_stream_medprice_save",
+      "update_fn": "ft_stream_medprice_update"
+    },
+    {
+      "doc": "Streaming typical price: (high + low + close) / 3.",
+      "free_fn": "ft_stream_typprice_free",
+      "handle": "FtStreamTypprice",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_typprice_load",
+      "name": "typprice",
+      "new_fn": "ft_stream_typprice_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_typprice_peek",
+      "reset_fn": "ft_stream_typprice_reset",
+      "save_fn": "ft_stream_typprice_save",
+      "update_fn": "ft_stream_typprice_update"
+    },
+    {
+      "doc": "Streaming weighted close price: (high + low + 2 * close) / 4.",
+      "free_fn": "ft_stream_wclprice_free",
+      "handle": "FtStreamWclprice",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_wclprice_load",
+      "name": "wclprice",
+      "new_fn": "ft_stream_wclprice_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_wclprice_peek",
+      "reset_fn": "ft_stream_wclprice_reset",
+      "save_fn": "ft_stream_wclprice_save",
+      "update_fn": "ft_stream_wclprice_update"
+    },
+    {
+      "doc": "Streaming element-wise a + b.",
+      "free_fn": "ft_stream_add_free",
+      "handle": "FtStreamAdd",
+      "inputs": [
+        "a",
+        "b"
+      ],
+      "load_fn": "ft_stream_add_load",
+      "name": "add",
+      "new_fn": "ft_stream_add_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_add_peek",
+      "reset_fn": "ft_stream_add_reset",
+      "save_fn": "ft_stream_add_save",
+      "update_fn": "ft_stream_add_update"
+    },
+    {
+      "doc": "Streaming element-wise a - b.",
+      "free_fn": "ft_stream_sub_free",
+      "handle": "FtStreamSub",
+      "inputs": [
+        "a",
+        "b"
+      ],
+      "load_fn": "ft_stream_sub_load",
+      "name": "sub",
+      "new_fn": "ft_stream_sub_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_sub_peek",
+      "reset_fn": "ft_stream_sub_reset",
+      "save_fn": "ft_stream_sub_save",
+      "update_fn": "ft_stream_sub_update"
+    },
+    {
+      "doc": "Streaming element-wise a * b.",
+      "free_fn": "ft_stream_mult_free",
+      "handle": "FtStreamMult",
+      "inputs": [
+        "a",
+        "b"
+      ],
+      "load_fn": "ft_stream_mult_load",
+      "name": "mult",
+      "new_fn": "ft_stream_mult_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_mult_peek",
+      "reset_fn": "ft_stream_mult_reset",
+      "save_fn": "ft_stream_mult_save",
+      "update_fn": "ft_stream_mult_update"
+    },
+    {
+      "doc": "Streaming element-wise a / b (NaN where b = 0).",
+      "free_fn": "ft_stream_div_free",
+      "handle": "FtStreamDiv",
+      "inputs": [
+        "a",
+        "b"
+      ],
+      "load_fn": "ft_stream_div_load",
+      "name": "div",
+      "new_fn": "ft_stream_div_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_div_peek",
+      "reset_fn": "ft_stream_div_reset",
+      "save_fn": "ft_stream_div_save",
+      "update_fn": "ft_stream_div_update"
+    },
+    {
+      "doc": "Streaming rolling sum over `timeperiod` bars.",
+      "free_fn": "ft_stream_sum_free",
+      "handle": "FtStreamSum",
+      "inputs": [
+        "real"
+      ],
+      "load_fn": "ft_stream_sum_load",
+      "name": "sum",
+      "new_fn": "ft_stream_sum_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_sum_peek",
+      "reset_fn": "ft_stream_sum_reset",
+      "save_fn": "ft_stream_sum_save",
+      "update_fn": "ft_stream_sum_update"
+    },
+    {
+      "doc": "Streaming rolling maximum over `timeperiod` bars.",
+      "free_fn": "ft_stream_max_free",
+      "handle": "FtStreamMax",
+      "inputs": [
+        "real"
+      ],
+      "load_fn": "ft_stream_max_load",
+      "name": "max",
+      "new_fn": "ft_stream_max_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_max_peek",
+      "reset_fn": "ft_stream_max_reset",
+      "save_fn": "ft_stream_max_save",
+      "update_fn": "ft_stream_max_update"
+    },
+    {
+      "doc": "Streaming rolling minimum over `timeperiod` bars.",
+      "free_fn": "ft_stream_min_free",
+      "handle": "FtStreamMin",
+      "inputs": [
+        "real"
+      ],
+      "load_fn": "ft_stream_min_load",
+      "name": "min",
+      "new_fn": "ft_stream_min_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_min_peek",
+      "reset_fn": "ft_stream_min_reset",
+      "save_fn": "ft_stream_min_save",
+      "update_fn": "ft_stream_min_update"
+    },
+    {
+      "doc": "Streaming sliding maximum over `timeperiod` bars.",
+      "free_fn": "ft_stream_sliding_max_free",
+      "handle": "FtStreamSlidingMax",
+      "inputs": [
+        "real"
+      ],
+      "load_fn": "ft_stream_sliding_max_load",
+      "name": "sliding_max",
+      "new_fn": "ft_stream_sliding_max_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_sliding_max_peek",
+      "reset_fn": "ft_stream_sliding_max_reset",
+      "save_fn": "ft_stream_sliding_max_save",
+      "update_fn": "ft_stream_sliding_max_update"
+    },
+    {
+      "doc": "Streaming sliding minimum over `timeperiod` bars.",
+      "free_fn": "ft_stream_sliding_min_free",
+      "handle": "FtStreamSlidingMin",
+      "inputs": [
+        "real"
+      ],
+      "load_fn": "ft_stream_sliding_min_load",
+      "name": "sliding_min",
+      "new_fn": "ft_stream_sliding_min_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_sliding_min_peek",
+      "reset_fn": "ft_stream_sliding_min_reset",
+      "save_fn": "ft_stream_sliding_min_save",
+      "update_fn": "ft_stream_sliding_min_update"
+    },
+    {
+      "doc": "Streaming rolling sum over `timeperiod` bars.",
+      "free_fn": "ft_stream_rolling_sum_free",
+      "handle": "FtStreamRollingSum",
+      "inputs": [
+        "real"
+      ],
+      "load_fn": "ft_stream_rolling_sum_load",
+      "name": "rolling_sum",
+      "new_fn": "ft_stream_rolling_sum_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_rolling_sum_peek",
+      "reset_fn": "ft_stream_rolling_sum_reset",
+      "save_fn": "ft_stream_rolling_sum_save",
+      "update_fn": "ft_stream_rolling_sum_update"
+    },
+    {
+      "doc": "Streaming rolling maximum over `timeperiod` bars.",
+      "free_fn": "ft_stream_rolling_max_free",
+      "handle": "FtStreamRollingMax",
+      "inputs": [
+        "real"
+      ],
+      "load_fn": "ft_stream_rolling_max_load",
+      "name": "rolling_max",
+      "new_fn": "ft_stream_rolling_max_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_rolling_max_peek",
+      "reset_fn": "ft_stream_rolling_max_reset",
+      "save_fn": "ft_stream_rolling_max_save",
+      "update_fn": "ft_stream_rolling_max_update"
+    },
+    {
+      "doc": "Streaming rolling minimum over `timeperiod` bars.",
+      "free_fn": "ft_stream_rolling_min_free",
+      "handle": "FtStreamRollingMin",
+      "inputs": [
+        "real"
+      ],
+      "load_fn": "ft_stream_rolling_min_load",
+      "name": "rolling_min",
+      "new_fn": "ft_stream_rolling_min_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_rolling_min_peek",
+      "reset_fn": "ft_stream_rolling_min_reset",
+      "save_fn": "ft_stream_rolling_min_save",
+      "update_fn": "ft_stream_rolling_min_update"
+    },
+    {
+      "doc": "Streaming index of the rolling maximum: the absolute 0-based bar index since the first bar (most recent on ties), -1 during warm-up.",
+      "free_fn": "ft_stream_rolling_maxindex_free",
+      "handle": "FtStreamRollingMaxindex",
+      "inputs": [
+        "real"
+      ],
+      "load_fn": "ft_stream_rolling_maxindex_load",
+      "name": "rolling_maxindex",
+      "new_fn": "ft_stream_rolling_maxindex_new",
+      "outputs": [
+        {
+          "c_type": "int64_t",
+          "elem": "i64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_rolling_maxindex_peek",
+      "reset_fn": "ft_stream_rolling_maxindex_reset",
+      "save_fn": "ft_stream_rolling_maxindex_save",
+      "update_fn": "ft_stream_rolling_maxindex_update"
+    },
+    {
+      "doc": "Streaming index of the rolling minimum: the absolute 0-based bar index since the first bar (most recent on ties), -1 during warm-up.",
+      "free_fn": "ft_stream_rolling_minindex_free",
+      "handle": "FtStreamRollingMinindex",
+      "inputs": [
+        "real"
+      ],
+      "load_fn": "ft_stream_rolling_minindex_load",
+      "name": "rolling_minindex",
+      "new_fn": "ft_stream_rolling_minindex_new",
+      "outputs": [
+        {
+          "c_type": "int64_t",
+          "elem": "i64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_rolling_minindex_peek",
+      "reset_fn": "ft_stream_rolling_minindex_reset",
+      "save_fn": "ft_stream_rolling_minindex_save",
+      "update_fn": "ft_stream_rolling_minindex_update"
     }
   ],
   "version": "1.5.1"

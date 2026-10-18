@@ -130,22 +130,10 @@ mod tests {
 
     const WARM: usize = 150;
 
-    /// Deterministic OHLCV path (LCG), as in the live-bar tests.
+    /// Deterministic OHLCV path (LCG); its own seed keeps the golden
+    /// snapshots stable.
     fn bars(n: usize) -> Vec<(f64, f64, f64, f64)> {
-        let mut state: u64 = 0x2545_F491_4F6C_DD1D;
-        let mut next = move || {
-            state = state
-                .wrapping_mul(6_364_136_223_846_793_005)
-                .wrapping_add(1_442_695_040_888_963_407);
-            (state >> 11) as f64 / (1u64 << 53) as f64
-        };
-        let mut close = 100.0;
-        (0..n)
-            .map(|_| {
-                close += next() - 0.5;
-                (close + next(), close - next(), close, 1.0 + 10.0 * next())
-            })
-            .collect()
+        crate::streaming::fixtures::bars_seeded(0x2545_F491_4F6C_DD1D, n)
     }
 
     fn same<O: std::fmt::Debug>(a: O, b: O) -> bool {

@@ -289,6 +289,7 @@ macro_rules! ffi_stream_feed {
 
 macro_rules! ffi_streams {
     (
+        specs = $specs:ident;
         $(
             $(#[doc = $doc:literal])*
             $name:ident: $ty:ident as $handle:ident {
@@ -431,8 +432,8 @@ macro_rules! ffi_streams {
             }
         )+
 
-        /// Signature metadata for every streaming export.
-        pub const STREAM_SPECS: &[$crate::spec::StreamSpec] = &[
+        /// Signature metadata for the streams of this invocation.
+        pub const $specs: &[$crate::spec::StreamSpec] = &[
             $(
                 $crate::spec::StreamSpec {
                     name: stringify!($name),
@@ -465,6 +466,7 @@ macro_rules! ffi_streams {
 }
 
 ffi_streams! {
+    specs = LEGACY_STREAM_SPECS;
     /// Streaming simple moving average.
     sma: StreamingSMA as FtStreamSma {
         ft_stream_sma_new(period: period),
@@ -632,3 +634,70 @@ ffi_streams! {
         ft_stream_option_greeks_free,
     }
 }
+
+/// C exports for every registry stream (`ferro_ta_core::for_each_stream!`):
+/// `ft_stream_<name>_{new,update,peek,reset,save,load,free}` over handle
+/// `FtStream<UpperCamel(name)>`, params/inputs/outputs exactly as registered.
+macro_rules! ffi_stream_gen {
+    ($(
+        $name:ident => $Ty:ident, doc $doc:literal,
+            params($($p:ident: $kind:ident $(($min:literal))? = $default:tt),* $(,)?),
+            inputs($($i:ident),+ $(,)?),
+            outputs($($o:ident: $elem:ident),+ $(,)?),
+            $imp:ident($($body:tt)*);
+    )*) => {
+        pastey::paste! {
+            ffi_streams! {
+                specs = GENERATED_STREAM_SPECS;
+                $(
+                    #[doc = $doc]
+                    $name: $Ty as [<FtStream $name:upper_camel>] {
+                        [<ft_stream_ $name _new>]($($p: $kind $($min)?),*),
+                        [<ft_stream_ $name _update>]($($i),+) -> [$($o: $elem),+],
+                        [<ft_stream_ $name _peek>],
+                        [<ft_stream_ $name _reset>],
+                        [<ft_stream_ $name _save>],
+                        [<ft_stream_ $name _load>],
+                        [<ft_stream_ $name _free>],
+                    }
+                )*
+            }
+        }
+    };
+}
+
+mod generated {
+    use super::*;
+    use ferro_ta_core::streaming::*;
+
+    ferro_ta_core::for_each_stream!(ffi_stream_gen);
+}
+
+pub use generated::*;
+
+/// `a` followed by `b` (const, so [`STREAM_SPECS`] stays a plain slice).
+const fn concat_specs<const N: usize>(
+    a: &[crate::spec::StreamSpec],
+    b: &[crate::spec::StreamSpec],
+) -> [crate::spec::StreamSpec; N] {
+    assert!(a.len() + b.len() == N);
+    let mut out = [a[0]; N];
+    let mut k = 0;
+    while k < a.len() {
+        out[k] = a[k];
+        k += 1;
+    }
+    while k < N {
+        out[k] = b[k - a.len()];
+        k += 1;
+    }
+    out
+}
+
+const ALL_STREAM_SPECS: [crate::spec::StreamSpec;
+    LEGACY_STREAM_SPECS.len() + GENERATED_STREAM_SPECS.len()] =
+    concat_specs(LEGACY_STREAM_SPECS, GENERATED_STREAM_SPECS);
+
+/// Signature metadata for every streaming export: the hand-written streams,
+/// then the registry streams in registry order.
+pub const STREAM_SPECS: &[crate::spec::StreamSpec] = &ALL_STREAM_SPECS;

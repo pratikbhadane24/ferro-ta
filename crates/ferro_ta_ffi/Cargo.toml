@@ -16,6 +16,9 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 [dependencies]
 ferro_ta_core = { path = "../ferro_ta_core", version = "1.5.1", features = ["serde", "parallel"] }
 serde = { version = "1.0", features = ["derive"] }
+# Compile-time only: builds `ft_stream_<name>_*` / `FtStream<Name>` identifiers
+# for registry streams (macro_rules cannot concatenate identifiers).
+pastey = "0.2"
 
 [dev-dependencies]
 serde_json = "1.0"

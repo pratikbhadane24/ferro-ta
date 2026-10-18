@@ -468,7 +468,9 @@ def scalar_cases(lib: ctypes.CDLL, spec: dict) -> list[dict]:
 
 
 def run_stream(lib: ctypes.CDLL, stream: dict, cols: dict[str, list[float]]) -> dict:
-    params = distinct_params(stream["name"], stream["params"])
+    # Same lookup key as the batch function, so a registry stream replays with
+    # exactly the params of its `ft_<name>` golden case.
+    params = distinct_params("ft_" + stream["name"], stream["params"])
     input_names = [INPUT_COLUMNS[name] for name in stream["inputs"]]
     handle = ctypes.c_void_p()
     new = getattr(lib, stream["new_fn"])

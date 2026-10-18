@@ -496,3 +496,71 @@ fn backtest_stream_save_load_continues_identically() {
     unsafe { ft_stream_backtest_free(h) };
     unsafe { ft_stream_backtest_free(restored) };
 }
+
+/// Registry streams get the same C surface as the hand-written ones: names,
+/// spec entries, batch parity, and save/load continuing identically.
+#[test]
+fn generated_streams_match_core() {
+    use ferro_ta_core::{math, math_ops};
+
+    let names: Vec<_> = all_stream_specs().map(|s| s.name).collect();
+    assert!(names.contains(&"add") && names.contains(&"rolling_maxindex"));
+    let spec = all_stream_specs()
+        .find(|s| s.name == "rolling_maxindex")
+        .unwrap();
+    assert_eq!(spec.handle, "FtStreamRollingMaxindex");
+    assert_eq!(spec.new_fn, "ft_stream_rolling_maxindex_new");
+    assert_eq!(spec.inputs, ["real"]);
+
+    let a = series(60);
+    let b: Vec<f64> = a.iter().map(|x| x * 0.5 + 1.0).collect();
+    let want = math::add(&a, &b);
+    let mut h = ptr::null_mut();
+    assert_eq!(unsafe { ft_stream_add_new(&mut h) }, FT_OK);
+    for i in 0..a.len() {
+        let mut out = 0.0;
+        assert_eq!(
+            unsafe { ft_stream_add_update(h, a[i], b[i], &mut out) },
+            FT_OK
+        );
+        assert!(same(out, want[i]), "add bar {i}");
+    }
+    unsafe { ft_stream_add_free(h) };
+
+    let want = math_ops::rolling_maxindex(&a, 7);
+    let mut h = ptr::null_mut();
+    assert_eq!(unsafe { ft_stream_rolling_maxindex_new(7, &mut h) }, FT_OK);
+    let mut restored = ptr::null_mut();
+    for (i, x) in a.iter().enumerate() {
+        if i == 30 {
+            let mut len = 0;
+            let mut buf = vec![0 as std::ffi::c_char; 4096];
+            let save = unsafe {
+                ft_stream_rolling_maxindex_save(h, buf.as_mut_ptr(), buf.len(), &mut len)
+            };
+            assert_eq!(save, FT_OK);
+            let load = unsafe { ft_stream_rolling_maxindex_load(buf.as_ptr(), len, &mut restored) };
+            assert_eq!(load, FT_OK);
+        }
+        let mut out = 0_i64;
+        assert_eq!(
+            unsafe { ft_stream_rolling_maxindex_update(h, *x, &mut out) },
+            FT_OK
+        );
+        assert_eq!(out, want[i], "rolling_maxindex bar {i}");
+        if i >= 30 {
+            let mut again = 0_i64;
+            unsafe { ft_stream_rolling_maxindex_update(restored, *x, &mut again) };
+            assert_eq!(again, out, "restored bar {i}");
+        }
+    }
+    unsafe { ft_stream_rolling_maxindex_free(h) };
+    unsafe { ft_stream_rolling_maxindex_free(restored) };
+
+    let mut bad = ptr::null_mut();
+    assert_eq!(
+        unsafe { ft_stream_sum_new(0, &mut bad) },
+        FT_ERR_INVALID_PARAM
+    );
+    assert!(bad.is_null());
+}

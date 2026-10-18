@@ -54,7 +54,12 @@ EOF
 
 run_version()     { need_cmd python3; run_cmd python3 scripts/bump_version.py --check; }
 run_changelog()   { need_cmd python3; run_cmd python3 scripts/check_changelog.py; }
-run_manifest()    { need_cmd python3; run_cmd python3 scripts/check_api_manifest.py; }
+run_manifest()    {
+  need_cmd python3
+  run_cmd python3 scripts/check_api_manifest.py
+  # Needs the built extension (reads registry stream defaults from it).
+  run_cmd python3 scripts/build_streaming_python.py --check
+}
 run_rust_fmt()    { need_cmd cargo;   run_cmd cargo fmt --all -- --check; }
 run_python_lint() {
   need_cmd uv

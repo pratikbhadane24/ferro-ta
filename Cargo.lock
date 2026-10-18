@@ -229,6 +229,7 @@ name = "ferro_ta_ffi"
 version = "1.5.1"
 dependencies = [
  "ferro_ta_core",
+ "pastey",
  "serde",
  "serde_json",
 ]
@@ -427,6 +428,12 @@ dependencies = [
  "libc",
  "winapi",
 ]
+
+[[package]]
+name = "pastey"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2ee67f1008b1ba2321834326597b8e186293b049a023cdef258527550b9935b4"
 
 [[package]]
 name = "plotters"

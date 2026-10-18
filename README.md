@@ -165,7 +165,7 @@ Adjacent surfaces — derivatives analytics, MCP, GPU helpers, plugins, and agen
 
 ## TA-Lib compatibility
 
-- `ferro-ta` implements 156 of TA-Lib 0.6.4's 161 functions, plus an extended catalog (adaptive MAs, volume/oscillator studies, statistic helpers, and signal utilities) and 13 streaming classes plus a tick→bar builder that TA-Lib does not provide. Not yet implemented: `ACCBANDS`, `IMI`, `AVGDEV`, `MINMAX`, `MINMAXINDEX`.
+- `ferro-ta` implements 156 of TA-Lib 0.6.4's 161 functions, plus an extended catalog (adaptive MAs, volume/oscillator studies, statistic helpers, and signal utilities) and 31 streaming classes plus a tick→bar builder that TA-Lib does not provide. Not yet implemented: `ACCBANDS`, `IMI`, `AVGDEV`, `MINMAX`, `MINMAXINDEX`.
 - Most functions are marked `Exact` or `Close`; the remaining notable non-exact categories are the Hilbert cycle indicators plus `MAMA`, `SAR`, and `SAREXT`.
 - The full parity matrix and coverage summary now live in [TA_LIB_COMPATIBILITY.md](TA_LIB_COMPATIBILITY.md).
 

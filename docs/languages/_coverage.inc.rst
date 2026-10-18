@@ -11,13 +11,13 @@
      - Flutter
      - Flutter excluded
      - C / Go
-   * - 421
-     - 380
-     - 253
-     - 363
+   * - 439
+     - 398
+     - 271
+     - 381
      - 194
      - 56
-     - 288
+     - 306
 
 .. list-table:: Cross-language indicator coverage
    :header-rows: 1
@@ -2529,7 +2529,21 @@
      - yes
      - excluded
      - —
+   * - ``StreamingAdd``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
    * - ``StreamingATR``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingAvgprice``
      - streaming
      - yes
      - yes
@@ -2564,6 +2578,13 @@
      - yes
      - —
      - yes
+   * - ``StreamingDiv``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
    * - ``StreamingEMA``
      - streaming
      - yes
@@ -2578,6 +2599,34 @@
      - yes
      - —
      - yes
+   * - ``StreamingMax``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingMedprice``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingMin``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingMult``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
    * - ``StreamingOptionGreeks``
      - streaming
      - yes
@@ -2585,7 +2634,56 @@
      - yes
      - —
      - yes
+   * - ``StreamingRollingMax``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingRollingMaxindex``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingRollingMin``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingRollingMinindex``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingRollingSum``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
    * - ``StreamingRSI``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingSlidingMax``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingSlidingMin``
      - streaming
      - yes
      - yes
@@ -2613,6 +2711,20 @@
      - yes
      - —
      - yes
+   * - ``StreamingSub``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingSum``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
    * - ``StreamingSupertrend``
      - streaming
      - yes
@@ -2620,7 +2732,21 @@
      - yes
      - —
      - yes
+   * - ``StreamingTypprice``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
    * - ``StreamingVWAP``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingWclprice``
      - streaming
      - yes
      - yes

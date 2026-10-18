@@ -43,6 +43,11 @@ StreamingCooldown   — Mute repeat signals for N bars
 StreamingOptionGreeks — Live IV + greeks for one option contract
 BarBuilder          — Session-aligned tick → OHLCV bar builder (yields Bar)
 
+Plus one class per registry stream (``StreamingSum``, ``StreamingAdd``,
+``StreamingRollingMaxindex`` ...): ``Streaming`` + the batch function name in
+UpperCamel, taking that function's parameters (same names and defaults) and
+its inputs, one value each, in ``update``. See ``__all__`` for the full list.
+
 Rust backend
 ------------
 All classes are PyO3 classes compiled into the ``_ferro_ta`` extension module.
@@ -91,3 +96,47 @@ __all__ = [
     "Bar",
     "BarBuilder",
 ]
+
+# BEGIN GENERATED STREAMS (scripts/build_streaming_python.py)
+from ferro_ta._ferro_ta import (  # noqa: E402
+    StreamingAdd,
+    StreamingAvgprice,
+    StreamingDiv,
+    StreamingMax,
+    StreamingMedprice,
+    StreamingMin,
+    StreamingMult,
+    StreamingRollingMax,
+    StreamingRollingMaxindex,
+    StreamingRollingMin,
+    StreamingRollingMinindex,
+    StreamingRollingSum,
+    StreamingSlidingMax,
+    StreamingSlidingMin,
+    StreamingSub,
+    StreamingSum,
+    StreamingTypprice,
+    StreamingWclprice,
+)
+
+__all__ += [
+    "StreamingAdd",
+    "StreamingAvgprice",
+    "StreamingDiv",
+    "StreamingMax",
+    "StreamingMedprice",
+    "StreamingMin",
+    "StreamingMult",
+    "StreamingRollingMax",
+    "StreamingRollingMaxindex",
+    "StreamingRollingMin",
+    "StreamingRollingMinindex",
+    "StreamingRollingSum",
+    "StreamingSlidingMax",
+    "StreamingSlidingMin",
+    "StreamingSub",
+    "StreamingSum",
+    "StreamingTypprice",
+    "StreamingWclprice",
+]
+# END GENERATED STREAMS
