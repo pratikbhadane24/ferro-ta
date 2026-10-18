@@ -24,6 +24,7 @@ pub use conditions::{StreamingCooldown, StreamingCross, StreamingStreak};
 pub use families::*;
 pub use live::{Live, StreamValue, StreamingIndicator};
 pub use option_greeks::StreamingOptionGreeks;
+pub use registry::MAX_STREAM_PERIOD;
 #[cfg(feature = "serde")]
 pub use snapshot::STATE_FORMAT_VERSION;
 pub use windowed::{

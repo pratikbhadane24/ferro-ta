@@ -564,3 +564,40 @@ fn generated_streams_match_core() {
     );
     assert!(bad.is_null());
 }
+
+/// `REGISTRY`: `(name, core type)` of every registry entry.
+macro_rules! registry_names {
+    ($($name:ident => $Ty:ident, doc $doc:literal, $($field:ident($($body:tt)*)),+;)*) => {
+        const REGISTRY: &[(&str, &str)] = &[$((stringify!($name), stringify!($Ty))),*];
+    };
+}
+
+ferro_ta_core::for_each_stream!(registry_names);
+
+/// Every registry entry has a C spec whose names derive from the core type
+/// (guards UpperCamel edge cases such as digits: `cdl3…`).
+#[test]
+fn generated_spec_names_follow_core_types() {
+    assert!(!REGISTRY.is_empty());
+    for &(name, ty) in REGISTRY {
+        let spec = all_stream_specs()
+            .find(|s| s.name == name)
+            .unwrap_or_else(|| panic!("no C spec for registry stream {name}"));
+        let camel = ty
+            .strip_prefix("Streaming")
+            .expect("type starts with Streaming");
+        assert_eq!(spec.handle, format!("FtStream{camel}"), "{name}");
+        for (got, verb) in [
+            (spec.new_fn, "new"),
+            (spec.update_fn, "update"),
+            (spec.peek_fn, "peek"),
+            (spec.reset_fn, "reset"),
+            (spec.save_fn, "save"),
+            (spec.load_fn, "load"),
+            (spec.free_fn, "free"),
+        ] {
+            assert_eq!(got, format!("ft_stream_{name}_{verb}"));
+        }
+    }
+    assert_eq!(GENERATED_STREAM_SPECS.len(), REGISTRY.len());
+}

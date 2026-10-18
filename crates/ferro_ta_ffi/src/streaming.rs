@@ -675,6 +675,11 @@ mod generated {
 
 pub use generated::*;
 
+// Registry streams re-check periods against the core cap on snapshot load;
+// keep it equal to the constructor cap.
+const _: () =
+    assert!(crate::marshal::MAX_PERIOD as usize == ferro_ta_core::streaming::MAX_STREAM_PERIOD);
+
 /// `a` followed by `b` (const, so [`STREAM_SPECS`] stays a plain slice).
 const fn concat_specs<const N: usize>(
     a: &[crate::spec::StreamSpec],

@@ -2,7 +2,8 @@
 
 use std::collections::VecDeque;
 
-use crate::streaming::{validate_timeperiod, StreamingError};
+use crate::streaming::registry::check_period;
+use crate::streaming::StreamingError;
 
 /// Registry entries for `price_transform`, `math` and `math_ops`.
 #[macro_export]
@@ -95,7 +96,7 @@ struct ExtremeIndex {
 
 impl ExtremeIndex {
     fn new(timeperiod: usize) -> Result<Self, StreamingError> {
-        validate_timeperiod(timeperiod, "timeperiod", 1)?;
+        check_period(timeperiod, "timeperiod", 1)?;
         Ok(Self {
             timeperiod,
             entries: VecDeque::new(),
@@ -107,16 +108,22 @@ impl ExtremeIndex {
     /// equality makes the most recent of equal extremes win, as in batch.
     fn update(&mut self, x: f64, dominated: fn(f64, f64) -> bool) -> i64 {
         let i = self.bars;
-        self.bars += 1;
+        // `validate` bounds restored state to `bars <= i64::MAX`, so this
+        // only saturates after 2^63 bars.
+        self.bars = self.bars.saturating_add(1);
         let period = self.timeperiod as u64;
-        while self.entries.front().is_some_and(|&(j, _)| j + period <= i) {
+        while self
+            .entries
+            .front()
+            .is_some_and(|&(j, _)| j.saturating_add(period) <= i)
+        {
             self.entries.pop_front();
         }
         while self.entries.back().is_some_and(|&(_, v)| dominated(v, x)) {
             self.entries.pop_back();
         }
         self.entries.push_back((i, x));
-        if i + 1 >= period {
+        if i.saturating_add(1) >= period {
             self.entries.front().map_or(-1, |&(j, _)| j as i64)
         } else {
             -1
@@ -129,9 +136,16 @@ impl ExtremeIndex {
     }
 
     fn validate(&self, dominated: fn(f64, f64) -> bool) -> Result<(), StreamingError> {
-        validate_timeperiod(self.timeperiod, "timeperiod", 1)?;
+        check_period(self.timeperiod, "timeperiod", 1)?;
+        if self.bars > i64::MAX as u64 {
+            return Err(StreamingError(format!(
+                "bar count {} exceeds {}",
+                self.bars,
+                i64::MAX
+            )));
+        }
         let period = self.timeperiod as u64;
-        let in_window = |j: u64| j < self.bars && j + period >= self.bars;
+        let in_window = |j: u64| j < self.bars && j.saturating_add(period) >= self.bars;
         let ordered = self
             .entries
             .iter()

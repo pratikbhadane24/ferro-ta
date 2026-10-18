@@ -18,7 +18,9 @@ import pytest
 
 import ferro_ta.data.streaming as streaming
 
-N_BARS = 50
+# Every bar of the fixture (252), so long warm-ups (TRIX, Hilbert) still
+# reach a value.
+N_BARS = 1_000
 CSV_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "ohlcv_daily.csv"
 
 # Hand-written classes (and helpers) that predate the registry.
@@ -103,6 +105,14 @@ def _same(a: object, b: object) -> bool:
     return a == b
 
 
+def _has_value(value: object) -> bool:
+    if isinstance(value, tuple):
+        return all(_has_value(v) for v in value)
+    if isinstance(value, float):
+        return not math.isnan(value)
+    return value != -1  # i64 index sentinel; i32 codes are never -1-sentinel
+
+
 def test_registry_classes_are_exported():
     assert len(GENERATED) >= 18
     assert "StreamingRollingMaxindex" in GENERATED
@@ -120,11 +130,16 @@ def test_every_registry_stream_smoke(name: str):
         assert _same(preview, committed), f"{name}: preview != commit"
     assert stream.count == half
 
+    # Our own object, round-tripped in-process: pickle is safe here.
     restored = pickle.loads(pickle.dumps(stream))
     assert restored.count == stream.count
+    last: object = None
     for bar in bars[half:]:
-        assert _same(restored.update(*bar), stream.update(*bar))
-    assert stream.is_ready
+        last = stream.update(*bar)
+        assert _same(restored.update(*bar), last)
+    # Readiness must agree with the last committed value (NaN / -1 index
+    # sentinel = not ready), whatever the stream's warm-up length.
+    assert stream.is_ready == _has_value(last), f"{name}: is_ready vs {last!r}"
     assert name in repr(stream)
 
 
