@@ -86,7 +86,7 @@ crate::stream_family_momentum! {
 /// over the first `timeperiod` changes, then `(avg * (p - 1) + x) * (1 / p)`.
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-struct GainLoss {
+pub(crate) struct GainLoss {
     gain: Wilder,
     loss: Wilder,
     #[cfg_attr(
@@ -98,7 +98,7 @@ struct GainLoss {
 }
 
 impl GainLoss {
-    fn new(timeperiod: usize) -> Result<Self, StreamingError> {
+    pub(crate) fn new(timeperiod: usize) -> Result<Self, StreamingError> {
         Ok(Self {
             gain: Wilder::new(timeperiod)?,
             loss: Wilder::new(timeperiod)?,
@@ -108,7 +108,7 @@ impl GainLoss {
     }
 
     /// `(avg_gain, avg_loss)` once seeded (at the bar index `timeperiod`).
-    fn update(&mut self, close: f64) -> Option<(f64, f64)> {
+    pub(crate) fn update(&mut self, close: f64) -> Option<(f64, f64)> {
         if !self.has_prev {
             self.has_prev = true;
             self.prev = close;
@@ -122,18 +122,18 @@ impl GainLoss {
         (!gain.is_nan()).then_some((gain, loss))
     }
 
-    fn period(&self) -> usize {
+    pub(crate) fn period(&self) -> usize {
         self.gain.period()
     }
 
-    fn reset(&mut self) {
+    pub(crate) fn reset(&mut self) {
         self.gain.reset();
         self.loss.reset();
         self.prev = f64::NAN;
         self.has_prev = false;
     }
 
-    fn validate(&self) -> Result<(), StreamingError> {
+    pub(crate) fn validate(&self) -> Result<(), StreamingError> {
         self.gain.validate()?;
         self.loss.validate()?;
         if self.gain.period() != self.loss.period() {
@@ -146,7 +146,7 @@ impl GainLoss {
 }
 
 /// `rsi`'s value from the averages (flat window -> 0, clamped to `[0, 100]`).
-fn rsi_value(gain: f64, loss: f64) -> f64 {
+pub(crate) fn rsi_value(gain: f64, loss: f64) -> f64 {
     let denom = gain + loss;
     if denom == 0.0 {
         0.0

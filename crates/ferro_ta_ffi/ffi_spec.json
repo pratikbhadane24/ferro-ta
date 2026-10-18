@@ -11779,6 +11779,961 @@
       "reset_fn": "ft_stream_adosc_reset",
       "save_fn": "ft_stream_adosc_save",
       "update_fn": "ft_stream_adosc_update"
+    },
+    {
+      "doc": "Streaming rolling population standard deviation over `timeperiod` bars, scaled by `nbdev`.",
+      "free_fn": "ft_stream_stddev_free",
+      "handle": "FtStreamStddev",
+      "inputs": [
+        "real"
+      ],
+      "load_fn": "ft_stream_stddev_load",
+      "name": "stddev",
+      "new_fn": "ft_stream_stddev_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "nbdev"
+        }
+      ],
+      "peek_fn": "ft_stream_stddev_peek",
+      "reset_fn": "ft_stream_stddev_reset",
+      "save_fn": "ft_stream_stddev_save",
+      "update_fn": "ft_stream_stddev_update"
+    },
+    {
+      "doc": "Streaming rolling population variance over `timeperiod` bars, scaled by `nbdev**2`.",
+      "free_fn": "ft_stream_var_free",
+      "handle": "FtStreamVar",
+      "inputs": [
+        "real"
+      ],
+      "load_fn": "ft_stream_var_load",
+      "name": "var",
+      "new_fn": "ft_stream_var_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "nbdev"
+        }
+      ],
+      "peek_fn": "ft_stream_var_peek",
+      "reset_fn": "ft_stream_var_reset",
+      "save_fn": "ft_stream_var_save",
+      "update_fn": "ft_stream_var_update"
+    },
+    {
+      "doc": "Streaming linear regression fitted value at the last bar of the window.",
+      "free_fn": "ft_stream_linearreg_free",
+      "handle": "FtStreamLinearreg",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_linearreg_load",
+      "name": "linearreg",
+      "new_fn": "ft_stream_linearreg_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_linearreg_peek",
+      "reset_fn": "ft_stream_linearreg_reset",
+      "save_fn": "ft_stream_linearreg_save",
+      "update_fn": "ft_stream_linearreg_update"
+    },
+    {
+      "doc": "Streaming slope of the rolling linear regression line.",
+      "free_fn": "ft_stream_linearreg_slope_free",
+      "handle": "FtStreamLinearregSlope",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_linearreg_slope_load",
+      "name": "linearreg_slope",
+      "new_fn": "ft_stream_linearreg_slope_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_linearreg_slope_peek",
+      "reset_fn": "ft_stream_linearreg_slope_reset",
+      "save_fn": "ft_stream_linearreg_slope_save",
+      "update_fn": "ft_stream_linearreg_slope_update"
+    },
+    {
+      "doc": "Streaming intercept of the rolling linear regression line.",
+      "free_fn": "ft_stream_linearreg_intercept_free",
+      "handle": "FtStreamLinearregIntercept",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_linearreg_intercept_load",
+      "name": "linearreg_intercept",
+      "new_fn": "ft_stream_linearreg_intercept_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_linearreg_intercept_peek",
+      "reset_fn": "ft_stream_linearreg_intercept_reset",
+      "save_fn": "ft_stream_linearreg_intercept_save",
+      "update_fn": "ft_stream_linearreg_intercept_update"
+    },
+    {
+      "doc": "Streaming angle of the rolling regression line in degrees.",
+      "free_fn": "ft_stream_linearreg_angle_free",
+      "handle": "FtStreamLinearregAngle",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_linearreg_angle_load",
+      "name": "linearreg_angle",
+      "new_fn": "ft_stream_linearreg_angle_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_linearreg_angle_peek",
+      "reset_fn": "ft_stream_linearreg_angle_reset",
+      "save_fn": "ft_stream_linearreg_angle_save",
+      "update_fn": "ft_stream_linearreg_angle_update"
+    },
+    {
+      "doc": "Streaming time series forecast: the regression line extrapolated one bar ahead.",
+      "free_fn": "ft_stream_tsf_free",
+      "handle": "FtStreamTsf",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_tsf_load",
+      "name": "tsf",
+      "new_fn": "ft_stream_tsf_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_tsf_peek",
+      "reset_fn": "ft_stream_tsf_reset",
+      "save_fn": "ft_stream_tsf_save",
+      "update_fn": "ft_stream_tsf_update"
+    },
+    {
+      "doc": "Streaming rolling beta of `real1` returns on `real0` returns over `timeperiod` returns.",
+      "free_fn": "ft_stream_beta_free",
+      "handle": "FtStreamBeta",
+      "inputs": [
+        "real0",
+        "real1"
+      ],
+      "load_fn": "ft_stream_beta_load",
+      "name": "beta",
+      "new_fn": "ft_stream_beta_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_beta_peek",
+      "reset_fn": "ft_stream_beta_reset",
+      "save_fn": "ft_stream_beta_save",
+      "update_fn": "ft_stream_beta_update"
+    },
+    {
+      "doc": "Streaming rolling Pearson correlation of two series over `timeperiod` bars.",
+      "free_fn": "ft_stream_correl_free",
+      "handle": "FtStreamCorrel",
+      "inputs": [
+        "real0",
+        "real1"
+      ],
+      "load_fn": "ft_stream_correl_load",
+      "name": "correl",
+      "new_fn": "ft_stream_correl_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_correl_peek",
+      "reset_fn": "ft_stream_correl_reset",
+      "save_fn": "ft_stream_correl_save",
+      "update_fn": "ft_stream_correl_update"
+    },
+    {
+      "doc": "Streaming IV rank: position of the latest IV between the window's min and max.",
+      "free_fn": "ft_stream_iv_rank_free",
+      "handle": "FtStreamIvRank",
+      "inputs": [
+        "iv_series"
+      ],
+      "load_fn": "ft_stream_iv_rank_load",
+      "name": "iv_rank",
+      "new_fn": "ft_stream_iv_rank_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "window"
+        }
+      ],
+      "peek_fn": "ft_stream_iv_rank_peek",
+      "reset_fn": "ft_stream_iv_rank_reset",
+      "save_fn": "ft_stream_iv_rank_save",
+      "update_fn": "ft_stream_iv_rank_update"
+    },
+    {
+      "doc": "Streaming IV percentile: share of window values at or below the latest IV.",
+      "free_fn": "ft_stream_iv_percentile_free",
+      "handle": "FtStreamIvPercentile",
+      "inputs": [
+        "iv_series"
+      ],
+      "load_fn": "ft_stream_iv_percentile_load",
+      "name": "iv_percentile",
+      "new_fn": "ft_stream_iv_percentile_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "window"
+        }
+      ],
+      "peek_fn": "ft_stream_iv_percentile_peek",
+      "reset_fn": "ft_stream_iv_percentile_reset",
+      "save_fn": "ft_stream_iv_percentile_save",
+      "update_fn": "ft_stream_iv_percentile_update"
+    },
+    {
+      "doc": "Streaming IV z-score of the latest IV against the window mean and deviation.",
+      "free_fn": "ft_stream_iv_zscore_free",
+      "handle": "FtStreamIvZscore",
+      "inputs": [
+        "iv_series"
+      ],
+      "load_fn": "ft_stream_iv_zscore_load",
+      "name": "iv_zscore",
+      "new_fn": "ft_stream_iv_zscore_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "window"
+        }
+      ],
+      "peek_fn": "ft_stream_iv_zscore_peek",
+      "reset_fn": "ft_stream_iv_zscore_reset",
+      "save_fn": "ft_stream_iv_zscore_save",
+      "update_fn": "ft_stream_iv_zscore_update"
+    },
+    {
+      "doc": "Streaming annualised close-to-close realized volatility (first value after `window` returns).",
+      "free_fn": "ft_stream_close_to_close_vol_free",
+      "handle": "FtStreamCloseToCloseVol",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_close_to_close_vol_load",
+      "name": "close_to_close_vol",
+      "new_fn": "ft_stream_close_to_close_vol_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "window"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "trading_days"
+        }
+      ],
+      "peek_fn": "ft_stream_close_to_close_vol_peek",
+      "reset_fn": "ft_stream_close_to_close_vol_reset",
+      "save_fn": "ft_stream_close_to_close_vol_save",
+      "update_fn": "ft_stream_close_to_close_vol_update"
+    },
+    {
+      "doc": "Streaming annualised Parkinson high-low realized volatility.",
+      "free_fn": "ft_stream_parkinson_vol_free",
+      "handle": "FtStreamParkinsonVol",
+      "inputs": [
+        "high",
+        "low"
+      ],
+      "load_fn": "ft_stream_parkinson_vol_load",
+      "name": "parkinson_vol",
+      "new_fn": "ft_stream_parkinson_vol_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "window"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "trading_days"
+        }
+      ],
+      "peek_fn": "ft_stream_parkinson_vol_peek",
+      "reset_fn": "ft_stream_parkinson_vol_reset",
+      "save_fn": "ft_stream_parkinson_vol_save",
+      "update_fn": "ft_stream_parkinson_vol_update"
+    },
+    {
+      "doc": "Streaming annualised Garman-Klass OHLC realized volatility.",
+      "free_fn": "ft_stream_garman_klass_vol_free",
+      "handle": "FtStreamGarmanKlassVol",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_garman_klass_vol_load",
+      "name": "garman_klass_vol",
+      "new_fn": "ft_stream_garman_klass_vol_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "window"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "trading_days"
+        }
+      ],
+      "peek_fn": "ft_stream_garman_klass_vol_peek",
+      "reset_fn": "ft_stream_garman_klass_vol_reset",
+      "save_fn": "ft_stream_garman_klass_vol_save",
+      "update_fn": "ft_stream_garman_klass_vol_update"
+    },
+    {
+      "doc": "Streaming annualised Rogers-Satchell OHLC realized volatility.",
+      "free_fn": "ft_stream_rogers_satchell_vol_free",
+      "handle": "FtStreamRogersSatchellVol",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_rogers_satchell_vol_load",
+      "name": "rogers_satchell_vol",
+      "new_fn": "ft_stream_rogers_satchell_vol_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "window"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "trading_days"
+        }
+      ],
+      "peek_fn": "ft_stream_rogers_satchell_vol_peek",
+      "reset_fn": "ft_stream_rogers_satchell_vol_reset",
+      "save_fn": "ft_stream_rogers_satchell_vol_save",
+      "update_fn": "ft_stream_rogers_satchell_vol_update"
+    },
+    {
+      "doc": "Streaming annualised Yang-Zhang OHLC realized volatility (first value after `window` bars plus the prior close).",
+      "free_fn": "ft_stream_yang_zhang_vol_free",
+      "handle": "FtStreamYangZhangVol",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_yang_zhang_vol_load",
+      "name": "yang_zhang_vol",
+      "new_fn": "ft_stream_yang_zhang_vol_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "window"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "trading_days"
+        }
+      ],
+      "peek_fn": "ft_stream_yang_zhang_vol_peek",
+      "reset_fn": "ft_stream_yang_zhang_vol_reset",
+      "save_fn": "ft_stream_yang_zhang_vol_save",
+      "update_fn": "ft_stream_yang_zhang_vol_update"
+    },
+    {
+      "doc": "Streaming trend (1) / range (0) label from ADX against `threshold` (-1 where ADX is NaN).",
+      "free_fn": "ft_stream_regime_adx_free",
+      "handle": "FtStreamRegimeAdx",
+      "inputs": [
+        "adx"
+      ],
+      "load_fn": "ft_stream_regime_adx_load",
+      "name": "regime_adx",
+      "new_fn": "ft_stream_regime_adx_new",
+      "outputs": [
+        {
+          "c_type": "int8_t",
+          "elem": "i8",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "threshold"
+        }
+      ],
+      "peek_fn": "ft_stream_regime_adx_peek",
+      "reset_fn": "ft_stream_regime_adx_reset",
+      "save_fn": "ft_stream_regime_adx_save",
+      "update_fn": "ft_stream_regime_adx_update"
+    },
+    {
+      "doc": "Streaming trend (1) / range (0) label: ADX above `adx_threshold` and ATR / close above `atr_pct_threshold`.",
+      "free_fn": "ft_stream_regime_combined_free",
+      "handle": "FtStreamRegimeCombined",
+      "inputs": [
+        "adx",
+        "atr",
+        "close"
+      ],
+      "load_fn": "ft_stream_regime_combined_load",
+      "name": "regime_combined",
+      "new_fn": "ft_stream_regime_combined_new",
+      "outputs": [
+        {
+          "c_type": "int8_t",
+          "elem": "i8",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "adx_threshold"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "atr_pct_threshold"
+        }
+      ],
+      "peek_fn": "ft_stream_regime_combined_peek",
+      "reset_fn": "ft_stream_regime_combined_reset",
+      "save_fn": "ft_stream_regime_combined_save",
+      "update_fn": "ft_stream_regime_combined_update"
+    },
+    {
+      "doc": "Streaming CUSUM structural-break flag (1 at a break bar) against the previous `window` bars.",
+      "free_fn": "ft_stream_detect_breaks_cusum_free",
+      "handle": "FtStreamDetectBreaksCusum",
+      "inputs": [
+        "series"
+      ],
+      "load_fn": "ft_stream_detect_breaks_cusum_load",
+      "name": "detect_breaks_cusum",
+      "new_fn": "ft_stream_detect_breaks_cusum_new",
+      "outputs": [
+        {
+          "c_type": "int8_t",
+          "elem": "i8",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 2,
+          "name": "window"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "threshold"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "slack"
+        }
+      ],
+      "peek_fn": "ft_stream_detect_breaks_cusum_peek",
+      "reset_fn": "ft_stream_detect_breaks_cusum_reset",
+      "save_fn": "ft_stream_detect_breaks_cusum_save",
+      "update_fn": "ft_stream_detect_breaks_cusum_update"
+    },
+    {
+      "doc": "Streaming volatility-regime break flag: short / long window variance ratio above `threshold` (current bar excluded).",
+      "free_fn": "ft_stream_rolling_variance_break_free",
+      "handle": "FtStreamRollingVarianceBreak",
+      "inputs": [
+        "series"
+      ],
+      "load_fn": "ft_stream_rolling_variance_break_load",
+      "name": "rolling_variance_break",
+      "new_fn": "ft_stream_rolling_variance_break_new",
+      "outputs": [
+        {
+          "c_type": "int8_t",
+          "elem": "i8",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 2,
+          "name": "short_window"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "long_window"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "threshold"
+        }
+      ],
+      "peek_fn": "ft_stream_rolling_variance_break_peek",
+      "reset_fn": "ft_stream_rolling_variance_break_reset",
+      "save_fn": "ft_stream_rolling_variance_break_save",
+      "update_fn": "ft_stream_rolling_variance_break_update"
+    },
+    {
+      "doc": "Streaming rolling beta of `asset` against `benchmark` over `window` bars.",
+      "free_fn": "ft_stream_rolling_beta_free",
+      "handle": "FtStreamRollingBeta",
+      "inputs": [
+        "asset",
+        "benchmark"
+      ],
+      "load_fn": "ft_stream_rolling_beta_load",
+      "name": "rolling_beta",
+      "new_fn": "ft_stream_rolling_beta_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 2,
+          "name": "window"
+        }
+      ],
+      "peek_fn": "ft_stream_rolling_beta_peek",
+      "reset_fn": "ft_stream_rolling_beta_reset",
+      "save_fn": "ft_stream_rolling_beta_save",
+      "update_fn": "ft_stream_rolling_beta_update"
+    },
+    {
+      "doc": "Streaming relative strength: cumulative product of (1 + asset return) over that of the benchmark.",
+      "free_fn": "ft_stream_relative_strength_free",
+      "handle": "FtStreamRelativeStrength",
+      "inputs": [
+        "asset_returns",
+        "benchmark_returns"
+      ],
+      "load_fn": "ft_stream_relative_strength_load",
+      "name": "relative_strength",
+      "new_fn": "ft_stream_relative_strength_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_relative_strength_peek",
+      "reset_fn": "ft_stream_relative_strength_reset",
+      "save_fn": "ft_stream_relative_strength_save",
+      "update_fn": "ft_stream_relative_strength_update"
+    },
+    {
+      "doc": "Streaming spread a - hedge * b.",
+      "free_fn": "ft_stream_spread_free",
+      "handle": "FtStreamSpread",
+      "inputs": [
+        "a",
+        "b"
+      ],
+      "load_fn": "ft_stream_spread_load",
+      "name": "spread",
+      "new_fn": "ft_stream_spread_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "hedge"
+        }
+      ],
+      "peek_fn": "ft_stream_spread_peek",
+      "reset_fn": "ft_stream_spread_reset",
+      "save_fn": "ft_stream_spread_save",
+      "update_fn": "ft_stream_spread_update"
+    },
+    {
+      "doc": "Streaming ratio a / b (NaN where b is 0).",
+      "free_fn": "ft_stream_ratio_free",
+      "handle": "FtStreamRatio",
+      "inputs": [
+        "a",
+        "b"
+      ],
+      "load_fn": "ft_stream_ratio_load",
+      "name": "ratio",
+      "new_fn": "ft_stream_ratio_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_ratio_peek",
+      "reset_fn": "ft_stream_ratio_reset",
+      "save_fn": "ft_stream_ratio_save",
+      "update_fn": "ft_stream_ratio_update"
+    },
+    {
+      "doc": "Streaming rolling z-score of `x` over `window` bars.",
+      "free_fn": "ft_stream_zscore_series_free",
+      "handle": "FtStreamZscoreSeries",
+      "inputs": [
+        "x"
+      ],
+      "load_fn": "ft_stream_zscore_series_load",
+      "name": "zscore_series",
+      "new_fn": "ft_stream_zscore_series_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 2,
+          "name": "window"
+        }
+      ],
+      "peek_fn": "ft_stream_zscore_series_peek",
+      "reset_fn": "ft_stream_zscore_series_reset",
+      "save_fn": "ft_stream_zscore_series_save",
+      "update_fn": "ft_stream_zscore_series_update"
+    },
+    {
+      "doc": "Streaming weighted contract stitching: front * (1 - w) + next * w.",
+      "free_fn": "ft_stream_weighted_continuous_free",
+      "handle": "FtStreamWeightedContinuous",
+      "inputs": [
+        "front",
+        "next",
+        "next_weights"
+      ],
+      "load_fn": "ft_stream_weighted_continuous_load",
+      "name": "weighted_continuous",
+      "new_fn": "ft_stream_weighted_continuous_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_weighted_continuous_peek",
+      "reset_fn": "ft_stream_weighted_continuous_reset",
+      "save_fn": "ft_stream_weighted_continuous_save",
+      "update_fn": "ft_stream_weighted_continuous_update"
+    },
+    {
+      "doc": "Streaming cross event between `fast` and `slow`: 1 cross-over, -1 cross-under, 0 none.",
+      "free_fn": "ft_stream_check_cross_free",
+      "handle": "FtStreamCheckCross",
+      "inputs": [
+        "fast",
+        "slow"
+      ],
+      "load_fn": "ft_stream_check_cross_load",
+      "name": "check_cross",
+      "new_fn": "ft_stream_check_cross_new",
+      "outputs": [
+        {
+          "c_type": "int8_t",
+          "elem": "i8",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_check_cross_peek",
+      "reset_fn": "ft_stream_check_cross_reset",
+      "save_fn": "ft_stream_check_cross_save",
+      "update_fn": "ft_stream_check_cross_update"
+    },
+    {
+      "doc": "Streaming cumulative funding PnL: running sum of -position_size * funding_rate.",
+      "free_fn": "ft_stream_funding_cumulative_pnl_free",
+      "handle": "FtStreamFundingCumulativePnl",
+      "inputs": [
+        "position_size",
+        "funding_rate"
+      ],
+      "load_fn": "ft_stream_funding_cumulative_pnl_load",
+      "name": "funding_cumulative_pnl",
+      "new_fn": "ft_stream_funding_cumulative_pnl_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_funding_cumulative_pnl_peek",
+      "reset_fn": "ft_stream_funding_cumulative_pnl_reset",
+      "save_fn": "ft_stream_funding_cumulative_pnl_save",
+      "update_fn": "ft_stream_funding_cumulative_pnl_update"
+    },
+    {
+      "doc": "Streaming RSI threshold signal: +1 at or below `oversold`, -1 at or above `overbought`, else 0 (NaN during warm-up).",
+      "free_fn": "ft_stream_rsi_threshold_signals_free",
+      "handle": "FtStreamRsiThresholdSignals",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_rsi_threshold_signals_load",
+      "name": "rsi_threshold_signals",
+      "new_fn": "ft_stream_rsi_threshold_signals_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "oversold"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "overbought"
+        }
+      ],
+      "peek_fn": "ft_stream_rsi_threshold_signals_peek",
+      "reset_fn": "ft_stream_rsi_threshold_signals_reset",
+      "save_fn": "ft_stream_rsi_threshold_signals_save",
+      "update_fn": "ft_stream_rsi_threshold_signals_update"
     }
   ],
   "version": "1.5.1"

@@ -89,6 +89,8 @@ struct Case {
     params: &'static [&'static str],
     inputs: &'static [&'static str],
     exact: &'static [bool],
+    /// Output element types (`f64`, `i8`, ...), as written in the entry.
+    elems: &'static [&'static str],
     /// Has a `matype`-kind parameter (swept over `0..=8`).
     has_matype: bool,
     /// Snapshot save points; only the `serde` tests read it.
@@ -161,6 +163,7 @@ macro_rules! registry_cases {
                     params: &[$(stringify!($p)),*],
                     inputs: &[$(stringify!($i)),+],
                     exact: &[$(exact!($elem)),+],
+                    elems: &[$(stringify!($elem)),+],
                     has_matype: false $(|| is_matype!($kind))*,
                     lookback: |variant| {
                         $(let $p: $crate::__stream_param_ty!($kind) = param!($kind, $default, variant);)*
@@ -269,6 +272,35 @@ fn registry_parity_all_streams() {
         "parity failures:\n{}",
         failures.join("\n")
     );
+}
+
+/// Streams that emit event / regime codes (every `i8` output, plus the
+/// float-coded threshold signal) must show at least two distinct values on
+/// the fixture, otherwise parity against batch would be vacuous.
+#[test]
+fn signal_streams_are_not_degenerate_on_the_fixture() {
+    const FLOAT_CODED: &[&str] = &["rsi_threshold_signals"];
+    let mut checked = 0;
+    for case in &cases() {
+        if !(case.elems.contains(&"i8") || FLOAT_CODED.contains(&case.name)) {
+            continue;
+        }
+        checked += 1;
+        let cols = columns(case);
+        let mut stream = (case.stream)(DEFAULTS);
+        let mut distinct = std::collections::BTreeSet::new();
+        for i in 0..N_BARS {
+            for part in stream.update(&row(&cols, i), true).into_iter().flatten() {
+                distinct.insert(part as i64);
+            }
+        }
+        assert!(
+            distinct.len() >= 2,
+            "{}: fixture only produces {distinct:?}",
+            case.name
+        );
+    }
+    assert!(checked >= 6, "expected the i8 streams, saw {checked}");
 }
 
 fn same(a: &[Option<f64>], b: &[Option<f64>]) -> bool {
@@ -451,7 +483,6 @@ const RESERVED_PARAMS: &[&str] = &[
     "inner",
     "new",
     "closed",
-    "window",
     "out",
     "self",
 ];

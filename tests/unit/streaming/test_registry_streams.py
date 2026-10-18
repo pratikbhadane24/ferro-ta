@@ -48,8 +48,6 @@ CLOSE_DERIVED = {
     "real0",
     "value",
     "x",
-    "series",
-    "iv_series",
     "asset",
     "a",
     "front",
@@ -70,6 +68,36 @@ def _load_columns() -> dict[str, list[float]]:
 COLUMNS = _load_columns()
 
 
+def _trailing_mean(values: list[float], k: int) -> list[float]:
+    return [
+        sum(values[max(0, i + 1 - k) : i + 1]) / len(values[max(0, i + 1 - k) : i + 1])
+        for i in range(len(values))
+    ]
+
+
+_CLOSE = COLUMNS["close"]
+# Non-degenerate stand-ins (mirrors streaming/fixtures.rs): crossings of the
+# default regime thresholds, a positive IV level, volatility bursts.
+_SYNTHETIC: dict[str, list[float]] = {
+    "fast": _CLOSE,
+    "slow": _trailing_mean(_CLOSE, 8),
+    "series": [
+        c + 3.0 * math.sin(2.1 * i) if (i // 40) % 3 == 2 else c
+        for i, c in enumerate(_CLOSE)
+    ],
+    "iv_series": [
+        0.2 + 0.05 * math.sin(0.05 * i) + 0.03 * math.sin(0.31 * i)
+        for i in range(len(_CLOSE))
+    ],
+    "adx": [32.5 + 27.5 * math.sin(0.21 * i) for i in range(len(_CLOSE))],
+    "atr": [0.5 + 0.3 * math.sin(0.37 * i) for i in range(len(_CLOSE))],
+    "asset_returns": [
+        0.01 * math.sin(0.7 * i) + 0.002 * math.cos(1.9 * i) for i in range(len(_CLOSE))
+    ],
+    "benchmark_returns": [0.008 * math.cos(0.45 * i) for i in range(len(_CLOSE))],
+}
+
+
 def _column(name: str) -> list[float]:
     if name in COLUMNS:
         return COLUMNS[name]
@@ -77,6 +105,8 @@ def _column(name: str) -> list[float]:
         return COLUMNS["close"]
     if name in OPEN_DERIVED:
         return COLUMNS["open"]
+    if name in _SYNTHETIC:
+        return _SYNTHETIC[name]
     if name == "periods":
         return [5.0 + i % 7 for i in range(N_BARS)]
     if name == "next_weights":

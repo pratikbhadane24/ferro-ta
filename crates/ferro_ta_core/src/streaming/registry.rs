@@ -82,6 +82,8 @@ macro_rules! for_each_stream {
                 $crate::stream_family_momentum;
                 $crate::stream_family_directional;
                 $crate::stream_family_volume;
+                $crate::stream_family_stats;
+                $crate::stream_family_markets;
             ];
         }
     };

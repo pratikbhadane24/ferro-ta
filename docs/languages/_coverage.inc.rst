@@ -11,13 +11,13 @@
      - Flutter
      - Flutter excluded
      - C / Go
-   * - 481
-     - 440
-     - 313
-     - 423
+   * - 511
+     - 470
+     - 343
+     - 453
      - 194
      - 56
-     - 348
+     - 378
 
 .. list-table:: Cross-language indicator coverage
    :header-rows: 1
@@ -2613,6 +2613,13 @@
      - yes
      - —
      - yes
+   * - ``StreamingBeta``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
    * - ``StreamingBop``
      - streaming
      - yes
@@ -2621,6 +2628,20 @@
      - —
      - yes
    * - ``StreamingCci``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCheckCross``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCloseToCloseVol``
      - streaming
      - yes
      - yes
@@ -2641,6 +2662,13 @@
      - yes
      - —
      - yes
+   * - ``StreamingCorrel``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
    * - ``StreamingCross``
      - streaming
      - yes
@@ -2649,6 +2677,13 @@
      - —
      - yes
    * - ``StreamingDema``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingDetectBreaksCusum``
      - streaming
      - yes
      - yes
@@ -2676,7 +2711,70 @@
      - yes
      - —
      - yes
+   * - ``StreamingFundingCumulativePnl``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingGarmanKlassVol``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingIvPercentile``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingIvRank``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingIvZscore``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
    * - ``StreamingKama``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingLinearreg``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingLinearregAngle``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingLinearregIntercept``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingLinearregSlope``
      - streaming
      - yes
      - yes
@@ -2809,6 +2907,13 @@
      - yes
      - —
      - yes
+   * - ``StreamingParkinsonVol``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
    * - ``StreamingPlusDi``
      - streaming
      - yes
@@ -2824,6 +2929,34 @@
      - —
      - yes
    * - ``StreamingPpo``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingRatio``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingRegimeAdx``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingRegimeCombined``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingRelativeStrength``
      - streaming
      - yes
      - yes
@@ -2852,6 +2985,20 @@
      - —
      - yes
    * - ``StreamingRocr100``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingRogersSatchellVol``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingRollingBeta``
      - streaming
      - yes
      - yes
@@ -2893,7 +3040,21 @@
      - yes
      - —
      - yes
+   * - ``StreamingRollingVarianceBreak``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
    * - ``StreamingRSI``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingRsiThresholdSignals``
      - streaming
      - yes
      - yes
@@ -2915,6 +3076,20 @@
      - —
      - yes
    * - ``StreamingSMA``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingSpread``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingStddev``
      - streaming
      - yes
      - yes
@@ -3005,6 +3180,13 @@
      - yes
      - —
      - yes
+   * - ``StreamingTsf``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
    * - ``StreamingTypprice``
      - streaming
      - yes
@@ -3013,6 +3195,13 @@
      - —
      - yes
    * - ``StreamingUltosc``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingVar``
      - streaming
      - yes
      - yes
@@ -3033,6 +3222,13 @@
      - yes
      - —
      - yes
+   * - ``StreamingWeightedContinuous``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
    * - ``StreamingWillr``
      - streaming
      - yes
@@ -3041,6 +3237,20 @@
      - —
      - yes
    * - ``StreamingWma``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingYangZhangVol``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingZscoreSeries``
      - streaming
      - yes
      - yes

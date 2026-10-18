@@ -1867,6 +1867,336 @@ var goldenStreams = map[string]func(map[string]float64) (goldenStepper, error){
 		}
 		return goldenStepper{step: step, close: s.Close}, nil
 	},
+	"stddev": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamStddev(int(p["timeperiod"]), p["nbdev"])
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["real"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"var": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamVar(int(p["timeperiod"]), p["nbdev"])
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["real"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"linearreg": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamLinearreg(int(p["timeperiod"]))
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"linearreg_slope": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamLinearregSlope(int(p["timeperiod"]))
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"linearreg_intercept": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamLinearregIntercept(int(p["timeperiod"]))
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"linearreg_angle": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamLinearregAngle(int(p["timeperiod"]))
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"tsf": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamTsf(int(p["timeperiod"]))
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"beta": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamBeta(int(p["timeperiod"]))
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["real0"], bar["real1"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"correl": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCorrel(int(p["timeperiod"]))
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["real0"], bar["real1"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"iv_rank": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamIvRank(int(p["window"]))
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["iv_series"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"iv_percentile": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamIvPercentile(int(p["window"]))
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["iv_series"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"iv_zscore": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamIvZscore(int(p["window"]))
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["iv_series"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"close_to_close_vol": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCloseToCloseVol(int(p["window"]), p["trading_days"])
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"parkinson_vol": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamParkinsonVol(int(p["window"]), p["trading_days"])
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["high"], bar["low"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"garman_klass_vol": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamGarmanKlassVol(int(p["window"]), p["trading_days"])
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"rogers_satchell_vol": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamRogersSatchellVol(int(p["window"]), p["trading_days"])
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"yang_zhang_vol": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamYangZhangVol(int(p["window"]), p["trading_days"])
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["open"], bar["high"], bar["low"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"regime_adx": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamRegimeAdx(p["threshold"])
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["adx"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"regime_combined": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamRegimeCombined(p["adx_threshold"], p["atr_pct_threshold"])
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["adx"], bar["atr"], bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"detect_breaks_cusum": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamDetectBreaksCusum(int(p["window"]), p["threshold"], p["slack"])
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["series"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"rolling_variance_break": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamRollingVarianceBreak(int(p["short_window"]), int(p["long_window"]), p["threshold"])
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["series"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"rolling_beta": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamRollingBeta(int(p["window"]))
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["asset"], bar["benchmark"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"relative_strength": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamRelativeStrength()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["asset_returns"], bar["benchmark_returns"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"spread": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamSpread(p["hedge"])
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["a"], bar["b"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"ratio": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamRatio()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["a"], bar["b"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"zscore_series": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamZscoreSeries(int(p["window"]))
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["x"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"weighted_continuous": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamWeightedContinuous()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["front"], bar["next"], bar["next_weights"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"check_cross": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamCheckCross()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["fast"], bar["slow"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"funding_cumulative_pnl": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamFundingCumulativePnl()
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["position_size"], bar["funding_rate"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
+	"rsi_threshold_signals": func(p map[string]float64) (goldenStepper, error) {
+		s, err := NewStreamRsiThresholdSignals(int(p["timeperiod"]), p["oversold"], p["overbought"])
+		if err != nil {
+			return goldenStepper{}, err
+		}
+		step := func(bar map[string]float64) (map[string]any, error) {
+			out, err := s.Update(bar["close"])
+			return map[string]any{"out": out}, err
+		}
+		return goldenStepper{step: step, close: s.Close}, nil
+	},
 }
 
 // goldenParamNames lists each export's parameters, so a fixture whose
@@ -2207,4 +2537,34 @@ var goldenParamNames = []goldenParamList{
 	{"obv", []string{}},
 	{"ad", []string{}},
 	{"adosc", []string{"fastperiod", "slowperiod"}},
+	{"stddev", []string{"timeperiod", "nbdev"}},
+	{"var", []string{"timeperiod", "nbdev"}},
+	{"linearreg", []string{"timeperiod"}},
+	{"linearreg_slope", []string{"timeperiod"}},
+	{"linearreg_intercept", []string{"timeperiod"}},
+	{"linearreg_angle", []string{"timeperiod"}},
+	{"tsf", []string{"timeperiod"}},
+	{"beta", []string{"timeperiod"}},
+	{"correl", []string{"timeperiod"}},
+	{"iv_rank", []string{"window"}},
+	{"iv_percentile", []string{"window"}},
+	{"iv_zscore", []string{"window"}},
+	{"close_to_close_vol", []string{"window", "trading_days"}},
+	{"parkinson_vol", []string{"window", "trading_days"}},
+	{"garman_klass_vol", []string{"window", "trading_days"}},
+	{"rogers_satchell_vol", []string{"window", "trading_days"}},
+	{"yang_zhang_vol", []string{"window", "trading_days"}},
+	{"regime_adx", []string{"threshold"}},
+	{"regime_combined", []string{"adx_threshold", "atr_pct_threshold"}},
+	{"detect_breaks_cusum", []string{"window", "threshold", "slack"}},
+	{"rolling_variance_break", []string{"short_window", "long_window", "threshold"}},
+	{"rolling_beta", []string{"window"}},
+	{"relative_strength", []string{}},
+	{"spread", []string{"hedge"}},
+	{"ratio", []string{}},
+	{"zscore_series", []string{"window"}},
+	{"weighted_continuous", []string{}},
+	{"check_cross", []string{}},
+	{"funding_cumulative_pnl", []string{}},
+	{"rsi_threshold_signals", []string{"timeperiod", "oversold", "overbought"}},
 }

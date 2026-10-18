@@ -699,7 +699,7 @@ const fn concat_specs<const N: usize>(
     out
 }
 
-const ALL_STREAM_SPECS: [crate::spec::StreamSpec;
+static ALL_STREAM_SPECS: [crate::spec::StreamSpec;
     LEGACY_STREAM_SPECS.len() + GENERATED_STREAM_SPECS.len()] =
     concat_specs(LEGACY_STREAM_SPECS, GENERATED_STREAM_SPECS);
 
