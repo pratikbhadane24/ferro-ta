@@ -11,13 +11,13 @@
      - Flutter
      - Flutter excluded
      - C / Go
-   * - 454
-     - 413
-     - 286
-     - 396
+   * - 481
+     - 440
+     - 313
+     - 423
      - 194
      - 56
-     - 321
+     - 348
 
 .. list-table:: Cross-language indicator coverage
    :header-rows: 1
@@ -2529,6 +2529,13 @@
      - yes
      - excluded
      - —
+   * - ``StreamingAd``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
    * - ``StreamingAdd``
      - streaming
      - yes
@@ -2536,7 +2543,42 @@
      - yes
      - —
      - yes
+   * - ``StreamingAdosc``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingAdx``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingAdxr``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
    * - ``StreamingApo``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingAroon``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingAroonosc``
      - streaming
      - yes
      - yes
@@ -2571,6 +2613,27 @@
      - yes
      - —
      - yes
+   * - ``StreamingBop``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCci``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCmo``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
    * - ``StreamingCooldown``
      - streaming
      - yes
@@ -2593,6 +2656,13 @@
      - —
      - yes
    * - ``StreamingDiv``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingDx``
      - streaming
      - yes
      - yes
@@ -2662,6 +2732,13 @@
      - yes
      - —
      - yes
+   * - ``StreamingMfi``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
    * - ``StreamingMidpoint``
      - streaming
      - yes
@@ -2683,7 +2760,42 @@
      - yes
      - —
      - yes
+   * - ``StreamingMinusDi``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingMinusDm``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingMom``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
    * - ``StreamingMult``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingNatr``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingObv``
      - streaming
      - yes
      - yes
@@ -2697,7 +2809,49 @@
      - yes
      - —
      - yes
+   * - ``StreamingPlusDi``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingPlusDm``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
    * - ``StreamingPpo``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingRoc``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingRocp``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingRocr``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingRocr100``
      - streaming
      - yes
      - yes
@@ -2774,6 +2928,20 @@
      - yes
      - —
      - yes
+   * - ``StreamingStochf``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingStochrsi``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
    * - ``StreamingStreak``
      - streaming
      - yes
@@ -2816,6 +2984,13 @@
      - yes
      - —
      - yes
+   * - ``StreamingTrange``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
    * - ``StreamingTrima``
      - streaming
      - yes
@@ -2837,6 +3012,13 @@
      - yes
      - —
      - yes
+   * - ``StreamingUltosc``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
    * - ``StreamingVWAP``
      - streaming
      - yes
@@ -2845,6 +3027,13 @@
      - —
      - yes
    * - ``StreamingWclprice``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingWillr``
      - streaming
      - yes
      - yes

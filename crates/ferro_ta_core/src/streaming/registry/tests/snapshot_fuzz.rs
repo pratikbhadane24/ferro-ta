@@ -94,7 +94,9 @@ fn mutants(doc: &Value) -> Vec<Value> {
 #[test]
 fn snapshot_load_never_panics_all_streams() {
     let mut panics = Vec::new();
+    let mut vacuous = Vec::new();
     for case in &cases() {
+        let mut accepted = 0usize;
         let cols = columns(case);
         for variant in case.variants() {
             let mut stream = (case.stream)(variant);
@@ -103,10 +105,27 @@ fn snapshot_load_never_panics_all_streams() {
                 stream.update(&row(&cols, i), true);
             }
             let doc: Value = serde_json::from_str(&stream.save()).unwrap();
+            // Sanity: the unmutated snapshot loads and continues exactly
+            // like the stream it came from (else every mutant would be
+            // rejected for the wrong reason and the fuzz would pass vacuously).
+            let mut twin = stream.try_restore(&doc.to_string()).unwrap_or_else(|| {
+                panic!("{} {variant:?}: own snapshot failed to load", case.name)
+            });
+            for i in warm..warm + BARS_AFTER_LOAD {
+                let want = stream.update(&row(&cols, i), true);
+                let got = twin.update(&row(&cols, i), true);
+                assert_eq!(
+                    format!("{want:?}"),
+                    format!("{got:?}"),
+                    "{} {variant:?}: restored stream diverged at bar {i}",
+                    case.name
+                );
+            }
             for mutant in mutants(&doc) {
                 let json = mutant.to_string();
                 let outcome = catch_unwind(AssertUnwindSafe(|| {
                     if let Some(mut loaded) = stream.try_restore(&json) {
+                        accepted += 1;
                         for i in warm..warm + BARS_AFTER_LOAD {
                             loaded.update(&row(&cols, i), false);
                             loaded.update(&row(&cols, i), true);
@@ -118,7 +137,15 @@ fn snapshot_load_never_panics_all_streams() {
                 }
             }
         }
+        if accepted == 0 {
+            vacuous.push(case.name);
+        }
     }
+    assert!(
+        vacuous.is_empty(),
+        "no mutant of these streams was ever accepted, so the post-load \
+         update path is untested: {vacuous:?}"
+    );
     assert!(
         panics.is_empty(),
         "{} snapshot(s) panicked:\n{}",

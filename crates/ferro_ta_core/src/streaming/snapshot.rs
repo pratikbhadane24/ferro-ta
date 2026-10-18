@@ -106,6 +106,21 @@ pub(crate) mod nan_as_null {
     }
 }
 
+/// `VecDeque<f64>` stored as a list of numbers with NaN as `null`.
+pub(crate) mod nan_seq {
+    use serde::{Deserialize, Deserializer, Serializer};
+    use std::collections::VecDeque;
+
+    pub fn serialize<S: Serializer>(v: &VecDeque<f64>, s: S) -> Result<S::Ok, S::Error> {
+        s.collect_seq(v.iter().map(|x| (!x.is_nan()).then_some(*x)))
+    }
+
+    pub fn deserialize<'de, D: Deserializer<'de>>(d: D) -> Result<VecDeque<f64>, D::Error> {
+        let parts = Vec::<Option<f64>>::deserialize(d)?;
+        Ok(parts.into_iter().map(|x| x.unwrap_or(f64::NAN)).collect())
+    }
+}
+
 /// A [`StreamValue`] stored as a list of numbers with NaN as `null`.
 pub(crate) mod stream_value {
     use super::StreamValue;

@@ -2352,6 +2352,384 @@ int32_t ft_stream_trix_save(FtStreamTrix *handle, char *buf, size_t cap, size_t 
 int32_t ft_stream_trix_load(const char *json, size_t len, FtStreamTrix **out_handle);
 void ft_stream_trix_free(FtStreamTrix *handle);
 
+/**
+ * Streaming Williams %R: -100 * (highest high - close) / (highest high - lowest low) over `timeperiod` bars.
+ */
+typedef struct FtStreamWillr FtStreamWillr;
+int32_t ft_stream_willr_new(int64_t timeperiod, FtStreamWillr **out_handle);
+int32_t ft_stream_willr_update(FtStreamWillr *handle, double high, double low, double close, double *out);
+int32_t ft_stream_willr_peek(FtStreamWillr *handle, double high, double low, double close, double *out);
+int32_t ft_stream_willr_reset(FtStreamWillr *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_willr_save(FtStreamWillr *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_willr_load(const char *json, size_t len, FtStreamWillr **out_handle);
+void ft_stream_willr_free(FtStreamWillr *handle);
+
+/**
+ * Streaming Commodity Channel Index over `timeperiod` bars.
+ */
+typedef struct FtStreamCci FtStreamCci;
+int32_t ft_stream_cci_new(int64_t timeperiod, FtStreamCci **out_handle);
+int32_t ft_stream_cci_update(FtStreamCci *handle, double high, double low, double close, double *out);
+int32_t ft_stream_cci_peek(FtStreamCci *handle, double high, double low, double close, double *out);
+int32_t ft_stream_cci_reset(FtStreamCci *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cci_save(FtStreamCci *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cci_load(const char *json, size_t len, FtStreamCci **out_handle);
+void ft_stream_cci_free(FtStreamCci *handle);
+
+/**
+ * Streaming Balance of Power: (close - open) / (high - low).
+ */
+typedef struct FtStreamBop FtStreamBop;
+int32_t ft_stream_bop_new(FtStreamBop **out_handle);
+int32_t ft_stream_bop_update(FtStreamBop *handle, double open, double high, double low, double close, double *out);
+int32_t ft_stream_bop_peek(FtStreamBop *handle, double open, double high, double low, double close, double *out);
+int32_t ft_stream_bop_reset(FtStreamBop *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_bop_save(FtStreamBop *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_bop_load(const char *json, size_t len, FtStreamBop **out_handle);
+void ft_stream_bop_free(FtStreamBop *handle);
+
+/**
+ * Streaming momentum: close - close[timeperiod bars ago].
+ */
+typedef struct FtStreamMom FtStreamMom;
+int32_t ft_stream_mom_new(int64_t timeperiod, FtStreamMom **out_handle);
+int32_t ft_stream_mom_update(FtStreamMom *handle, double close, double *out);
+int32_t ft_stream_mom_peek(FtStreamMom *handle, double close, double *out);
+int32_t ft_stream_mom_reset(FtStreamMom *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_mom_save(FtStreamMom *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_mom_load(const char *json, size_t len, FtStreamMom **out_handle);
+void ft_stream_mom_free(FtStreamMom *handle);
+
+/**
+ * Streaming rate of change: (close - prev) / prev * 100 (NaN where prev is 0).
+ */
+typedef struct FtStreamRoc FtStreamRoc;
+int32_t ft_stream_roc_new(int64_t timeperiod, FtStreamRoc **out_handle);
+int32_t ft_stream_roc_update(FtStreamRoc *handle, double close, double *out);
+int32_t ft_stream_roc_peek(FtStreamRoc *handle, double close, double *out);
+int32_t ft_stream_roc_reset(FtStreamRoc *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_roc_save(FtStreamRoc *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_roc_load(const char *json, size_t len, FtStreamRoc **out_handle);
+void ft_stream_roc_free(FtStreamRoc *handle);
+
+/**
+ * Streaming rate of change percentage: (close - prev) / prev (NaN where prev is 0).
+ */
+typedef struct FtStreamRocp FtStreamRocp;
+int32_t ft_stream_rocp_new(int64_t timeperiod, FtStreamRocp **out_handle);
+int32_t ft_stream_rocp_update(FtStreamRocp *handle, double close, double *out);
+int32_t ft_stream_rocp_peek(FtStreamRocp *handle, double close, double *out);
+int32_t ft_stream_rocp_reset(FtStreamRocp *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_rocp_save(FtStreamRocp *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_rocp_load(const char *json, size_t len, FtStreamRocp **out_handle);
+void ft_stream_rocp_free(FtStreamRocp *handle);
+
+/**
+ * Streaming rate of change ratio: close / prev (NaN where prev is 0).
+ */
+typedef struct FtStreamRocr FtStreamRocr;
+int32_t ft_stream_rocr_new(int64_t timeperiod, FtStreamRocr **out_handle);
+int32_t ft_stream_rocr_update(FtStreamRocr *handle, double close, double *out);
+int32_t ft_stream_rocr_peek(FtStreamRocr *handle, double close, double *out);
+int32_t ft_stream_rocr_reset(FtStreamRocr *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_rocr_save(FtStreamRocr *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_rocr_load(const char *json, size_t len, FtStreamRocr **out_handle);
+void ft_stream_rocr_free(FtStreamRocr *handle);
+
+/**
+ * Streaming rate of change ratio x 100: close / prev * 100 (NaN where prev is 0).
+ */
+typedef struct FtStreamRocr100 FtStreamRocr100;
+int32_t ft_stream_rocr100_new(int64_t timeperiod, FtStreamRocr100 **out_handle);
+int32_t ft_stream_rocr100_update(FtStreamRocr100 *handle, double close, double *out);
+int32_t ft_stream_rocr100_peek(FtStreamRocr100 *handle, double close, double *out);
+int32_t ft_stream_rocr100_reset(FtStreamRocr100 *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_rocr100_save(FtStreamRocr100 *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_rocr100_load(const char *json, size_t len, FtStreamRocr100 **out_handle);
+void ft_stream_rocr100_free(FtStreamRocr100 *handle);
+
+/**
+ * Streaming Aroon: (aroon_down, aroon_up) over a `timeperiod + 1` bar window; ties go to the most recent bar.
+ */
+typedef struct FtStreamAroon FtStreamAroon;
+int32_t ft_stream_aroon_new(int64_t timeperiod, FtStreamAroon **out_handle);
+int32_t ft_stream_aroon_update(FtStreamAroon *handle, double high, double low, double *out_aroondown, double *out_aroonup);
+int32_t ft_stream_aroon_peek(FtStreamAroon *handle, double high, double low, double *out_aroondown, double *out_aroonup);
+int32_t ft_stream_aroon_reset(FtStreamAroon *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_aroon_save(FtStreamAroon *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_aroon_load(const char *json, size_t len, FtStreamAroon **out_handle);
+void ft_stream_aroon_free(FtStreamAroon *handle);
+
+/**
+ * Streaming Aroon oscillator: aroon_up - aroon_down.
+ */
+typedef struct FtStreamAroonosc FtStreamAroonosc;
+int32_t ft_stream_aroonosc_new(int64_t timeperiod, FtStreamAroonosc **out_handle);
+int32_t ft_stream_aroonosc_update(FtStreamAroonosc *handle, double high, double low, double *out);
+int32_t ft_stream_aroonosc_peek(FtStreamAroonosc *handle, double high, double low, double *out);
+int32_t ft_stream_aroonosc_reset(FtStreamAroonosc *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_aroonosc_save(FtStreamAroonosc *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_aroonosc_load(const char *json, size_t len, FtStreamAroonosc **out_handle);
+void ft_stream_aroonosc_free(FtStreamAroonosc *handle);
+
+/**
+ * Streaming Ultimate Oscillator: buying pressure over three periods weighted 4 / 2 / 1.
+ */
+typedef struct FtStreamUltosc FtStreamUltosc;
+int32_t ft_stream_ultosc_new(int64_t timeperiod1, int64_t timeperiod2, int64_t timeperiod3, FtStreamUltosc **out_handle);
+int32_t ft_stream_ultosc_update(FtStreamUltosc *handle, double high, double low, double close, double *out);
+int32_t ft_stream_ultosc_peek(FtStreamUltosc *handle, double high, double low, double close, double *out);
+int32_t ft_stream_ultosc_reset(FtStreamUltosc *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_ultosc_save(FtStreamUltosc *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_ultosc_load(const char *json, size_t len, FtStreamUltosc **out_handle);
+void ft_stream_ultosc_free(FtStreamUltosc *handle);
+
+/**
+ * Streaming Chande momentum oscillator (Wilder smoothed gains and losses).
+ */
+typedef struct FtStreamCmo FtStreamCmo;
+int32_t ft_stream_cmo_new(int64_t timeperiod, FtStreamCmo **out_handle);
+int32_t ft_stream_cmo_update(FtStreamCmo *handle, double close, double *out);
+int32_t ft_stream_cmo_peek(FtStreamCmo *handle, double close, double *out);
+int32_t ft_stream_cmo_reset(FtStreamCmo *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_cmo_save(FtStreamCmo *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_cmo_load(const char *json, size_t len, FtStreamCmo **out_handle);
+void ft_stream_cmo_free(FtStreamCmo *handle);
+
+/**
+ * Streaming fast stochastic: (fastk, fastd); both NaN until %D is valid.
+ */
+typedef struct FtStreamStochf FtStreamStochf;
+int32_t ft_stream_stochf_new(int64_t fastk_period, int64_t fastd_period, int32_t fastd_matype, FtStreamStochf **out_handle);
+int32_t ft_stream_stochf_update(FtStreamStochf *handle, double high, double low, double close, double *out_fastk, double *out_fastd);
+int32_t ft_stream_stochf_peek(FtStreamStochf *handle, double high, double low, double close, double *out_fastk, double *out_fastd);
+int32_t ft_stream_stochf_reset(FtStreamStochf *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_stochf_save(FtStreamStochf *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_stochf_load(const char *json, size_t len, FtStreamStochf **out_handle);
+void ft_stream_stochf_free(FtStreamStochf *handle);
+
+/**
+ * Streaming stochastic RSI: (fastk, fastd); both NaN until %D is valid.
+ */
+typedef struct FtStreamStochrsi FtStreamStochrsi;
+int32_t ft_stream_stochrsi_new(int64_t timeperiod, int64_t fastk_period, int64_t fastd_period, int32_t fastd_matype, FtStreamStochrsi **out_handle);
+int32_t ft_stream_stochrsi_update(FtStreamStochrsi *handle, double close, double *out_fastk, double *out_fastd);
+int32_t ft_stream_stochrsi_peek(FtStreamStochrsi *handle, double close, double *out_fastk, double *out_fastd);
+int32_t ft_stream_stochrsi_reset(FtStreamStochrsi *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_stochrsi_save(FtStreamStochrsi *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_stochrsi_load(const char *json, size_t len, FtStreamStochrsi **out_handle);
+void ft_stream_stochrsi_free(FtStreamStochrsi *handle);
+
+/**
+ * Streaming +DM, Wilder smoothed; first value at bar `timeperiod - 1` (raw +DM when `timeperiod` is 1).
+ */
+typedef struct FtStreamPlusDm FtStreamPlusDm;
+int32_t ft_stream_plus_dm_new(int64_t timeperiod, FtStreamPlusDm **out_handle);
+int32_t ft_stream_plus_dm_update(FtStreamPlusDm *handle, double high, double low, double *out);
+int32_t ft_stream_plus_dm_peek(FtStreamPlusDm *handle, double high, double low, double *out);
+int32_t ft_stream_plus_dm_reset(FtStreamPlusDm *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_plus_dm_save(FtStreamPlusDm *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_plus_dm_load(const char *json, size_t len, FtStreamPlusDm **out_handle);
+void ft_stream_plus_dm_free(FtStreamPlusDm *handle);
+
+/**
+ * Streaming -DM, Wilder smoothed; first value at bar `timeperiod - 1` (raw -DM when `timeperiod` is 1).
+ */
+typedef struct FtStreamMinusDm FtStreamMinusDm;
+int32_t ft_stream_minus_dm_new(int64_t timeperiod, FtStreamMinusDm **out_handle);
+int32_t ft_stream_minus_dm_update(FtStreamMinusDm *handle, double high, double low, double *out);
+int32_t ft_stream_minus_dm_peek(FtStreamMinusDm *handle, double high, double low, double *out);
+int32_t ft_stream_minus_dm_reset(FtStreamMinusDm *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_minus_dm_save(FtStreamMinusDm *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_minus_dm_load(const char *json, size_t len, FtStreamMinusDm **out_handle);
+void ft_stream_minus_dm_free(FtStreamMinusDm *handle);
+
+/**
+ * Streaming +DI = 100 * smoothed +DM / smoothed TR; first value at bar `timeperiod`.
+ */
+typedef struct FtStreamPlusDi FtStreamPlusDi;
+int32_t ft_stream_plus_di_new(int64_t timeperiod, FtStreamPlusDi **out_handle);
+int32_t ft_stream_plus_di_update(FtStreamPlusDi *handle, double high, double low, double close, double *out);
+int32_t ft_stream_plus_di_peek(FtStreamPlusDi *handle, double high, double low, double close, double *out);
+int32_t ft_stream_plus_di_reset(FtStreamPlusDi *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_plus_di_save(FtStreamPlusDi *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_plus_di_load(const char *json, size_t len, FtStreamPlusDi **out_handle);
+void ft_stream_plus_di_free(FtStreamPlusDi *handle);
+
+/**
+ * Streaming -DI = 100 * smoothed -DM / smoothed TR; first value at bar `timeperiod`.
+ */
+typedef struct FtStreamMinusDi FtStreamMinusDi;
+int32_t ft_stream_minus_di_new(int64_t timeperiod, FtStreamMinusDi **out_handle);
+int32_t ft_stream_minus_di_update(FtStreamMinusDi *handle, double high, double low, double close, double *out);
+int32_t ft_stream_minus_di_peek(FtStreamMinusDi *handle, double high, double low, double close, double *out);
+int32_t ft_stream_minus_di_reset(FtStreamMinusDi *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_minus_di_save(FtStreamMinusDi *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_minus_di_load(const char *json, size_t len, FtStreamMinusDi **out_handle);
+void ft_stream_minus_di_free(FtStreamMinusDi *handle);
+
+/**
+ * Streaming directional movement index: 100 * abs(+DI - -DI) / (+DI + -DI); first value at bar `timeperiod`.
+ */
+typedef struct FtStreamDx FtStreamDx;
+int32_t ft_stream_dx_new(int64_t timeperiod, FtStreamDx **out_handle);
+int32_t ft_stream_dx_update(FtStreamDx *handle, double high, double low, double close, double *out);
+int32_t ft_stream_dx_peek(FtStreamDx *handle, double high, double low, double close, double *out);
+int32_t ft_stream_dx_reset(FtStreamDx *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_dx_save(FtStreamDx *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_dx_load(const char *json, size_t len, FtStreamDx **out_handle);
+void ft_stream_dx_free(FtStreamDx *handle);
+
+/**
+ * Streaming average directional index; first value at bar `2 * timeperiod - 1`.
+ */
+typedef struct FtStreamAdx FtStreamAdx;
+int32_t ft_stream_adx_new(int64_t timeperiod, FtStreamAdx **out_handle);
+int32_t ft_stream_adx_update(FtStreamAdx *handle, double high, double low, double close, double *out);
+int32_t ft_stream_adx_peek(FtStreamAdx *handle, double high, double low, double close, double *out);
+int32_t ft_stream_adx_reset(FtStreamAdx *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_adx_save(FtStreamAdx *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_adx_load(const char *json, size_t len, FtStreamAdx **out_handle);
+void ft_stream_adx_free(FtStreamAdx *handle);
+
+/**
+ * Streaming ADX rating: (ADX + ADX `timeperiod - 1` bars ago) / 2.
+ */
+typedef struct FtStreamAdxr FtStreamAdxr;
+int32_t ft_stream_adxr_new(int64_t timeperiod, FtStreamAdxr **out_handle);
+int32_t ft_stream_adxr_update(FtStreamAdxr *handle, double high, double low, double close, double *out);
+int32_t ft_stream_adxr_peek(FtStreamAdxr *handle, double high, double low, double close, double *out);
+int32_t ft_stream_adxr_reset(FtStreamAdxr *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_adxr_save(FtStreamAdxr *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_adxr_load(const char *json, size_t len, FtStreamAdxr **out_handle);
+void ft_stream_adxr_free(FtStreamAdxr *handle);
+
+/**
+ * Streaming money flow index over `timeperiod` bars of typical-price money flow.
+ */
+typedef struct FtStreamMfi FtStreamMfi;
+int32_t ft_stream_mfi_new(int64_t timeperiod, FtStreamMfi **out_handle);
+int32_t ft_stream_mfi_update(FtStreamMfi *handle, double high, double low, double close, double volume, double *out);
+int32_t ft_stream_mfi_peek(FtStreamMfi *handle, double high, double low, double close, double volume, double *out);
+int32_t ft_stream_mfi_reset(FtStreamMfi *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_mfi_save(FtStreamMfi *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_mfi_load(const char *json, size_t len, FtStreamMfi **out_handle);
+void ft_stream_mfi_free(FtStreamMfi *handle);
+
+/**
+ * Streaming true range (NaN on the first bar: no previous close).
+ */
+typedef struct FtStreamTrange FtStreamTrange;
+int32_t ft_stream_trange_new(FtStreamTrange **out_handle);
+int32_t ft_stream_trange_update(FtStreamTrange *handle, double high, double low, double close, double *out);
+int32_t ft_stream_trange_peek(FtStreamTrange *handle, double high, double low, double close, double *out);
+int32_t ft_stream_trange_reset(FtStreamTrange *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_trange_save(FtStreamTrange *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_trange_load(const char *json, size_t len, FtStreamTrange **out_handle);
+void ft_stream_trange_free(FtStreamTrange *handle);
+
+/**
+ * Streaming normalized ATR: Wilder ATR / close * 100 (NaN where close is 0).
+ */
+typedef struct FtStreamNatr FtStreamNatr;
+int32_t ft_stream_natr_new(int64_t timeperiod, FtStreamNatr **out_handle);
+int32_t ft_stream_natr_update(FtStreamNatr *handle, double high, double low, double close, double *out);
+int32_t ft_stream_natr_peek(FtStreamNatr *handle, double high, double low, double close, double *out);
+int32_t ft_stream_natr_reset(FtStreamNatr *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_natr_save(FtStreamNatr *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_natr_load(const char *json, size_t len, FtStreamNatr **out_handle);
+void ft_stream_natr_free(FtStreamNatr *handle);
+
+/**
+ * Streaming on-balance volume; the first bar is the first volume.
+ */
+typedef struct FtStreamObv FtStreamObv;
+int32_t ft_stream_obv_new(FtStreamObv **out_handle);
+int32_t ft_stream_obv_update(FtStreamObv *handle, double close, double volume, double *out);
+int32_t ft_stream_obv_peek(FtStreamObv *handle, double close, double volume, double *out);
+int32_t ft_stream_obv_reset(FtStreamObv *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_obv_save(FtStreamObv *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_obv_load(const char *json, size_t len, FtStreamObv **out_handle);
+void ft_stream_obv_free(FtStreamObv *handle);
+
+/**
+ * Streaming Chaikin accumulation / distribution line.
+ */
+typedef struct FtStreamAd FtStreamAd;
+int32_t ft_stream_ad_new(FtStreamAd **out_handle);
+int32_t ft_stream_ad_update(FtStreamAd *handle, double high, double low, double close, double volume, double *out);
+int32_t ft_stream_ad_peek(FtStreamAd *handle, double high, double low, double close, double volume, double *out);
+int32_t ft_stream_ad_reset(FtStreamAd *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_ad_save(FtStreamAd *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_ad_load(const char *json, size_t len, FtStreamAd **out_handle);
+void ft_stream_ad_free(FtStreamAd *handle);
+
+/**
+ * Streaming Chaikin A/D oscillator: fast EMA - slow EMA of the A/D line, both seeded from its first value.
+ */
+typedef struct FtStreamAdosc FtStreamAdosc;
+int32_t ft_stream_adosc_new(int64_t fastperiod, int64_t slowperiod, FtStreamAdosc **out_handle);
+int32_t ft_stream_adosc_update(FtStreamAdosc *handle, double high, double low, double close, double volume, double *out);
+int32_t ft_stream_adosc_peek(FtStreamAdosc *handle, double high, double low, double close, double volume, double *out);
+int32_t ft_stream_adosc_reset(FtStreamAdosc *handle);
+/** Versioned JSON snapshot (not NUL-terminated); *out_len gets its length. cap too small (buf NULL, cap 0 to query) -> FT_ERR_LENGTH_MISMATCH. */
+int32_t ft_stream_adosc_save(FtStreamAdosc *handle, char *buf, size_t cap, size_t *out_len);
+/** New handle from a snapshot of this same stream; else FT_ERR_INVALID_PARAM. */
+int32_t ft_stream_adosc_load(const char *json, size_t len, FtStreamAdosc **out_handle);
+void ft_stream_adosc_free(FtStreamAdosc *handle);
+
 /* ---- option strategy ------------------------------------------------- */
 
 /* FtLeg.kind values. */

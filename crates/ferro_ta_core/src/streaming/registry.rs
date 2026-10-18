@@ -79,6 +79,9 @@ macro_rules! for_each_stream {
                 $crate::stream_family_math;
                 $crate::stream_family_overlap;
                 $crate::stream_family_ma_osc;
+                $crate::stream_family_momentum;
+                $crate::stream_family_directional;
+                $crate::stream_family_volume;
             ];
         }
     };

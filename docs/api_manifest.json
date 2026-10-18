@@ -1,8 +1,8 @@
 {
   "surfaces": {
     "python": {
-      "indicator_count": 287,
-      "method_count": 605,
+      "indicator_count": 314,
+      "method_count": 632,
       "categories": [
         "aggregation",
         "alerts",
@@ -1350,6 +1350,13 @@
           "params": []
         },
         {
+          "name": "StreamingAd",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "StreamingAdd",
           "category": "streaming",
           "module": "ferro_ta.data.streaming",
@@ -1357,7 +1364,42 @@
           "params": []
         },
         {
+          "name": "StreamingAdosc",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingAdx",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingAdxr",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "StreamingApo",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingAroon",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingAroonosc",
           "category": "streaming",
           "module": "ferro_ta.data.streaming",
           "doc": "",
@@ -1372,6 +1414,27 @@
         },
         {
           "name": "StreamingBBands",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingBop",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingCci",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingCmo",
           "category": "streaming",
           "module": "ferro_ta.data.streaming",
           "doc": "",
@@ -1400,6 +1463,13 @@
         },
         {
           "name": "StreamingDiv",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingDx",
           "category": "streaming",
           "module": "ferro_ta.data.streaming",
           "doc": "",
@@ -1469,6 +1539,13 @@
           "params": []
         },
         {
+          "name": "StreamingMfi",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "StreamingMidpoint",
           "category": "streaming",
           "module": "ferro_ta.data.streaming",
@@ -1490,6 +1567,27 @@
           "params": []
         },
         {
+          "name": "StreamingMinusDi",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingMinusDm",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingMom",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "StreamingMult",
           "category": "streaming",
           "module": "ferro_ta.data.streaming",
@@ -1497,7 +1595,35 @@
           "params": []
         },
         {
+          "name": "StreamingNatr",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingObv",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "StreamingOptionGreeks",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingPlusDi",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingPlusDm",
           "category": "streaming",
           "module": "ferro_ta.data.streaming",
           "doc": "",
@@ -1512,6 +1638,34 @@
         },
         {
           "name": "StreamingRSI",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingRoc",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingRocp",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingRocr",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingRocr100",
           "category": "streaming",
           "module": "ferro_ta.data.streaming",
           "doc": "",
@@ -1581,6 +1735,20 @@
           "params": []
         },
         {
+          "name": "StreamingStochf",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingStochrsi",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "StreamingStreak",
           "category": "streaming",
           "module": "ferro_ta.data.streaming",
@@ -1623,6 +1791,13 @@
           "params": []
         },
         {
+          "name": "StreamingTrange",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "StreamingTrima",
           "category": "streaming",
           "module": "ferro_ta.data.streaming",
@@ -1644,6 +1819,13 @@
           "params": []
         },
         {
+          "name": "StreamingUltosc",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "StreamingVWAP",
           "category": "streaming",
           "module": "ferro_ta.data.streaming",
@@ -1652,6 +1834,13 @@
         },
         {
           "name": "StreamingWclprice",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingWillr",
           "category": "streaming",
           "module": "ferro_ta.data.streaming",
           "doc": "",
@@ -4075,6 +4264,13 @@
           "params": []
         },
         {
+          "name": "StreamingAd",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "StreamingAdd",
           "category": "streaming",
           "module": "ferro_ta.data.streaming",
@@ -4082,7 +4278,42 @@
           "params": []
         },
         {
+          "name": "StreamingAdosc",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingAdx",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingAdxr",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "StreamingApo",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingAroon",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingAroonosc",
           "category": "streaming",
           "module": "ferro_ta.data.streaming",
           "doc": "",
@@ -4097,6 +4328,27 @@
         },
         {
           "name": "StreamingBBands",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingBop",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingCci",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingCmo",
           "category": "streaming",
           "module": "ferro_ta.data.streaming",
           "doc": "",
@@ -4125,6 +4377,13 @@
         },
         {
           "name": "StreamingDiv",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingDx",
           "category": "streaming",
           "module": "ferro_ta.data.streaming",
           "doc": "",
@@ -4194,6 +4453,13 @@
           "params": []
         },
         {
+          "name": "StreamingMfi",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "StreamingMidpoint",
           "category": "streaming",
           "module": "ferro_ta.data.streaming",
@@ -4215,6 +4481,27 @@
           "params": []
         },
         {
+          "name": "StreamingMinusDi",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingMinusDm",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingMom",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "StreamingMult",
           "category": "streaming",
           "module": "ferro_ta.data.streaming",
@@ -4222,7 +4509,35 @@
           "params": []
         },
         {
+          "name": "StreamingNatr",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingObv",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "StreamingOptionGreeks",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingPlusDi",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingPlusDm",
           "category": "streaming",
           "module": "ferro_ta.data.streaming",
           "doc": "",
@@ -4237,6 +4552,34 @@
         },
         {
           "name": "StreamingRSI",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingRoc",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingRocp",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingRocr",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingRocr100",
           "category": "streaming",
           "module": "ferro_ta.data.streaming",
           "doc": "",
@@ -4306,6 +4649,20 @@
           "params": []
         },
         {
+          "name": "StreamingStochf",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingStochrsi",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "StreamingStreak",
           "category": "streaming",
           "module": "ferro_ta.data.streaming",
@@ -4348,6 +4705,13 @@
           "params": []
         },
         {
+          "name": "StreamingTrange",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "StreamingTrima",
           "category": "streaming",
           "module": "ferro_ta.data.streaming",
@@ -4369,6 +4733,13 @@
           "params": []
         },
         {
+          "name": "StreamingUltosc",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "StreamingVWAP",
           "category": "streaming",
           "module": "ferro_ta.data.streaming",
@@ -4377,6 +4748,13 @@
         },
         {
           "name": "StreamingWclprice",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingWillr",
           "category": "streaming",
           "module": "ferro_ta.data.streaming",
           "doc": "",
@@ -8175,14 +8553,24 @@
       ],
       "streaming_types": [
         "StreamingATR",
+        "StreamingAd",
         "StreamingAdd",
+        "StreamingAdosc",
+        "StreamingAdx",
+        "StreamingAdxr",
         "StreamingApo",
+        "StreamingAroon",
+        "StreamingAroonosc",
         "StreamingAvgprice",
         "StreamingBBands",
+        "StreamingBop",
+        "StreamingCci",
+        "StreamingCmo",
         "StreamingCooldown",
         "StreamingCross",
         "StreamingDema",
         "StreamingDiv",
+        "StreamingDx",
         "StreamingEMA",
         "StreamingKama",
         "StreamingMACD",
@@ -8192,13 +8580,25 @@
         "StreamingMavp",
         "StreamingMax",
         "StreamingMedprice",
+        "StreamingMfi",
         "StreamingMidpoint",
         "StreamingMidprice",
         "StreamingMin",
+        "StreamingMinusDi",
+        "StreamingMinusDm",
+        "StreamingMom",
         "StreamingMult",
+        "StreamingNatr",
+        "StreamingObv",
         "StreamingOptionGreeks",
+        "StreamingPlusDi",
+        "StreamingPlusDm",
         "StreamingPpo",
         "StreamingRSI",
+        "StreamingRoc",
+        "StreamingRocp",
+        "StreamingRocr",
+        "StreamingRocr100",
         "StreamingRollingMax",
         "StreamingRollingMaxindex",
         "StreamingRollingMin",
@@ -8208,36 +8608,51 @@
         "StreamingSlidingMax",
         "StreamingSlidingMin",
         "StreamingStoch",
+        "StreamingStochf",
+        "StreamingStochrsi",
         "StreamingStreak",
         "StreamingSub",
         "StreamingSum",
         "StreamingSupertrend",
         "StreamingT3",
         "StreamingTema",
+        "StreamingTrange",
         "StreamingTrima",
         "StreamingTrix",
         "StreamingTypprice",
+        "StreamingUltosc",
         "StreamingVWAP",
         "StreamingWclprice",
+        "StreamingWillr",
         "StreamingWma"
       ]
     },
     "wasm_node": {
-      "export_count": 396,
+      "export_count": 423,
       "exports": [
         "CommissionModel",
         "WasmBarBuilder",
         "WasmOptionStrategy",
         "WasmStreamingATR",
+        "WasmStreamingAd",
         "WasmStreamingAdd",
+        "WasmStreamingAdosc",
+        "WasmStreamingAdx",
+        "WasmStreamingAdxr",
         "WasmStreamingApo",
+        "WasmStreamingAroon",
+        "WasmStreamingAroonosc",
         "WasmStreamingAvgprice",
         "WasmStreamingBBands",
         "WasmStreamingBacktest",
+        "WasmStreamingBop",
+        "WasmStreamingCci",
+        "WasmStreamingCmo",
         "WasmStreamingCooldown",
         "WasmStreamingCross",
         "WasmStreamingDema",
         "WasmStreamingDiv",
+        "WasmStreamingDx",
         "WasmStreamingEMA",
         "WasmStreamingKama",
         "WasmStreamingMACD",
@@ -8247,13 +8662,25 @@
         "WasmStreamingMavp",
         "WasmStreamingMax",
         "WasmStreamingMedprice",
+        "WasmStreamingMfi",
         "WasmStreamingMidpoint",
         "WasmStreamingMidprice",
         "WasmStreamingMin",
+        "WasmStreamingMinusDi",
+        "WasmStreamingMinusDm",
+        "WasmStreamingMom",
         "WasmStreamingMult",
+        "WasmStreamingNatr",
+        "WasmStreamingObv",
         "WasmStreamingOptionGreeks",
+        "WasmStreamingPlusDi",
+        "WasmStreamingPlusDm",
         "WasmStreamingPpo",
         "WasmStreamingRSI",
+        "WasmStreamingRoc",
+        "WasmStreamingRocp",
+        "WasmStreamingRocr",
+        "WasmStreamingRocr100",
         "WasmStreamingRollingMax",
         "WasmStreamingRollingMaxindex",
         "WasmStreamingRollingMin",
@@ -8263,17 +8690,22 @@
         "WasmStreamingSlidingMax",
         "WasmStreamingSlidingMin",
         "WasmStreamingStoch",
+        "WasmStreamingStochf",
+        "WasmStreamingStochrsi",
         "WasmStreamingStreak",
         "WasmStreamingSub",
         "WasmStreamingSum",
         "WasmStreamingSupertrend",
         "WasmStreamingT3",
         "WasmStreamingTema",
+        "WasmStreamingTrange",
         "WasmStreamingTrima",
         "WasmStreamingTrix",
         "WasmStreamingTypprice",
+        "WasmStreamingUltosc",
         "WasmStreamingVWAP",
         "WasmStreamingWclprice",
+        "WasmStreamingWillr",
         "WasmStreamingWma",
         "ac",
         "ad",
@@ -8882,18 +9314,28 @@
       ]
     },
     "c_abi_go": {
-      "export_count": 324,
+      "export_count": 351,
       "exports": [
         "StreamingATR",
+        "StreamingAd",
         "StreamingAdd",
+        "StreamingAdosc",
+        "StreamingAdx",
+        "StreamingAdxr",
         "StreamingApo",
+        "StreamingAroon",
+        "StreamingAroonosc",
         "StreamingAvgprice",
         "StreamingBBands",
         "StreamingBacktest",
+        "StreamingBop",
+        "StreamingCci",
+        "StreamingCmo",
         "StreamingCooldown",
         "StreamingCross",
         "StreamingDema",
         "StreamingDiv",
+        "StreamingDx",
         "StreamingEMA",
         "StreamingKama",
         "StreamingMACD",
@@ -8903,13 +9345,25 @@
         "StreamingMavp",
         "StreamingMax",
         "StreamingMedprice",
+        "StreamingMfi",
         "StreamingMidpoint",
         "StreamingMidprice",
         "StreamingMin",
+        "StreamingMinusDi",
+        "StreamingMinusDm",
+        "StreamingMom",
         "StreamingMult",
+        "StreamingNatr",
+        "StreamingObv",
         "StreamingOptionGreeks",
+        "StreamingPlusDi",
+        "StreamingPlusDm",
         "StreamingPpo",
         "StreamingRSI",
+        "StreamingRoc",
+        "StreamingRocp",
+        "StreamingRocr",
+        "StreamingRocr100",
         "StreamingRollingMax",
         "StreamingRollingMaxindex",
         "StreamingRollingMin",
@@ -8919,17 +9373,22 @@
         "StreamingSlidingMax",
         "StreamingSlidingMin",
         "StreamingStoch",
+        "StreamingStochf",
+        "StreamingStochrsi",
         "StreamingStreak",
         "StreamingSub",
         "StreamingSum",
         "StreamingSupertrend",
         "StreamingT3",
         "StreamingTema",
+        "StreamingTrange",
         "StreamingTrima",
         "StreamingTrix",
         "StreamingTypprice",
+        "StreamingUltosc",
         "StreamingVWAP",
         "StreamingWclprice",
+        "StreamingWillr",
         "StreamingWma",
         "ac",
         "ad",
@@ -9212,8 +9671,8 @@
     }
   },
   "parity_summary": {
-    "python_indicator_count": 286,
-    "wasm_export_count": 396,
+    "python_indicator_count": 313,
+    "wasm_export_count": 423,
     "common_python_wasm_count": 192,
     "common_python_wasm": [
       "ad",
@@ -9451,15 +9910,25 @@
       "sin",
       "sinh",
       "sqrt",
+      "streamingad",
       "streamingadd",
+      "streamingadosc",
+      "streamingadx",
+      "streamingadxr",
       "streamingapo",
+      "streamingaroon",
+      "streamingaroonosc",
       "streamingatr",
       "streamingavgprice",
       "streamingbbands",
+      "streamingbop",
+      "streamingcci",
+      "streamingcmo",
       "streamingcooldown",
       "streamingcross",
       "streamingdema",
       "streamingdiv",
+      "streamingdx",
       "streamingema",
       "streamingkama",
       "streamingma",
@@ -9469,12 +9938,24 @@
       "streamingmavp",
       "streamingmax",
       "streamingmedprice",
+      "streamingmfi",
       "streamingmidpoint",
       "streamingmidprice",
       "streamingmin",
+      "streamingminusdi",
+      "streamingminusdm",
+      "streamingmom",
       "streamingmult",
+      "streamingnatr",
+      "streamingobv",
       "streamingoptiongreeks",
+      "streamingplusdi",
+      "streamingplusdm",
       "streamingppo",
+      "streamingroc",
+      "streamingrocp",
+      "streamingrocr",
+      "streamingrocr100",
       "streamingrollingmax",
       "streamingrollingmaxindex",
       "streamingrollingmin",
@@ -9485,17 +9966,22 @@
       "streamingslidingmin",
       "streamingsma",
       "streamingstoch",
+      "streamingstochf",
+      "streamingstochrsi",
       "streamingstreak",
       "streamingsub",
       "streamingsum",
       "streamingsupertrend",
       "streamingt3",
       "streamingtema",
+      "streamingtrange",
       "streamingtrima",
       "streamingtrix",
       "streamingtypprice",
+      "streamingultosc",
       "streamingvwap",
       "streamingwclprice",
+      "streamingwillr",
       "streamingwma",
       "structural_breaks",
       "sub",
@@ -9660,16 +10146,26 @@
       "walk_forward_indices",
       "wasmbarbuilder",
       "wasmoptionstrategy",
+      "wasmstreamingad",
       "wasmstreamingadd",
+      "wasmstreamingadosc",
+      "wasmstreamingadx",
+      "wasmstreamingadxr",
       "wasmstreamingapo",
+      "wasmstreamingaroon",
+      "wasmstreamingaroonosc",
       "wasmstreamingatr",
       "wasmstreamingavgprice",
       "wasmstreamingbacktest",
       "wasmstreamingbbands",
+      "wasmstreamingbop",
+      "wasmstreamingcci",
+      "wasmstreamingcmo",
       "wasmstreamingcooldown",
       "wasmstreamingcross",
       "wasmstreamingdema",
       "wasmstreamingdiv",
+      "wasmstreamingdx",
       "wasmstreamingema",
       "wasmstreamingkama",
       "wasmstreamingma",
@@ -9679,12 +10175,24 @@
       "wasmstreamingmavp",
       "wasmstreamingmax",
       "wasmstreamingmedprice",
+      "wasmstreamingmfi",
       "wasmstreamingmidpoint",
       "wasmstreamingmidprice",
       "wasmstreamingmin",
+      "wasmstreamingminusdi",
+      "wasmstreamingminusdm",
+      "wasmstreamingmom",
       "wasmstreamingmult",
+      "wasmstreamingnatr",
+      "wasmstreamingobv",
       "wasmstreamingoptiongreeks",
+      "wasmstreamingplusdi",
+      "wasmstreamingplusdm",
       "wasmstreamingppo",
+      "wasmstreamingroc",
+      "wasmstreamingrocp",
+      "wasmstreamingrocr",
+      "wasmstreamingrocr100",
       "wasmstreamingrollingmax",
       "wasmstreamingrollingmaxindex",
       "wasmstreamingrollingmin",
@@ -9695,17 +10203,22 @@
       "wasmstreamingslidingmin",
       "wasmstreamingsma",
       "wasmstreamingstoch",
+      "wasmstreamingstochf",
+      "wasmstreamingstochrsi",
       "wasmstreamingstreak",
       "wasmstreamingsub",
       "wasmstreamingsum",
       "wasmstreamingsupertrend",
       "wasmstreamingt3",
       "wasmstreamingtema",
+      "wasmstreamingtrange",
       "wasmstreamingtrima",
       "wasmstreamingtrix",
       "wasmstreamingtypprice",
+      "wasmstreamingultosc",
       "wasmstreamingvwap",
       "wasmstreamingwclprice",
+      "wasmstreamingwillr",
       "wasmstreamingwma",
       "weighted_continuous",
       "yang_zhang_vol",
@@ -9713,9 +10226,9 @@
     ]
   },
   "normalized_parity": {
-    "python_indicator_count": 286,
-    "wasm_export_count": 396,
-    "common_python_wasm_count": 269,
+    "python_indicator_count": 313,
+    "wasm_export_count": 423,
+    "common_python_wasm_count": 296,
     "python_only_vs_wasm": [
       "alertevent",
       "alertmanager",
@@ -9867,14 +10380,14 @@
   },
   "coverage": {
     "counts": {
-      "row_count": 454,
-      "core_count": 413,
-      "python_count": 286,
-      "wasm_count": 396,
+      "row_count": 481,
+      "core_count": 440,
+      "python_count": 313,
+      "wasm_count": 423,
       "flutter_count": 194,
       "flutter_excluded_count": 56,
-      "go_count": 321,
-      "common_python_wasm_count": 269,
+      "go_count": 348,
+      "common_python_wasm_count": 296,
       "common_all_four_count": 131
     },
     "rows": [
@@ -15591,6 +16104,22 @@
         "go_name": null
       },
       {
+        "key": "streamingad",
+        "name": "StreamingAd",
+        "category": "streaming",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": "StreamingAd",
+        "core_name": "StreamingAd",
+        "wasm_name": "WasmStreamingAd",
+        "flutter_name": null,
+        "go_name": "StreamingAd"
+      },
+      {
         "key": "streamingadd",
         "name": "StreamingAdd",
         "category": "streaming",
@@ -15607,6 +16136,54 @@
         "go_name": "StreamingAdd"
       },
       {
+        "key": "streamingadosc",
+        "name": "StreamingAdosc",
+        "category": "streaming",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": "StreamingAdosc",
+        "core_name": "StreamingAdosc",
+        "wasm_name": "WasmStreamingAdosc",
+        "flutter_name": null,
+        "go_name": "StreamingAdosc"
+      },
+      {
+        "key": "streamingadx",
+        "name": "StreamingAdx",
+        "category": "streaming",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": "StreamingAdx",
+        "core_name": "StreamingAdx",
+        "wasm_name": "WasmStreamingAdx",
+        "flutter_name": null,
+        "go_name": "StreamingAdx"
+      },
+      {
+        "key": "streamingadxr",
+        "name": "StreamingAdxr",
+        "category": "streaming",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": "StreamingAdxr",
+        "core_name": "StreamingAdxr",
+        "wasm_name": "WasmStreamingAdxr",
+        "flutter_name": null,
+        "go_name": "StreamingAdxr"
+      },
+      {
         "key": "streamingapo",
         "name": "StreamingApo",
         "category": "streaming",
@@ -15621,6 +16198,38 @@
         "wasm_name": "WasmStreamingApo",
         "flutter_name": null,
         "go_name": "StreamingApo"
+      },
+      {
+        "key": "streamingaroon",
+        "name": "StreamingAroon",
+        "category": "streaming",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": "StreamingAroon",
+        "core_name": "StreamingAroon",
+        "wasm_name": "WasmStreamingAroon",
+        "flutter_name": null,
+        "go_name": "StreamingAroon"
+      },
+      {
+        "key": "streamingaroonosc",
+        "name": "StreamingAroonosc",
+        "category": "streaming",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": "StreamingAroonosc",
+        "core_name": "StreamingAroonosc",
+        "wasm_name": "WasmStreamingAroonosc",
+        "flutter_name": null,
+        "go_name": "StreamingAroonosc"
       },
       {
         "key": "streamingatr",
@@ -15687,6 +16296,54 @@
         "go_name": "StreamingBBands"
       },
       {
+        "key": "streamingbop",
+        "name": "StreamingBop",
+        "category": "streaming",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": "StreamingBop",
+        "core_name": "StreamingBop",
+        "wasm_name": "WasmStreamingBop",
+        "flutter_name": null,
+        "go_name": "StreamingBop"
+      },
+      {
+        "key": "streamingcci",
+        "name": "StreamingCci",
+        "category": "streaming",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": "StreamingCci",
+        "core_name": "StreamingCci",
+        "wasm_name": "WasmStreamingCci",
+        "flutter_name": null,
+        "go_name": "StreamingCci"
+      },
+      {
+        "key": "streamingcmo",
+        "name": "StreamingCmo",
+        "category": "streaming",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": "StreamingCmo",
+        "core_name": "StreamingCmo",
+        "wasm_name": "WasmStreamingCmo",
+        "flutter_name": null,
+        "go_name": "StreamingCmo"
+      },
+      {
         "key": "streamingcooldown",
         "name": "StreamingCooldown",
         "category": "streaming",
@@ -15749,6 +16406,22 @@
         "wasm_name": "WasmStreamingDiv",
         "flutter_name": null,
         "go_name": "StreamingDiv"
+      },
+      {
+        "key": "streamingdx",
+        "name": "StreamingDx",
+        "category": "streaming",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": "StreamingDx",
+        "core_name": "StreamingDx",
+        "wasm_name": "WasmStreamingDx",
+        "flutter_name": null,
+        "go_name": "StreamingDx"
       },
       {
         "key": "streamingema",
@@ -15895,6 +16568,22 @@
         "go_name": "StreamingMedprice"
       },
       {
+        "key": "streamingmfi",
+        "name": "StreamingMfi",
+        "category": "streaming",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": "StreamingMfi",
+        "core_name": "StreamingMfi",
+        "wasm_name": "WasmStreamingMfi",
+        "flutter_name": null,
+        "go_name": "StreamingMfi"
+      },
+      {
         "key": "streamingmidpoint",
         "name": "StreamingMidpoint",
         "category": "streaming",
@@ -15943,6 +16632,54 @@
         "go_name": "StreamingMin"
       },
       {
+        "key": "streamingminusdi",
+        "name": "StreamingMinusDi",
+        "category": "streaming",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": "StreamingMinusDi",
+        "core_name": "StreamingMinusDi",
+        "wasm_name": "WasmStreamingMinusDi",
+        "flutter_name": null,
+        "go_name": "StreamingMinusDi"
+      },
+      {
+        "key": "streamingminusdm",
+        "name": "StreamingMinusDm",
+        "category": "streaming",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": "StreamingMinusDm",
+        "core_name": "StreamingMinusDm",
+        "wasm_name": "WasmStreamingMinusDm",
+        "flutter_name": null,
+        "go_name": "StreamingMinusDm"
+      },
+      {
+        "key": "streamingmom",
+        "name": "StreamingMom",
+        "category": "streaming",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": "StreamingMom",
+        "core_name": "StreamingMom",
+        "wasm_name": "WasmStreamingMom",
+        "flutter_name": null,
+        "go_name": "StreamingMom"
+      },
+      {
         "key": "streamingmult",
         "name": "StreamingMult",
         "category": "streaming",
@@ -15957,6 +16694,38 @@
         "wasm_name": "WasmStreamingMult",
         "flutter_name": null,
         "go_name": "StreamingMult"
+      },
+      {
+        "key": "streamingnatr",
+        "name": "StreamingNatr",
+        "category": "streaming",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": "StreamingNatr",
+        "core_name": "StreamingNatr",
+        "wasm_name": "WasmStreamingNatr",
+        "flutter_name": null,
+        "go_name": "StreamingNatr"
+      },
+      {
+        "key": "streamingobv",
+        "name": "StreamingObv",
+        "category": "streaming",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": "StreamingObv",
+        "core_name": "StreamingObv",
+        "wasm_name": "WasmStreamingObv",
+        "flutter_name": null,
+        "go_name": "StreamingObv"
       },
       {
         "key": "streamingoptiongreeks",
@@ -15975,6 +16744,38 @@
         "go_name": "StreamingOptionGreeks"
       },
       {
+        "key": "streamingplusdi",
+        "name": "StreamingPlusDi",
+        "category": "streaming",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": "StreamingPlusDi",
+        "core_name": "StreamingPlusDi",
+        "wasm_name": "WasmStreamingPlusDi",
+        "flutter_name": null,
+        "go_name": "StreamingPlusDi"
+      },
+      {
+        "key": "streamingplusdm",
+        "name": "StreamingPlusDm",
+        "category": "streaming",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": "StreamingPlusDm",
+        "core_name": "StreamingPlusDm",
+        "wasm_name": "WasmStreamingPlusDm",
+        "flutter_name": null,
+        "go_name": "StreamingPlusDm"
+      },
+      {
         "key": "streamingppo",
         "name": "StreamingPpo",
         "category": "streaming",
@@ -15989,6 +16790,70 @@
         "wasm_name": "WasmStreamingPpo",
         "flutter_name": null,
         "go_name": "StreamingPpo"
+      },
+      {
+        "key": "streamingroc",
+        "name": "StreamingRoc",
+        "category": "streaming",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": "StreamingRoc",
+        "core_name": "StreamingRoc",
+        "wasm_name": "WasmStreamingRoc",
+        "flutter_name": null,
+        "go_name": "StreamingRoc"
+      },
+      {
+        "key": "streamingrocp",
+        "name": "StreamingRocp",
+        "category": "streaming",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": "StreamingRocp",
+        "core_name": "StreamingRocp",
+        "wasm_name": "WasmStreamingRocp",
+        "flutter_name": null,
+        "go_name": "StreamingRocp"
+      },
+      {
+        "key": "streamingrocr",
+        "name": "StreamingRocr",
+        "category": "streaming",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": "StreamingRocr",
+        "core_name": "StreamingRocr",
+        "wasm_name": "WasmStreamingRocr",
+        "flutter_name": null,
+        "go_name": "StreamingRocr"
+      },
+      {
+        "key": "streamingrocr100",
+        "name": "StreamingRocr100",
+        "category": "streaming",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": "StreamingRocr100",
+        "core_name": "StreamingRocr100",
+        "wasm_name": "WasmStreamingRocr100",
+        "flutter_name": null,
+        "go_name": "StreamingRocr100"
       },
       {
         "key": "streamingrollingmax",
@@ -16151,6 +17016,38 @@
         "go_name": "StreamingStoch"
       },
       {
+        "key": "streamingstochf",
+        "name": "StreamingStochf",
+        "category": "streaming",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": "StreamingStochf",
+        "core_name": "StreamingStochf",
+        "wasm_name": "WasmStreamingStochf",
+        "flutter_name": null,
+        "go_name": "StreamingStochf"
+      },
+      {
+        "key": "streamingstochrsi",
+        "name": "StreamingStochrsi",
+        "category": "streaming",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": "StreamingStochrsi",
+        "core_name": "StreamingStochrsi",
+        "wasm_name": "WasmStreamingStochrsi",
+        "flutter_name": null,
+        "go_name": "StreamingStochrsi"
+      },
+      {
         "key": "streamingstreak",
         "name": "StreamingStreak",
         "category": "streaming",
@@ -16247,6 +17144,22 @@
         "go_name": "StreamingTema"
       },
       {
+        "key": "streamingtrange",
+        "name": "StreamingTrange",
+        "category": "streaming",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": "StreamingTrange",
+        "core_name": "StreamingTrange",
+        "wasm_name": "WasmStreamingTrange",
+        "flutter_name": null,
+        "go_name": "StreamingTrange"
+      },
+      {
         "key": "streamingtrima",
         "name": "StreamingTrima",
         "category": "streaming",
@@ -16295,6 +17208,22 @@
         "go_name": "StreamingTypprice"
       },
       {
+        "key": "streamingultosc",
+        "name": "StreamingUltosc",
+        "category": "streaming",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": "StreamingUltosc",
+        "core_name": "StreamingUltosc",
+        "wasm_name": "WasmStreamingUltosc",
+        "flutter_name": null,
+        "go_name": "StreamingUltosc"
+      },
+      {
         "key": "streamingvwap",
         "name": "StreamingVWAP",
         "category": "streaming",
@@ -16325,6 +17254,22 @@
         "wasm_name": "WasmStreamingWclprice",
         "flutter_name": null,
         "go_name": "StreamingWclprice"
+      },
+      {
+        "key": "streamingwillr",
+        "name": "StreamingWillr",
+        "category": "streaming",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": "StreamingWillr",
+        "core_name": "StreamingWillr",
+        "wasm_name": "WasmStreamingWillr",
+        "flutter_name": null,
+        "go_name": "StreamingWillr"
       },
       {
         "key": "streamingwma",

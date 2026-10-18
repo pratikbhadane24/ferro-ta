@@ -209,11 +209,9 @@ seeded_average!(
     /// values (divided by `period`), then `(avg * (p - 1) + x) * (1 / p)`.
     /// The caller feeds the per-bar quantity (gain, loss, true range) from
     /// the bar the batch kernel starts at.
-    #[allow(dead_code)] // consumed by the momentum / volatility families
     Wilder {}
 );
 
-#[allow(dead_code)] // consumed by the momentum / volatility families
 impl Wilder {
     pub(crate) fn update(&mut self, x: f64) -> f64 {
         match self.seed_or_prev(x) {
