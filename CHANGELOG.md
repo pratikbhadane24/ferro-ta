@@ -11,6 +11,23 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **Streaming universe: 215 new streaming (bar-by-bar) indicators** covering
+  the batch catalog (momentum, overlap, volume, volatility, statistics, cycle,
+  all 61 candlestick patterns, regime, price transforms, math ops and more),
+  generated from one declarative registry. Available as `Streaming<Name>`
+  classes in Python (`StreamingWillr`, `StreamingKeltnerChannels`, ...),
+  `WasmStreaming<Name>` in WASM, `ft_stream_<name>_*` in the C ABI and
+  generated `Stream<Name>` wrappers in Go. All support `closed=False` /
+  `peek` previews, `count` / `is_ready`, and JSON snapshots
+  (`to_json` / `from_json`, pickle, `save` / `load`). Parity contract: at
+  every bar the stream equals the batch function on finite input (identical
+  NaN mask, within 1e-9 relative; integer outputs exact). Not streamed:
+  `williams_fractals`, `back_adjusted_continuous`, `ratio_adjusted_continuous`,
+  `rank_values`, `forward_fill_nan`; the `ichimoku` stream omits `chikou`.
+  Candlestick streams and `ht_trendmode` are `is_ready` from the first bar,
+  as batch emits 0 there. `regime_adx` / `regime_combined` streams skip NaN
+  ticks instead of emitting -1. Period/count parameters are capped at 2^24
+  (`mavp` periods at 4096). See `docs/streaming.rst` for the full catalog.
 - **`nan_policy="skip"`** on batch `SMA`, `EMA`, `WMA`, `DEMA`, `TEMA`,
   `TRIMA`, `KAMA`, `T3`, `BBANDS`, `MACD`, `RSI`, `STOCH` and `ATR`: rows with
   a non-finite input are dropped, the indicator runs on the rest, and NaN is
@@ -21,11 +38,11 @@ and the project uses [Semantic Versioning](https://semver.org/).
 ### Fixed
 
 - **`CORREL`, `LINEARREG_SLOPE` / `_ANGLE` (and the rest of the LINEARREG
-  family), `STDDEV`, `VAR`, `BBANDS` / `BBPERCENT`, `AO`, `PO` and `DPO` no
-  longer drift on long, high-priced series.** Their rolling sums ran from bar
+  family), `STDDEV`, `VAR`, `BBANDS` / `BBPERCENT` / `BBWIDTH`, `AO`, `AC`,
+  `PO` and `DPO` no longer drift on long, high-priced series.** Their rolling sums ran from bar
   0, so near price 50,000 values drifted from the exact window result — up to
-  10% for `CORREL(timeperiod=5)`, ~1e-6 for `LINEARREG_ANGLE`, ~1e-8 for
-  `STDDEV`. Every bar now matches an exact computation of its window to
+  10% for `CORREL(timeperiod=5)`, ~2.6e-5 for `LINEARREG_ANGLE`, ~1.7e-7 for
+  `STDDEV`. `AC` follows `AO` and `BBWIDTH` follows `BBANDS`. Every bar now matches an exact computation of its window to
   ~1e-12, and a `NaN` input affects only the windows that contain it
   (`CORREL`, the LINEARREG family, `AO`, `PO` and `DPO` used to stay `NaN`
   for the rest of the series). Values elsewhere change only in the last
@@ -34,7 +51,8 @@ and the project uses [Semantic Versioning](https://semver.org/).
   fractional volumes.** A rounding residue in their running volume sums made
   such windows return finite garbage (e.g. `CMF` -0.14, `VOLOSC` -21.7);
   they now return `NaN` (`MFI`: `0`), as each function's zero-volume rule
-  says.
+  says. Windows with non-zero volume but no money flow on one side now read
+  exactly `0` (previously a ~1e-16 residue); other values are unchanged.
 - **`MAMA` with `slowlimit > fastlimit` no longer panics.** Python raises
   `ValueError`, the C ABI returns `FT_ERR_INVALID_PARAM`, and WASM / core /
   Flutter return all-`NaN` instead of aborting (non-finite limits are

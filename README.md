@@ -155,7 +155,7 @@ See the benchmark methodology and artifacts:
 - The extended catalog is bound on every surface: 360 core symbols, 247 Python names, 344 WASM
   exports, 194 generated Flutter wrappers, and 262 C ABI / Go exports. See [docs/languages/coverage](docs/languages/coverage.rst)
   for the per-indicator table.
-- Batch and streaming APIs for multi-series and bar-by-bar workloads.
+- Batch and streaming APIs for multi-series and bar-by-bar workloads, including 215 registry-generated streams that match their batch functions bar for bar on every surface ([catalog](docs/streaming.rst)).
 - Python extras: NumPy-first execution with pandas and polars adapters, type stubs, and Sphinx autodoc.
 - Pre-built artifacts: Python wheels, crates.io, npm, Flutter natives (web reuses WASM), a Go
   module with prebuilt static archives, and C/C++ libraries on each GitHub Release.

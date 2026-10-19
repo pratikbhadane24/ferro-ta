@@ -17,6 +17,8 @@ Usage
 -----
 python3 scripts/build_streaming_python.py           # rewrite the blocks
 python3 scripts/build_streaming_python.py --check   # fail if a block is stale
+python3 scripts/build_streaming_python.py --docs    # rewrite the catalog table in
+                                                    # docs/streaming.rst only
 
 Needs the extension built first (``maturin develop --release``).
 """
@@ -26,12 +28,17 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import json
+import re
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from stream_names import is_registry_stream, stream_class  # noqa: E402
+from stream_names import (  # noqa: E402
+    LEGACY_STREAM_CLASSES,
+    is_registry_stream,
+    stream_class,
+)
 
 ROOT = Path(__file__).resolve().parent.parent
 SPEC_PATH = ROOT / "crates" / "ferro_ta_ffi" / "ffi_spec.json"
@@ -41,6 +48,14 @@ EXPORTS_PATH = ROOT / "python" / "ferro_ta" / "data" / "streaming.py"
 BEGIN = "# BEGIN GENERATED STREAMS (scripts/build_streaming_python.py)"
 END = "# END GENERATED STREAMS"
 # Where a missing block is inserted.
+DOCS_PATH = ROOT / "docs" / "streaming.rst"
+FAMILIES_DIR = ROOT / "crates" / "ferro_ta_core" / "src" / "streaming" / "families"
+DOCS_BEGIN = ".. BEGIN GENERATED STREAM CATALOG (scripts/build_streaming_python.py)"
+DOCS_END = ".. END GENERATED STREAM CATALOG"
+# Group shown for streams that have no batch function (so no FFI group).
+STREAM_ONLY_GROUP = "streaming-only"
+ENTRY_RE = re.compile(r"^\s*(\w+) => Streaming\w+,", re.MULTILINE)
+KIND_RE = re.compile(r"\b(windowed|native)\(lookback")
 STUB_ANCHOR = "class Bar:\n"
 LINE_LENGTH = 88
 
@@ -196,9 +211,117 @@ def load_extension() -> object:
     sys.exit("ferro_ta extension not built; run: maturin develop --release")
 
 
+def registry_kinds() -> dict[str, str]:
+    """``name -> "windowed" | "native"`` parsed from the family macro entries."""
+    kinds: dict[str, str] = {}
+    for path in sorted(FAMILIES_DIR.glob("*.rs")):
+        text = path.read_text()
+        starts = list(ENTRY_RE.finditer(text))
+        for i, match in enumerate(starts):
+            end = starts[i + 1].start() if i + 1 < len(starts) else len(text)
+            kind = KIND_RE.search(text[match.end() : end])
+            if kind:
+                kinds[match.group(1)] = kind.group(1)
+    return kinds
+
+
+def legacy_defaults(stream: dict, module: object) -> dict[str, str]:
+    """Param -> default text of a hand-written class (``required`` if none)."""
+    cls = getattr(module, LEGACY_STREAM_CLASSES[stream["name"]])
+    sig = (cls.__text_signature__ or "()").strip()[1:-1]
+    parts = [p.strip() for p in sig.split(",") if p.strip()]
+    required = [p for p in parts if "=" not in p]
+    try:
+        instance = cls(*[2] * len(required))
+    except Exception:  # noqa: BLE001 - docs only; fall back to "required"
+        instance = None
+    out: dict[str, str] = {}
+    for part in parts:
+        name = part.split("=")[0].strip()
+        if "=" not in part:
+            out[name] = "required"
+        elif instance is not None and hasattr(instance, name):
+            out[name] = repr(getattr(instance, name))
+        else:
+            out[name] = "default"
+    return out
+
+
+def catalog_row(stream: dict, module: object, kinds: dict[str, str]) -> list[str]:
+    name = stream["name"]
+    if is_registry_stream(name):
+        defaults = {k: repr(v) for k, v in stream_defaults(stream, module).items()}
+        params = ", ".join(
+            f"{p['name']}={defaults[p['name']]}" for p in stream["params"]
+        )
+        kind = kinds[name]
+    else:
+        defaults = legacy_defaults(stream, module)
+        params = ", ".join(
+            n if d == "required" else f"{n}={d}" if d != "default" else f"{n}=..."
+            for n, d in defaults.items()
+        )
+        kind = "legacy"
+    outputs = ", ".join(
+        o["name"].removeprefix("out_") or "out" for o in stream["outputs"]
+    )
+    outputs = "value" if outputs == "out" else outputs
+    return [
+        f"``{name}``",
+        f"``{stream_class(name)}``",
+        ", ".join(stream["inputs"]),
+        params or "-",
+        outputs,
+        kind,
+    ]
+
+
+def render_docs_block(spec: dict, module: object) -> str:
+    kinds = registry_kinds()
+    groups = {f["name"]: f["group"] for f in spec["functions"]}
+    by_group: dict[str, list[dict]] = {}
+    for s in spec["streams"]:
+        group = groups.get("ft_" + s["name"], STREAM_ONLY_GROUP)
+        by_group.setdefault(group, []).append(s)
+    lines = [DOCS_BEGIN, ""]
+    for group in sorted(by_group):
+        streams = sorted(by_group[group], key=lambda s: s["name"])
+        lines += [f".. rubric:: {group} ({len(streams)})", ""]
+        lines += [
+            ".. list-table::",
+            "   :header-rows: 1",
+            "   :widths: 14 22 14 26 14 10",
+            "",
+        ]
+        header = [
+            "Name",
+            "Python class",
+            "Inputs",
+            "Params (defaults)",
+            "Outputs",
+            "Kind",
+        ]
+        for row in [header, *[catalog_row(s, module, kinds) for s in streams]]:
+            for i, cell in enumerate(row):
+                lines.append(f"   {'*' if i == 0 else ' '} - {cell}")
+        lines.append("")
+    return "\n".join([*lines, DOCS_END]) + "\n"
+
+
+def splice_docs(text: str, block: str) -> str:
+    if DOCS_BEGIN not in text or DOCS_END not in text:
+        sys.exit(f"{DOCS_PATH.relative_to(ROOT)} lacks the generated catalog markers")
+    start = text.index(DOCS_BEGIN)
+    end = text.index(DOCS_END, start) + len(DOCS_END) + 1
+    return text[:start] + block + text[end:]
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--check", action="store_true", help="fail if stale")
+    parser.add_argument(
+        "--docs", action="store_true", help="rewrite only the docs catalog table"
+    )
     args = parser.parse_args()
 
     module = load_extension()
@@ -212,7 +335,10 @@ def main() -> int:
         EXPORTS_PATH: splice(
             EXPORTS_PATH.read_text(), render_exports_block(streams), None
         ),
+        DOCS_PATH: splice_docs(DOCS_PATH.read_text(), render_docs_block(spec, module)),
     }
+    if args.docs:
+        outputs = {DOCS_PATH: outputs[DOCS_PATH]}
     stale = [p for p, text in outputs.items() if p.read_text() != text]
     if args.check:
         for path in stale:
@@ -224,7 +350,7 @@ def main() -> int:
         return 0
     for path in stale:
         path.write_text(outputs[path])
-    print(f"wrote {len(stale)} files ({len(streams)} registry streams)")
+    print(f"wrote {len(stale)} file(s) ({len(streams)} registry streams)")
     return 0
 
 

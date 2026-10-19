@@ -30,7 +30,7 @@ console.log('RSI:', Array.from(ferro.rsi(close, 14)));
 | Statistics (10) | Regression, correlation | `stddev`, `var`, `linearreg`, `linearreg_slope`, `linearreg_intercept`, `linearreg_angle`, `tsf`, `beta_rolling`, `correl` |
 | Math (19) | Operators and transforms | `math_add`, `math_sub`, `math_mult`, `math_div`, `transform_sin`, `transform_cos`, `transform_exp`, `transform_sqrt`, ... |
 | Extended (10) | Supertrend, channels, Ichimoku | `supertrend`, `donchian`, `keltner_channels`, `ichimoku`, `pivot_points`, `chandelier_exit`, `choppiness_index` |
-| Streaming API (13 classes + bar builder) | Bar-by-bar stateful, `peek` previews | `WasmStreamingSMA`, `WasmStreamingEMA`, `WasmStreamingRSI`, `WasmStreamingATR`, `WasmStreamingBBands`, `WasmStreamingMACD`, `WasmStreamingStoch`, `WasmStreamingVWAP`, `WasmStreamingSupertrend`, `WasmStreamingCross`, `WasmStreamingStreak`, `WasmStreamingCooldown`, `WasmStreamingOptionGreeks`, `WasmBarBuilder` |
+| Streaming API (228 classes + bar builder) | Bar-by-bar stateful, `peek` previews | `WasmStreamingSMA`, `WasmStreamingEMA`, `WasmStreamingRSI`, `WasmStreamingATR`, `WasmStreamingBBands`, `WasmStreamingMACD`, `WasmStreamingStoch`, `WasmStreamingVWAP`, `WasmStreamingSupertrend`, `WasmStreamingCross`, `WasmStreamingStreak`, `WasmStreamingCooldown`, `WasmStreamingOptionGreeks`, `WasmBarBuilder` |
 | Options (14) | Pricing, Greeks, IV | `black_scholes_price`, `black_76_price`, `black_scholes_greeks`, `implied_volatility`, `iv_rank`, `smile_metrics`, ... |
 | Futures (12) | Basis, roll, curve | `futures_basis`, `annualized_basis`, `roll_yield`, `weighted_continuous`, `calendar_spreads`, `curve_summary`, ... |
 | Backtesting (9) | Signal generation, engines | `backtest_core`, `backtest_ohlcv`, `rsi_threshold_signals`, `macd_crossover_signals`, `walk_forward_indices`, `monte_carlo_bootstrap`, ... |
@@ -95,6 +95,10 @@ for (const price of close) {
 }
 // Forming bar: preview each tick without committing it
 console.log('live SMA:', stream.peek(101.5), 'bars:', stream.count, 'ready:', stream.isReady);
+
+// 215 more streams, named WasmStreaming<UpperCamel>; multi-output ones return an array
+const kc = new WasmStreamingKeltnerChannels(20, 10, 2.0);
+const [kcUpper, kcMiddle, kcLower] = kc.update(45.0, 43.0, 44.5);
 
 // Ticks -> session-aligned bars (NSE 09:15-15:30 IST); timestamps are Date.now()-style ms
 const bars = WasmBarBuilder.nse(300);
