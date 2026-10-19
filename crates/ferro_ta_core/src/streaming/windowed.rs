@@ -23,12 +23,17 @@ pub trait WindowInput: StreamValue {
     const WIDTH: usize;
     /// Append each component to its column (`cols.len() == WIDTH`).
     fn push_to(self, cols: &mut [Vec<f64>]);
+    /// Component `k` (`k < WIDTH`).
+    fn component(&self, k: usize) -> f64;
 }
 
 impl WindowInput for f64 {
     const WIDTH: usize = 1;
     fn push_to(self, cols: &mut [Vec<f64>]) {
         cols[0].push(self);
+    }
+    fn component(&self, _k: usize) -> f64 {
+        *self
     }
 }
 
@@ -38,6 +43,12 @@ macro_rules! impl_window_input_tuple {
             const WIDTH: usize = $width;
             fn push_to(self, cols: &mut [Vec<f64>]) {
                 $( cols[$k].push(self.$k); )+
+            }
+            fn component(&self, k: usize) -> f64 {
+                match k {
+                    $( $k => self.$k, )+
+                    _ => unreachable!("input component {k} of {}", $width),
+                }
             }
         }
     };
@@ -123,6 +134,31 @@ pub trait WindowKernel: Clone + std::fmt::Debug {
     fn last(params: &Self::Params, window: &[&[f64]]) -> Self::Output;
 }
 
+/// The window a preview sees, column after column in one buffer: each
+/// column's last `lookback - 1` committed bars plus that column's `parts`
+/// value. Returns the buffer and the per-column length. Not generic, so the
+/// ~150 windowed streams share one copy of it.
+fn peek_buffer(cols: &[Vec<f64>], lookback: usize, parts: &[f64]) -> (Vec<f64>, usize) {
+    let len = cols[0].len();
+    let start = (len + 1).saturating_sub(lookback);
+    let span = len - start + 1;
+    let mut flat = Vec::with_capacity(span * cols.len());
+    for (col, &part) in cols.iter().zip(parts) {
+        flat.extend_from_slice(&col[start..]);
+        flat.push(part);
+    }
+    (flat, span)
+}
+
+/// `width` consecutive `span`-long slices of `flat`, as kernel inputs.
+fn window_slots(flat: &[f64], span: usize, width: usize) -> [&[f64]; MAX_WINDOW_INPUTS] {
+    let mut window: [&[f64]; MAX_WINDOW_INPUTS] = [&[]; MAX_WINDOW_INPUTS];
+    for (slot, chunk) in window.iter_mut().zip(flat.chunks_exact(span)).take(width) {
+        *slot = chunk;
+    }
+    window
+}
+
 /// Streaming adapter over a [`WindowKernel`].
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -180,6 +216,21 @@ impl<K: WindowKernel> Windowed<K> {
         K::last(&self.params, &window[..self.cols.len()])
     }
 
+    /// Value `update(input)` would return, without changing state: the
+    /// kernel sees the same last `lookback` bars as on commit, copied into
+    /// one scratch buffer (a clone would copy up to `2 · lookback` bars per
+    /// input and then reallocate on the push).
+    pub fn peek(&self, input: K::Input) -> K::Output {
+        let mut parts = [0.0; MAX_WINDOW_INPUTS];
+        for (k, part) in parts.iter_mut().enumerate().take(self.cols.len()) {
+            *part = input.component(k);
+        }
+        let width = self.cols.len();
+        let (flat, span) = peek_buffer(&self.cols, K::lookback(&self.params), &parts[..width]);
+        let window = window_slots(&flat, span, width);
+        K::last(&self.params, &window[..width])
+    }
+
     pub fn reset(&mut self) {
         for col in &mut self.cols {
             col.clear();
@@ -219,5 +270,9 @@ impl<K: WindowKernel> StreamingIndicator for Windowed<K> {
 
     fn validate(&self) -> Result<(), StreamingError> {
         Windowed::validate(self)
+    }
+
+    fn peek(&self, input: K::Input) -> K::Output {
+        Windowed::peek(self, input)
     }
 }

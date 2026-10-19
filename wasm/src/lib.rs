@@ -2621,6 +2621,18 @@ impl IntoJsOutput for (f64, f64, f64) {
     }
 }
 
+impl IntoJsOutput for (f64, f64, f64, f64) {
+    type Js = Array;
+    fn into_js(self) -> Array {
+        Array::of4(
+            &JsValue::from_f64(self.0),
+            &JsValue::from_f64(self.1),
+            &JsValue::from_f64(self.2),
+            &JsValue::from_f64(self.3),
+        )
+    }
+}
+
 impl IntoJsOutput for (f64, f64, f64, f64, f64, f64) {
     type Js = Array;
     fn into_js(self) -> Array {

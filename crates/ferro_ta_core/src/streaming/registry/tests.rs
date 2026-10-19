@@ -2,6 +2,7 @@
 use crate::streaming::fixtures::{input_column, pattern_fixture, PATTERN_BARS};
 use crate::streaming::registry::BATCH_DRIFT_KERNELS;
 use crate::streaming::{Live, StreamValue, StreamingIndicator};
+use std::time::{Duration, Instant};
 
 const N_BARS: usize = 600;
 /// Bars in the long parity run: well past every warm-up (the Hilbert
@@ -35,6 +36,9 @@ trait DynStream {
     /// `Live::load` of a possibly corrupt snapshot (`None` on `Err`).
     #[cfg(feature = "serde")]
     fn try_restore(&self, json: &str) -> Option<Box<dyn DynStream>>;
+    /// Wall time of committing every row, then of previewing every row on
+    /// the final state (`bench::stream_ns_per_update`).
+    fn time_updates(&mut self, rows: &[Vec<f64>]) -> (Duration, Duration);
 }
 
 struct Erased<T: StreamingIndicator> {
@@ -64,6 +68,20 @@ impl<T: StreamingIndicator + Snap + 'static> DynStream for Erased<T> {
             live,
             input_of: self.input_of,
         }))
+    }
+    fn time_updates(&mut self, rows: &[Vec<f64>]) -> (Duration, Duration) {
+        use std::hint::black_box;
+        let inputs: Vec<T::Input> = rows.iter().map(|r| (self.input_of)(r)).collect();
+        let start = Instant::now();
+        for &input in &inputs {
+            black_box(self.live.update(black_box(input), true));
+        }
+        let commit = start.elapsed();
+        let start = Instant::now();
+        for &input in &inputs {
+            black_box(self.live.update(black_box(input), false));
+        }
+        (commit, start.elapsed())
     }
 }
 
@@ -101,6 +119,9 @@ struct Case {
     elems: &'static [&'static str],
     /// Has a `matype`-kind parameter (swept over `0..=8`).
     has_matype: bool,
+    /// `windowed` or `native`; only the benchmark reads it.
+    #[allow(dead_code)]
+    imp: &'static str,
     /// Snapshot save points; only the `serde` tests read it.
     #[cfg_attr(not(feature = "serde"), allow(dead_code))]
     lookback: fn(Variant) -> usize,
@@ -173,6 +194,7 @@ macro_rules! registry_cases {
                     exact: &[$(exact!($elem)),+],
                     elems: &[$(stringify!($elem)),+],
                     has_matype: false $(|| is_matype!($kind))*,
+                    imp: stringify!($imp),
                     lookback: |variant| {
                         $(let $p: $crate::__stream_param_ty!($kind) = param!($kind, $default, variant);)*
                         $lb
@@ -451,6 +473,8 @@ fn snapshot_round_trip_all_streams() {
 mod snapshot_fuzz;
 
 mod flat_parity;
+
+mod bench;
 
 /// A windowed snapshot holding more than `2 · lookback` bars is corrupt.
 #[cfg(feature = "serde")]
