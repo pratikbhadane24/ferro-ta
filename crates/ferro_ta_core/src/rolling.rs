@@ -750,7 +750,17 @@ impl RollingVariance {
         // handful of significant bits, so a one-ulp difference in `mean` can
         // move the result by percent-level *relative* error. See the subnormal
         // branch of `range_is_lossy`.
-        let mean = window.iter().sum::<f64>() / self.p;
+        //
+        // A flat window is special-cased to its value: `sum / p` at a price
+        // level like 50,000 can miss it by an ulp, leaving a spurious
+        // `p * ulp^2` variance where the exact answer is 0 (and `bbpercent`
+        // then reads 0.5 instead of its zero-range NaN).
+        let first = window[0];
+        let mean = if window.iter().all(|&x| x == first) {
+            first
+        } else {
+            window.iter().sum::<f64>() / self.p
+        };
         let mut s1 = 0.0_f64;
         let mut m2 = 0.0_f64;
         for &x in window {

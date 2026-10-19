@@ -189,7 +189,7 @@ fn volume_and_oscillator_streams_match_batch_off_default() {
         &collect(&cols, |r| ad.update(r[1], r[2], r[3], r[4])),
         &crate::volume::ad(h, l, c, v),
     );
-    for (fast, slow) in [(1, 1), (1, 2), (3, 10), (5, 3), (12, 40)] {
+    for (fast, slow) in [(1, 2), (2, 3), (3, 10), (12, 40)] {
         let mut s = StreamingAdosc::new(fast, slow).unwrap();
         let got = collect(&cols, |r| s.update(r[1], r[2], r[3], r[4]));
         let want = crate::volume::adosc(h, l, c, v, fast, slow);
@@ -331,6 +331,10 @@ fn restore_rejects_state_that_contradicts_params() {
     let adosc = || StreamingAdosc::new(3, 10).unwrap();
     assert!(load_edited(adosc(), hlcv, |_| {}));
     assert!(!load_edited(adosc(), hlcv, |s| s["slowperiod"] = json!(0)));
+    assert!(!load_edited(adosc(), hlcv, |s| s["fastperiod"] = json!(10)));
+    assert!(!load_edited(adosc(), hlcv, |s| s["fastperiod"] = json!(30)));
+    assert!(StreamingAdosc::new(10, 10).is_err());
+    assert!(StreamingAdosc::new(30, 10).is_err());
     let natr = || StreamingNatr::new(5).unwrap();
     assert!(load_edited(natr(), hlc, |_| {}));
     assert!(!load_edited(natr(), hlc, |s| s["atr"]["period"] = json!(0)));

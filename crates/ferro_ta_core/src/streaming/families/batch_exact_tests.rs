@@ -11,8 +11,11 @@ use super::drift_tests::Data;
 const EXACT_BARS: usize = 50_000;
 const REL_TOL: f64 = 1e-9;
 
+/// Mean taken about `w[0]`, so a flat window's mean is exactly its value
+/// (a plain `sum / n` at 50,000 can miss it by an ulp and fake a variance).
 fn mean(w: &[f64]) -> f64 {
-    w.iter().sum::<f64>() / w.len() as f64
+    let r = w[0];
+    r + w.iter().map(|v| v - r).sum::<f64>() / w.len() as f64
 }
 
 /// Two-pass population variance.
@@ -96,14 +99,13 @@ fn assert_no_failures(fails: &[String]) {
     assert!(fails.is_empty(), "\n{}", fails.join("\n"));
 }
 
-#[test]
-fn drift_kernels_equal_exact_two_pass_on_long_high_priced_walk() {
-    let d = Data::with_len(EXACT_BARS);
+/// Every formerly drifting kernel against its two-pass reference on `d`.
+fn check_drift_kernels(d: &Data) -> Vec<String> {
     let mut fails = Vec::new();
     let (c, o) = (&d.close, &d.other);
     let win = |s: &'_ [f64], i: usize, p: usize| -> Vec<f64> { s[i + 1 - p..=i].to_vec() };
 
-    for p in [5, 30] {
+    for p in [2, 5, 30] {
         check_every_bar(
             &mut fails,
             "correl",
@@ -173,7 +175,46 @@ fn drift_kernels_equal_exact_two_pass_on_long_high_priced_walk() {
         let r = c[i];
         (c[i - shift] - r) - c[i + 1 - p..=i].iter().map(|v| v - r).sum::<f64>() / p as f64
     });
-    assert_no_failures(&fails);
+    fails
+}
+
+#[test]
+fn drift_kernels_equal_exact_two_pass_on_long_high_priced_walk() {
+    assert_no_failures(&check_drift_kernels(&Data::with_len(EXACT_BARS)));
+}
+
+/// Bars per cycle of the flat-stretch walk, and the flat run in each.
+const FLAT_EVERY: usize = 2_000;
+const FLAT_RUN: usize = 200;
+
+/// The walk with every column frozen for `FLAT_RUN` bars out of each
+/// `FLAT_EVERY` (longer than every window), so windows go exactly flat
+/// (zero variance) and then leave the flat run again.
+fn flat_stretch_data() -> Data {
+    let mut d = Data::with_len(EXACT_BARS);
+    let freeze = |col: &mut Vec<f64>| {
+        for i in 1..col.len() {
+            if i % FLAT_EVERY > FLAT_EVERY - FLAT_RUN {
+                col[i] = col[i - 1];
+            }
+        }
+    };
+    for col in [
+        &mut d.open,
+        &mut d.high,
+        &mut d.low,
+        &mut d.close,
+        &mut d.volume,
+        &mut d.other,
+    ] {
+        freeze(col);
+    }
+    d
+}
+
+#[test]
+fn drift_kernels_equal_exact_two_pass_through_flat_stretches() {
+    assert_no_failures(&check_drift_kernels(&flat_stretch_data()));
 }
 
 // ---------------------------------------------------------------------------

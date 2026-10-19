@@ -1,6 +1,6 @@
 //! Volume and volatility streams: MFI, TRANGE, NATR, OBV, AD and ADOSC.
 
-use super::extended_common::{check_zero_exact, seed_sum, Ring};
+use super::extended_common::{check_fast_below_slow, check_zero_exact, seed_sum, Ring};
 use crate::streaming::primitives::Wilder;
 use crate::streaming::registry::check_period;
 use crate::streaming::StreamingError;
@@ -242,6 +242,7 @@ impl StreamingAdosc {
     pub fn new(fastperiod: usize, slowperiod: usize) -> Result<Self, StreamingError> {
         check_period(fastperiod, "fastperiod", 1)?;
         check_period(slowperiod, "slowperiod", 1)?;
+        check_fast_below_slow(fastperiod, slowperiod)?;
         Ok(Self {
             fastperiod,
             slowperiod,
@@ -282,7 +283,8 @@ impl StreamingAdosc {
 
     pub fn validate(&self) -> Result<(), StreamingError> {
         check_period(self.fastperiod, "fastperiod", 1)?;
-        check_period(self.slowperiod, "slowperiod", 1)
+        check_period(self.slowperiod, "slowperiod", 1)?;
+        check_fast_below_slow(self.fastperiod, self.slowperiod)
     }
 
     pub fn fastperiod(&self) -> usize {

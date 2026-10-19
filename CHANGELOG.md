@@ -47,6 +47,11 @@ and the project uses [Semantic Versioning](https://semver.org/).
   (`CORREL`, the LINEARREG family, `AO`, `PO` and `DPO` used to stay `NaN`
   for the rest of the series). Values elsewhere change only in the last
   digits.
+- **A flat window now has exactly zero variance in `STDDEV`, `VAR`,
+  `BBANDS`, `BBPERCENT` and `BBWIDTH`.** Near price 50,000 the window mean
+  could miss the constant value by one ulp, leaving a ~1e-11 standard
+  deviation: `BBPERCENT` then read `0.5` instead of its zero-range `NaN`, and
+  the bands sat a few ulps apart instead of on the middle.
 - **`CMF`, `VOLOSC`, `RVOL` and `MFI` handle all-zero-volume windows after
   fractional volumes.** A rounding residue in their running volume sums made
   such windows return finite garbage (e.g. `CMF` -0.14, `VOLOSC` -21.7);
