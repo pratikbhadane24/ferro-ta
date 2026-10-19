@@ -73,7 +73,7 @@ Both contain `ferro_ta_wasm.js`, `ferro_ta_wasm_bg.wasm`, and `ferro_ta_wasm.d.t
 const {
   sma, ema, rsi, bbands, macd, atr, adx, obv, mfi,
   cdlhammer, cdlengulfing,
-  WasmStreamingSMA,
+  WasmStreamingSMA, WasmStreamingKeltnerChannels, WasmBarBuilder,
 } = require('ferro-ta-wasm');
 
 const close = new Float64Array([44.34, 44.09, 44.15, 43.61, 44.33, 44.83, 45.10]);

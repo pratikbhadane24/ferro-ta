@@ -55,6 +55,13 @@ impl Ring {
     }
 
     /// Maximum of the newest `k` values (`-inf` when empty).
+    ///
+    /// NaN values are skipped (`f64::max`), which is *not* the batch deque's
+    /// comparison-order-dependent NaN rule. That is safe because every caller
+    /// of `max_last` / `min_last` (`StreamingFrama` closes, `StreamingIchimoku`
+    /// highs/lows) pushes raw OHLC inputs, never a derived warm-up value, and
+    /// `Live` drops non-finite ticks; the stream/batch parity contract is on
+    /// finite input only. Do not push derived series that can be NaN here.
     pub(crate) fn max_last(&self, k: usize) -> f64 {
         self.0
             .iter()
@@ -63,7 +70,8 @@ impl Ring {
             .fold(f64::NEG_INFINITY, |m, &v| m.max(v))
     }
 
-    /// Minimum of the newest `k` values (`+inf` when empty).
+    /// Minimum of the newest `k` values (`+inf` when empty); NaN is skipped,
+    /// see [`Ring::max_last`] for why that is sufficient.
     pub(crate) fn min_last(&self, k: usize) -> f64 {
         self.0
             .iter()
@@ -242,4 +250,48 @@ pub(crate) fn check_zero_exact(
         )));
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn ring(values: &[f64]) -> Ring {
+        let mut r = Ring::default();
+        for &v in values {
+            r.push(v, values.len());
+        }
+        r
+    }
+
+    #[test]
+    fn extrema_of_finite_windows() {
+        let r = ring(&[3.0, 1.0, 2.0]);
+        assert_eq!((r.max_last(2), r.min_last(2)), (2.0, 1.0));
+        assert_eq!((r.max(), r.min()), (3.0, 1.0));
+    }
+
+    #[test]
+    fn empty_ring_extrema_are_infinite() {
+        let r = Ring::default();
+        assert_eq!(r.max_last(3), f64::NEG_INFINITY);
+        assert_eq!(r.min_last(3), f64::INFINITY);
+    }
+
+    /// Pins the documented contract: NaN is skipped, so callers must only push
+    /// raw (finite) inputs; a window of only NaN yields the identity values.
+    #[test]
+    fn nan_is_skipped_not_propagated() {
+        for w in [
+            [f64::NAN, 2.0, 3.0],
+            [1.0, f64::NAN, 2.0],
+            [2.0, 1.0, f64::NAN],
+        ] {
+            let r = ring(&w);
+            assert!(r.max().is_finite() && r.min().is_finite());
+        }
+        let all_nan = ring(&[f64::NAN; 3]);
+        assert_eq!(all_nan.max(), f64::NEG_INFINITY);
+        assert_eq!(all_nan.min(), f64::INFINITY);
+    }
 }

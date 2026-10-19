@@ -65,8 +65,10 @@ run_changelog()   { need_cmd python3; run_cmd python3 scripts/check_changelog.py
 run_manifest()    {
   need_cmd python3
   run_cmd python3 scripts/check_api_manifest.py
-  # Needs the built extension (reads registry stream defaults from it).
-  run_cmd python3 scripts/build_streaming_python.py --check
+  # Needs the built extension (reads registry stream defaults from it), so
+  # prepare the env first and use its interpreter, not the system python3.
+  ensure_python_env
+  run_cmd uv run --extra dev --extra docs --extra mcp python scripts/build_streaming_python.py --check
 }
 run_rust_fmt()    { need_cmd cargo;   run_cmd cargo fmt --all -- --check; }
 run_python_lint() {
