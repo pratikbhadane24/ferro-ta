@@ -4,7 +4,7 @@
 //! `STATE_FORMAT_VERSION` is bumped and the fixtures are re-recorded.
 //!
 //! Record: `UPDATE_SNAPSHOT_FIXTURES=1 cargo test -p ferro_ta_core --features serde golden`.
-use super::{cases, columns_n, row, same, DEFAULTS};
+use super::{cases, columns_n, row, DEFAULTS};
 use crate::streaming::STATE_FORMAT_VERSION;
 use std::collections::BTreeMap;
 
@@ -69,6 +69,23 @@ fn value_diff(a: &serde_json::Value, g: &serde_json::Value, at: &str) -> Result<
     }
 }
 
+fn floats_close(p: f64, q: f64) -> bool {
+    (p - q).abs() <= FLOAT_REL_TOL * p.abs().max(q.abs()).max(1.0)
+}
+
+/// Output comparison for the replay check: `None` must match `None`, NaN must
+/// match NaN, finite values within [`FLOAT_REL_TOL`], infinities exactly.
+fn outputs_close(a: &[Option<f64>], b: &[Option<f64>]) -> bool {
+    a.len() == b.len()
+        && a.iter().zip(b).all(|(x, y)| match (x, y) {
+            (None, None) => true,
+            (Some(p), Some(q)) if p.is_nan() || q.is_nan() => p.is_nan() && q.is_nan(),
+            (Some(p), Some(q)) if p.is_infinite() || q.is_infinite() => p == q,
+            (Some(p), Some(q)) => floats_close(*p, *q),
+            _ => false,
+        })
+}
+
 fn number_diff(x: &serde_json::Number, y: &serde_json::Number, at: &str) -> Result<(), String> {
     if x.is_f64() != y.is_f64() {
         return Err(format!("{at}: integer vs float"));
@@ -81,7 +98,7 @@ fn number_diff(x: &serde_json::Number, y: &serde_json::Number, at: &str) -> Resu
         };
     }
     let (p, q) = (x.as_f64().unwrap(), y.as_f64().unwrap());
-    if (p - q).abs() <= FLOAT_REL_TOL * p.abs().max(q.abs()).max(1.0) {
+    if floats_close(p, q) {
         Ok(())
     } else {
         Err(format!("{at}: {p} vs {q}"))
@@ -122,7 +139,7 @@ fn golden_registry_snapshots_match_current_format() {
         let mut restored = fresh.restore(golden);
         let diverged = (WARM..WARM + TAIL).find(|&i| {
             let bar = row(&cols, i);
-            !same(&fresh.update(&bar, true), &restored.update(&bar, true))
+            !outputs_close(&fresh.update(&bar, true), &restored.update(&bar, true))
         });
         if let Some(i) = diverged {
             failures.push(format!(
@@ -155,7 +172,27 @@ fn golden_registry_snapshots_match_current_format() {
 
 #[cfg(test)]
 mod layout_diff_tests {
-    use super::layout_diff;
+    use super::{layout_diff, outputs_close};
+
+    #[test]
+    fn outputs_close_tolerates_ulps_but_not_real_changes() {
+        let base = [Some(1.0), None, Some(f64::NAN), Some(1e6)];
+        let nudged = [Some(1.0 + 2e-16), None, Some(f64::NAN), Some(1e6 + 1e-7)];
+        assert!(outputs_close(&nudged, &base));
+        assert!(!outputs_close(
+            &[Some(1.01), None, Some(f64::NAN), Some(1e6)],
+            &base
+        ));
+        assert!(!outputs_close(
+            &[Some(1.0), Some(0.0), Some(f64::NAN), Some(1e6)],
+            &base
+        ));
+        assert!(!outputs_close(
+            &[Some(1.0), None, Some(0.0), Some(1e6)],
+            &base
+        ));
+        assert!(!outputs_close(&base[..3], &base));
+    }
 
     const BASE: &str = r#"{"a":1,"b":[0.5,2.5],"c":null,"d":"x","e":true}"#;
 
