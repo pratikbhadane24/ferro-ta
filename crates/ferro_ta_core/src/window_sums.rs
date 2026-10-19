@@ -26,12 +26,12 @@
 
 use crate::rolling::{anchor_interval, NonFiniteGuard, MAX_ACCUMULATOR_RANGE};
 
-/// `0.0` for a pair of finite values, `NaN` otherwise (`inf - inf` and
-/// `NaN - NaN` are `NaN`), so a two-input bar can drive a single-series
+/// `0.0` for a pair of finite values, `NaN` otherwise (`inf * 0` and
+/// `NaN * 0` are `NaN`), so a two-input bar can drive a single-series
 /// [`NonFiniteGuard`]. Branch-free.
 #[inline]
 fn finite_flag(a: f64, b: f64) -> f64 {
-    (a - a) + (b - b)
+    a * 0.0 + b * 0.0
 }
 
 /// True when a dispersion `v` has collapsed by more than
