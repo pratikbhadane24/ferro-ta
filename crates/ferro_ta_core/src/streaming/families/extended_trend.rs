@@ -343,16 +343,15 @@ impl StreamingFrama {
         let half_f = half as f64;
         let n1 = (self.closes.max_last(half) - self.closes.min_last(half)) / half_f;
         // The previous half: the `half` closes ending `half` bars ago.
-        let older: Vec<f64> = self
+        let (hh, ll) = self
             .closes
             .iter()
             .rev()
             .skip(half)
             .take(half)
-            .copied()
-            .collect();
-        let hh = older.iter().fold(f64::NEG_INFINITY, |m, &v| m.max(v));
-        let ll = older.iter().fold(f64::INFINITY, |m, &v| m.min(v));
+            .fold((f64::NEG_INFINITY, f64::INFINITY), |(hh, ll), &v| {
+                (hh.max(v), ll.min(v))
+            });
         let n2 = (hh - ll) / half_f;
         let n3 = (self.closes.max() - self.closes.min()) / self.timeperiod as f64;
         if n1 > 0.0 && n2 > 0.0 && n3 > 0.0 {

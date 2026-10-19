@@ -99,13 +99,6 @@ fn candidates() -> Vec<(&'static str, usize, Batch)> {
             2.0
         )),
         c!("bbwidth", 5, |d, r| x::bbwidth(&d.close[r], 5, 2.0, 2.0)),
-        c!("cmf", 20, |d, r| x::cmf(
-            &d.high[r.clone()],
-            &d.low[r.clone()],
-            &d.close[r.clone()],
-            &d.volume[r],
-            20
-        )),
         c!("emv", 15, |d, r| x::emv(
             &d.high[r.clone()],
             &d.low[r.clone()],
@@ -113,8 +106,6 @@ fn candidates() -> Vec<(&'static str, usize, Batch)> {
             14,
             10000.0
         )),
-        c!("volosc", 10, |d, r| x::volosc(&d.volume[r], 5, 10)),
-        c!("rvol", 20, |d, r| x::rvol(&d.volume[r], 20)),
         c!("vwma", 20, |d, r| x::vwma(
             &d.close[r.clone()],
             &d.volume[r],
@@ -147,7 +138,6 @@ fn extended_windowed_streams_equal_batch_on_trailing_window_long_series() {
     let hlc = |i: usize| (d.high[i], d.low[i], d.close[i]);
     let hl = |i: usize| (d.high[i], d.low[i]);
     let close = |i: usize| d.close[i];
-    let vol = |i: usize| d.volume[i];
 
     check(
         "choppiness_index",
@@ -183,19 +173,11 @@ fn extended_windowed_streams_equal_batch_on_trailing_window_long_series() {
         run(StreamingBbwidth::new(5, 2.0, 2.0).unwrap(), close),
     );
     check(
-        "cmf",
-        run(StreamingCmf::new(20).unwrap(), |i| {
-            (d.high[i], d.low[i], d.close[i], d.volume[i])
-        }),
-    );
-    check(
         "emv",
         run(StreamingEmv::new(14, 10000.0).unwrap(), |i| {
             (d.high[i], d.low[i], d.volume[i])
         }),
     );
-    check("volosc", run(StreamingVolosc::new(5, 10).unwrap(), vol));
-    check("rvol", run(StreamingRvol::new(20).unwrap(), vol));
     check(
         "vwma",
         run(StreamingVwma::new(20).unwrap(), |i| {
@@ -212,7 +194,7 @@ fn extended_windowed_streams_equal_batch_on_trailing_window_long_series() {
 /// running sum of squares), ao 5.2e-10, po 3.6e-10, dpo 2.3e-10 (`sma`
 /// running sums under a near-zero difference; the gap scales with price).
 /// Every other kernel above is <= 1.1e-11 (hull 6.1e-12, ac 1.0e-11,
-/// volosc 1.7e-12, bbwidth 1.4e-12, emv 7.2e-13, vwma 8.2e-13, the rest
-/// <= 5e-14). RVI and Ulcer (gap 0 / 3.7e-17 here) are native instead: their
-/// running sums decide the NaN mask on flat windows (see their docs).
+/// bbwidth 1.4e-12, emv 7.2e-13, vwma 8.2e-13, the rest <= 5e-14). RVI,
+/// Ulcer, CMF, VOLOSC and RVOL are native instead: their running sums decide
+/// the NaN mask on flat / zero-volume windows (see their docs).
 const EXTENDED_DRIFT_KERNELS: &[&str] = &["bbpercent", "ao", "po", "dpo"];

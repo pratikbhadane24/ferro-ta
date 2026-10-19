@@ -1,10 +1,11 @@
-//! Extended volume streams: CMF, EMV, volume oscillator, VROC, relative
-//! volume, VWMA (windowed); Chaikin oscillator, smoothed OBV, Force index,
-//! NVI / PVI (and their signals), Klinger and PVT (native).
+//! Extended volume streams: EMV, VROC, VWMA (windowed); CMF, volume
+//! oscillator, relative volume, Chaikin oscillator, smoothed OBV, Force
+//! index, NVI / PVI (and their signals), Klinger and PVT (native).
 
-use super::extended_common::check_fast_below_slow;
+use super::extended_common::{check_fast_below_slow, Ring};
 use super::{StreamingAdosc, StreamingMa, StreamingObv};
 use crate::streaming::primitives::EmaTa;
+use crate::streaming::registry::check_period;
 use crate::streaming::StreamingError;
 
 /// Registry entries for the extended volume streams.
@@ -14,21 +15,21 @@ macro_rules! stream_family_extended_volume {
     ($($ctx:tt)*) => {
         $crate::__stream_chain! {
             [
-                cmf => StreamingCmf, doc "Streaming Chaikin money flow: `timeperiod`-bar sum of CLV * volume over the volume sum.",
+                cmf => StreamingCmf, doc "Streaming Chaikin money flow: `timeperiod`-bar sum of CLV * volume over the volume sum. Mirrors the batch running volume sums (not a fresh window sum), so an all-zero-volume window leaves the same residue and NaN mask as the batch function.",
                     params(timeperiod: period = 20), inputs(high, low, close, volume), outputs(out: f64),
-                    windowed(lookback = timeperiod, batch = $crate::extended::cmf(high, low, close, volume, timeperiod));
+                    native(lookback = timeperiod, batch = $crate::extended::cmf(high, low, close, volume, timeperiod));
                 emv => StreamingEmv, doc "Streaming ease of movement: SMA over `timeperiod` bars of midpoint move * range * `scale` / volume (raw when `timeperiod` is 1).",
                     params(timeperiod: period = 14, scale: float = 10000.0), inputs(high, low, volume), outputs(out: f64),
                     windowed(lookback = timeperiod + 1, batch = $crate::extended::emv(high, low, volume, timeperiod, scale));
-                volosc => StreamingVolosc, doc "Streaming volume oscillator: 100 * (SMA(volume, fast) - SMA(volume, slow)) / SMA(volume, slow).",
+                volosc => StreamingVolosc, doc "Streaming volume oscillator: 100 * (SMA(volume, fast) - SMA(volume, slow)) / SMA(volume, slow). Mirrors the batch running volume sums (not a fresh window sum), so an all-zero-volume window leaves the same residue and NaN mask as the batch function.",
                     params(fastperiod: period = 5, slowperiod: period = 10), inputs(volume), outputs(out: f64),
-                    windowed(lookback = slowperiod, batch = $crate::extended::volosc(volume, fastperiod, slowperiod), requires = fastperiod < slowperiod);
+                    native(lookback = slowperiod, batch = $crate::extended::volosc(volume, fastperiod, slowperiod));
                 vroc => StreamingVroc, doc "Streaming volume rate of change over `timeperiod` bars, in percent.",
                     params(timeperiod: period = 25), inputs(volume), outputs(out: f64),
                     windowed(lookback = timeperiod + 1, batch = $crate::extended::vroc(volume, timeperiod));
-                rvol => StreamingRvol, doc "Streaming relative volume: volume / SMA(volume, `timeperiod`).",
+                rvol => StreamingRvol, doc "Streaming relative volume: volume / SMA(volume, `timeperiod`). Mirrors the batch running volume sums (not a fresh window sum), so an all-zero-volume window leaves the same residue and NaN mask as the batch function.",
                     params(timeperiod: period = 20), inputs(volume), outputs(out: f64),
-                    windowed(lookback = timeperiod, batch = $crate::extended::rvol(volume, timeperiod));
+                    native(lookback = timeperiod, batch = $crate::extended::rvol(volume, timeperiod));
                 vwma => StreamingVwma, doc "Streaming volume-weighted moving average over `timeperiod` bars.",
                     params(timeperiod: period = 20), inputs(close, volume), outputs(out: f64),
                     windowed(lookback = timeperiod, batch = $crate::extended::vwma(close, volume, timeperiod));
@@ -582,5 +583,238 @@ impl StreamingPvt {
 
     pub fn validate(&self) -> Result<(), StreamingError> {
         Ok(())
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Natives mirroring the batch running volume sums: CMF, VOLOSC, RVOL
+// ---------------------------------------------------------------------------
+//
+// These kernels carry a window sum from the first full window (`sum += new
+// - old`, never reseeded). With fractional volumes an all-zero-volume window
+// leaves a rounding residue there, which a fresh window sum would make
+// exactly 0 — flipping a `!= 0` test. So the streams keep the batch sums.
+
+/// `overlap::sma`: `simd::sum` seed of the first `period` values (the same
+/// reduction, so the same bits), then `sum += new - old`, `sum / p`.
+#[derive(Clone, Debug, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+struct BatchSma {
+    /// The last `period` values.
+    window: Ring,
+    #[cfg_attr(
+        feature = "serde",
+        serde(with = "crate::streaming::snapshot::nan_as_null")
+    )]
+    sum: f64,
+}
+
+impl BatchSma {
+    fn update(&mut self, x: f64, period: usize) -> f64 {
+        let seeding = self.window.len() < period;
+        let old = self.window.push(x, period);
+        if seeding {
+            if self.window.len() < period {
+                return f64::NAN;
+            }
+            let seed: Vec<f64> = self.window.iter().copied().collect();
+            self.sum = crate::simd::sum(&seed);
+        } else {
+            self.sum += x - old.unwrap_or(f64::NAN);
+        }
+        self.sum / period as f64
+    }
+
+    fn validate(&self, period: usize) -> Result<(), StreamingError> {
+        self.window.validate(period, "sma window")
+    }
+}
+
+/// Streaming CMF (`extended::cmf`): sequential seed sums of the first
+/// `timeperiod` money-flow volumes and volumes, then `sum += new - old`;
+/// `mfv_sum / vol_sum` where the volume sum is non-zero.
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct StreamingCmf {
+    timeperiod: usize,
+    mfvs: Ring,
+    volumes: Ring,
+    #[cfg_attr(
+        feature = "serde",
+        serde(with = "crate::streaming::snapshot::nan_as_null")
+    )]
+    mfv_sum: f64,
+    #[cfg_attr(
+        feature = "serde",
+        serde(with = "crate::streaming::snapshot::nan_as_null")
+    )]
+    vol_sum: f64,
+}
+
+impl StreamingCmf {
+    pub fn new(timeperiod: usize) -> Result<Self, StreamingError> {
+        check_period(timeperiod, "timeperiod", 1)?;
+        Ok(Self {
+            timeperiod,
+            mfvs: Ring::default(),
+            volumes: Ring::default(),
+            mfv_sum: 0.0,
+            vol_sum: 0.0,
+        })
+    }
+
+    /// Commit one bar (NaN for the first `timeperiod - 1` bars).
+    pub fn update(&mut self, high: f64, low: f64, close: f64, volume: f64) -> f64 {
+        let hl = high - low;
+        let clv = if hl != 0.0 {
+            ((close - low) - (high - close)) / hl
+        } else {
+            0.0
+        };
+        let mfv = clv * volume;
+        let p = self.timeperiod;
+        let old_mfv = self.mfvs.push(mfv, p);
+        let old_vol = self.volumes.push(volume, p);
+        match (old_mfv, old_vol) {
+            (Some(om), Some(ov)) => {
+                self.mfv_sum += mfv - om;
+                self.vol_sum += volume - ov;
+            }
+            _ if self.mfvs.len() == p => {
+                self.mfv_sum = self.mfvs.iter().sum();
+                self.vol_sum = self.volumes.iter().sum();
+            }
+            _ => return f64::NAN,
+        }
+        if self.vol_sum != 0.0 {
+            self.mfv_sum / self.vol_sum
+        } else {
+            f64::NAN
+        }
+    }
+
+    pub fn reset(&mut self) {
+        self.mfvs.clear();
+        self.volumes.clear();
+        self.mfv_sum = 0.0;
+        self.vol_sum = 0.0;
+    }
+
+    pub fn validate(&self) -> Result<(), StreamingError> {
+        check_period(self.timeperiod, "timeperiod", 1)?;
+        self.mfvs
+            .validate(self.timeperiod, "cmf money-flow window")?;
+        self.volumes
+            .validate(self.timeperiod, "cmf volume window")?;
+        if self.mfvs.len() != self.volumes.len() {
+            return Err(StreamingError(
+                "cmf windows disagree on their length".to_string(),
+            ));
+        }
+        Ok(())
+    }
+
+    pub fn timeperiod(&self) -> usize {
+        self.timeperiod
+    }
+}
+
+/// Streaming volume oscillator (`extended::volosc`): two batch-mirrored
+/// `overlap::sma`s, `100 * (fast - slow) / slow` where both are finite and
+/// `slow != 0`.
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct StreamingVolosc {
+    fastperiod: usize,
+    slowperiod: usize,
+    fast: BatchSma,
+    slow: BatchSma,
+}
+
+impl StreamingVolosc {
+    pub fn new(fastperiod: usize, slowperiod: usize) -> Result<Self, StreamingError> {
+        check_period(fastperiod, "fastperiod", 1)?;
+        check_period(slowperiod, "slowperiod", 1)?;
+        check_fast_below_slow(fastperiod, slowperiod)?;
+        Ok(Self {
+            fastperiod,
+            slowperiod,
+            fast: BatchSma::default(),
+            slow: BatchSma::default(),
+        })
+    }
+
+    /// Commit one bar (NaN for the first `slowperiod - 1` bars).
+    pub fn update(&mut self, volume: f64) -> f64 {
+        let fast = self.fast.update(volume, self.fastperiod);
+        let slow = self.slow.update(volume, self.slowperiod);
+        if fast.is_finite() && slow.is_finite() && slow != 0.0 {
+            100.0 * (fast - slow) / slow
+        } else {
+            f64::NAN
+        }
+    }
+
+    pub fn reset(&mut self) {
+        self.fast = BatchSma::default();
+        self.slow = BatchSma::default();
+    }
+
+    pub fn validate(&self) -> Result<(), StreamingError> {
+        check_period(self.fastperiod, "fastperiod", 1)?;
+        check_period(self.slowperiod, "slowperiod", 1)?;
+        check_fast_below_slow(self.fastperiod, self.slowperiod)?;
+        self.fast.validate(self.fastperiod)?;
+        self.slow.validate(self.slowperiod)
+    }
+
+    pub fn fastperiod(&self) -> usize {
+        self.fastperiod
+    }
+
+    pub fn slowperiod(&self) -> usize {
+        self.slowperiod
+    }
+}
+
+/// Streaming relative volume (`extended::rvol`): `volume / sma` with a
+/// batch-mirrored `overlap::sma`, where the average is finite and non-zero.
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct StreamingRvol {
+    timeperiod: usize,
+    avg: BatchSma,
+}
+
+impl StreamingRvol {
+    pub fn new(timeperiod: usize) -> Result<Self, StreamingError> {
+        check_period(timeperiod, "timeperiod", 1)?;
+        Ok(Self {
+            timeperiod,
+            avg: BatchSma::default(),
+        })
+    }
+
+    /// Commit one bar (NaN for the first `timeperiod - 1` bars).
+    pub fn update(&mut self, volume: f64) -> f64 {
+        let avg = self.avg.update(volume, self.timeperiod);
+        if avg.is_finite() && avg != 0.0 {
+            volume / avg
+        } else {
+            f64::NAN
+        }
+    }
+
+    pub fn reset(&mut self) {
+        self.avg = BatchSma::default();
+    }
+
+    pub fn validate(&self) -> Result<(), StreamingError> {
+        check_period(self.timeperiod, "timeperiod", 1)?;
+        self.avg.validate(self.timeperiod)
+    }
+
+    pub fn timeperiod(&self) -> usize {
+        self.timeperiod
     }
 }

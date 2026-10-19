@@ -1,5 +1,6 @@
 //! Volume and volatility streams: MFI, TRANGE, NATR, OBV, AD and ADOSC.
 
+use super::extended_common::Ring;
 use crate::streaming::primitives::Wilder;
 use crate::streaming::registry::check_period;
 use crate::streaming::StreamingError;
@@ -11,9 +12,9 @@ macro_rules! stream_family_volume {
     ($($ctx:tt)*) => {
         $crate::__stream_chain! {
             [
-                mfi => StreamingMfi, doc "Streaming money flow index over `timeperiod` bars of typical-price money flow.",
+                mfi => StreamingMfi, doc "Streaming money flow index over `timeperiod` bars of typical-price money flow. Mirrors the batch running flow sums (not a fresh window sum), so an all-zero-volume window leaves the same residue as the batch function.",
                     params(timeperiod: period = 14), inputs(high, low, close, volume), outputs(out: f64),
-                    windowed(lookback = timeperiod + 1, batch = $crate::volume::mfi(high, low, close, volume, timeperiod));
+                    native(lookback = timeperiod + 1, batch = $crate::volume::mfi(high, low, close, volume, timeperiod));
                 trange => StreamingTrange, doc "Streaming true range (NaN on the first bar: no previous close).",
                     params(), inputs(high, low, close), outputs(out: f64),
                     windowed(lookback = 2, batch = $crate::volatility::trange(high, low, close));
@@ -289,5 +290,117 @@ impl StreamingAdosc {
 
     pub fn slowperiod(&self) -> usize {
         self.slowperiod
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Native: MFI
+// ---------------------------------------------------------------------------
+
+/// Streaming MFI (`volume::mfi`): positive / negative typical-price money
+/// flow from bar 1, sequential seed sums over flows `1..=p`, then
+/// `sum += new - old` (never reseeded). Native, not windowed: with
+/// fractional volumes an all-zero-volume window leaves a rounding residue in
+/// those sums, and the batch ratio of residues is what must be reproduced.
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct StreamingMfi {
+    timeperiod: usize,
+    #[cfg_attr(
+        feature = "serde",
+        serde(with = "crate::streaming::snapshot::nan_as_null")
+    )]
+    tp_prev: f64,
+    has_prev: bool,
+    pos_flows: Ring,
+    neg_flows: Ring,
+    #[cfg_attr(
+        feature = "serde",
+        serde(with = "crate::streaming::snapshot::nan_as_null")
+    )]
+    pos_sum: f64,
+    #[cfg_attr(
+        feature = "serde",
+        serde(with = "crate::streaming::snapshot::nan_as_null")
+    )]
+    neg_sum: f64,
+}
+
+impl StreamingMfi {
+    pub fn new(timeperiod: usize) -> Result<Self, StreamingError> {
+        check_period(timeperiod, "timeperiod", 1)?;
+        Ok(Self {
+            timeperiod,
+            tp_prev: f64::NAN,
+            has_prev: false,
+            pos_flows: Ring::default(),
+            neg_flows: Ring::default(),
+            pos_sum: 0.0,
+            neg_sum: 0.0,
+        })
+    }
+
+    /// Commit one bar (NaN for the first `timeperiod` bars).
+    pub fn update(&mut self, high: f64, low: f64, close: f64, volume: f64) -> f64 {
+        let tp = (high + low + close) / 3.0;
+        let tp_prev = std::mem::replace(&mut self.tp_prev, tp);
+        if !std::mem::replace(&mut self.has_prev, true) {
+            return f64::NAN;
+        }
+        let rmf = tp * volume;
+        let (pos, neg) = if tp > tp_prev {
+            (rmf, 0.0)
+        } else if tp < tp_prev {
+            (0.0, rmf)
+        } else {
+            (0.0, 0.0)
+        };
+        let p = self.timeperiod;
+        let old_pos = self.pos_flows.push(pos, p);
+        let old_neg = self.neg_flows.push(neg, p);
+        match (old_pos, old_neg) {
+            (Some(op), Some(on)) => {
+                self.pos_sum += pos - op;
+                self.neg_sum += neg - on;
+            }
+            _ if self.pos_flows.len() == p => {
+                self.pos_sum = self.pos_flows.iter().sum();
+                self.neg_sum = self.neg_flows.iter().sum();
+            }
+            _ => return f64::NAN,
+        }
+        let denom = self.pos_sum + self.neg_sum;
+        if denom == 0.0 {
+            0.0
+        } else {
+            (100.0 * self.pos_sum / denom).clamp(0.0, 100.0)
+        }
+    }
+
+    pub fn reset(&mut self) {
+        self.tp_prev = f64::NAN;
+        self.has_prev = false;
+        self.pos_flows.clear();
+        self.neg_flows.clear();
+        self.pos_sum = 0.0;
+        self.neg_sum = 0.0;
+    }
+
+    pub fn validate(&self) -> Result<(), StreamingError> {
+        check_period(self.timeperiod, "timeperiod", 1)?;
+        self.pos_flows
+            .validate(self.timeperiod, "mfi positive flows")?;
+        self.neg_flows
+            .validate(self.timeperiod, "mfi negative flows")?;
+        if self.pos_flows.len() != self.neg_flows.len() {
+            return Err(StreamingError(
+                "mfi flow windows disagree on their length".to_string(),
+            ));
+        }
+        Ok(())
+    }
+
+    pub fn timeperiod(&self) -> usize {
+        self.timeperiod
     }
 }

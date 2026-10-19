@@ -134,6 +134,9 @@ def render_stub_block(streams: list[dict], module: object) -> str:
 def render_exports_block(streams: list[dict]) -> str:
     # Case-insensitive, as ruff's isort orders imported names (`MaEnvelopes`
     # after `Macdfix`), so the pre-commit hook leaves the block unchanged.
+    # Ruff uses *natural* order (digit runs compare as numbers); this key
+    # agrees only while no two names differ in a multi-digit number
+    # (`Foo2` vs `Foo10`) — switch to a natural-order key if one appears.
     names = sorted(
         (stream_class(s["name"]) for s in streams), key=lambda n: (n.lower(), n)
     )

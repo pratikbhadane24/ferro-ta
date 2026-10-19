@@ -7542,7 +7542,7 @@ func (s *StreamAdxr) Close() error {
 
 // StreamMfi is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming money flow index over `timeperiod` bars of typical-price money flow.
+// Streaming money flow index over `timeperiod` bars of typical-price money flow. Mirrors the batch running flow sums (not a fresh window sum), so an all-zero-volume window leaves the same residue as the batch function.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -22604,7 +22604,7 @@ func (s *StreamVidya) Close() error {
 
 // StreamCmf is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Chaikin money flow: `timeperiod`-bar sum of CLV * volume over the volume sum.
+// Streaming Chaikin money flow: `timeperiod`-bar sum of CLV * volume over the volume sum. Mirrors the batch running volume sums (not a fresh window sum), so an all-zero-volume window leaves the same residue and NaN mask as the batch function.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -22826,7 +22826,7 @@ func (s *StreamEmv) Close() error {
 
 // StreamVolosc is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming volume oscillator: 100 * (SMA(volume, fast) - SMA(volume, slow)) / SMA(volume, slow).
+// Streaming volume oscillator: 100 * (SMA(volume, fast) - SMA(volume, slow)) / SMA(volume, slow). Mirrors the batch running volume sums (not a fresh window sum), so an all-zero-volume window leaves the same residue and NaN mask as the batch function.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -23048,7 +23048,7 @@ func (s *StreamVroc) Close() error {
 
 // StreamRvol is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming relative volume: volume / SMA(volume, `timeperiod`).
+// Streaming relative volume: volume / SMA(volume, `timeperiod`). Mirrors the batch running volume sums (not a fresh window sum), so an all-zero-volume window leaves the same residue and NaN mask as the batch function.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.

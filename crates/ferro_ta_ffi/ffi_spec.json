@@ -11602,7 +11602,7 @@
       "update_fn": "ft_stream_adxr_update"
     },
     {
-      "doc": "Streaming money flow index over `timeperiod` bars of typical-price money flow.",
+      "doc": "Streaming money flow index over `timeperiod` bars of typical-price money flow. Mirrors the batch running flow sums (not a fresh window sum), so an all-zero-volume window leaves the same residue as the batch function.",
       "free_fn": "ft_stream_mfi_free",
       "handle": "FtStreamMfi",
       "inputs": [
@@ -15960,7 +15960,7 @@
       "update_fn": "ft_stream_vidya_update"
     },
     {
-      "doc": "Streaming Chaikin money flow: `timeperiod`-bar sum of CLV * volume over the volume sum.",
+      "doc": "Streaming Chaikin money flow: `timeperiod`-bar sum of CLV * volume over the volume sum. Mirrors the batch running volume sums (not a fresh window sum), so an all-zero-volume window leaves the same residue and NaN mask as the batch function.",
       "free_fn": "ft_stream_cmf_free",
       "handle": "FtStreamCmf",
       "inputs": [
@@ -16030,7 +16030,7 @@
       "update_fn": "ft_stream_emv_update"
     },
     {
-      "doc": "Streaming volume oscillator: 100 * (SMA(volume, fast) - SMA(volume, slow)) / SMA(volume, slow).",
+      "doc": "Streaming volume oscillator: 100 * (SMA(volume, fast) - SMA(volume, slow)) / SMA(volume, slow). Mirrors the batch running volume sums (not a fresh window sum), so an all-zero-volume window leaves the same residue and NaN mask as the batch function.",
       "free_fn": "ft_stream_volosc_free",
       "handle": "FtStreamVolosc",
       "inputs": [
@@ -16096,7 +16096,7 @@
       "update_fn": "ft_stream_vroc_update"
     },
     {
-      "doc": "Streaming relative volume: volume / SMA(volume, `timeperiod`).",
+      "doc": "Streaming relative volume: volume / SMA(volume, `timeperiod`). Mirrors the batch running volume sums (not a fresh window sum), so an all-zero-volume window leaves the same residue and NaN mask as the batch function.",
       "free_fn": "ft_stream_rvol_free",
       "handle": "FtStreamRvol",
       "inputs": [

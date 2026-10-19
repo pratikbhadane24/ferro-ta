@@ -133,7 +133,7 @@ fn range_oscillators_match_batch_on_flat_ranges_and_ties() {
         &crate::momentum::bop(o, h, l, c),
     );
     let mut m = StreamingMfi::new(5).unwrap();
-    let got = collect(&cols, |r| m.update((r[1], r[2], r[3], r[4])));
+    let got = collect(&cols, |r| m.update(r[1], r[2], r[3], r[4]));
     assert_series("mfi", &got, &crate::volume::mfi(h, l, c, v, 5));
 }
 

@@ -2647,7 +2647,7 @@ int32_t ft_stream_adxr_load(const char *json, size_t len, FtStreamAdxr **out_han
 void ft_stream_adxr_free(FtStreamAdxr *handle);
 
 /**
- * Streaming money flow index over `timeperiod` bars of typical-price money flow.
+ * Streaming money flow index over `timeperiod` bars of typical-price money flow. Mirrors the batch running flow sums (not a fresh window sum), so an all-zero-volume window leaves the same residue as the batch function.
  */
 typedef struct FtStreamMfi FtStreamMfi;
 int32_t ft_stream_mfi_new(int64_t timeperiod, FtStreamMfi **out_handle);
@@ -4551,7 +4551,7 @@ int32_t ft_stream_vidya_load(const char *json, size_t len, FtStreamVidya **out_h
 void ft_stream_vidya_free(FtStreamVidya *handle);
 
 /**
- * Streaming Chaikin money flow: `timeperiod`-bar sum of CLV * volume over the volume sum.
+ * Streaming Chaikin money flow: `timeperiod`-bar sum of CLV * volume over the volume sum. Mirrors the batch running volume sums (not a fresh window sum), so an all-zero-volume window leaves the same residue and NaN mask as the batch function.
  */
 typedef struct FtStreamCmf FtStreamCmf;
 int32_t ft_stream_cmf_new(int64_t timeperiod, FtStreamCmf **out_handle);
@@ -4579,7 +4579,7 @@ int32_t ft_stream_emv_load(const char *json, size_t len, FtStreamEmv **out_handl
 void ft_stream_emv_free(FtStreamEmv *handle);
 
 /**
- * Streaming volume oscillator: 100 * (SMA(volume, fast) - SMA(volume, slow)) / SMA(volume, slow).
+ * Streaming volume oscillator: 100 * (SMA(volume, fast) - SMA(volume, slow)) / SMA(volume, slow). Mirrors the batch running volume sums (not a fresh window sum), so an all-zero-volume window leaves the same residue and NaN mask as the batch function.
  */
 typedef struct FtStreamVolosc FtStreamVolosc;
 int32_t ft_stream_volosc_new(int64_t fastperiod, int64_t slowperiod, FtStreamVolosc **out_handle);
@@ -4607,7 +4607,7 @@ int32_t ft_stream_vroc_load(const char *json, size_t len, FtStreamVroc **out_han
 void ft_stream_vroc_free(FtStreamVroc *handle);
 
 /**
- * Streaming relative volume: volume / SMA(volume, `timeperiod`).
+ * Streaming relative volume: volume / SMA(volume, `timeperiod`). Mirrors the batch running volume sums (not a fresh window sum), so an all-zero-volume window leaves the same residue and NaN mask as the batch function.
  */
 typedef struct FtStreamRvol FtStreamRvol;
 int32_t ft_stream_rvol_new(int64_t timeperiod, FtStreamRvol **out_handle);

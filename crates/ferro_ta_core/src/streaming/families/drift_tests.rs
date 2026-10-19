@@ -243,12 +243,8 @@ fn windowed_streams_equal_batch_on_trailing_window_long_series() {
     check!("tsf", 14, StreamingTsf::new(14), |i| d.close[i]);
     check!("stddev", 5, StreamingStddev::new(5, 1.0), |i| d.close[i]);
     check!("var", 5, StreamingVar::new(5, 1.0), |i| d.close[i]);
-    check!("mfi", 15, StreamingMfi::new(14), |i| (
-        d.high[i],
-        d.low[i],
-        d.close[i],
-        d.volume[i]
-    ));
+    // mfi is native (it mirrors the batch running flow sums), so it is
+    // measured above but not pinned to the trailing window here.
     check!("cci", 14, StreamingCci::new(14), |i| (
         d.high[i], d.low[i], d.close[i]
     ));
