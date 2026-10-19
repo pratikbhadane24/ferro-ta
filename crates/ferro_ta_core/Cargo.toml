@@ -1,6 +1,6 @@
 [package]
 name = "ferro_ta_core"
-version = "1.5.1"
+version = "1.6.0"
 edition = "2021"
 rust-version.workspace = true
 description = "Pure Rust technical analysis core — the compute engine behind ferro-ta language bindings"

@@ -1,6 +1,6 @@
 [package]
 name = "ferro_ta_wasm"
-version = "1.5.1"
+version = "1.6.0"
 edition = "2021"
 # Same MSRV as the main workspace (this crate is its own workspace).
 rust-version = "1.88"
