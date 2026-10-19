@@ -35,7 +35,10 @@ REGISTRY_STREAMS = [s for s in SPEC["streams"] if is_registry_stream(s["name"])]
 NO_BATCH_PEER: frozenset[str] = frozenset()
 # Registry streams that stream only some of their function's outputs:
 # stream name -> the function output names kept, in order.
-OUTPUT_SUBSET: dict[str, tuple[str, ...]] = {}
+OUTPUT_SUBSET: dict[str, tuple[str, ...]] = {
+    # chikou is close[i + displacement]: it needs future bars.
+    "ichimoku": ("out_tenkan", "out_kijun", "out_senkou_a", "out_senkou_b"),
+}
 
 
 def _param_sig(params: list[dict]) -> list[tuple]:

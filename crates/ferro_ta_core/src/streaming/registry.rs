@@ -89,6 +89,8 @@ macro_rules! for_each_stream {
                 $crate::stream_family_extended_osc;
                 $crate::stream_family_extended_trend;
                 $crate::stream_family_extended_volume;
+                $crate::stream_family_sar;
+                $crate::stream_family_cycle;
             ];
         }
     };

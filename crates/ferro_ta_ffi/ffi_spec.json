@@ -15960,6 +15960,71 @@
       "update_fn": "ft_stream_vidya_update"
     },
     {
+      "doc": "Streaming Ichimoku cloud: (tenkan, kijun, senkou_a, senkou_b); the senkou spans are the values computed `displacement` bars ago. Chikou (close `displacement` bars ahead) needs future bars and is not streamed.",
+      "free_fn": "ft_stream_ichimoku_free",
+      "handle": "FtStreamIchimoku",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_ichimoku_load",
+      "name": "ichimoku",
+      "new_fn": "ft_stream_ichimoku_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_tenkan"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_kijun"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_senkou_a"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_senkou_b"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "tenkan_period"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "kijun_period"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "senkou_b_period"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "count",
+          "min": 0,
+          "name": "displacement"
+        }
+      ],
+      "peek_fn": "ft_stream_ichimoku_peek",
+      "reset_fn": "ft_stream_ichimoku_reset",
+      "save_fn": "ft_stream_ichimoku_save",
+      "update_fn": "ft_stream_ichimoku_update"
+    },
+    {
       "doc": "Streaming Chaikin money flow: `timeperiod`-bar sum of CLV * volume over the volume sum. Mirrors the batch running volume sums (not a fresh window sum), so an all-zero-volume window leaves the same residue and NaN mask as the batch function.",
       "free_fn": "ft_stream_cmf_free",
       "handle": "FtStreamCmf",
@@ -16464,6 +16529,293 @@
       "reset_fn": "ft_stream_pvt_reset",
       "save_fn": "ft_stream_pvt_save",
       "update_fn": "ft_stream_pvt_update"
+    },
+    {
+      "doc": "Streaming parabolic SAR; first value at bar 1, initial direction rising when `high[1] >= high[0]`.",
+      "free_fn": "ft_stream_sar_free",
+      "handle": "FtStreamSar",
+      "inputs": [
+        "high",
+        "low"
+      ],
+      "load_fn": "ft_stream_sar_load",
+      "name": "sar",
+      "new_fn": "ft_stream_sar_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "acceleration"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "maximum"
+        }
+      ],
+      "peek_fn": "ft_stream_sar_peek",
+      "reset_fn": "ft_stream_sar_reset",
+      "save_fn": "ft_stream_sar_save",
+      "update_fn": "ft_stream_sar_update"
+    },
+    {
+      "doc": "Streaming extended parabolic SAR: signed start value, offset on reverse, separate long / short acceleration; first value at bar 1.",
+      "free_fn": "ft_stream_sarext_free",
+      "handle": "FtStreamSarext",
+      "inputs": [
+        "high",
+        "low"
+      ],
+      "load_fn": "ft_stream_sarext_load",
+      "name": "sarext",
+      "new_fn": "ft_stream_sarext_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "startvalue"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "offsetonreverse"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "accelerationinitlong"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "accelerationlong"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "accelerationmaxlong"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "accelerationinitshort"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "accelerationshort"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "accelerationmaxshort"
+        }
+      ],
+      "peek_fn": "ft_stream_sarext_peek",
+      "reset_fn": "ft_stream_sarext_reset",
+      "save_fn": "ft_stream_sarext_save",
+      "update_fn": "ft_stream_sarext_update"
+    },
+    {
+      "doc": "Streaming Hilbert-transform instantaneous trendline: mean of the 4-bar smoothed price over the rounded dominant cycle period; first value at bar 63.",
+      "free_fn": "ft_stream_ht_trendline_free",
+      "handle": "FtStreamHtTrendline",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_ht_trendline_load",
+      "name": "ht_trendline",
+      "new_fn": "ft_stream_ht_trendline_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_ht_trendline_peek",
+      "reset_fn": "ft_stream_ht_trendline_reset",
+      "save_fn": "ft_stream_ht_trendline_save",
+      "update_fn": "ft_stream_ht_trendline_update"
+    },
+    {
+      "doc": "Streaming Hilbert-transform dominant cycle period in bars; first value at bar 63.",
+      "free_fn": "ft_stream_ht_dcperiod_free",
+      "handle": "FtStreamHtDcperiod",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_ht_dcperiod_load",
+      "name": "ht_dcperiod",
+      "new_fn": "ft_stream_ht_dcperiod_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_ht_dcperiod_peek",
+      "reset_fn": "ft_stream_ht_dcperiod_reset",
+      "save_fn": "ft_stream_ht_dcperiod_save",
+      "update_fn": "ft_stream_ht_dcperiod_update"
+    },
+    {
+      "doc": "Streaming Hilbert-transform dominant cycle phase in degrees; first value at bar 63.",
+      "free_fn": "ft_stream_ht_dcphase_free",
+      "handle": "FtStreamHtDcphase",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_ht_dcphase_load",
+      "name": "ht_dcphase",
+      "new_fn": "ft_stream_ht_dcphase_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_ht_dcphase_peek",
+      "reset_fn": "ft_stream_ht_dcphase_reset",
+      "save_fn": "ft_stream_ht_dcphase_save",
+      "update_fn": "ft_stream_ht_dcphase_update"
+    },
+    {
+      "doc": "Streaming Hilbert-transform phasor components (inphase, quadrature); first value at bar 63.",
+      "free_fn": "ft_stream_ht_phasor_free",
+      "handle": "FtStreamHtPhasor",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_ht_phasor_load",
+      "name": "ht_phasor",
+      "new_fn": "ft_stream_ht_phasor_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_inphase"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_quadrature"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_ht_phasor_peek",
+      "reset_fn": "ft_stream_ht_phasor_reset",
+      "save_fn": "ft_stream_ht_phasor_save",
+      "update_fn": "ft_stream_ht_phasor_update"
+    },
+    {
+      "doc": "Streaming Hilbert-transform sine wave (sine, leadsine = sine 45 degrees ahead); first value at bar 63.",
+      "free_fn": "ft_stream_ht_sine_free",
+      "handle": "FtStreamHtSine",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_ht_sine_load",
+      "name": "ht_sine",
+      "new_fn": "ft_stream_ht_sine_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_sine"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_leadsine"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_ht_sine_peek",
+      "reset_fn": "ft_stream_ht_sine_reset",
+      "save_fn": "ft_stream_ht_sine_save",
+      "update_fn": "ft_stream_ht_sine_update"
+    },
+    {
+      "doc": "Streaming Hilbert-transform trend mode: 1 while the smoothed dominant cycle period is below 20 bars, else 0; 0 before bar 63.",
+      "free_fn": "ft_stream_ht_trendmode_free",
+      "handle": "FtStreamHtTrendmode",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_ht_trendmode_load",
+      "name": "ht_trendmode",
+      "new_fn": "ft_stream_ht_trendmode_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_ht_trendmode_peek",
+      "reset_fn": "ft_stream_ht_trendmode_reset",
+      "save_fn": "ft_stream_ht_trendmode_save",
+      "update_fn": "ft_stream_ht_trendmode_update"
+    },
+    {
+      "doc": "Streaming MESA adaptive moving average (mama, fama); first value at bar 32. Requires `slowlimit <= fastlimit`.",
+      "free_fn": "ft_stream_mama_free",
+      "handle": "FtStreamMama",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_mama_load",
+      "name": "mama",
+      "new_fn": "ft_stream_mama_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_mama"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_fama"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "fastlimit"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "slowlimit"
+        }
+      ],
+      "peek_fn": "ft_stream_mama_peek",
+      "reset_fn": "ft_stream_mama_reset",
+      "save_fn": "ft_stream_mama_save",
+      "update_fn": "ft_stream_mama_update"
     }
   ],
   "version": "1.5.1"

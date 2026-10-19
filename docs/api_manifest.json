@@ -1,8 +1,8 @@
 {
   "surfaces": {
     "python": {
-      "indicator_count": 459,
-      "method_count": 777,
+      "indicator_count": 469,
+      "method_count": 787,
       "categories": [
         "aggregation",
         "alerts",
@@ -2127,7 +2127,56 @@
           "params": []
         },
         {
+          "name": "StreamingHtDcperiod",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingHtDcphase",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingHtPhasor",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingHtSine",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingHtTrendline",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingHtTrendmode",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "StreamingHullMa",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingIchimoku",
           "category": "streaming",
           "module": "ferro_ta.data.streaming",
           "doc": "",
@@ -2240,6 +2289,13 @@
         },
         {
           "name": "StreamingMacdfix",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingMama",
           "category": "streaming",
           "module": "ferro_ta.data.streaming",
           "doc": "",
@@ -2604,6 +2660,20 @@
         },
         {
           "name": "StreamingSMA",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingSar",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingSarext",
           "category": "streaming",
           "module": "ferro_ta.data.streaming",
           "doc": "",
@@ -6056,7 +6126,56 @@
           "params": []
         },
         {
+          "name": "StreamingHtDcperiod",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingHtDcphase",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingHtPhasor",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingHtSine",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingHtTrendline",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingHtTrendmode",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
           "name": "StreamingHullMa",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingIchimoku",
           "category": "streaming",
           "module": "ferro_ta.data.streaming",
           "doc": "",
@@ -6169,6 +6288,13 @@
         },
         {
           "name": "StreamingMacdfix",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingMama",
           "category": "streaming",
           "module": "ferro_ta.data.streaming",
           "doc": "",
@@ -6533,6 +6659,20 @@
         },
         {
           "name": "StreamingSMA",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingSar",
+          "category": "streaming",
+          "module": "ferro_ta.data.streaming",
+          "doc": "",
+          "params": []
+        },
+        {
+          "name": "StreamingSarext",
           "category": "streaming",
           "module": "ferro_ta.data.streaming",
           "doc": "",
@@ -10694,7 +10834,14 @@
         "StreamingGarmanKlassVol",
         "StreamingGator",
         "StreamingHistoricalVolatility",
+        "StreamingHtDcperiod",
+        "StreamingHtDcphase",
+        "StreamingHtPhasor",
+        "StreamingHtSine",
+        "StreamingHtTrendline",
+        "StreamingHtTrendmode",
         "StreamingHullMa",
+        "StreamingIchimoku",
         "StreamingIvPercentile",
         "StreamingIvRank",
         "StreamingIvZscore",
@@ -10711,6 +10858,7 @@
         "StreamingMaEnvelopes",
         "StreamingMacdext",
         "StreamingMacdfix",
+        "StreamingMama",
         "StreamingMass",
         "StreamingMavp",
         "StreamingMax",
@@ -10763,6 +10911,8 @@
         "StreamingRvol",
         "StreamingRwi",
         "StreamingSMA",
+        "StreamingSar",
+        "StreamingSarext",
         "StreamingSlidingMax",
         "StreamingSlidingMin",
         "StreamingSpread",
@@ -10803,7 +10953,7 @@
       ]
     },
     "wasm_node": {
-      "export_count": 568,
+      "export_count": 578,
       "exports": [
         "CommissionModel",
         "WasmBarBuilder",
@@ -10921,7 +11071,14 @@
         "WasmStreamingGarmanKlassVol",
         "WasmStreamingGator",
         "WasmStreamingHistoricalVolatility",
+        "WasmStreamingHtDcperiod",
+        "WasmStreamingHtDcphase",
+        "WasmStreamingHtPhasor",
+        "WasmStreamingHtSine",
+        "WasmStreamingHtTrendline",
+        "WasmStreamingHtTrendmode",
         "WasmStreamingHullMa",
+        "WasmStreamingIchimoku",
         "WasmStreamingIvPercentile",
         "WasmStreamingIvRank",
         "WasmStreamingIvZscore",
@@ -10938,6 +11095,7 @@
         "WasmStreamingMaEnvelopes",
         "WasmStreamingMacdext",
         "WasmStreamingMacdfix",
+        "WasmStreamingMama",
         "WasmStreamingMass",
         "WasmStreamingMavp",
         "WasmStreamingMax",
@@ -10990,6 +11148,8 @@
         "WasmStreamingRvol",
         "WasmStreamingRwi",
         "WasmStreamingSMA",
+        "WasmStreamingSar",
+        "WasmStreamingSarext",
         "WasmStreamingSlidingMax",
         "WasmStreamingSlidingMin",
         "WasmStreamingSpread",
@@ -11634,7 +11794,7 @@
       ]
     },
     "c_abi_go": {
-      "export_count": 496,
+      "export_count": 506,
       "exports": [
         "StreamingATR",
         "StreamingAc",
@@ -11749,7 +11909,14 @@
         "StreamingGarmanKlassVol",
         "StreamingGator",
         "StreamingHistoricalVolatility",
+        "StreamingHtDcperiod",
+        "StreamingHtDcphase",
+        "StreamingHtPhasor",
+        "StreamingHtSine",
+        "StreamingHtTrendline",
+        "StreamingHtTrendmode",
         "StreamingHullMa",
+        "StreamingIchimoku",
         "StreamingIvPercentile",
         "StreamingIvRank",
         "StreamingIvZscore",
@@ -11766,6 +11933,7 @@
         "StreamingMaEnvelopes",
         "StreamingMacdext",
         "StreamingMacdfix",
+        "StreamingMama",
         "StreamingMass",
         "StreamingMavp",
         "StreamingMax",
@@ -11818,6 +11986,8 @@
         "StreamingRvol",
         "StreamingRwi",
         "StreamingSMA",
+        "StreamingSar",
+        "StreamingSarext",
         "StreamingSlidingMax",
         "StreamingSlidingMin",
         "StreamingSpread",
@@ -12136,8 +12306,8 @@
     }
   },
   "parity_summary": {
-    "python_indicator_count": 458,
-    "wasm_export_count": 568,
+    "python_indicator_count": 468,
+    "wasm_export_count": 578,
     "common_python_wasm_count": 192,
     "common_python_wasm": [
       "ad",
@@ -12487,7 +12657,14 @@
       "streaminggarmanklassvol",
       "streaminggator",
       "streaminghistoricalvolatility",
+      "streaminghtdcperiod",
+      "streaminghtdcphase",
+      "streaminghtphasor",
+      "streaminghtsine",
+      "streaminghttrendline",
+      "streaminghttrendmode",
       "streaminghullma",
+      "streamingichimoku",
       "streamingivpercentile",
       "streamingivrank",
       "streamingivzscore",
@@ -12504,6 +12681,7 @@
       "streamingmacdext",
       "streamingmacdfix",
       "streamingmaenvelopes",
+      "streamingmama",
       "streamingmass",
       "streamingmavp",
       "streamingmax",
@@ -12555,6 +12733,8 @@
       "streamingrvi",
       "streamingrvol",
       "streamingrwi",
+      "streamingsar",
+      "streamingsarext",
       "streamingslidingmax",
       "streamingslidingmin",
       "streamingsma",
@@ -12869,7 +13049,14 @@
       "wasmstreaminggarmanklassvol",
       "wasmstreaminggator",
       "wasmstreaminghistoricalvolatility",
+      "wasmstreaminghtdcperiod",
+      "wasmstreaminghtdcphase",
+      "wasmstreaminghtphasor",
+      "wasmstreaminghtsine",
+      "wasmstreaminghttrendline",
+      "wasmstreaminghttrendmode",
       "wasmstreaminghullma",
+      "wasmstreamingichimoku",
       "wasmstreamingivpercentile",
       "wasmstreamingivrank",
       "wasmstreamingivzscore",
@@ -12886,6 +13073,7 @@
       "wasmstreamingmacdext",
       "wasmstreamingmacdfix",
       "wasmstreamingmaenvelopes",
+      "wasmstreamingmama",
       "wasmstreamingmass",
       "wasmstreamingmavp",
       "wasmstreamingmax",
@@ -12937,6 +13125,8 @@
       "wasmstreamingrvi",
       "wasmstreamingrvol",
       "wasmstreamingrwi",
+      "wasmstreamingsar",
+      "wasmstreamingsarext",
       "wasmstreamingslidingmax",
       "wasmstreamingslidingmin",
       "wasmstreamingsma",
@@ -12981,9 +13171,9 @@
     ]
   },
   "normalized_parity": {
-    "python_indicator_count": 458,
-    "wasm_export_count": 568,
-    "common_python_wasm_count": 441,
+    "python_indicator_count": 468,
+    "wasm_export_count": 578,
+    "common_python_wasm_count": 451,
     "python_only_vs_wasm": [
       "alertevent",
       "alertmanager",
@@ -13135,14 +13325,14 @@
   },
   "coverage": {
     "counts": {
-      "row_count": 626,
-      "core_count": 585,
-      "python_count": 458,
-      "wasm_count": 568,
+      "row_count": 636,
+      "core_count": 595,
+      "python_count": 468,
+      "wasm_count": 578,
       "flutter_count": 194,
       "flutter_excluded_count": 56,
-      "go_count": 493,
-      "common_python_wasm_count": 441,
+      "go_count": 503,
+      "common_python_wasm_count": 451,
       "common_all_four_count": 131
     },
     "rows": [
@@ -20667,6 +20857,102 @@
         "go_name": "StreamingHistoricalVolatility"
       },
       {
+        "key": "streaminghtdcperiod",
+        "name": "StreamingHtDcperiod",
+        "category": "streaming",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": "StreamingHtDcperiod",
+        "core_name": "StreamingHtDcperiod",
+        "wasm_name": "WasmStreamingHtDcperiod",
+        "flutter_name": null,
+        "go_name": "StreamingHtDcperiod"
+      },
+      {
+        "key": "streaminghtdcphase",
+        "name": "StreamingHtDcphase",
+        "category": "streaming",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": "StreamingHtDcphase",
+        "core_name": "StreamingHtDcphase",
+        "wasm_name": "WasmStreamingHtDcphase",
+        "flutter_name": null,
+        "go_name": "StreamingHtDcphase"
+      },
+      {
+        "key": "streaminghtphasor",
+        "name": "StreamingHtPhasor",
+        "category": "streaming",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": "StreamingHtPhasor",
+        "core_name": "StreamingHtPhasor",
+        "wasm_name": "WasmStreamingHtPhasor",
+        "flutter_name": null,
+        "go_name": "StreamingHtPhasor"
+      },
+      {
+        "key": "streaminghtsine",
+        "name": "StreamingHtSine",
+        "category": "streaming",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": "StreamingHtSine",
+        "core_name": "StreamingHtSine",
+        "wasm_name": "WasmStreamingHtSine",
+        "flutter_name": null,
+        "go_name": "StreamingHtSine"
+      },
+      {
+        "key": "streaminghttrendline",
+        "name": "StreamingHtTrendline",
+        "category": "streaming",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": "StreamingHtTrendline",
+        "core_name": "StreamingHtTrendline",
+        "wasm_name": "WasmStreamingHtTrendline",
+        "flutter_name": null,
+        "go_name": "StreamingHtTrendline"
+      },
+      {
+        "key": "streaminghttrendmode",
+        "name": "StreamingHtTrendmode",
+        "category": "streaming",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": "StreamingHtTrendmode",
+        "core_name": "StreamingHtTrendmode",
+        "wasm_name": "WasmStreamingHtTrendmode",
+        "flutter_name": null,
+        "go_name": "StreamingHtTrendmode"
+      },
+      {
         "key": "streaminghullma",
         "name": "StreamingHullMa",
         "category": "streaming",
@@ -20681,6 +20967,22 @@
         "wasm_name": "WasmStreamingHullMa",
         "flutter_name": null,
         "go_name": "StreamingHullMa"
+      },
+      {
+        "key": "streamingichimoku",
+        "name": "StreamingIchimoku",
+        "category": "streaming",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": "StreamingIchimoku",
+        "core_name": "StreamingIchimoku",
+        "wasm_name": "WasmStreamingIchimoku",
+        "flutter_name": null,
+        "go_name": "StreamingIchimoku"
       },
       {
         "key": "streamingivpercentile",
@@ -20937,6 +21239,22 @@
         "wasm_name": "WasmStreamingMaEnvelopes",
         "flutter_name": null,
         "go_name": "StreamingMaEnvelopes"
+      },
+      {
+        "key": "streamingmama",
+        "name": "StreamingMama",
+        "category": "streaming",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": "StreamingMama",
+        "core_name": "StreamingMama",
+        "wasm_name": "WasmStreamingMama",
+        "flutter_name": null,
+        "go_name": "StreamingMama"
       },
       {
         "key": "streamingmass",
@@ -21753,6 +22071,38 @@
         "wasm_name": "WasmStreamingRwi",
         "flutter_name": null,
         "go_name": "StreamingRwi"
+      },
+      {
+        "key": "streamingsar",
+        "name": "StreamingSar",
+        "category": "streaming",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": "StreamingSar",
+        "core_name": "StreamingSar",
+        "wasm_name": "WasmStreamingSar",
+        "flutter_name": null,
+        "go_name": "StreamingSar"
+      },
+      {
+        "key": "streamingsarext",
+        "name": "StreamingSarext",
+        "category": "streaming",
+        "core": true,
+        "python": true,
+        "wasm": true,
+        "flutter": false,
+        "flutter_excluded": false,
+        "go": true,
+        "python_name": "StreamingSarext",
+        "core_name": "StreamingSarext",
+        "wasm_name": "WasmStreamingSarext",
+        "flutter_name": null,
+        "go_name": "StreamingSarext"
       },
       {
         "key": "streamingslidingmax",

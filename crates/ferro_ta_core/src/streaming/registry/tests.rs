@@ -1,8 +1,12 @@
 //! Registry-driven tests: every entry is checked against its batch reference.
 use crate::streaming::fixtures::{input_column, pattern_fixture, PATTERN_BARS};
+use crate::streaming::registry::BATCH_DRIFT_KERNELS;
 use crate::streaming::{Live, StreamValue, StreamingIndicator};
 
 const N_BARS: usize = 600;
+/// Bars in the long parity run: well past every warm-up (the Hilbert
+/// transform streams emit from bar 63) and every doubled lookback.
+const LONG_BARS: usize = 2000;
 /// Fires every candlestick pattern must show on `pattern_fixture`.
 const MIN_PATTERN_FIRES: usize = 3;
 /// Candlestick streams in the registry.
@@ -206,10 +210,11 @@ macro_rules! registry_cases {
 crate::for_each_stream!(registry_cases);
 
 fn columns(case: &Case) -> Vec<Vec<f64>> {
-    case.inputs
-        .iter()
-        .map(|n| input_column(n, N_BARS))
-        .collect()
+    columns_n(case, N_BARS)
+}
+
+fn columns_n(case: &Case, bars: usize) -> Vec<Vec<f64>> {
+    case.inputs.iter().map(|n| input_column(n, bars)).collect()
 }
 
 fn row(cols: &[Vec<f64>], i: usize) -> Vec<f64> {
@@ -259,7 +264,7 @@ fn pattern_columns(case: &Case) -> Vec<Vec<f64>> {
 }
 
 /// Every registry stream matches its batch function at every bar (NaN
-/// mask included), with default params, with every period doubled — which
+/// mask included), on [`N_BARS`] and (except the [`BATCH_DRIFT_KERNELS`]) [`LONG_BARS`] bars, with default params, with every period doubled — which
 /// catches a lookback that is one bar short — and, for streams with a
 /// `matype` param, with every `matype` in `0..=8`. Every `i32` stream (the
 /// candlestick codes, which a random walk almost never fires) also runs on
@@ -277,6 +282,11 @@ fn registry_parity_all_streams() {
         let mut variants = case.variants();
         variants.insert(1, doubled);
         let mut datasets = vec![(columns(case), N_BARS)];
+        // Drift kernels differ from their batch function by the batch's own
+        // rolling-sum rounding on long series; `drift_tests` bounds that gap.
+        if !BATCH_DRIFT_KERNELS.contains(&case.name) {
+            datasets.push((columns_n(case, LONG_BARS), LONG_BARS));
+        }
         if case.elems.contains(&"i32") {
             datasets.push((pattern_columns(case), PATTERN_BARS));
         }

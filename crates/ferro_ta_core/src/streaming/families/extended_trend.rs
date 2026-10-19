@@ -1,5 +1,5 @@
 //! Extended moving averages: Hull and ALMA (windowed); Alligator, Gator,
-//! ZLEMA, FRAMA, McGinley and VIDYA (native).
+//! ZLEMA, FRAMA, McGinley and VIDYA (native); Ichimoku (windowed).
 
 use super::extended_common::{finite2, Ring};
 use super::StreamingCmo;
@@ -42,6 +42,14 @@ macro_rules! stream_family_extended_trend {
                 vidya => StreamingVidya, doc "Streaming Chande VIDYA: an EMA whose factor is scaled by abs(CMO(`cmo_period`)) / 100, seeded with the close on the first CMO bar.",
                     params(timeperiod: period = 14, cmo_period: period = 9), inputs(close), outputs(out: f64),
                     native(lookback = cmo_period + 1, batch = $crate::extended::vidya(close, timeperiod, cmo_period));
+                ichimoku => StreamingIchimoku, doc "Streaming Ichimoku cloud: (tenkan, kijun, senkou_a, senkou_b); the senkou spans are the values computed `displacement` bars ago. Chikou (close `displacement` bars ahead) needs future bars and is not streamed.",
+                    params(tenkan_period: period = 9, kijun_period: period = 26, senkou_b_period: period = 52, displacement: count = 26),
+                    inputs(high, low, close), outputs(out_tenkan: f64, out_kijun: f64, out_senkou_a: f64, out_senkou_b: f64),
+                    windowed(lookback = tenkan_period.max(kijun_period).max(senkou_b_period) + displacement,
+                        batch = {
+                            let (tenkan, kijun, senkou_a, senkou_b, _chikou) = $crate::extended::ichimoku(high, low, close, tenkan_period, kijun_period, senkou_b_period, displacement);
+                            (tenkan, kijun, senkou_a, senkou_b)
+                        });
             ]
             $($ctx)*
         }

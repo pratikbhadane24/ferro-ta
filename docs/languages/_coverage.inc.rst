@@ -11,13 +11,13 @@
      - Flutter
      - Flutter excluded
      - C / Go
-   * - 626
-     - 585
-     - 458
-     - 568
+   * - 636
+     - 595
+     - 468
+     - 578
      - 194
      - 56
-     - 493
+     - 503
 
 .. list-table:: Cross-language indicator coverage
    :header-rows: 1
@@ -3320,7 +3320,56 @@
      - yes
      - —
      - yes
+   * - ``StreamingHtDcperiod``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingHtDcphase``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingHtPhasor``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingHtSine``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingHtTrendline``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingHtTrendmode``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
    * - ``StreamingHullMa``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingIchimoku``
      - streaming
      - yes
      - yes
@@ -3433,6 +3482,13 @@
      - —
      - yes
    * - ``StreamingMaEnvelopes``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingMama``
      - streaming
      - yes
      - yes
@@ -3790,6 +3846,20 @@
      - —
      - yes
    * - ``StreamingRwi``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingSar``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingSarext``
      - streaming
      - yes
      - yes
