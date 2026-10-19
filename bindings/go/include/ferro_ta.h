@@ -198,6 +198,7 @@ int32_t ft_macd(const double *close, size_t len, int64_t fastperiod, int64_t slo
 
 /**
  * MESA Adaptive Moving Average. Returns `(mama, fama)`.
+ * Requires: slowlimit <= fastlimit (else FT_ERR_INVALID_PARAM).
  */
 int32_t ft_mama(const double *close, size_t len, double fastlimit, double slowlimit, double *out_mama, double *out_fama);
 
@@ -2647,7 +2648,7 @@ int32_t ft_stream_adxr_load(const char *json, size_t len, FtStreamAdxr **out_han
 void ft_stream_adxr_free(FtStreamAdxr *handle);
 
 /**
- * Streaming money flow index over `timeperiod` bars of typical-price money flow. Mirrors the batch running flow sums (not a fresh window sum), so an all-zero-volume window leaves the same residue as the batch function.
+ * Streaming money flow index over `timeperiod` bars of typical-price money flow. Mirrors the batch zero-exact running flow sums, so a window without money flow (e.g. all-zero volume) is 0 exactly as in the batch function.
  */
 typedef struct FtStreamMfi FtStreamMfi;
 int32_t ft_stream_mfi_new(int64_t timeperiod, FtStreamMfi **out_handle);
@@ -3585,7 +3586,7 @@ int32_t ft_stream_cdlxsidegap3methods_load(const char *json, size_t len, FtStrea
 void ft_stream_cdlxsidegap3methods_free(FtStreamCdlxsidegap3methods *handle);
 
 /**
- * Streaming rolling population standard deviation over `timeperiod` bars, scaled by `nbdev`. Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).
+ * Streaming rolling population standard deviation over `timeperiod` bars, scaled by `nbdev`.
  */
 typedef struct FtStreamStddev FtStreamStddev;
 int32_t ft_stream_stddev_new(int64_t timeperiod, double nbdev, FtStreamStddev **out_handle);
@@ -3599,7 +3600,7 @@ int32_t ft_stream_stddev_load(const char *json, size_t len, FtStreamStddev **out
 void ft_stream_stddev_free(FtStreamStddev *handle);
 
 /**
- * Streaming rolling population variance over `timeperiod` bars, scaled by `nbdev**2`. Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).
+ * Streaming rolling population variance over `timeperiod` bars, scaled by `nbdev**2`.
  */
 typedef struct FtStreamVar FtStreamVar;
 int32_t ft_stream_var_new(int64_t timeperiod, double nbdev, FtStreamVar **out_handle);
@@ -3627,7 +3628,7 @@ int32_t ft_stream_linearreg_load(const char *json, size_t len, FtStreamLinearreg
 void ft_stream_linearreg_free(FtStreamLinearreg *handle);
 
 /**
- * Streaming slope of the rolling linear regression line. Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).
+ * Streaming slope of the rolling linear regression line.
  */
 typedef struct FtStreamLinearregSlope FtStreamLinearregSlope;
 int32_t ft_stream_linearreg_slope_new(int64_t timeperiod, FtStreamLinearregSlope **out_handle);
@@ -3655,7 +3656,7 @@ int32_t ft_stream_linearreg_intercept_load(const char *json, size_t len, FtStrea
 void ft_stream_linearreg_intercept_free(FtStreamLinearregIntercept *handle);
 
 /**
- * Streaming angle of the rolling regression line in degrees. Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).
+ * Streaming angle of the rolling regression line in degrees.
  */
 typedef struct FtStreamLinearregAngle FtStreamLinearregAngle;
 int32_t ft_stream_linearreg_angle_new(int64_t timeperiod, FtStreamLinearregAngle **out_handle);
@@ -3697,7 +3698,7 @@ int32_t ft_stream_beta_load(const char *json, size_t len, FtStreamBeta **out_han
 void ft_stream_beta_free(FtStreamBeta *handle);
 
 /**
- * Streaming rolling Pearson correlation of two series over `timeperiod` bars. Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).
+ * Streaming rolling Pearson correlation of two series over `timeperiod` bars.
  */
 typedef struct FtStreamCorrel FtStreamCorrel;
 int32_t ft_stream_correl_new(int64_t timeperiod, FtStreamCorrel **out_handle);
@@ -4033,7 +4034,7 @@ int32_t ft_stream_choppiness_index_load(const char *json, size_t len, FtStreamCh
 void ft_stream_choppiness_index_free(FtStreamChoppinessIndex *handle);
 
 /**
- * Streaming Bollinger %B: (close - lower) / (upper - lower) of SMA bands (NaN on a zero-width band). Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).
+ * Streaming Bollinger %B: (close - lower) / (upper - lower) of SMA bands (NaN on a zero-width band).
  */
 typedef struct FtStreamBbpercent FtStreamBbpercent;
 int32_t ft_stream_bbpercent_new(int64_t timeperiod, double nbdevup, double nbdevdn, FtStreamBbpercent **out_handle);
@@ -4243,7 +4244,7 @@ int32_t ft_stream_rwi_load(const char *json, size_t len, FtStreamRwi **out_handl
 void ft_stream_rwi_free(FtStreamRwi *handle);
 
 /**
- * Streaming Awesome Oscillator: SMA(median price, fast) - SMA(median price, slow). Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).
+ * Streaming Awesome Oscillator: SMA(median price, fast) - SMA(median price, slow).
  */
 typedef struct FtStreamAo FtStreamAo;
 int32_t ft_stream_ao_new(int64_t fastperiod, int64_t slowperiod, FtStreamAo **out_handle);
@@ -4271,7 +4272,7 @@ int32_t ft_stream_ac_load(const char *json, size_t len, FtStreamAc **out_handle)
 void ft_stream_ac_free(FtStreamAc *handle);
 
 /**
- * Streaming price oscillator: SMA(close, fast) - SMA(close, slow). Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).
+ * Streaming price oscillator: SMA(close, fast) - SMA(close, slow).
  */
 typedef struct FtStreamPo FtStreamPo;
 int32_t ft_stream_po_new(int64_t fastperiod, int64_t slowperiod, FtStreamPo **out_handle);
@@ -4285,7 +4286,7 @@ int32_t ft_stream_po_load(const char *json, size_t len, FtStreamPo **out_handle)
 void ft_stream_po_free(FtStreamPo *handle);
 
 /**
- * Streaming detrended price oscillator: close `timeperiod / 2 + 1` bars ago minus SMA(close, `timeperiod`). Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).
+ * Streaming detrended price oscillator: close `timeperiod / 2 + 1` bars ago minus SMA(close, `timeperiod`).
  */
 typedef struct FtStreamDpo FtStreamDpo;
 int32_t ft_stream_dpo_new(int64_t timeperiod, FtStreamDpo **out_handle);
@@ -4551,7 +4552,7 @@ int32_t ft_stream_vidya_load(const char *json, size_t len, FtStreamVidya **out_h
 void ft_stream_vidya_free(FtStreamVidya *handle);
 
 /**
- * Streaming Chaikin money flow: `timeperiod`-bar sum of CLV * volume over the volume sum. Mirrors the batch running volume sums (not a fresh window sum), so an all-zero-volume window leaves the same residue and NaN mask as the batch function.
+ * Streaming Chaikin money flow: `timeperiod`-bar sum of CLV * volume over the volume sum. Mirrors the batch zero-exact running volume sums, so an all-zero-volume window is NaN exactly as in the batch function.
  */
 typedef struct FtStreamCmf FtStreamCmf;
 int32_t ft_stream_cmf_new(int64_t timeperiod, FtStreamCmf **out_handle);
@@ -4579,7 +4580,7 @@ int32_t ft_stream_emv_load(const char *json, size_t len, FtStreamEmv **out_handl
 void ft_stream_emv_free(FtStreamEmv *handle);
 
 /**
- * Streaming volume oscillator: 100 * (SMA(volume, fast) - SMA(volume, slow)) / SMA(volume, slow). Mirrors the batch running volume sums (not a fresh window sum), so an all-zero-volume window leaves the same residue and NaN mask as the batch function.
+ * Streaming volume oscillator: 100 * (SMA(volume, fast) - SMA(volume, slow)) / SMA(volume, slow). Mirrors the batch zero-exact running volume sums, so an all-zero-volume window is NaN exactly as in the batch function.
  */
 typedef struct FtStreamVolosc FtStreamVolosc;
 int32_t ft_stream_volosc_new(int64_t fastperiod, int64_t slowperiod, FtStreamVolosc **out_handle);
@@ -4607,7 +4608,7 @@ int32_t ft_stream_vroc_load(const char *json, size_t len, FtStreamVroc **out_han
 void ft_stream_vroc_free(FtStreamVroc *handle);
 
 /**
- * Streaming relative volume: volume / SMA(volume, `timeperiod`). Mirrors the batch running volume sums (not a fresh window sum), so an all-zero-volume window leaves the same residue and NaN mask as the batch function.
+ * Streaming relative volume: volume / SMA(volume, `timeperiod`). Mirrors the batch zero-exact running volume sums, so an all-zero-volume window is NaN exactly as in the batch function.
  */
 typedef struct FtStreamRvol FtStreamRvol;
 int32_t ft_stream_rvol_new(int64_t timeperiod, FtStreamRvol **out_handle);

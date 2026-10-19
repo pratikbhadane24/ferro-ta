@@ -769,7 +769,7 @@
           "name": "slowlimit"
         }
       ],
-      "requires": ""
+      "requires": "slowlimit <= fastlimit"
     },
     {
       "doc": "Midpoint: `(max(close) + min(close)) / 2` over rolling window.",
@@ -11602,7 +11602,7 @@
       "update_fn": "ft_stream_adxr_update"
     },
     {
-      "doc": "Streaming money flow index over `timeperiod` bars of typical-price money flow. Mirrors the batch running flow sums (not a fresh window sum), so an all-zero-volume window leaves the same residue as the batch function.",
+      "doc": "Streaming money flow index over `timeperiod` bars of typical-price money flow. Mirrors the batch zero-exact running flow sums, so a window without money flow (e.g. all-zero volume) is 0 exactly as in the batch function.",
       "free_fn": "ft_stream_mfi_free",
       "handle": "FtStreamMfi",
       "inputs": [
@@ -13367,7 +13367,7 @@
       "update_fn": "ft_stream_cdlxsidegap3methods_update"
     },
     {
-      "doc": "Streaming rolling population standard deviation over `timeperiod` bars, scaled by `nbdev`. Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).",
+      "doc": "Streaming rolling population standard deviation over `timeperiod` bars, scaled by `nbdev`.",
       "free_fn": "ft_stream_stddev_free",
       "handle": "FtStreamStddev",
       "inputs": [
@@ -13402,7 +13402,7 @@
       "update_fn": "ft_stream_stddev_update"
     },
     {
-      "doc": "Streaming rolling population variance over `timeperiod` bars, scaled by `nbdev**2`. Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).",
+      "doc": "Streaming rolling population variance over `timeperiod` bars, scaled by `nbdev**2`.",
       "free_fn": "ft_stream_var_free",
       "handle": "FtStreamVar",
       "inputs": [
@@ -13467,7 +13467,7 @@
       "update_fn": "ft_stream_linearreg_update"
     },
     {
-      "doc": "Streaming slope of the rolling linear regression line. Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).",
+      "doc": "Streaming slope of the rolling linear regression line.",
       "free_fn": "ft_stream_linearreg_slope_free",
       "handle": "FtStreamLinearregSlope",
       "inputs": [
@@ -13527,7 +13527,7 @@
       "update_fn": "ft_stream_linearreg_intercept_update"
     },
     {
-      "doc": "Streaming angle of the rolling regression line in degrees. Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).",
+      "doc": "Streaming angle of the rolling regression line in degrees.",
       "free_fn": "ft_stream_linearreg_angle_free",
       "handle": "FtStreamLinearregAngle",
       "inputs": [
@@ -13618,7 +13618,7 @@
       "update_fn": "ft_stream_beta_update"
     },
     {
-      "doc": "Streaming rolling Pearson correlation of two series over `timeperiod` bars. Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).",
+      "doc": "Streaming rolling Pearson correlation of two series over `timeperiod` bars.",
       "free_fn": "ft_stream_correl_free",
       "handle": "FtStreamCorrel",
       "inputs": [
@@ -14395,7 +14395,7 @@
       "update_fn": "ft_stream_choppiness_index_update"
     },
     {
-      "doc": "Streaming Bollinger %B: (close - lower) / (upper - lower) of SMA bands (NaN on a zero-width band). Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).",
+      "doc": "Streaming Bollinger %B: (close - lower) / (upper - lower) of SMA bands (NaN on a zero-width band).",
       "free_fn": "ft_stream_bbpercent_free",
       "handle": "FtStreamBbpercent",
       "inputs": [
@@ -15023,7 +15023,7 @@
       "update_fn": "ft_stream_rwi_update"
     },
     {
-      "doc": "Streaming Awesome Oscillator: SMA(median price, fast) - SMA(median price, slow). Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).",
+      "doc": "Streaming Awesome Oscillator: SMA(median price, fast) - SMA(median price, slow).",
       "free_fn": "ft_stream_ao_free",
       "handle": "FtStreamAo",
       "inputs": [
@@ -15103,7 +15103,7 @@
       "update_fn": "ft_stream_ac_update"
     },
     {
-      "doc": "Streaming price oscillator: SMA(close, fast) - SMA(close, slow). Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).",
+      "doc": "Streaming price oscillator: SMA(close, fast) - SMA(close, slow).",
       "free_fn": "ft_stream_po_free",
       "handle": "FtStreamPo",
       "inputs": [
@@ -15139,7 +15139,7 @@
       "update_fn": "ft_stream_po_update"
     },
     {
-      "doc": "Streaming detrended price oscillator: close `timeperiod / 2 + 1` bars ago minus SMA(close, `timeperiod`). Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).",
+      "doc": "Streaming detrended price oscillator: close `timeperiod / 2 + 1` bars ago minus SMA(close, `timeperiod`).",
       "free_fn": "ft_stream_dpo_free",
       "handle": "FtStreamDpo",
       "inputs": [
@@ -15960,7 +15960,7 @@
       "update_fn": "ft_stream_vidya_update"
     },
     {
-      "doc": "Streaming Chaikin money flow: `timeperiod`-bar sum of CLV * volume over the volume sum. Mirrors the batch running volume sums (not a fresh window sum), so an all-zero-volume window leaves the same residue and NaN mask as the batch function.",
+      "doc": "Streaming Chaikin money flow: `timeperiod`-bar sum of CLV * volume over the volume sum. Mirrors the batch zero-exact running volume sums, so an all-zero-volume window is NaN exactly as in the batch function.",
       "free_fn": "ft_stream_cmf_free",
       "handle": "FtStreamCmf",
       "inputs": [
@@ -16030,7 +16030,7 @@
       "update_fn": "ft_stream_emv_update"
     },
     {
-      "doc": "Streaming volume oscillator: 100 * (SMA(volume, fast) - SMA(volume, slow)) / SMA(volume, slow). Mirrors the batch running volume sums (not a fresh window sum), so an all-zero-volume window leaves the same residue and NaN mask as the batch function.",
+      "doc": "Streaming volume oscillator: 100 * (SMA(volume, fast) - SMA(volume, slow)) / SMA(volume, slow). Mirrors the batch zero-exact running volume sums, so an all-zero-volume window is NaN exactly as in the batch function.",
       "free_fn": "ft_stream_volosc_free",
       "handle": "FtStreamVolosc",
       "inputs": [
@@ -16096,7 +16096,7 @@
       "update_fn": "ft_stream_vroc_update"
     },
     {
-      "doc": "Streaming relative volume: volume / SMA(volume, `timeperiod`). Mirrors the batch running volume sums (not a fresh window sum), so an all-zero-volume window leaves the same residue and NaN mask as the batch function.",
+      "doc": "Streaming relative volume: volume / SMA(volume, `timeperiod`). Mirrors the batch zero-exact running volume sums, so an all-zero-volume window is NaN exactly as in the batch function.",
       "free_fn": "ft_stream_rvol_free",
       "handle": "FtStreamRvol",
       "inputs": [

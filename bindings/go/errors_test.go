@@ -66,6 +66,16 @@ func TestNonFiniteFloatParam(t *testing.T) {
 	}
 }
 
+func TestMamaInvertedLimits(t *testing.T) {
+	// slowlimit > fastlimit used to panic inside the core clamp past bar 32.
+	if _, _, err := Mama(ramp(64), 0.05, 0.5); !errors.Is(err, ErrInvalidParam) {
+		t.Fatalf("got %v, want ErrInvalidParam", err)
+	}
+	if _, _, err := Mama(ramp(64), 0.3, 0.3); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestLengthMismatch(t *testing.T) {
 	_, err := Atr(ramp(10), ramp(10), ramp(9), 3)
 	if !errors.Is(err, ErrLengthMismatch) {

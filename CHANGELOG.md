@@ -18,6 +18,28 @@ and the project uses [Semantic Versioning](https://semver.org/).
   NaN. Matches the streaming classes tick for tick. The default stays
   `"propagate"` (TA-Lib semantics, unchanged).
 
+### Fixed
+
+- **`CORREL`, `LINEARREG_SLOPE` / `_ANGLE` (and the rest of the LINEARREG
+  family), `STDDEV`, `VAR`, `BBANDS` / `BBPERCENT`, `AO`, `PO` and `DPO` no
+  longer drift on long, high-priced series.** Their rolling sums ran from bar
+  0, so near price 50,000 values drifted from the exact window result — up to
+  10% for `CORREL(timeperiod=5)`, ~1e-6 for `LINEARREG_ANGLE`, ~1e-8 for
+  `STDDEV`. Every bar now matches an exact computation of its window to
+  ~1e-12, and a `NaN` input affects only the windows that contain it
+  (`CORREL`, the LINEARREG family, `AO`, `PO` and `DPO` used to stay `NaN`
+  for the rest of the series). Values elsewhere change only in the last
+  digits.
+- **`CMF`, `VOLOSC`, `RVOL` and `MFI` handle all-zero-volume windows after
+  fractional volumes.** A rounding residue in their running volume sums made
+  such windows return finite garbage (e.g. `CMF` -0.14, `VOLOSC` -21.7);
+  they now return `NaN` (`MFI`: `0`), as each function's zero-volume rule
+  says.
+- **`MAMA` with `slowlimit > fastlimit` no longer panics.** Python raises
+  `ValueError`, the C ABI returns `FT_ERR_INVALID_PARAM`, and WASM / core /
+  Flutter return all-`NaN` instead of aborting (non-finite limits are
+  rejected the same way), matching `StreamingMama`.
+
 ## [1.5.1] — 2026-10-17
 
 Hotfix: portable PyPI wheels. Contains everything in 1.5.0 (which never
