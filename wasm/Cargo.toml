@@ -2,6 +2,8 @@
 name = "ferro_ta_wasm"
 version = "1.5.1"
 edition = "2021"
+# Same MSRV as the main workspace (this crate is its own workspace).
+rust-version = "1.88"
 description = "WebAssembly bindings for ferro-ta technical analysis indicators"
 license = "MIT"
 

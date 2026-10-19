@@ -67,6 +67,31 @@ Notes and exclusions
   2^24 (same as the C ABI).
 - Performance: see ``benchmarks/bench_streaming_universe.py``.
 
+Keyword names
+~~~~~~~~~~~~~
+
+Stream parameters take the C ABI names (``ft_<name>``), which match the Python
+batch function everywhere except these three:
+
+.. list-table::
+   :header-rows: 1
+
+   * - Stream
+     - Stream keyword(s)
+     - Python batch keyword(s)
+   * - ``StreamingAc``
+     - ``timeperiod``
+     - ``smoothperiod``
+   * - ``StreamingCoppock``
+     - ``roc1``, ``roc2``
+     - ``roc1_period``, ``roc2_period``
+   * - ``StreamingEmv``
+     - ``scale``
+     - ``divisor``
+
+So ``StreamingCoppock(roc1=14, roc2=11, wma_period=10)``, not
+``roc1_period=14``. Positional arguments are in the same order on both.
+
 Live bars: committing vs. previewing
 ------------------------------------
 
@@ -416,7 +441,7 @@ hand-written classes. Regenerate with
      - high, low, close
      - tenkan_period=9, kijun_period=26, senkou_b_period=52, displacement=26
      - tenkan, kijun, senkou_a, senkou_b
-     - windowed
+     - native
    * - ``keltner_channels``
      - ``StreamingKeltnerChannels``
      - high, low, close

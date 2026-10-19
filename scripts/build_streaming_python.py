@@ -122,7 +122,12 @@ def render_stub(stream: dict, defaults: dict[str, object]) -> list[str]:
     ]
     return [
         f"class {name}:",
-        *[f"    {p}: {t}" for p, t in params],
+        # Read-only getters on the PyO3 class, so properties, not attributes.
+        *[
+            ln
+            for p, t in params
+            for ln in ("    @property", f"    def {p}(self) -> {t}: ...")
+        ],
         *render_def("__init__", init_args, "None"),
         *render_def("update", update_args, return_type(stream)),
         "    def reset(self) -> None: ...",

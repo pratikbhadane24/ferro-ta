@@ -3,10 +3,17 @@ members = [".", "crates/ferro_ta_core", "crates/ferro_ta_ffi"]
 exclude = ["fuzz"]
 resolver = "2"
 
+[workspace.package]
+# MSRV: `slice::as_chunks` (core `simd.rs`) is stable since 1.88; also above
+# multiversion 0.9 (1.86) and the ferro_ta_ffi `const` -> `static` reference
+# (1.83). Clippy's `incompatible_msrv` lint flags newer std APIs.
+rust-version = "1.88"
+
 [package]
 name = "ferro_ta"
 version = "1.5.1"
 edition = "2021"
+rust-version.workspace = true
 description = "PyO3 Python bindings for ferro-ta, a Rust-core technical analysis library"
 license = "MIT"
 readme = "README.md"

@@ -128,7 +128,7 @@ conda install -c conda-forge ferro-ta
 If no wheel is available for your platform, pip will attempt a source build:
 
 ```bash
-# Requires Rust (stable toolchain) and maturin
+# Requires Rust 1.88+ (the declared MSRV; any current stable works) and maturin
 pip install maturin
 pip install ferro-ta --no-binary ferro-ta
 ```

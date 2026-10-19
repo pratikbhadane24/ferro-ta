@@ -4,7 +4,7 @@ Thank you for your interest in contributing to **ferro-ta**! This guide explains
 
 ## Prerequisites
 
-- Rust toolchain (stable, ≥ 1.70)
+- Rust toolchain (stable, ≥ 1.88, the `rust-version` in `Cargo.toml`)
 - **Python 3.10–3.13** (PyO3 supports up to 3.13; for 3.14+ use a separate venv with an older interpreter)
 - [maturin](https://www.maturin.rs/) (`pip install maturin`)
 - numpy (`pip install numpy`)

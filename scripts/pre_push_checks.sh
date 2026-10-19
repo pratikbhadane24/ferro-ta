@@ -29,11 +29,19 @@ need_cmd() {
   fi
 }
 
+# Exits (the check's subshell) on failure instead of relying on `set -e`:
+# checks run inside `if` / `||` contexts, where bash ignores errexit, so a
+# failing command followed by a passing one used to pass the whole check.
 run_cmd() {
   printf '    +'
   printf ' %q' "$@"
   printf '\n'
-  "$@"
+  local rc=0
+  "$@" || rc=$?
+  if [[ "$rc" -ne 0 ]]; then
+    printf '    command failed (exit %d)\n' "$rc"
+    exit "$rc"
+  fi
 }
 
 usage() {
@@ -81,20 +89,25 @@ run_python_typecheck() {
 # python_test and docs both need a compiled extension.
 # Use a flag file so only the first concurrent caller runs maturin develop;
 # subsequent callers (in parallel background jobs) wait and reuse it.
+# The lock is a directory (`mkdir` is atomic; macOS has no `flock`).
 _MATURIN_LOCK="${TMPDIR:-/tmp}/ferro_ta_maturin_$$.lock"
 _MATURIN_FLAG="${TMPDIR:-/tmp}/ferro_ta_maturin_$$.done"
 
 ensure_python_env() {
   [[ -f "$_MATURIN_FLAG" ]] && return
-  (
-    flock 9
-    if [[ ! -f "$_MATURIN_FLAG" ]]; then
+  until mkdir "$_MATURIN_LOCK" 2>/dev/null; do sleep 1; done
+  if [[ ! -f "$_MATURIN_FLAG" ]]; then
+    if ! (
       need_cmd uv
       run_cmd uv sync --extra dev --extra docs --extra mcp
       run_cmd uv run --extra dev --extra docs --extra mcp maturin develop --release
-      touch "$_MATURIN_FLAG"
+    ); then
+      rmdir "$_MATURIN_LOCK"
+      exit 1
     fi
-  ) 9>"$_MATURIN_LOCK"
+    touch "$_MATURIN_FLAG"
+  fi
+  rmdir "$_MATURIN_LOCK"
 }
 
 run_python_test() {
@@ -128,7 +141,7 @@ run_flutter() {
   # Generated bridge module must be in sync with the WASM signatures.
   run_cmd python3 scripts/build_flutter_bridge.py --check
   # The api wrappers must compile against, and match, the core crate.
-  ( cd flutter/rust && RUSTFLAGS="" run_cmd cargo build && RUSTFLAGS="" run_cmd cargo test )
+  ( cd flutter/rust && RUSTFLAGS="" run_cmd cargo build && RUSTFLAGS="" run_cmd cargo test ) || exit 1
   # Dart checks only when the SDK is available (CI always has it).
   if command -v flutter >/dev/null 2>&1; then
     ( cd flutter && run_cmd flutter pub get && run_cmd dart analyze )
@@ -204,7 +217,8 @@ run_parallel() {
   fi
 
   for log in "${logs[@]}"; do rm -f "$log"; done
-  rm -f "$_MATURIN_LOCK" "$_MATURIN_FLAG"
+  rm -f "$_MATURIN_FLAG"
+  rmdir "$_MATURIN_LOCK" 2>/dev/null || true
 
   printf '\nElapsed: %ds\n' "$(( $(date +%s) - start ))"
   return "$failed"
@@ -261,7 +275,8 @@ if [[ "${#phase1[@]}" -gt 0 ]]; then
   for c in "${phase1[@]}"; do
     printf '  [%s] ... ' "$c"
     log=$(mktemp /tmp/ferro_prepush_XXXXXX)
-    if run_check "$c" >"$log" 2>&1; then
+    # Subshell: a failing `run_cmd` exits it, not the gate.
+    if (run_check "$c") >"$log" 2>&1; then
       printf 'ok\n'
     else
       printf 'FAILED\n'

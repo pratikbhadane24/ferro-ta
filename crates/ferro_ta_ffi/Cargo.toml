@@ -2,6 +2,7 @@
 name = "ferro_ta_ffi"
 version = "1.5.1"
 edition = "2021"
+rust-version.workspace = true
 description = "Stable C ABI over ferro_ta_core: the shared foundation for Go, C/C++, C#, JVM and other FFI bindings"
 license = "MIT"
 repository = "https://github.com/pratikbhadane24/ferro-ta"
