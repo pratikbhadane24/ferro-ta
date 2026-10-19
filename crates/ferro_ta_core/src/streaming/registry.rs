@@ -320,20 +320,13 @@ macro_rules! __stream_define_one {
 
 /// Windowed streams whose batch kernel accumulates rolling-sum rounding drift
 /// from bar 0. The stream recomputes each window exactly, so on long series
-/// it can differ from the batch function beyond the 1e-9 contract (the
-/// stream is the exact side). Measured gaps: see `families/drift_tests.rs`.
+/// it could differ from the batch function beyond the 1e-9 contract. Empty:
+/// the batch kernels once listed here (correl, linearreg_slope / _angle,
+/// stddev, var, bbpercent, ao, po, dpo) now keep anchored sums with periodic
+/// exact recomputes (`crate::window_sums`), pinned against a two-pass
+/// computation of every window by `families/batch_exact_tests.rs`.
 #[allow(dead_code)] // cited by docs and pinned by tests
-pub const BATCH_DRIFT_KERNELS: &[&str] = &[
-    "correl",
-    "linearreg_slope",
-    "linearreg_angle",
-    "stddev",
-    "var",
-    "bbpercent",
-    "ao",
-    "po",
-    "dpo",
-];
+pub const BATCH_DRIFT_KERNELS: &[&str] = &[];
 
 /// Largest `period` / `count` a registry stream accepts — the C ABI's
 /// `MAX_PERIOD`. Checked at construction *and* on snapshot restore, so an

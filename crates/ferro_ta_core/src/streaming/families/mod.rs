@@ -36,6 +36,8 @@ pub use stats::*;
 pub use volume::*;
 
 #[cfg(test)]
+mod batch_exact_tests;
+#[cfg(test)]
 mod drift_tests;
 #[cfg(test)]
 mod extended_drift_tests;

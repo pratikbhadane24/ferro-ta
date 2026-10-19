@@ -431,6 +431,19 @@ class TestMAMA:
         # not strictly guaranteed, just check output is finite
         assert np.all(np.isfinite(mama[valid]))
 
+    def test_inverted_limits_raise_instead_of_panicking(self):
+        # slowlimit > fastlimit used to hit a Rust clamp panic past bar 32.
+        with pytest.raises(ValueError, match="slowlimit"):
+            MAMA(_CLOSE, fastlimit=0.05, slowlimit=0.5)
+
+    def test_non_finite_limits_raise(self):
+        with pytest.raises(ValueError, match="finite"):
+            MAMA(_CLOSE, fastlimit=float("nan"), slowlimit=0.05)
+
+    def test_equal_limits_are_valid(self):
+        mama, fama = MAMA(_CLOSE, fastlimit=0.3, slowlimit=0.3)
+        assert np.isfinite(mama[-1]) and np.isfinite(fama[-1])
+
 
 # ---------------------------------------------------------------------------
 # MAVP

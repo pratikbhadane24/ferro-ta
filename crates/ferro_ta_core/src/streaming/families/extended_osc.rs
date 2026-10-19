@@ -21,16 +21,16 @@ macro_rules! stream_family_extended_osc {
                 rwi => StreamingRwi, doc "Streaming Random Walk Index: (high, low) maxima over lookbacks 2..=`timeperiod` of the range move per ATR * sqrt(lookback).",
                     params(timeperiod: period(2) = 14), inputs(high, low, close), outputs(out_rwi_high: f64, out_rwi_low: f64),
                     windowed(lookback = timeperiod + 1, batch = $crate::extended::rwi(high, low, close, timeperiod));
-                ao => StreamingAo, doc "Streaming Awesome Oscillator: SMA(median price, fast) - SMA(median price, slow). Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).",
+                ao => StreamingAo, doc "Streaming Awesome Oscillator: SMA(median price, fast) - SMA(median price, slow).",
                     params(fastperiod: period = 5, slowperiod: period = 34), inputs(high, low), outputs(out: f64),
                     windowed(lookback = slowperiod, batch = $crate::extended::ao(high, low, fastperiod, slowperiod), requires = fastperiod < slowperiod);
                 ac => StreamingAc, doc "Streaming Accelerator Oscillator: AO - SMA(AO, `timeperiod`).",
                     params(fastperiod: period = 5, slowperiod: period = 34, timeperiod: period = 5), inputs(high, low), outputs(out: f64),
                     windowed(lookback = slowperiod + timeperiod - 1, batch = $crate::extended::ac(high, low, fastperiod, slowperiod, timeperiod), requires = fastperiod < slowperiod);
-                po => StreamingPo, doc "Streaming price oscillator: SMA(close, fast) - SMA(close, slow). Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).",
+                po => StreamingPo, doc "Streaming price oscillator: SMA(close, fast) - SMA(close, slow).",
                     params(fastperiod: period = 10, slowperiod: period = 21), inputs(close), outputs(out: f64),
                     windowed(lookback = slowperiod, batch = $crate::extended::po(close, fastperiod, slowperiod), requires = fastperiod < slowperiod);
-                dpo => StreamingDpo, doc "Streaming detrended price oscillator: close `timeperiod / 2 + 1` bars ago minus SMA(close, `timeperiod`). Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).",
+                dpo => StreamingDpo, doc "Streaming detrended price oscillator: close `timeperiod / 2 + 1` bars ago minus SMA(close, `timeperiod`).",
                     params(timeperiod: period = 20), inputs(close), outputs(out: f64),
                     windowed(lookback = timeperiod.max(timeperiod / 2 + 2), batch = $crate::extended::dpo(close, timeperiod));
                 rvi => StreamingRvi, doc "Streaming Relative Vigor Index and its 4-bar weighted signal (the batch running window sums are mirrored, so a flat window's zero denominator matches the batch function).",

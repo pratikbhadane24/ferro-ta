@@ -7542,7 +7542,7 @@ func (s *StreamAdxr) Close() error {
 
 // StreamMfi is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming money flow index over `timeperiod` bars of typical-price money flow. Mirrors the batch running flow sums (not a fresh window sum), so an all-zero-volume window leaves the same residue as the batch function.
+// Streaming money flow index over `timeperiod` bars of typical-price money flow. Mirrors the batch zero-exact running flow sums, so a window without money flow (e.g. all-zero volume) is 0 exactly as in the batch function.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -14979,7 +14979,7 @@ func (s *StreamCdlxsidegap3methods) Close() error {
 
 // StreamStddev is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming rolling population standard deviation over `timeperiod` bars, scaled by `nbdev`. Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).
+// Streaming rolling population standard deviation over `timeperiod` bars, scaled by `nbdev`.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -15090,7 +15090,7 @@ func (s *StreamStddev) Close() error {
 
 // StreamVar is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming rolling population variance over `timeperiod` bars, scaled by `nbdev**2`. Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).
+// Streaming rolling population variance over `timeperiod` bars, scaled by `nbdev**2`.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -15312,7 +15312,7 @@ func (s *StreamLinearreg) Close() error {
 
 // StreamLinearregSlope is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming slope of the rolling linear regression line. Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).
+// Streaming slope of the rolling linear regression line.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -15534,7 +15534,7 @@ func (s *StreamLinearregIntercept) Close() error {
 
 // StreamLinearregAngle is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming angle of the rolling regression line in degrees. Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).
+// Streaming angle of the rolling regression line in degrees.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -15867,7 +15867,7 @@ func (s *StreamBeta) Close() error {
 
 // StreamCorrel is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming rolling Pearson correlation of two series over `timeperiod` bars. Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).
+// Streaming rolling Pearson correlation of two series over `timeperiod` bars.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -18529,7 +18529,7 @@ func (s *StreamChoppinessIndex) Close() error {
 
 // StreamBbpercent is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Bollinger %B: (close - lower) / (upper - lower) of SMA bands (NaN on a zero-width band). Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).
+// Streaming Bollinger %B: (close - lower) / (upper - lower) of SMA bands (NaN on a zero-width band).
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -20180,7 +20180,7 @@ func (s *StreamRwi) Close() error {
 
 // StreamAo is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Awesome Oscillator: SMA(median price, fast) - SMA(median price, slow). Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).
+// Streaming Awesome Oscillator: SMA(median price, fast) - SMA(median price, slow).
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -20402,7 +20402,7 @@ func (s *StreamAc) Close() error {
 
 // StreamPo is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming price oscillator: SMA(close, fast) - SMA(close, slow). Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).
+// Streaming price oscillator: SMA(close, fast) - SMA(close, slow).
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -20513,7 +20513,7 @@ func (s *StreamPo) Close() error {
 
 // StreamDpo is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming detrended price oscillator: close `timeperiod / 2 + 1` bars ago minus SMA(close, `timeperiod`). Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).
+// Streaming detrended price oscillator: close `timeperiod / 2 + 1` bars ago minus SMA(close, `timeperiod`).
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -22713,7 +22713,7 @@ func (s *StreamIchimoku) Close() error {
 
 // StreamCmf is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming Chaikin money flow: `timeperiod`-bar sum of CLV * volume over the volume sum. Mirrors the batch running volume sums (not a fresh window sum), so an all-zero-volume window leaves the same residue and NaN mask as the batch function.
+// Streaming Chaikin money flow: `timeperiod`-bar sum of CLV * volume over the volume sum. Mirrors the batch zero-exact running volume sums, so an all-zero-volume window is NaN exactly as in the batch function.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -22935,7 +22935,7 @@ func (s *StreamEmv) Close() error {
 
 // StreamVolosc is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming volume oscillator: 100 * (SMA(volume, fast) - SMA(volume, slow)) / SMA(volume, slow). Mirrors the batch running volume sums (not a fresh window sum), so an all-zero-volume window leaves the same residue and NaN mask as the batch function.
+// Streaming volume oscillator: 100 * (SMA(volume, fast) - SMA(volume, slow)) / SMA(volume, slow). Mirrors the batch zero-exact running volume sums, so an all-zero-volume window is NaN exactly as in the batch function.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.
@@ -23157,7 +23157,7 @@ func (s *StreamVroc) Close() error {
 
 // StreamRvol is a stateful, bar-by-bar indicator backed by a Rust handle.
 //
-// Streaming relative volume: volume / SMA(volume, `timeperiod`). Mirrors the batch running volume sums (not a fresh window sum), so an all-zero-volume window leaves the same residue and NaN mask as the batch function.
+// Streaming relative volume: volume / SMA(volume, `timeperiod`). Mirrors the batch zero-exact running volume sums, so an all-zero-volume window is NaN exactly as in the batch function.
 //
 // Methods are safe for concurrent use. Call Close when done; a finalizer
 // releases the handle if Close is forgotten.

@@ -70,3 +70,5 @@ pub mod sweep;
 pub mod utils;
 pub mod volatility;
 pub mod volume;
+/// Drift-safe running window sums for batch kernels (internal).
+pub(crate) mod window_sums;

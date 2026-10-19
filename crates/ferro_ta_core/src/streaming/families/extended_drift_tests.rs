@@ -184,17 +184,16 @@ fn extended_windowed_streams_equal_batch_on_trailing_window_long_series() {
             (d.close[i], d.volume[i])
         }),
     );
-    for name in EXTENDED_DRIFT_KERNELS {
-        assert!(BATCH_DRIFT_KERNELS.contains(name), "{name}");
+    assert!(BATCH_DRIFT_KERNELS.is_empty());
+    for (name, lb, batch) in &cands {
+        let gap = worst_gap(&d, *lb, batch);
+        assert!(gap <= 1e-9, "{name} lookback={lb}: batch drifts {gap:e}");
     }
 }
 
-/// Extended kernels whose measured gap (20k bars near 50,000) is within 10x
-/// of the 1e-9 contract or beyond it: bbpercent 6.8e-8 (the `bbands`
-/// running sum of squares), ao 5.2e-10, po 3.6e-10, dpo 2.3e-10 (`sma`
-/// running sums under a near-zero difference; the gap scales with price).
-/// Every other kernel above is <= 1.1e-11 (hull 6.1e-12, ac 1.0e-11,
-/// bbwidth 1.4e-12, emv 7.2e-13, vwma 8.2e-13, the rest <= 5e-14). RVI,
-/// Ulcer, CMF, VOLOSC and RVOL are native instead: their running sums decide
-/// the NaN mask on flat / zero-volume windows (see their docs).
-const EXTENDED_DRIFT_KERNELS: &[&str] = &["bbpercent", "ao", "po", "dpo"];
+// Measured before the anchored-sum fix (20k bars near 50,000): bbpercent
+// 6.8e-8 (the `bbands` rolling Welford), ao 5.2e-10, po 3.6e-10, dpo
+// 2.3e-10 (`sma` running sums under a near-zero difference; the gap scaled
+// with price). Every other kernel above was <= 1.1e-11. RVI, Ulcer, CMF,
+// VOLOSC and RVOL are native instead: their running sums decide the NaN mask
+// on flat / zero-volume windows (see their docs).

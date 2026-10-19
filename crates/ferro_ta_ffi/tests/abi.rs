@@ -314,6 +314,41 @@ fn cross_param_rule_is_enforced() {
     assert_eq!(status, FT_OK);
 }
 
+/// `ft_mama` with `slowlimit > fastlimit` used to reach the core clamp's
+/// panic (surfacing as a caught panic); it is now a plain invalid parameter
+/// that leaves the outputs untouched, and equal limits stay valid.
+#[test]
+fn mama_rejects_inverted_limits() {
+    let close = series(64);
+    let (mut m, mut f) = (vec![9.0; close.len()], vec![9.0; close.len()]);
+    let status = unsafe {
+        ft_mama(
+            close.as_ptr(),
+            close.len(),
+            0.05,
+            0.5,
+            m.as_mut_ptr(),
+            f.as_mut_ptr(),
+        )
+    };
+    assert_eq!(status, FT_ERR_INVALID_PARAM);
+    assert!(m.iter().chain(&f).all(|v| *v == 9.0));
+    let status = unsafe {
+        ft_mama(
+            close.as_ptr(),
+            close.len(),
+            0.3,
+            0.3,
+            m.as_mut_ptr(),
+            f.as_mut_ptr(),
+        )
+    };
+    assert_eq!(status, FT_OK);
+    let (em, ef) = overlap::mama(&close, 0.3, 0.3);
+    assert_same(&m, &em);
+    assert_same(&f, &ef);
+}
+
 #[test]
 fn cross_param_rule_is_recorded_in_spec() {
     let spec = all_specs()
