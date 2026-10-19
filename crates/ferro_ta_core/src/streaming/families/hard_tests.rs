@@ -7,7 +7,6 @@
 use super::*;
 use crate::streaming::fixtures::input_column;
 use crate::streaming::primitives::tests::assert_series;
-use crate::streaming::StreamingIndicator;
 
 const N: usize = 2000;
 
@@ -160,8 +159,7 @@ fn ichimoku_matches_batch_across_displacements() {
     ];
     for (t, k, b, d) in params {
         let mut s = StreamingIchimoku::new(t, k, b, d).unwrap();
-        let rows: Vec<(f64, f64, f64, f64)> =
-            (0..N).map(|i| s.update((h[i], l[i], c[i]))).collect();
+        let rows: Vec<(f64, f64, f64, f64)> = (0..N).map(|i| s.update(h[i], l[i], c[i])).collect();
         let want = crate::extended::ichimoku(&h, &l, &c, t, k, b, d);
         let tag = format!("ichimoku {t}/{k}/{b}/{d}");
         let col = |f: fn(&(f64, f64, f64, f64)) -> f64| rows.iter().map(f).collect::<Vec<_>>();

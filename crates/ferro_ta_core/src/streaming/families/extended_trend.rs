@@ -1,5 +1,5 @@
 //! Extended moving averages: Hull and ALMA (windowed); Alligator, Gator,
-//! ZLEMA, FRAMA, McGinley and VIDYA (native); Ichimoku (windowed).
+//! ZLEMA, FRAMA, McGinley, VIDYA and Ichimoku (native).
 
 use super::extended_common::{finite2, Ring};
 use super::StreamingCmo;
@@ -45,7 +45,7 @@ macro_rules! stream_family_extended_trend {
                 ichimoku => StreamingIchimoku, doc "Streaming Ichimoku cloud: (tenkan, kijun, senkou_a, senkou_b); the senkou spans are the values computed `displacement` bars ago. Chikou (close `displacement` bars ahead) needs future bars and is not streamed.",
                     params(tenkan_period: period = 9, kijun_period: period = 26, senkou_b_period: period = 52, displacement: count = 26),
                     inputs(high, low, close), outputs(out_tenkan: f64, out_kijun: f64, out_senkou_a: f64, out_senkou_b: f64),
-                    windowed(lookback = tenkan_period.max(kijun_period).max(senkou_b_period) + displacement,
+                    native(lookback = tenkan_period.max(kijun_period).max(senkou_b_period) + displacement,
                         batch = {
                             let (tenkan, kijun, senkou_a, senkou_b, _chikou) = $crate::extended::ichimoku(high, low, close, tenkan_period, kijun_period, senkou_b_period, displacement);
                             (tenkan, kijun, senkou_a, senkou_b)
@@ -546,5 +546,137 @@ impl StreamingVidya {
 
     pub fn cmo_period(&self) -> usize {
         self.cmo.timeperiod()
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Native: ICHIMOKU
+// ---------------------------------------------------------------------------
+
+/// Streaming Ichimoku (`extended::ichimoku` without chikou): rolling
+/// `(highest high + lowest low) / 2` over the tenkan, kijun and senkou B
+/// periods by exact scans of the last `max(period)` bars; the senkou spans
+/// are read `displacement` bars back from the line histories.
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct StreamingIchimoku {
+    tenkan_period: usize,
+    kijun_period: usize,
+    senkou_b_period: usize,
+    displacement: usize,
+    /// The last `max(period)` highs and lows.
+    highs: Ring,
+    lows: Ring,
+    /// The last `displacement + 1` values of each midpoint line.
+    tenkan: Ring,
+    kijun: Ring,
+    raw_b: Ring,
+}
+
+impl StreamingIchimoku {
+    pub fn new(
+        tenkan_period: usize,
+        kijun_period: usize,
+        senkou_b_period: usize,
+        displacement: usize,
+    ) -> Result<Self, StreamingError> {
+        let s = Self {
+            tenkan_period,
+            kijun_period,
+            senkou_b_period,
+            displacement,
+            highs: Ring::default(),
+            lows: Ring::default(),
+            tenkan: Ring::default(),
+            kijun: Ring::default(),
+            raw_b: Ring::default(),
+        };
+        s.check_params()?;
+        Ok(s)
+    }
+
+    fn check_params(&self) -> Result<(), StreamingError> {
+        check_period(self.tenkan_period, "tenkan_period", 1)?;
+        check_period(self.kijun_period, "kijun_period", 1)?;
+        check_period(self.senkou_b_period, "senkou_b_period", 1)?;
+        check_count(self.displacement, "displacement")
+    }
+
+    fn window(&self) -> usize {
+        self.tenkan_period
+            .max(self.kijun_period)
+            .max(self.senkou_b_period)
+    }
+
+    /// Midpoint of the newest `period` bars; NaN until `period` bars arrived.
+    /// Same NaN rule as the batch: only a NaN window high voids the value.
+    fn midpoint(&self, period: usize) -> f64 {
+        if self.highs.len() < period {
+            return f64::NAN;
+        }
+        let hh = self.highs.max_last(period);
+        if hh.is_nan() {
+            return f64::NAN;
+        }
+        (hh + self.lows.min_last(period)) / 2.0
+    }
+
+    /// Commit one bar: `(tenkan, kijun, senkou_a, senkou_b)`.
+    pub fn update(&mut self, high: f64, low: f64, _close: f64) -> (f64, f64, f64, f64) {
+        let (window, cap, d) = (self.window(), self.displacement + 1, self.displacement);
+        self.highs.push(high, window);
+        self.lows.push(low, window);
+        let tenkan = self.midpoint(self.tenkan_period);
+        let kijun = self.midpoint(self.kijun_period);
+        let raw_b = self.midpoint(self.senkou_b_period);
+        self.tenkan.push(tenkan, cap);
+        self.kijun.push(kijun, cap);
+        self.raw_b.push(raw_b, cap);
+        let (t_ago, k_ago) = (self.tenkan.ago(d), self.kijun.ago(d));
+        let senkou_a = if t_ago.is_finite() && k_ago.is_finite() {
+            (t_ago + k_ago) / 2.0
+        } else {
+            f64::NAN
+        };
+        (tenkan, kijun, senkou_a, self.raw_b.ago(d))
+    }
+
+    pub fn reset(&mut self) {
+        self.highs.clear();
+        self.lows.clear();
+        self.tenkan.clear();
+        self.kijun.clear();
+        self.raw_b.clear();
+    }
+
+    pub fn validate(&self) -> Result<(), StreamingError> {
+        self.check_params()?;
+        let (window, cap) = (self.window(), self.displacement + 1);
+        self.highs.validate(window, "ichimoku high window")?;
+        self.lows.validate(window, "ichimoku low window")?;
+        if self.highs.len() != self.lows.len() {
+            return Err(StreamingError(
+                "ichimoku: high and low windows differ in length".into(),
+            ));
+        }
+        self.tenkan.validate(cap, "ichimoku tenkan history")?;
+        self.kijun.validate(cap, "ichimoku kijun history")?;
+        self.raw_b.validate(cap, "ichimoku senkou B history")
+    }
+
+    pub fn tenkan_period(&self) -> usize {
+        self.tenkan_period
+    }
+
+    pub fn kijun_period(&self) -> usize {
+        self.kijun_period
+    }
+
+    pub fn senkou_b_period(&self) -> usize {
+        self.senkou_b_period
+    }
+
+    pub fn displacement(&self) -> usize {
+        self.displacement
     }
 }
