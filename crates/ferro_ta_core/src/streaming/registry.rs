@@ -85,6 +85,10 @@ macro_rules! for_each_stream {
                 $crate::stream_family_pattern;
                 $crate::stream_family_stats;
                 $crate::stream_family_markets;
+                $crate::stream_family_extended_bands;
+                $crate::stream_family_extended_osc;
+                $crate::stream_family_extended_trend;
+                $crate::stream_family_extended_volume;
             ];
         }
     };
@@ -237,7 +241,7 @@ macro_rules! __stream_define_one {
                     $lb
                 }
 
-                #[allow(unused_variables)]
+                #[allow(unused_variables, clippy::neg_cmp_op_on_partial_ord)]
                 fn validate(params: &Params) -> Result<(), $crate::streaming::StreamingError> {
                     $($crate::__stream_check_param!($kind $(($min))?; params.$p, stringify!($p))?;)*
                     $(let $p = params.$p;)*
@@ -269,6 +273,7 @@ macro_rules! __stream_define_one {
         pub type $Ty = $crate::streaming::Windowed<$name::Kernel>;
 
         impl $Ty {
+            #[allow(clippy::too_many_arguments)]
             pub fn new(
                 $($p: $crate::__stream_param_ty!($kind)),*
             ) -> Result<Self, $crate::streaming::StreamingError> {
@@ -322,6 +327,10 @@ pub const BATCH_DRIFT_KERNELS: &[&str] = &[
     "linearreg_angle",
     "stddev",
     "var",
+    "bbpercent",
+    "ao",
+    "po",
+    "dpo",
 ];
 
 /// Largest `period` / `count` a registry stream accepts — the C ABI's

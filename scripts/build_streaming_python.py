@@ -132,7 +132,11 @@ def render_stub_block(streams: list[dict], module: object) -> str:
 
 
 def render_exports_block(streams: list[dict]) -> str:
-    names = sorted(stream_class(s["name"]) for s in streams)
+    # Case-insensitive, as ruff's isort orders imported names (`MaEnvelopes`
+    # after `Macdfix`), so the pre-commit hook leaves the block unchanged.
+    names = sorted(
+        (stream_class(s["name"]) for s in streams), key=lambda n: (n.lower(), n)
+    )
     return (
         "\n".join(
             [

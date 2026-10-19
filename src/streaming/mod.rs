@@ -302,6 +302,7 @@ macro_rules! py_stream_gen {
             impl $Ty {
                 #[new]
                 #[pyo3(signature = ($($p = $default),*))]
+                #[allow(clippy::too_many_arguments)]
                 pub fn new($($p: ferro_ta_core::__stream_param_ty!($kind)),*) -> PyResult<Self> {
                     let indicator = core::$Ty::new($($p),*).map_err(to_py_err)?;
                     Ok(Self {

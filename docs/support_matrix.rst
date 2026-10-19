@@ -110,16 +110,16 @@ generated :doc:`languages/coverage` table and must be refreshed with
      - Notes
    * - Python (PyO3)
      - PyPI ``ferro-ta``
-     - 404 names on the coverage spine
+     - 458 names on the coverage spine
      - TA-Lib-style API; abi3 wheels for CPython 3.10+.
    * - Rust
      - crates.io ``ferro_ta_core``
-     - 531 core symbols (functions + streaming types)
+     - 585 core symbols (functions + streaming types)
      - Direct ``&[f64]`` API; docs.rs ``ferro_ta_core``.
    * - WASM / Node
      - npm ``ferro-ta-wasm``
-     - 514 exports
-     - Node.js and browsers; 387 names shared with Python after normalization.
+     - 568 exports
+     - Node.js and browsers; 441 names shared with Python after normalization.
    * - Flutter / Dart
      - pub.dev ``ferro_ta``
      - 194 generated wrappers; 56 ``MANUAL_EXCLUDE`` gaps
@@ -128,7 +128,7 @@ generated :doc:`languages/coverage` table and must be refreshed with
        131 names are present on all four surfaces.
    * - Go
      - Go module ``github.com/pratikbhadane24/ferro-ta/bindings/go``
-     - 439 C / Go coverage rows (324 C ABI exports; ``rolling_max`` and
+     - 493 C / Go coverage rows (324 C ABI exports; ``rolling_max`` and
        ``max`` share a row, as on every surface)
      - cgo over the ``ferro_ta_ffi`` C ABI; prebuilt static archives for
        Linux and macOS (amd64/arm64) and Windows (amd64), so ``go get`` needs

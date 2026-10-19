@@ -7,22 +7,22 @@ use crate::streaming::fixtures::bars_seeded;
 use crate::streaming::registry::BATCH_DRIFT_KERNELS;
 use crate::streaming::{Live, StreamingIndicator};
 
-const LONG_BARS: usize = 20_000;
-const SAMPLE_STEP: usize = 97;
+pub(super) const LONG_BARS: usize = 20_000;
+pub(super) const SAMPLE_STEP: usize = 97;
 const START_PRICE: f64 = 50_000.0;
 const REL_TOL: f64 = 1e-9;
 
-struct Data {
-    open: Vec<f64>,
-    high: Vec<f64>,
-    low: Vec<f64>,
-    close: Vec<f64>,
-    volume: Vec<f64>,
-    other: Vec<f64>,
+pub(super) struct Data {
+    pub(super) open: Vec<f64>,
+    pub(super) high: Vec<f64>,
+    pub(super) low: Vec<f64>,
+    pub(super) close: Vec<f64>,
+    pub(super) volume: Vec<f64>,
+    pub(super) other: Vec<f64>,
 }
 
 impl Data {
-    fn new() -> Self {
+    pub(super) fn new() -> Self {
         let rows = bars_seeded(12345, LONG_BARS);
         let shift = START_PRICE - 100.0;
         let col = |f: fn(&(f64, f64, f64, f64)) -> f64| -> Vec<f64> {
@@ -47,7 +47,7 @@ impl Data {
     }
 }
 
-type Batch = Box<dyn Fn(&Data, usize, usize) -> Vec<f64>>;
+pub(super) type Batch = Box<dyn Fn(&Data, usize, usize) -> Vec<f64>>;
 
 /// `(name, lookback, batch over bars lo..hi)` for the drift-suspect kernels.
 fn candidates() -> Vec<(&'static str, usize, Batch)> {
@@ -151,7 +151,7 @@ fn candidates() -> Vec<(&'static str, usize, Batch)> {
 }
 
 /// Worst relative gap between batch-on-full-series and batch-on-trailing-window.
-fn worst_gap(d: &Data, lookback: usize, batch: &Batch) -> f64 {
+pub(super) fn worst_gap(d: &Data, lookback: usize, batch: &Batch) -> f64 {
     let full = batch(d, 0, LONG_BARS);
     (lookback..LONG_BARS)
         .step_by(SAMPLE_STEP)
@@ -176,12 +176,18 @@ fn measure_batch_drift() {
     }
 }
 
-fn run<S: StreamingIndicator>(s: S, feed: impl Fn(usize) -> S::Input) -> Vec<S::Output> {
+pub(super) fn run<S: StreamingIndicator>(s: S, feed: impl Fn(usize) -> S::Input) -> Vec<S::Output> {
     let mut live = Live::new(s);
     (0..LONG_BARS).map(|i| live.update(feed(i), true)).collect()
 }
 
-fn assert_exact_window(name: &str, got: &[f64], d: &Data, lookback: usize, batch: &Batch) {
+pub(super) fn assert_exact_window(
+    name: &str,
+    got: &[f64],
+    d: &Data,
+    lookback: usize,
+    batch: &Batch,
+) {
     for i in (lookback..LONG_BARS).step_by(SAMPLE_STEP) {
         let want = *batch(d, i + 1 - lookback, i + 1).last().unwrap();
         let ok = (got[i].is_nan() && want.is_nan())

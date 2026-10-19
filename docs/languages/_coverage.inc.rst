@@ -11,13 +11,13 @@
      - Flutter
      - Flutter excluded
      - C / Go
-   * - 572
-     - 531
-     - 404
-     - 514
+   * - 626
+     - 585
+     - 458
+     - 568
      - 194
      - 56
-     - 439
+     - 493
 
 .. list-table:: Cross-language indicator coverage
    :header-rows: 1
@@ -2529,6 +2529,13 @@
      - yes
      - excluded
      - —
+   * - ``StreamingAc``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
    * - ``StreamingAd``
      - streaming
      - yes
@@ -2558,6 +2565,27 @@
      - —
      - yes
    * - ``StreamingAdxr``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingAlligator``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingAlma``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingAo``
      - streaming
      - yes
      - yes
@@ -2607,6 +2635,20 @@
      - —
      - yes
    * - ``StreamingBBands``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingBbpercent``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingBbwidth``
      - streaming
      - yes
      - yes
@@ -3061,6 +3103,27 @@
      - yes
      - —
      - yes
+   * - ``StreamingChaikinVol``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingChandeKrollStop``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingChandelierExit``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
    * - ``StreamingCheckCross``
      - streaming
      - yes
@@ -3068,7 +3131,28 @@
      - yes
      - —
      - yes
+   * - ``StreamingCho``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingChoppinessIndex``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
    * - ``StreamingCloseToCloseVol``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCmf``
      - streaming
      - yes
      - yes
@@ -3089,6 +3173,13 @@
      - yes
      - —
      - yes
+   * - ``StreamingCoppock``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
    * - ``StreamingCorrel``
      - streaming
      - yes
@@ -3097,6 +3188,13 @@
      - —
      - yes
    * - ``StreamingCross``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingCrsi``
      - streaming
      - yes
      - yes
@@ -3124,6 +3222,27 @@
      - yes
      - —
      - yes
+   * - ``StreamingDmi``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingDonchian``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingDpo``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
    * - ``StreamingDx``
      - streaming
      - yes
@@ -3131,7 +3250,42 @@
      - yes
      - —
      - yes
+   * - ``StreamingElderRay``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
    * - ``StreamingEMA``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingEmv``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingFisher``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingForceIndex``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingFrama``
      - streaming
      - yes
      - yes
@@ -3146,6 +3300,27 @@
      - —
      - yes
    * - ``StreamingGarmanKlassVol``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingGator``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingHistoricalVolatility``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingHullMa``
      - streaming
      - yes
      - yes
@@ -3174,6 +3349,27 @@
      - —
      - yes
    * - ``StreamingKama``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingKeltnerChannels``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingKst``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingKvo``
      - streaming
      - yes
      - yes
@@ -3236,6 +3432,20 @@
      - yes
      - —
      - yes
+   * - ``StreamingMaEnvelopes``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingMass``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
    * - ``StreamingMavp``
      - streaming
      - yes
@@ -3244,6 +3454,27 @@
      - —
      - yes
    * - ``StreamingMax``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingMcginley``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingMedian``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingMedianBands``
      - streaming
      - yes
      - yes
@@ -3299,6 +3530,13 @@
      - yes
      - —
      - yes
+   * - ``StreamingMode``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
    * - ``StreamingMom``
      - streaming
      - yes
@@ -3320,7 +3558,28 @@
      - yes
      - —
      - yes
+   * - ``StreamingNvi``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingNviWithEma``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
    * - ``StreamingObv``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingObvSmoothed``
      - streaming
      - yes
      - yes
@@ -3355,7 +3614,35 @@
      - yes
      - —
      - yes
+   * - ``StreamingPo``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
    * - ``StreamingPpo``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingPvi``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingPviWithSignal``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingPvt``
      - streaming
      - yes
      - yes
@@ -3488,6 +3775,27 @@
      - yes
      - —
      - yes
+   * - ``StreamingRvi``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingRvol``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingRwi``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
    * - ``StreamingSlidingMax``
      - streaming
      - yes
@@ -3510,6 +3818,20 @@
      - —
      - yes
    * - ``StreamingSpread``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingStarc``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingStc``
      - streaming
      - yes
      - yes
@@ -3614,7 +3936,21 @@
      - yes
      - —
      - yes
+   * - ``StreamingTsi``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
    * - ``StreamingTypprice``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingUlcerIndex``
      - streaming
      - yes
      - yes
@@ -3635,7 +3971,42 @@
      - yes
      - —
      - yes
+   * - ``StreamingVidya``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingVolosc``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingVortex``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingVroc``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
    * - ``StreamingVWAP``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingVwma``
      - streaming
      - yes
      - yes
@@ -3671,6 +4042,13 @@
      - —
      - yes
    * - ``StreamingYangZhangVol``
+     - streaming
+     - yes
+     - yes
+     - yes
+     - —
+     - yes
+   * - ``StreamingZlema``
      - streaming
      - yes
      - yes

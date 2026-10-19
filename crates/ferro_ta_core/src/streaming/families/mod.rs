@@ -3,6 +3,11 @@
 //! `streaming::registry` for the entry grammar.
 
 pub mod directional;
+pub mod extended_bands;
+mod extended_common;
+pub mod extended_osc;
+pub mod extended_trend;
+pub mod extended_volume;
 pub mod ma_osc;
 pub mod markets;
 pub mod math;
@@ -13,6 +18,10 @@ pub mod stats;
 pub mod volume;
 
 pub use directional::*;
+pub use extended_bands::*;
+pub use extended_osc::*;
+pub use extended_trend::*;
+pub use extended_volume::*;
 pub use ma_osc::*;
 pub use markets::*;
 pub use math::*;
@@ -24,6 +33,10 @@ pub use volume::*;
 
 #[cfg(test)]
 mod drift_tests;
+#[cfg(test)]
+mod extended_drift_tests;
+#[cfg(test)]
+mod extended_tests;
 #[cfg(test)]
 mod markets_tests;
 #[cfg(test)]

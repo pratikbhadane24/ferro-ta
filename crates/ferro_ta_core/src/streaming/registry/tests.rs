@@ -440,6 +440,8 @@ fn snapshot_round_trip_all_streams() {
 #[cfg(feature = "serde")]
 mod snapshot_fuzz;
 
+mod flat_parity;
+
 /// A windowed snapshot holding more than `2 · lookback` bars is corrupt.
 #[cfg(feature = "serde")]
 #[test]
