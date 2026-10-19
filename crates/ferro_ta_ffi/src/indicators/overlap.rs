@@ -37,7 +37,7 @@ crate::ffi_exports! {
         -> [out_macd: f64, out_signal: f64, out_hist: f64] if fastperiod < slowperiod;
     /// MESA Adaptive Moving Average. Returns `(mama, fama)`.
     ft_mama = overlap::mama(close)[fastlimit: float, slowlimit: float]
-        -> [out_mama: f64, out_fama: f64];
+        -> [out_mama: f64, out_fama: f64] if slowlimit <= fastlimit;
     /// Midpoint: `(max(close) + min(close)) / 2` over rolling window.
     ft_midpoint = overlap::midpoint(close)[timeperiod: period]
         -> [out: f64];

@@ -51,7 +51,11 @@ automatically.
 - **NaN inside the series** — like TA-Lib, a NaN mid-series poisons every
   later value of running-sum / recursive indicators (SMA, EMA, RSI, MACD, …).
   Pass ``nan_policy="skip"`` to step over bad bars instead; see
-  :doc:`error_handling`.
+  :doc:`error_handling`. One deliberate divergence: ``CORREL``, the
+  ``LINEARREG`` family, ``AO``, ``AC``, ``PO`` and ``DPO`` recover once the
+  NaN leaves the window, whereas TA-Lib's ``CORREL`` stays NaN for the rest
+  of the series (TA-Lib's ``LINEARREG`` family already recomputes per window
+  and recovers, and ``STDDEV`` / ``VAR`` already recovered).
 - **Pandas Series** — ferro-ta transparently preserves the original index when
   a ``pd.Series`` is passed as input.
 

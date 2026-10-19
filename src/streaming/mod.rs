@@ -276,6 +276,127 @@ streaming_pyclass! {
 }
 
 // ---------------------------------------------------------------------------
+// Registry-generated classes
+// ---------------------------------------------------------------------------
+
+/// Python class per registry entry (`ferro_ta_core::for_each_stream!`), with
+/// the same method set as `streaming_pyclass!`. Params become keyword
+/// arguments with the registry defaults and read-only getters.
+macro_rules! py_stream_gen {
+    ($(
+        $name:ident => $Ty:ident, doc $doc:literal,
+            params($($p:ident: $kind:ident $(($min:literal))? = $default:tt),* $(,)?),
+            inputs($($i:ident),+ $(,)?),
+            outputs($($o:ident: $elem:ident),+ $(,)?),
+            $imp:ident($($body:tt)*);
+    )*) => {
+        $(
+            #[doc = $doc]
+            #[pyclass(module = "ferro_ta._ferro_ta")]
+            #[derive(Clone)]
+            pub struct $Ty {
+                inner: core::Live<core::$Ty>,
+            }
+
+            #[pymethods]
+            impl $Ty {
+                #[new]
+                #[pyo3(signature = ($($p = $default),*))]
+                #[allow(clippy::too_many_arguments)]
+                pub fn new($($p: ferro_ta_core::__stream_param_ty!($kind)),*) -> PyResult<Self> {
+                    let indicator = core::$Ty::new($($p),*).map_err(to_py_err)?;
+                    Ok(Self {
+                        inner: core::Live::new(indicator),
+                    })
+                }
+
+                /// Feed one tick.
+                ///
+                /// ``closed=True`` (default) commits the bar. ``closed=False``
+                /// previews the still-forming bar from committed state without
+                /// changing it, so repeated ticks of one bar replace each other.
+                #[pyo3(signature = ($($i),+, *, closed = true))]
+                pub fn update(
+                    &mut self,
+                    $($i: f64),+,
+                    closed: bool,
+                ) -> <core::$Ty as core::StreamingIndicator>::Output {
+                    self.inner.update(($($i),+), closed)
+                }
+
+                /// Reset state to initial condition.
+                pub fn reset(&mut self) {
+                    self.inner.reset();
+                }
+
+                /// Number of committed (closed) bars.
+                #[getter]
+                pub fn count(&self) -> usize {
+                    self.inner.count()
+                }
+
+                /// True once the last committed bar produced a value.
+                #[getter]
+                pub fn is_ready(&self) -> bool {
+                    self.inner.is_ready()
+                }
+
+                /// Versioned JSON snapshot of the full state (see ``from_json``).
+                pub fn to_json(&self) -> PyResult<String> {
+                    self.inner.save().map_err(to_py_err)
+                }
+
+                /// Restore a snapshot made by ``to_json`` of this same class.
+                #[staticmethod]
+                pub fn from_json(json: &str) -> PyResult<Self> {
+                    Ok(Self {
+                        inner: core::Live::load(json).map_err(to_py_err)?,
+                    })
+                }
+
+                fn __reduce__<'py>(
+                    slf: &Bound<'py, Self>,
+                ) -> PyResult<(Bound<'py, PyAny>, (String,))> {
+                    let snapshot = slf.borrow().inner.save().map_err(to_py_err)?;
+                    Ok((slf.get_type().getattr("from_json")?, (snapshot,)))
+                }
+
+                fn __copy__(&self) -> Self {
+                    self.clone()
+                }
+
+                fn __deepcopy__(&self, _memo: &Bound<'_, PyAny>) -> Self {
+                    self.clone()
+                }
+
+                fn __repr__(&self) -> String {
+                    #[allow(unused_variables)]
+                    let ind = self.inner.inner();
+                    let params: Vec<String> =
+                        vec![$(format!("{}={:?}", stringify!($p), ind.$p())),*];
+                    format!("{}({})", stringify!($Ty), params.join(", "))
+                }
+
+                $(
+                    #[getter]
+                    pub fn $p(&self) -> ferro_ta_core::__stream_param_ty!($kind) {
+                        self.inner.inner().$p()
+                    }
+                )*
+            }
+        )*
+
+        /// Register every registry-generated class.
+        fn register_generated(m: &Bound<'_, PyModule>) -> PyResult<()> {
+            $(m.add_class::<$Ty>()?;)*
+            Ok(())
+        }
+    };
+}
+
+ferro_ta_core::for_each_stream!(py_stream_gen);
+
+// ---------------------------------------------------------------------------
 // register
 // ---------------------------------------------------------------------------
 
@@ -295,5 +416,6 @@ pub fn register(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<StreamingOptionGreeks>()?;
     m.add_class::<bars::BarBuilder>()?;
     m.add_class::<bars::Bar>()?;
+    register_generated(m)?;
     Ok(())
 }

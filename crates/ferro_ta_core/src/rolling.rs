@@ -51,6 +51,36 @@
 /// chunked and streaming code paths agree with the one-shot path.
 pub(crate) const RESEED_INTERVAL: usize = 8192;
 
+/// Shortest interval [`anchor_interval`] returns for a window of two or more.
+pub(crate) const MIN_ANCHOR_INTERVAL: usize = 64;
+
+/// Window advances between exact recomputes for an accumulator whose rounding
+/// scales with the *price level* rather than with the window's spread: the
+/// anchored second moment of [`RollingVariance`] and the anchored deviation sums
+/// of `crate::window_sums`.
+///
+/// [`RESEED_INTERVAL`] bounds drift at `O(sqrt(8192) * eps)` relative to the
+/// accumulator's own magnitude, which is enough for a sum but not for a second
+/// moment or co-moment near price 50,000 with a spread of a few units: there
+/// the drift is amplified by `(price / spread)`, and measured gaps reached
+/// 1e-8 (variance) to 1e-1 (`correl`) against a two-pass recompute.
+/// Recomputing every `8 * timeperiod` advances (at least 64, at most
+/// [`RESEED_INTERVAL`]) caps that at ~1e-12 on the same walk, for an amortized
+/// `timeperiod / (8 * timeperiod) = 1/8` extra element visit per bar.
+///
+/// A one-bar window re-anchors on every bar: the recompute is O(1) there, and
+/// it keeps that window's dispersion an exact `0.0` (and its level exact)
+/// rather than a residue about a stale anchor.
+#[inline]
+pub(crate) fn anchor_interval(timeperiod: usize) -> usize {
+    if timeperiod <= 1 {
+        return 1;
+    }
+    timeperiod
+        .saturating_mul(8)
+        .clamp(MIN_ANCHOR_INTERVAL, RESEED_INTERVAL)
+}
+
 /// Largest tolerated ratio between the biggest magnitude a running accumulator
 /// has absorbed since its last exact recompute and the accumulator's current
 /// value, before an exact recompute is *forced*.
@@ -88,7 +118,7 @@ pub(crate) const RESEED_INTERVAL: usize = 8192;
 /// For [`RollingVariance`] the ratio is taken between second moments, which are
 /// already squared, so `2^14` on `m2` is a `2^7 = 128`-fold dynamic range in the
 /// *values* — the point at which `sigma` is still resolved to 26 bits.
-const MAX_ACCUMULATOR_RANGE: f64 = 16_384.0;
+pub(crate) const MAX_ACCUMULATOR_RANGE: f64 = 16_384.0;
 
 /// True for a non-zero value below `f64::MIN_POSITIVE`, i.e. one in the
 /// subnormal range.
@@ -367,7 +397,7 @@ pub(crate) fn sliding_arg_extrema(
 /// accumulator is damage worth recomputing only when the window holds nothing
 /// non-finite of its own.
 #[derive(Default)]
-struct NonFiniteGuard {
+pub(crate) struct NonFiniteGuard {
     /// Non-finite values currently inside the window.
     inside: usize,
     /// A non-finite value has entered since the last exact recompute.
@@ -375,7 +405,16 @@ struct NonFiniteGuard {
 }
 
 impl NonFiniteGuard {
-    fn seed(window: &[f64]) -> Self {
+    /// A guard over a window already known to hold `inside` non-finite bars
+    /// (for kernels whose "bar" is a tuple of inputs).
+    pub(crate) fn from_count(inside: usize) -> Self {
+        Self {
+            inside,
+            contaminated: inside > 0,
+        }
+    }
+
+    pub(crate) fn seed(window: &[f64]) -> Self {
         let inside = window.iter().filter(|x| !x.is_finite()).count();
         Self {
             inside,
@@ -384,7 +423,7 @@ impl NonFiniteGuard {
     }
 
     #[inline]
-    fn slide(&mut self, x_new: f64, x_old: f64) {
+    pub(crate) fn slide(&mut self, x_new: f64, x_old: f64) {
         if !x_new.is_finite() {
             self.inside += 1;
             self.contaminated = true;
@@ -397,19 +436,19 @@ impl NonFiniteGuard {
     /// True once every non-finite value has left the window but the
     /// accumulator still carries their damage.
     #[inline]
-    fn needs_recompute(&self) -> bool {
+    pub(crate) fn needs_recompute(&self) -> bool {
         self.contaminated && self.inside == 0
     }
 
     /// True when the window itself holds no non-finite value, so a non-finite
     /// *accumulator* can only be damage rather than a faithful result.
     #[inline]
-    fn window_is_clean(&self) -> bool {
+    pub(crate) fn window_is_clean(&self) -> bool {
         self.inside == 0
     }
 
     #[inline]
-    fn clear(&mut self) {
+    pub(crate) fn clear(&mut self) {
         self.contaminated = self.inside > 0;
     }
 }
@@ -571,26 +610,35 @@ impl RollingSum {
     }
 }
 
-/// Running mean and population variance over a fixed-size window, via
-/// Welford's rolling update.
+/// Running mean and population variance over a fixed-size window, as
+/// deviation sums about an anchor.
 ///
-/// # Rolling Welford
+/// # Anchored second moment
 ///
-/// We maintain `mean` and `m2` (the sum of squared deviations from the current
-/// mean). When `x_new` replaces `x_old` and the window size `N` is constant:
+/// Every exact recompute sets the anchor `a` to the two-pass window mean and
+/// stores `s1 = sum (x - a)` (zero up to the mean's rounding) and
+/// `s2 = sum (x - a)^2` (the two-pass `m2`). Sliding then updates both sums
+/// by deviations:
 ///
 /// ```text
-/// delta     = x_new - x_old
-/// old_mean  = mean
-/// mean     += delta / N
-/// m2       += delta * ((x_new - mean) + (x_old - old_mean))
-///
-/// variance  = m2 / N               // population variance
+/// d_new = x_new - a,  d_old = x_old - a
+/// s1   += d_new - d_old
+/// s2   += d_new^2 - d_old^2
+/// m2    = s2 - s1^2 / N        // population variance = m2 / N
+/// mean  = a + s1 / N
 /// ```
 ///
-/// That is algebraically the two separate Welford steps (remove `x_old`, add
-/// `x_new`) without the intermediate `N - 1` state. The initial window is
-/// seeded with the standard incremental Welford recurrence.
+/// # Why not rolling Welford
+///
+/// This used to be the rolling Welford update (`mean += delta / N`,
+/// `m2 += delta * ((x_new - mean) + (x_old - old_mean))`). Its `mean` rounds
+/// to the ulp of the *price level* on every bar, and that error feeds `m2`
+/// through `x - mean`: near price 50,000 with a spread of a few tenths, the
+/// variance drifted ~1e-8 relative from a two-pass recompute even between
+/// frequent reseeds. The anchored sums only ever round deviations, whose
+/// magnitude is the spread plus however far the window has moved since the
+/// last recompute — bounded by [`anchor_interval`] — so the error is
+/// `O(eps * (excursion / sigma)^2)`, independent of the price level.
 ///
 /// # Accuracy contract
 ///
@@ -607,7 +655,7 @@ impl RollingSum {
 /// * `mean` or `m2` has gone non-finite over an all-finite window,
 /// * `m2` has collapsed by more than [`MAX_ACCUMULATOR_RANGE`] from its peak
 ///   since the last recompute (a dominating bar left the window), or
-/// * [`RESEED_INTERVAL`] advances have passed.
+/// * [`anchor_interval`] advances have passed.
 ///
 /// Driven through [`Self::advance`], the reported population variance therefore
 /// stays within `2^-26` relative of an exact two-pass recompute, and is `NaN`
@@ -618,14 +666,25 @@ impl RollingSum {
 /// That naive form (which TA-Lib itself uses) has relative error scaling as
 /// `(mean / sigma)^2 * eps`. At price 100 / sigma 0.05 that is ~1e-9 relative
 /// and invisible; at index or crypto levels (price 1e5, sigma 0.01) it is ~2e-2
-/// **relative** — a 2% error — and `m2` can go negative outright. Welford
-/// avoids the cancellation entirely.
+/// **relative** — a 2% error — and `m2` can go negative outright. Anchoring
+/// at the window mean removes the price level from the cancellation.
 pub(crate) struct RollingVariance {
-    mean: f64,
+    /// Two-pass window mean at the last exact recompute.
+    anchor: f64,
+    /// `sum (x - anchor)` over the window.
+    s1: f64,
+    /// `sum (x - anchor)^2` over the window.
+    s2: f64,
+    /// `s2 - s1^2 / p`, clamped at zero: the window's sum of squared
+    /// deviations from its own mean.
     m2: f64,
     /// Window size as `f64`, to keep the conversion out of the hot loop.
     p: f64,
     since_reseed: usize,
+    /// [`anchor_interval`] of the window size (1 for a one-bar window):
+    /// re-anchoring keeps the deviations, and so their rounding, on the scale
+    /// of the spread.
+    reseed_every: usize,
     /// Largest value `m2` has held since the last exact recompute. See
     /// [`MAX_ACCUMULATOR_RANGE`].
     ///
@@ -644,10 +703,13 @@ impl RollingVariance {
     /// Seed from the first full window (length `timeperiod`, must be non-empty).
     pub(crate) fn new(window: &[f64]) -> Self {
         let mut out = Self {
-            mean: 0.0,
+            anchor: 0.0,
+            s1: 0.0,
+            s2: 0.0,
             m2: 0.0,
             p: window.len() as f64,
             since_reseed: 0,
+            reseed_every: anchor_interval(window.len()),
             m2_max: 0.0,
             guard: NonFiniteGuard::seed(window),
         };
@@ -688,14 +750,33 @@ impl RollingVariance {
         // handful of significant bits, so a one-ulp difference in `mean` can
         // move the result by percent-level *relative* error. See the subnormal
         // branch of `range_is_lossy`.
-        let mean = window.iter().sum::<f64>() / self.p;
+        //
+        // A flat window is special-cased to its value: `sum / p` at a price
+        // level like 50,000 can miss it by an ulp, leaving a spurious
+        // `p * ulp^2` variance where the exact answer is 0 (and `bbpercent`
+        // then reads 0.5 instead of its zero-range NaN).
+        let first = window[0];
+        let mean = if window.iter().all(|&x| x == first) {
+            first
+        } else {
+            window.iter().sum::<f64>() / self.p
+        };
+        let mut s1 = 0.0_f64;
         let mut m2 = 0.0_f64;
         for &x in window {
             let d = x - mean;
+            s1 += d;
             m2 += d * d;
         }
         debug_assert!(m2 >= 0.0 || m2.is_nan(), "seed m2 went negative: {m2}");
-        self.mean = mean;
+        // `s1` is *not* assumed zero: `mean` is rounded, so `sum (x - mean)`
+        // is `-p` times that rounding, and dropping it would put a
+        // first-order `2 * s1 * rounding` error into every later `m2`. The
+        // reported seed `m2` stays the two-pass `sum (x - mean)^2` (it differs
+        // from `s2 - s1^2 / p` by `p * rounding^2`, below its last bit).
+        self.anchor = mean;
+        self.s1 = s1;
+        self.s2 = m2;
         self.m2 = m2;
         self.m2_max = m2;
     }
@@ -712,7 +793,7 @@ impl RollingVariance {
     fn range_is_lossy(&self) -> bool {
         self.guard.window_is_clean()
             && (!self.m2.is_finite()
-                || !self.mean.is_finite()
+                || !self.mean().is_finite()
                 || self.m2_max > MAX_ACCUMULATOR_RANGE * self.m2
                 || is_subnormal_magnitude(self.m2))
     }
@@ -720,7 +801,14 @@ impl RollingVariance {
     /// Current window mean.
     #[inline]
     pub(crate) fn mean(&self) -> f64 {
-        self.mean
+        self.anchor + self.s1 / self.p
+    }
+
+    /// `x - mean()`, formed from deviations so it carries no rounding at the
+    /// price level (`x` is expected to be near the window, e.g. its last bar).
+    #[inline]
+    pub(crate) fn deviation(&self, x: f64) -> f64 {
+        (x - self.anchor) - self.s1 / self.p
     }
 
     /// Current population variance.
@@ -737,10 +825,11 @@ impl RollingVariance {
     /// Slide by one bar: `x_new` enters, `x_old` leaves. Raw recurrence only.
     #[inline]
     pub(crate) fn push_pop(&mut self, x_new: f64, x_old: f64) {
-        let delta = x_new - x_old;
-        let old_mean = self.mean;
-        self.mean += delta / self.p;
-        self.m2 += delta * ((x_new - self.mean) + (x_old - old_mean));
+        let d_new = x_new - self.anchor;
+        let d_old = x_old - self.anchor;
+        self.s1 += d_new - d_old;
+        self.s2 += d_new * d_new - d_old * d_old;
+        self.m2 = self.s2 - self.s1 * self.s1 / self.p;
         // Guarantees `sqrt` a non-negative argument, and nothing else. A
         // negative `m2` here means the recurrence has *already* lost every
         // significant bit, and this clamp reports that total loss as a
@@ -759,12 +848,12 @@ impl RollingVariance {
     }
 
     /// True when the accumulator should be recomputed exactly: drift has had
-    /// [`RESEED_INTERVAL`] chances to accumulate, a non-finite value entered and
+    /// [`anchor_interval`] chances to accumulate, a non-finite value entered and
     /// has since left the window, or a dominating bar has left the window and
     /// taken more than [`MAX_ACCUMULATOR_RANGE`] of `m2`'s precision with it.
     #[inline]
     pub(crate) fn needs_reseed(&self) -> bool {
-        self.since_reseed >= RESEED_INTERVAL
+        self.since_reseed >= self.reseed_every
             || self.guard.needs_recompute()
             || self.range_is_lossy()
     }

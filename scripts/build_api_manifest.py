@@ -26,6 +26,10 @@ import sys
 from pathlib import Path
 from typing import Any
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from stream_names import stream_class  # noqa: E402
+
 COVERAGE_RST_REL = Path("docs/languages/_coverage.inc.rst")
 
 # Element-wise / rolling math names used to strip WASM `transform_` / `math_`
@@ -93,6 +97,10 @@ _WASM_STREAMING_CLASS_RE = re.compile(
     r"(?m)^\s+([A-Za-z0-9_]+)\s+wraps\s+[A-Za-z0-9_]+,"
 )
 _TOPLEVEL_PUB_FN_RE = re.compile(r"(?m)^pub\s+fn\s+([A-Za-z0-9_]+)\s*\(")
+# Registry entry head: `name => StreamingType, doc "..."` (one per stream).
+_REGISTRY_ENTRY_RE = re.compile(
+    r"(?m)^\s*[a-z0-9_]+\s*=>\s*(Streaming[A-Za-z0-9]+),\s*doc\b"
+)
 _TOPLEVEL_PUB_STRUCT_RE = re.compile(r"(?m)^pub\s+struct\s+([A-Za-z0-9_]+)\b")
 _WASM_BINDGEN_TOPLEVEL_ITEM_RE = re.compile(
     r"(?m)^(?:#\[[^\]]+\]\s*)+pub\s+(?:fn|struct)\s+([A-Za-z0-9_]+)\b"
@@ -169,6 +177,16 @@ def _extract_dunder_all(file_path: Path) -> list[str]:
             target = node.target
             if isinstance(target, ast.Name) and target.id == "__all__":
                 value_node = node.value
+        elif isinstance(node, ast.AugAssign):
+            # `__all__ += [...]` (generated blocks, e.g. registry streams).
+            target = node.target
+            if isinstance(target, ast.Name) and target.id == "__all__":
+                try:
+                    extra = ast.literal_eval(node.value)
+                except Exception:
+                    continue
+                exports += [item for item in extra if isinstance(item, str)]
+            continue
         if value_node is None:
             continue
         try:
@@ -285,10 +303,24 @@ def _extract_core_exports(root: Path) -> list[dict[str, str]]:
     return entries
 
 
+def _registry_stream_types(root: Path) -> list[str]:
+    """Core types of the registry streams (``streaming/families/*.rs``).
+
+    They are macro-generated (type aliases or structs), so they are read from
+    the registry entries rather than ``pub struct`` lines. The Python, WASM
+    (``Wasm`` + type) and C classes are generated from the same entries.
+    """
+    families = root / "crates" / "ferro_ta_core" / "src" / "streaming" / "families"
+    names: set[str] = set()
+    for rs_file in sorted(families.glob("*.rs")):
+        names.update(_REGISTRY_ENTRY_RE.findall(rs_file.read_text(encoding="utf-8")))
+    return sorted(names)
+
+
 def _extract_core_types(root: Path) -> list[str]:
     """Public structs used as coverage peers (streaming classes, etc.)."""
     core_src = root / "crates" / "ferro_ta_core" / "src"
-    names: set[str] = set()
+    names: set[str] = set(_registry_stream_types(root))
     for rs_file in core_src.rglob("*.rs"):
         text = rs_file.read_text(encoding="utf-8")
         for name in _TOPLEVEL_PUB_STRUCT_RE.findall(text):
@@ -317,6 +349,8 @@ def _extract_wasm_exports(root: Path) -> list[str]:
             exports.update(_IDENT_RE.findall(block))
         exports.update(_MATH_TRANSFORM_WRAPPER_RE.findall(text))
         exports.update(_WASM_STREAMING_CLASS_RE.findall(text))
+        if "for_each_stream!(wasm_stream_gen)" in text:
+            exports.update(f"Wasm{t}" for t in _registry_stream_types(root))
         if exports:
             return sorted(exports)
 
@@ -373,8 +407,9 @@ def _extract_flutter_exports(root: Path) -> list[str]:
 def _extract_ffi_exports(root: Path) -> list[str]:
     """C ABI exports (wrapped 1:1 by the Go module), from ``ffi_spec.json``.
 
-    ``ft_sma`` maps to ``sma``; streaming handle ``sma`` maps to
-    ``StreamingSMA`` so it lines up with the core/Python streaming rows.
+    ``ft_sma`` maps to ``sma``; streaming handle ``sma`` maps to its class
+    name (``StreamingSMA``, ``StreamingRollingMaxindex``; see
+    ``stream_names.py``) so it lines up with the core/Python streaming rows.
     """
     spec_path = root / "crates" / "ferro_ta_ffi" / "ffi_spec.json"
     if not spec_path.exists():
@@ -383,7 +418,7 @@ def _extract_ffi_exports(root: Path) -> list[str]:
     names = [fn["name"].removeprefix("ft_") for fn in spec["functions"]]
     names += [fn["name"].removeprefix("ft_") for fn in spec.get("scalars", [])]
     names += [fn["name"].removeprefix("ft_") for fn in spec.get("kernels", [])]
-    names += [f"Streaming{stream['name'].upper()}" for stream in spec["streams"]]
+    names += [stream_class(stream["name"]) for stream in spec["streams"]]
     return sorted(names)
 
 

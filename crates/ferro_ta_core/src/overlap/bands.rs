@@ -63,9 +63,9 @@ use crate::rolling::RollingVariance;
 /// # Numerical contract
 ///
 /// Mean and second moment both come from [`RollingVariance`], the crate's one
-/// vetted rolling-Welford accumulator, driven through
-/// [`RollingVariance::advance`] so all three of its reseed triggers apply
-/// (elapsed `rolling::RESEED_INTERVAL`, non-finite recovery, and lost
+/// vetted rolling second-moment accumulator (anchored deviation sums), driven
+/// through [`RollingVariance::advance`] so all three of its reseed triggers
+/// apply (elapsed `rolling::anchor_interval`, non-finite recovery, and lost
 /// precision — `mean`/`m2` non-finite over an all-finite window, `m2`
 /// collapsed by more than `rolling::MAX_ACCUMULATOR_RANGE` from its peak, or
 /// `m2` subnormal). The reported half-width therefore stays within `2^-26`
@@ -245,6 +245,21 @@ mod tests {
             emit(i, mean, (m2 / p).sqrt());
         }
         (upper, middle, lower)
+    }
+
+    /// Two-pass `(upper, middle, lower)` of every full window.
+    fn exact_bands(close: &[f64], p: usize, up: f64, dn: f64) -> Bands {
+        let n = close.len();
+        let mut out = (vec![f64::NAN; n], vec![f64::NAN; n], vec![f64::NAN; n]);
+        for i in (p - 1)..n {
+            let window = &close[i + 1 - p..=i];
+            let mean = window.iter().sum::<f64>() / p as f64;
+            let sd = exact_std(window);
+            out.0[i] = mean + up * sd;
+            out.1[i] = mean;
+            out.2[i] = mean - dn * sd;
+        }
+        out
     }
 
     /// Exact two-pass population standard deviation over `window`.
@@ -428,10 +443,12 @@ mod tests {
     /// * **Gate-shaped configurations** — at most 2000 bars with
     ///   `timeperiod >= 5`, the shape of every
     ///   `tests/integration/test_vs_talib.py` BBANDS case and of
-    ///   `benchmarks/test_accuracy.py` — agree to `1e-13` **relative**.
-    ///   Measured worst case `2.5e-14`, ~110 ulps of a price-100 band, i.e.
-    ///   `2.5e-12` *absolute*: the gate's `atol = 1e-6` has four orders of
-    ///   headroom, so this migration cannot move it.
+    ///   `benchmarks/test_accuracy.py` — agree with the exact two-pass bands
+    ///   to `1e-13` **relative**, i.e. ~1e-11 *absolute* on a price-100 band:
+    ///   the gate's `atol = 1e-6` has five orders of headroom. (They were
+    ///   scored against the reference until the anchored second moment
+    ///   replaced rolling Welford; the reference's own drift, ~1e-12 on
+    ///   `walk_2000`, then dominated the comparison.)
     /// * **The whole matrix**, `timeperiod = 2` over 12000 bars included
     ///   (measured worst case `8.4e-8` relative), is where the divergence
     ///   actually lives — and it lives there because the *reference* drifted.
@@ -475,16 +492,21 @@ mod tests {
                     continue;
                 }
                 let (gu, gm, gl) = bbands(close, p, 2.0, 2.5, 0);
-                let (wu, wm, wl) = reference_bbands(close, p, 2.0, 2.5);
+                let (wu, wm, _wl) = reference_bbands(close, p, 2.0, 2.5);
+                let (eu, em, el) = exact_bands(close, p, 2.0, 2.5);
                 let rtol = if close.len() <= 2000 && p >= 5 {
                     GATE_RTOL
                 } else {
                     WIDE_RTOL
                 };
+                // Agreement is scored against the exact bands, not against the
+                // reference: the reference is itself a rolling accumulator and
+                // drifts (~1e-12 relative on `walk_2000`, where the anchored
+                // kernel stays within ~1e-14 of the exact bands).
                 for (label, got, want) in [
-                    ("upper", &gu, &wu),
-                    ("middle", &gm, &wm),
-                    ("lower", &gl, &wl),
+                    ("upper", &gu, &eu),
+                    ("middle", &gm, &em),
+                    ("lower", &gl, &el),
                 ] {
                     for i in 0..close.len() {
                         let ok = if want[i].is_nan() {

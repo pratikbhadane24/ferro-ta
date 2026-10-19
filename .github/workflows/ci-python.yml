@@ -108,6 +108,9 @@ jobs:
       - name: Check type stub matches runtime signatures
         if: matrix.python-version == '3.12'
         run: python scripts/check_stub_parity.py
+      - name: Check generated streaming stubs are current
+        if: matrix.python-version == '3.12'
+        run: python scripts/build_streaming_python.py --check
       - uses: actions/upload-artifact@v7
         if: matrix.python-version == '3.12'
         with:

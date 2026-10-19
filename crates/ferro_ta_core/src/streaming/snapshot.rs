@@ -106,6 +106,21 @@ pub(crate) mod nan_as_null {
     }
 }
 
+/// `VecDeque<f64>` stored as a list of numbers with NaN as `null`.
+pub(crate) mod nan_seq {
+    use serde::{Deserialize, Deserializer, Serializer};
+    use std::collections::VecDeque;
+
+    pub fn serialize<S: Serializer>(v: &VecDeque<f64>, s: S) -> Result<S::Ok, S::Error> {
+        s.collect_seq(v.iter().map(|x| (!x.is_nan()).then_some(*x)))
+    }
+
+    pub fn deserialize<'de, D: Deserializer<'de>>(d: D) -> Result<VecDeque<f64>, D::Error> {
+        let parts = Vec::<Option<f64>>::deserialize(d)?;
+        Ok(parts.into_iter().map(|x| x.unwrap_or(f64::NAN)).collect())
+    }
+}
+
 /// A [`StreamValue`] stored as a list of numbers with NaN as `null`.
 pub(crate) mod stream_value {
     use super::StreamValue;
@@ -130,22 +145,10 @@ mod tests {
 
     const WARM: usize = 150;
 
-    /// Deterministic OHLCV path (LCG), as in the live-bar tests.
+    /// Deterministic OHLCV path (LCG); its own seed keeps the golden
+    /// snapshots stable.
     fn bars(n: usize) -> Vec<(f64, f64, f64, f64)> {
-        let mut state: u64 = 0x2545_F491_4F6C_DD1D;
-        let mut next = move || {
-            state = state
-                .wrapping_mul(6_364_136_223_846_793_005)
-                .wrapping_add(1_442_695_040_888_963_407);
-            (state >> 11) as f64 / (1u64 << 53) as f64
-        };
-        let mut close = 100.0;
-        (0..n)
-            .map(|_| {
-                close += next() - 0.5;
-                (close + next(), close - next(), close, 1.0 + 10.0 * next())
-            })
-            .collect()
+        crate::streaming::fixtures::bars_seeded(0x2545_F491_4F6C_DD1D, n)
     }
 
     fn same<O: std::fmt::Debug>(a: O, b: O) -> bool {

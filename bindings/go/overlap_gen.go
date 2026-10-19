@@ -156,6 +156,7 @@ func Macd(close []float64, fastperiod int, slowperiod int, signalperiod int) (ma
 // Mama wraps ferro_ta_core overlap::mama.
 //
 // MESA Adaptive Moving Average. Returns `(mama, fama)`.
+// Requires: slowlimit <= fastlimit (else ErrInvalidParam).
 func Mama(close []float64, fastlimit float64, slowlimit float64) (mama []float64, fama []float64, err error) {
 	n := len(close)
 	mamaBuf := make([]float64, n)

@@ -468,7 +468,9 @@ def scalar_cases(lib: ctypes.CDLL, spec: dict) -> list[dict]:
 
 
 def run_stream(lib: ctypes.CDLL, stream: dict, cols: dict[str, list[float]]) -> dict:
-    params = distinct_params(stream["name"], stream["params"])
+    # Same lookup key as the batch function, so a registry stream replays with
+    # exactly the params of its `ft_<name>` golden case.
+    params = distinct_params("ft_" + stream["name"], stream["params"])
     input_names = [INPUT_COLUMNS[name] for name in stream["inputs"]]
     handle = ctypes.c_void_p()
     new = getattr(lib, stream["new_fn"])
@@ -501,9 +503,10 @@ def run_stream(lib: ctypes.CDLL, stream: dict, cols: dict[str, list[float]]) -> 
     }
 
 
-def dataset_for(fn: dict) -> str:
-    """Candlestick patterns replay on synthetic bars where most of them fire."""
-    return "patterns" if fn["name"].startswith("ft_cdl") else "daily"
+def dataset_for(item: dict) -> str:
+    """Candlestick patterns (batch `ft_cdl*` and their `cdl*` streams) replay on
+    synthetic bars where most of them fire."""
+    return "patterns" if item["name"].removeprefix("ft_").startswith("cdl") else "daily"
 
 
 def weak_outputs(case: dict) -> list[str]:
@@ -521,7 +524,7 @@ def validate_strength(cases: list[dict]) -> None:
     for case in cases:
         label = case.get("fn") or case.get("stream")
         weak = weak_outputs(case)
-        if label in KNOWN_SILENT_PATTERNS:
+        if f"ft_{label.removeprefix('ft_')}" in KNOWN_SILENT_PATTERNS:
             if not weak:
                 now_firing.append(label)
             continue
@@ -549,7 +552,7 @@ def main() -> int:
         for fn in spec["functions"]
     ]
     streams = [
-        {**run_stream(lib, s, datasets["daily"]), "dataset": "daily"}
+        {**run_stream(lib, s, datasets[dataset_for(s)]), "dataset": dataset_for(s)}
         for s in spec["streams"]
     ]
     validate_strength(functions + streams)

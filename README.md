@@ -155,7 +155,7 @@ See the benchmark methodology and artifacts:
 - The extended catalog is bound on every surface: 360 core symbols, 247 Python names, 344 WASM
   exports, 194 generated Flutter wrappers, and 262 C ABI / Go exports. See [docs/languages/coverage](docs/languages/coverage.rst)
   for the per-indicator table.
-- Batch and streaming APIs for multi-series and bar-by-bar workloads.
+- Batch and streaming APIs for multi-series and bar-by-bar workloads, including 215 registry-generated streams that match their batch functions bar for bar on every surface ([catalog](docs/streaming.rst)).
 - Python extras: NumPy-first execution with pandas and polars adapters, type stubs, and Sphinx autodoc.
 - Pre-built artifacts: Python wheels, crates.io, npm, Flutter natives (web reuses WASM), a Go
   module with prebuilt static archives, and C/C++ libraries on each GitHub Release.
@@ -165,7 +165,7 @@ Adjacent surfaces — derivatives analytics, MCP, GPU helpers, plugins, and agen
 
 ## TA-Lib compatibility
 
-- `ferro-ta` implements 156 of TA-Lib 0.6.4's 161 functions, plus an extended catalog (adaptive MAs, volume/oscillator studies, statistic helpers, and signal utilities) and 13 streaming classes plus a tick→bar builder that TA-Lib does not provide. Not yet implemented: `ACCBANDS`, `IMI`, `AVGDEV`, `MINMAX`, `MINMAXINDEX`.
+- `ferro-ta` implements 156 of TA-Lib 0.6.4's 161 functions, plus an extended catalog (adaptive MAs, volume/oscillator studies, statistic helpers, and signal utilities) and a streaming class for nearly every indicator (215 registry-generated streams plus the hand-written originals) with a tick→bar builder that TA-Lib does not provide. Not yet implemented: `ACCBANDS`, `IMI`, `AVGDEV`, `MINMAX`, `MINMAXINDEX`.
 - Most functions are marked `Exact` or `Close`; the remaining notable non-exact categories are the Hilbert cycle indicators plus `MAMA`, `SAR`, and `SAREXT`.
 - The full parity matrix and coverage summary now live in [TA_LIB_COMPATIBILITY.md](TA_LIB_COMPATIBILITY.md).
 

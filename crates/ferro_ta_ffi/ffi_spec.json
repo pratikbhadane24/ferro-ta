@@ -769,7 +769,7 @@
           "name": "slowlimit"
         }
       ],
-      "requires": ""
+      "requires": "slowlimit <= fastlimit"
     },
     {
       "doc": "Midpoint: `(max(close) + min(close)) / 2` over rolling window.",
@@ -9825,6 +9825,6997 @@
       "reset_fn": "ft_stream_option_greeks_reset",
       "save_fn": "ft_stream_option_greeks_save",
       "update_fn": "ft_stream_option_greeks_update"
+    },
+    {
+      "doc": "Streaming average price: (open + high + low + close) / 4.",
+      "free_fn": "ft_stream_avgprice_free",
+      "handle": "FtStreamAvgprice",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_avgprice_load",
+      "name": "avgprice",
+      "new_fn": "ft_stream_avgprice_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_avgprice_peek",
+      "reset_fn": "ft_stream_avgprice_reset",
+      "save_fn": "ft_stream_avgprice_save",
+      "update_fn": "ft_stream_avgprice_update"
+    },
+    {
+      "doc": "Streaming median price: (high + low) / 2.",
+      "free_fn": "ft_stream_medprice_free",
+      "handle": "FtStreamMedprice",
+      "inputs": [
+        "high",
+        "low"
+      ],
+      "load_fn": "ft_stream_medprice_load",
+      "name": "medprice",
+      "new_fn": "ft_stream_medprice_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_medprice_peek",
+      "reset_fn": "ft_stream_medprice_reset",
+      "save_fn": "ft_stream_medprice_save",
+      "update_fn": "ft_stream_medprice_update"
+    },
+    {
+      "doc": "Streaming typical price: (high + low + close) / 3.",
+      "free_fn": "ft_stream_typprice_free",
+      "handle": "FtStreamTypprice",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_typprice_load",
+      "name": "typprice",
+      "new_fn": "ft_stream_typprice_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_typprice_peek",
+      "reset_fn": "ft_stream_typprice_reset",
+      "save_fn": "ft_stream_typprice_save",
+      "update_fn": "ft_stream_typprice_update"
+    },
+    {
+      "doc": "Streaming weighted close price: (high + low + 2 * close) / 4.",
+      "free_fn": "ft_stream_wclprice_free",
+      "handle": "FtStreamWclprice",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_wclprice_load",
+      "name": "wclprice",
+      "new_fn": "ft_stream_wclprice_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_wclprice_peek",
+      "reset_fn": "ft_stream_wclprice_reset",
+      "save_fn": "ft_stream_wclprice_save",
+      "update_fn": "ft_stream_wclprice_update"
+    },
+    {
+      "doc": "Streaming element-wise a + b.",
+      "free_fn": "ft_stream_add_free",
+      "handle": "FtStreamAdd",
+      "inputs": [
+        "a",
+        "b"
+      ],
+      "load_fn": "ft_stream_add_load",
+      "name": "add",
+      "new_fn": "ft_stream_add_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_add_peek",
+      "reset_fn": "ft_stream_add_reset",
+      "save_fn": "ft_stream_add_save",
+      "update_fn": "ft_stream_add_update"
+    },
+    {
+      "doc": "Streaming element-wise a - b.",
+      "free_fn": "ft_stream_sub_free",
+      "handle": "FtStreamSub",
+      "inputs": [
+        "a",
+        "b"
+      ],
+      "load_fn": "ft_stream_sub_load",
+      "name": "sub",
+      "new_fn": "ft_stream_sub_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_sub_peek",
+      "reset_fn": "ft_stream_sub_reset",
+      "save_fn": "ft_stream_sub_save",
+      "update_fn": "ft_stream_sub_update"
+    },
+    {
+      "doc": "Streaming element-wise a * b.",
+      "free_fn": "ft_stream_mult_free",
+      "handle": "FtStreamMult",
+      "inputs": [
+        "a",
+        "b"
+      ],
+      "load_fn": "ft_stream_mult_load",
+      "name": "mult",
+      "new_fn": "ft_stream_mult_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_mult_peek",
+      "reset_fn": "ft_stream_mult_reset",
+      "save_fn": "ft_stream_mult_save",
+      "update_fn": "ft_stream_mult_update"
+    },
+    {
+      "doc": "Streaming element-wise a / b (NaN where b = 0).",
+      "free_fn": "ft_stream_div_free",
+      "handle": "FtStreamDiv",
+      "inputs": [
+        "a",
+        "b"
+      ],
+      "load_fn": "ft_stream_div_load",
+      "name": "div",
+      "new_fn": "ft_stream_div_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_div_peek",
+      "reset_fn": "ft_stream_div_reset",
+      "save_fn": "ft_stream_div_save",
+      "update_fn": "ft_stream_div_update"
+    },
+    {
+      "doc": "Streaming rolling sum over `timeperiod` bars.",
+      "free_fn": "ft_stream_sum_free",
+      "handle": "FtStreamSum",
+      "inputs": [
+        "real"
+      ],
+      "load_fn": "ft_stream_sum_load",
+      "name": "sum",
+      "new_fn": "ft_stream_sum_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_sum_peek",
+      "reset_fn": "ft_stream_sum_reset",
+      "save_fn": "ft_stream_sum_save",
+      "update_fn": "ft_stream_sum_update"
+    },
+    {
+      "doc": "Streaming rolling maximum over `timeperiod` bars.",
+      "free_fn": "ft_stream_max_free",
+      "handle": "FtStreamMax",
+      "inputs": [
+        "real"
+      ],
+      "load_fn": "ft_stream_max_load",
+      "name": "max",
+      "new_fn": "ft_stream_max_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_max_peek",
+      "reset_fn": "ft_stream_max_reset",
+      "save_fn": "ft_stream_max_save",
+      "update_fn": "ft_stream_max_update"
+    },
+    {
+      "doc": "Streaming rolling minimum over `timeperiod` bars.",
+      "free_fn": "ft_stream_min_free",
+      "handle": "FtStreamMin",
+      "inputs": [
+        "real"
+      ],
+      "load_fn": "ft_stream_min_load",
+      "name": "min",
+      "new_fn": "ft_stream_min_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_min_peek",
+      "reset_fn": "ft_stream_min_reset",
+      "save_fn": "ft_stream_min_save",
+      "update_fn": "ft_stream_min_update"
+    },
+    {
+      "doc": "Streaming sliding maximum over `timeperiod` bars.",
+      "free_fn": "ft_stream_sliding_max_free",
+      "handle": "FtStreamSlidingMax",
+      "inputs": [
+        "real"
+      ],
+      "load_fn": "ft_stream_sliding_max_load",
+      "name": "sliding_max",
+      "new_fn": "ft_stream_sliding_max_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_sliding_max_peek",
+      "reset_fn": "ft_stream_sliding_max_reset",
+      "save_fn": "ft_stream_sliding_max_save",
+      "update_fn": "ft_stream_sliding_max_update"
+    },
+    {
+      "doc": "Streaming sliding minimum over `timeperiod` bars.",
+      "free_fn": "ft_stream_sliding_min_free",
+      "handle": "FtStreamSlidingMin",
+      "inputs": [
+        "real"
+      ],
+      "load_fn": "ft_stream_sliding_min_load",
+      "name": "sliding_min",
+      "new_fn": "ft_stream_sliding_min_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_sliding_min_peek",
+      "reset_fn": "ft_stream_sliding_min_reset",
+      "save_fn": "ft_stream_sliding_min_save",
+      "update_fn": "ft_stream_sliding_min_update"
+    },
+    {
+      "doc": "Streaming rolling sum over `timeperiod` bars.",
+      "free_fn": "ft_stream_rolling_sum_free",
+      "handle": "FtStreamRollingSum",
+      "inputs": [
+        "real"
+      ],
+      "load_fn": "ft_stream_rolling_sum_load",
+      "name": "rolling_sum",
+      "new_fn": "ft_stream_rolling_sum_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_rolling_sum_peek",
+      "reset_fn": "ft_stream_rolling_sum_reset",
+      "save_fn": "ft_stream_rolling_sum_save",
+      "update_fn": "ft_stream_rolling_sum_update"
+    },
+    {
+      "doc": "Streaming rolling maximum over `timeperiod` bars.",
+      "free_fn": "ft_stream_rolling_max_free",
+      "handle": "FtStreamRollingMax",
+      "inputs": [
+        "real"
+      ],
+      "load_fn": "ft_stream_rolling_max_load",
+      "name": "rolling_max",
+      "new_fn": "ft_stream_rolling_max_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_rolling_max_peek",
+      "reset_fn": "ft_stream_rolling_max_reset",
+      "save_fn": "ft_stream_rolling_max_save",
+      "update_fn": "ft_stream_rolling_max_update"
+    },
+    {
+      "doc": "Streaming rolling minimum over `timeperiod` bars.",
+      "free_fn": "ft_stream_rolling_min_free",
+      "handle": "FtStreamRollingMin",
+      "inputs": [
+        "real"
+      ],
+      "load_fn": "ft_stream_rolling_min_load",
+      "name": "rolling_min",
+      "new_fn": "ft_stream_rolling_min_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_rolling_min_peek",
+      "reset_fn": "ft_stream_rolling_min_reset",
+      "save_fn": "ft_stream_rolling_min_save",
+      "update_fn": "ft_stream_rolling_min_update"
+    },
+    {
+      "doc": "Streaming index of the rolling maximum: the absolute 0-based bar index since the first bar (most recent on ties), -1 during warm-up.",
+      "free_fn": "ft_stream_rolling_maxindex_free",
+      "handle": "FtStreamRollingMaxindex",
+      "inputs": [
+        "real"
+      ],
+      "load_fn": "ft_stream_rolling_maxindex_load",
+      "name": "rolling_maxindex",
+      "new_fn": "ft_stream_rolling_maxindex_new",
+      "outputs": [
+        {
+          "c_type": "int64_t",
+          "elem": "i64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_rolling_maxindex_peek",
+      "reset_fn": "ft_stream_rolling_maxindex_reset",
+      "save_fn": "ft_stream_rolling_maxindex_save",
+      "update_fn": "ft_stream_rolling_maxindex_update"
+    },
+    {
+      "doc": "Streaming index of the rolling minimum: the absolute 0-based bar index since the first bar (most recent on ties), -1 during warm-up.",
+      "free_fn": "ft_stream_rolling_minindex_free",
+      "handle": "FtStreamRollingMinindex",
+      "inputs": [
+        "real"
+      ],
+      "load_fn": "ft_stream_rolling_minindex_load",
+      "name": "rolling_minindex",
+      "new_fn": "ft_stream_rolling_minindex_new",
+      "outputs": [
+        {
+          "c_type": "int64_t",
+          "elem": "i64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_rolling_minindex_peek",
+      "reset_fn": "ft_stream_rolling_minindex_reset",
+      "save_fn": "ft_stream_rolling_minindex_save",
+      "update_fn": "ft_stream_rolling_minindex_update"
+    },
+    {
+      "doc": "Streaming double exponential moving average: 2*EMA - EMA(EMA).",
+      "free_fn": "ft_stream_dema_free",
+      "handle": "FtStreamDema",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_dema_load",
+      "name": "dema",
+      "new_fn": "ft_stream_dema_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_dema_peek",
+      "reset_fn": "ft_stream_dema_reset",
+      "save_fn": "ft_stream_dema_save",
+      "update_fn": "ft_stream_dema_update"
+    },
+    {
+      "doc": "Streaming triple exponential moving average: 3*EMA - 3*EMA(EMA) + EMA(EMA(EMA)).",
+      "free_fn": "ft_stream_tema_free",
+      "handle": "FtStreamTema",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_tema_load",
+      "name": "tema",
+      "new_fn": "ft_stream_tema_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_tema_peek",
+      "reset_fn": "ft_stream_tema_reset",
+      "save_fn": "ft_stream_tema_save",
+      "update_fn": "ft_stream_tema_update"
+    },
+    {
+      "doc": "Streaming Tillson T3: six cascaded EMAs combined with volume factor `vfactor`.",
+      "free_fn": "ft_stream_t3_free",
+      "handle": "FtStreamT3",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_t3_load",
+      "name": "t3",
+      "new_fn": "ft_stream_t3_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "vfactor"
+        }
+      ],
+      "peek_fn": "ft_stream_t3_peek",
+      "reset_fn": "ft_stream_t3_reset",
+      "save_fn": "ft_stream_t3_save",
+      "update_fn": "ft_stream_t3_update"
+    },
+    {
+      "doc": "Streaming triangular moving average over `timeperiod` bars.",
+      "free_fn": "ft_stream_trima_free",
+      "handle": "FtStreamTrima",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_trima_load",
+      "name": "trima",
+      "new_fn": "ft_stream_trima_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_trima_peek",
+      "reset_fn": "ft_stream_trima_reset",
+      "save_fn": "ft_stream_trima_save",
+      "update_fn": "ft_stream_trima_update"
+    },
+    {
+      "doc": "Streaming linearly weighted moving average over `timeperiod` bars.",
+      "free_fn": "ft_stream_wma_free",
+      "handle": "FtStreamWma",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_wma_load",
+      "name": "wma",
+      "new_fn": "ft_stream_wma_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_wma_peek",
+      "reset_fn": "ft_stream_wma_reset",
+      "save_fn": "ft_stream_wma_save",
+      "update_fn": "ft_stream_wma_update"
+    },
+    {
+      "doc": "Streaming midpoint: (max(close) + min(close)) / 2 over `timeperiod` bars.",
+      "free_fn": "ft_stream_midpoint_free",
+      "handle": "FtStreamMidpoint",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_midpoint_load",
+      "name": "midpoint",
+      "new_fn": "ft_stream_midpoint_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_midpoint_peek",
+      "reset_fn": "ft_stream_midpoint_reset",
+      "save_fn": "ft_stream_midpoint_save",
+      "update_fn": "ft_stream_midpoint_update"
+    },
+    {
+      "doc": "Streaming midprice: (highest high + lowest low) / 2 over `timeperiod` bars.",
+      "free_fn": "ft_stream_midprice_free",
+      "handle": "FtStreamMidprice",
+      "inputs": [
+        "high",
+        "low"
+      ],
+      "load_fn": "ft_stream_midprice_load",
+      "name": "midprice",
+      "new_fn": "ft_stream_midprice_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_midprice_peek",
+      "reset_fn": "ft_stream_midprice_reset",
+      "save_fn": "ft_stream_midprice_save",
+      "update_fn": "ft_stream_midprice_update"
+    },
+    {
+      "doc": "Streaming Kaufman adaptive moving average (TA-Lib); first value at bar `timeperiod`.",
+      "free_fn": "ft_stream_kama_free",
+      "handle": "FtStreamKama",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_kama_load",
+      "name": "kama",
+      "new_fn": "ft_stream_kama_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_kama_peek",
+      "reset_fn": "ft_stream_kama_reset",
+      "save_fn": "ft_stream_kama_save",
+      "update_fn": "ft_stream_kama_update"
+    },
+    {
+      "doc": "Streaming moving average of type `matype` (0=SMA, 1=EMA, 2=WMA, 3=DEMA, 4=TEMA, 5=TRIMA, 6=KAMA, 7/8=T3).",
+      "free_fn": "ft_stream_ma_free",
+      "handle": "FtStreamMa",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_ma_load",
+      "name": "ma",
+      "new_fn": "ft_stream_ma_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "int32_t",
+          "kind": "matype",
+          "max": 8,
+          "min": 0,
+          "name": "matype"
+        }
+      ],
+      "peek_fn": "ft_stream_ma_peek",
+      "reset_fn": "ft_stream_ma_reset",
+      "save_fn": "ft_stream_ma_save",
+      "update_fn": "ft_stream_ma_update"
+    },
+    {
+      "doc": "Streaming moving average with a per-bar period: `periods` is rounded and clamped to [minperiod, maxperiod].",
+      "free_fn": "ft_stream_mavp_free",
+      "handle": "FtStreamMavp",
+      "inputs": [
+        "close",
+        "periods"
+      ],
+      "load_fn": "ft_stream_mavp_load",
+      "name": "mavp",
+      "new_fn": "ft_stream_mavp_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "minperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "maxperiod"
+        },
+        {
+          "c_type": "int32_t",
+          "kind": "matype",
+          "max": 8,
+          "min": 0,
+          "name": "matype"
+        }
+      ],
+      "peek_fn": "ft_stream_mavp_peek",
+      "reset_fn": "ft_stream_mavp_reset",
+      "save_fn": "ft_stream_mavp_save",
+      "update_fn": "ft_stream_mavp_update"
+    },
+    {
+      "doc": "Streaming MACD with fixed 12/26 EMAs: (macd, signal, hist), NaN until the signal is valid.",
+      "free_fn": "ft_stream_macdfix_free",
+      "handle": "FtStreamMacdfix",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_macdfix_load",
+      "name": "macdfix",
+      "new_fn": "ft_stream_macdfix_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_macd"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_signal"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_hist"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "signalperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_macdfix_peek",
+      "reset_fn": "ft_stream_macdfix_reset",
+      "save_fn": "ft_stream_macdfix_save",
+      "update_fn": "ft_stream_macdfix_update"
+    },
+    {
+      "doc": "Streaming MACD with a moving-average type per leg: (macd, signal, hist), NaN until the signal is valid.",
+      "free_fn": "ft_stream_macdext_free",
+      "handle": "FtStreamMacdext",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_macdext_load",
+      "name": "macdext",
+      "new_fn": "ft_stream_macdext_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_macd"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_signal"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_hist"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "fastperiod"
+        },
+        {
+          "c_type": "int32_t",
+          "kind": "matype",
+          "max": 8,
+          "min": 0,
+          "name": "fastmatype"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "slowperiod"
+        },
+        {
+          "c_type": "int32_t",
+          "kind": "matype",
+          "max": 8,
+          "min": 0,
+          "name": "slowmatype"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "signalperiod"
+        },
+        {
+          "c_type": "int32_t",
+          "kind": "matype",
+          "max": 8,
+          "min": 0,
+          "name": "signalmatype"
+        }
+      ],
+      "peek_fn": "ft_stream_macdext_peek",
+      "reset_fn": "ft_stream_macdext_reset",
+      "save_fn": "ft_stream_macdext_save",
+      "update_fn": "ft_stream_macdext_update"
+    },
+    {
+      "doc": "Streaming absolute price oscillator: fast MA - slow MA (both of type `matype`).",
+      "free_fn": "ft_stream_apo_free",
+      "handle": "FtStreamApo",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_apo_load",
+      "name": "apo",
+      "new_fn": "ft_stream_apo_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "fastperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "slowperiod"
+        },
+        {
+          "c_type": "int32_t",
+          "kind": "matype",
+          "max": 8,
+          "min": 0,
+          "name": "matype"
+        }
+      ],
+      "peek_fn": "ft_stream_apo_peek",
+      "reset_fn": "ft_stream_apo_reset",
+      "save_fn": "ft_stream_apo_save",
+      "update_fn": "ft_stream_apo_update"
+    },
+    {
+      "doc": "Streaming percentage price oscillator: (ppo, signal, hist); the signal is an EMA of the PPO line.",
+      "free_fn": "ft_stream_ppo_free",
+      "handle": "FtStreamPpo",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_ppo_load",
+      "name": "ppo",
+      "new_fn": "ft_stream_ppo_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_ppo"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_signal"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_hist"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "fastperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "slowperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "signalperiod"
+        },
+        {
+          "c_type": "int32_t",
+          "kind": "matype",
+          "max": 8,
+          "min": 0,
+          "name": "matype"
+        }
+      ],
+      "peek_fn": "ft_stream_ppo_peek",
+      "reset_fn": "ft_stream_ppo_reset",
+      "save_fn": "ft_stream_ppo_save",
+      "update_fn": "ft_stream_ppo_update"
+    },
+    {
+      "doc": "Streaming TRIX: one-bar percent rate of change of a triple EMA.",
+      "free_fn": "ft_stream_trix_free",
+      "handle": "FtStreamTrix",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_trix_load",
+      "name": "trix",
+      "new_fn": "ft_stream_trix_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_trix_peek",
+      "reset_fn": "ft_stream_trix_reset",
+      "save_fn": "ft_stream_trix_save",
+      "update_fn": "ft_stream_trix_update"
+    },
+    {
+      "doc": "Streaming Williams %R: -100 * (highest high - close) / (highest high - lowest low) over `timeperiod` bars.",
+      "free_fn": "ft_stream_willr_free",
+      "handle": "FtStreamWillr",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_willr_load",
+      "name": "willr",
+      "new_fn": "ft_stream_willr_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_willr_peek",
+      "reset_fn": "ft_stream_willr_reset",
+      "save_fn": "ft_stream_willr_save",
+      "update_fn": "ft_stream_willr_update"
+    },
+    {
+      "doc": "Streaming Commodity Channel Index over `timeperiod` bars.",
+      "free_fn": "ft_stream_cci_free",
+      "handle": "FtStreamCci",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cci_load",
+      "name": "cci",
+      "new_fn": "ft_stream_cci_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_cci_peek",
+      "reset_fn": "ft_stream_cci_reset",
+      "save_fn": "ft_stream_cci_save",
+      "update_fn": "ft_stream_cci_update"
+    },
+    {
+      "doc": "Streaming Balance of Power: (close - open) / (high - low).",
+      "free_fn": "ft_stream_bop_free",
+      "handle": "FtStreamBop",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_bop_load",
+      "name": "bop",
+      "new_fn": "ft_stream_bop_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_bop_peek",
+      "reset_fn": "ft_stream_bop_reset",
+      "save_fn": "ft_stream_bop_save",
+      "update_fn": "ft_stream_bop_update"
+    },
+    {
+      "doc": "Streaming momentum: close - close[timeperiod bars ago].",
+      "free_fn": "ft_stream_mom_free",
+      "handle": "FtStreamMom",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_mom_load",
+      "name": "mom",
+      "new_fn": "ft_stream_mom_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_mom_peek",
+      "reset_fn": "ft_stream_mom_reset",
+      "save_fn": "ft_stream_mom_save",
+      "update_fn": "ft_stream_mom_update"
+    },
+    {
+      "doc": "Streaming rate of change: (close - prev) / prev * 100 (NaN where prev is 0).",
+      "free_fn": "ft_stream_roc_free",
+      "handle": "FtStreamRoc",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_roc_load",
+      "name": "roc",
+      "new_fn": "ft_stream_roc_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_roc_peek",
+      "reset_fn": "ft_stream_roc_reset",
+      "save_fn": "ft_stream_roc_save",
+      "update_fn": "ft_stream_roc_update"
+    },
+    {
+      "doc": "Streaming rate of change percentage: (close - prev) / prev (NaN where prev is 0).",
+      "free_fn": "ft_stream_rocp_free",
+      "handle": "FtStreamRocp",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_rocp_load",
+      "name": "rocp",
+      "new_fn": "ft_stream_rocp_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_rocp_peek",
+      "reset_fn": "ft_stream_rocp_reset",
+      "save_fn": "ft_stream_rocp_save",
+      "update_fn": "ft_stream_rocp_update"
+    },
+    {
+      "doc": "Streaming rate of change ratio: close / prev (NaN where prev is 0).",
+      "free_fn": "ft_stream_rocr_free",
+      "handle": "FtStreamRocr",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_rocr_load",
+      "name": "rocr",
+      "new_fn": "ft_stream_rocr_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_rocr_peek",
+      "reset_fn": "ft_stream_rocr_reset",
+      "save_fn": "ft_stream_rocr_save",
+      "update_fn": "ft_stream_rocr_update"
+    },
+    {
+      "doc": "Streaming rate of change ratio x 100: close / prev * 100 (NaN where prev is 0).",
+      "free_fn": "ft_stream_rocr100_free",
+      "handle": "FtStreamRocr100",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_rocr100_load",
+      "name": "rocr100",
+      "new_fn": "ft_stream_rocr100_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_rocr100_peek",
+      "reset_fn": "ft_stream_rocr100_reset",
+      "save_fn": "ft_stream_rocr100_save",
+      "update_fn": "ft_stream_rocr100_update"
+    },
+    {
+      "doc": "Streaming Aroon: (aroon_down, aroon_up) over a `timeperiod + 1` bar window; ties go to the most recent bar.",
+      "free_fn": "ft_stream_aroon_free",
+      "handle": "FtStreamAroon",
+      "inputs": [
+        "high",
+        "low"
+      ],
+      "load_fn": "ft_stream_aroon_load",
+      "name": "aroon",
+      "new_fn": "ft_stream_aroon_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_aroondown"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_aroonup"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_aroon_peek",
+      "reset_fn": "ft_stream_aroon_reset",
+      "save_fn": "ft_stream_aroon_save",
+      "update_fn": "ft_stream_aroon_update"
+    },
+    {
+      "doc": "Streaming Aroon oscillator: aroon_up - aroon_down.",
+      "free_fn": "ft_stream_aroonosc_free",
+      "handle": "FtStreamAroonosc",
+      "inputs": [
+        "high",
+        "low"
+      ],
+      "load_fn": "ft_stream_aroonosc_load",
+      "name": "aroonosc",
+      "new_fn": "ft_stream_aroonosc_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_aroonosc_peek",
+      "reset_fn": "ft_stream_aroonosc_reset",
+      "save_fn": "ft_stream_aroonosc_save",
+      "update_fn": "ft_stream_aroonosc_update"
+    },
+    {
+      "doc": "Streaming Ultimate Oscillator: buying pressure over three periods weighted 4 / 2 / 1.",
+      "free_fn": "ft_stream_ultosc_free",
+      "handle": "FtStreamUltosc",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_ultosc_load",
+      "name": "ultosc",
+      "new_fn": "ft_stream_ultosc_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod1"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod2"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod3"
+        }
+      ],
+      "peek_fn": "ft_stream_ultosc_peek",
+      "reset_fn": "ft_stream_ultosc_reset",
+      "save_fn": "ft_stream_ultosc_save",
+      "update_fn": "ft_stream_ultosc_update"
+    },
+    {
+      "doc": "Streaming Chande momentum oscillator (Wilder smoothed gains and losses).",
+      "free_fn": "ft_stream_cmo_free",
+      "handle": "FtStreamCmo",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_cmo_load",
+      "name": "cmo",
+      "new_fn": "ft_stream_cmo_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_cmo_peek",
+      "reset_fn": "ft_stream_cmo_reset",
+      "save_fn": "ft_stream_cmo_save",
+      "update_fn": "ft_stream_cmo_update"
+    },
+    {
+      "doc": "Streaming fast stochastic: (fastk, fastd); both NaN until %D is valid.",
+      "free_fn": "ft_stream_stochf_free",
+      "handle": "FtStreamStochf",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_stochf_load",
+      "name": "stochf",
+      "new_fn": "ft_stream_stochf_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_fastk"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_fastd"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "fastk_period"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "fastd_period"
+        },
+        {
+          "c_type": "int32_t",
+          "kind": "matype",
+          "max": 8,
+          "min": 0,
+          "name": "fastd_matype"
+        }
+      ],
+      "peek_fn": "ft_stream_stochf_peek",
+      "reset_fn": "ft_stream_stochf_reset",
+      "save_fn": "ft_stream_stochf_save",
+      "update_fn": "ft_stream_stochf_update"
+    },
+    {
+      "doc": "Streaming stochastic RSI: (fastk, fastd); both NaN until %D is valid.",
+      "free_fn": "ft_stream_stochrsi_free",
+      "handle": "FtStreamStochrsi",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_stochrsi_load",
+      "name": "stochrsi",
+      "new_fn": "ft_stream_stochrsi_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_fastk"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_fastd"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "fastk_period"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "fastd_period"
+        },
+        {
+          "c_type": "int32_t",
+          "kind": "matype",
+          "max": 8,
+          "min": 0,
+          "name": "fastd_matype"
+        }
+      ],
+      "peek_fn": "ft_stream_stochrsi_peek",
+      "reset_fn": "ft_stream_stochrsi_reset",
+      "save_fn": "ft_stream_stochrsi_save",
+      "update_fn": "ft_stream_stochrsi_update"
+    },
+    {
+      "doc": "Streaming +DM, Wilder smoothed; first value at bar `timeperiod - 1` (raw +DM when `timeperiod` is 1).",
+      "free_fn": "ft_stream_plus_dm_free",
+      "handle": "FtStreamPlusDm",
+      "inputs": [
+        "high",
+        "low"
+      ],
+      "load_fn": "ft_stream_plus_dm_load",
+      "name": "plus_dm",
+      "new_fn": "ft_stream_plus_dm_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_plus_dm_peek",
+      "reset_fn": "ft_stream_plus_dm_reset",
+      "save_fn": "ft_stream_plus_dm_save",
+      "update_fn": "ft_stream_plus_dm_update"
+    },
+    {
+      "doc": "Streaming -DM, Wilder smoothed; first value at bar `timeperiod - 1` (raw -DM when `timeperiod` is 1).",
+      "free_fn": "ft_stream_minus_dm_free",
+      "handle": "FtStreamMinusDm",
+      "inputs": [
+        "high",
+        "low"
+      ],
+      "load_fn": "ft_stream_minus_dm_load",
+      "name": "minus_dm",
+      "new_fn": "ft_stream_minus_dm_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_minus_dm_peek",
+      "reset_fn": "ft_stream_minus_dm_reset",
+      "save_fn": "ft_stream_minus_dm_save",
+      "update_fn": "ft_stream_minus_dm_update"
+    },
+    {
+      "doc": "Streaming +DI = 100 * smoothed +DM / smoothed TR; first value at bar `timeperiod`.",
+      "free_fn": "ft_stream_plus_di_free",
+      "handle": "FtStreamPlusDi",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_plus_di_load",
+      "name": "plus_di",
+      "new_fn": "ft_stream_plus_di_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_plus_di_peek",
+      "reset_fn": "ft_stream_plus_di_reset",
+      "save_fn": "ft_stream_plus_di_save",
+      "update_fn": "ft_stream_plus_di_update"
+    },
+    {
+      "doc": "Streaming -DI = 100 * smoothed -DM / smoothed TR; first value at bar `timeperiod`.",
+      "free_fn": "ft_stream_minus_di_free",
+      "handle": "FtStreamMinusDi",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_minus_di_load",
+      "name": "minus_di",
+      "new_fn": "ft_stream_minus_di_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_minus_di_peek",
+      "reset_fn": "ft_stream_minus_di_reset",
+      "save_fn": "ft_stream_minus_di_save",
+      "update_fn": "ft_stream_minus_di_update"
+    },
+    {
+      "doc": "Streaming directional movement index: 100 * abs(+DI - -DI) / (+DI + -DI); first value at bar `timeperiod`.",
+      "free_fn": "ft_stream_dx_free",
+      "handle": "FtStreamDx",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_dx_load",
+      "name": "dx",
+      "new_fn": "ft_stream_dx_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_dx_peek",
+      "reset_fn": "ft_stream_dx_reset",
+      "save_fn": "ft_stream_dx_save",
+      "update_fn": "ft_stream_dx_update"
+    },
+    {
+      "doc": "Streaming average directional index; first value at bar `2 * timeperiod - 1`.",
+      "free_fn": "ft_stream_adx_free",
+      "handle": "FtStreamAdx",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_adx_load",
+      "name": "adx",
+      "new_fn": "ft_stream_adx_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_adx_peek",
+      "reset_fn": "ft_stream_adx_reset",
+      "save_fn": "ft_stream_adx_save",
+      "update_fn": "ft_stream_adx_update"
+    },
+    {
+      "doc": "Streaming ADX rating: (ADX + ADX `timeperiod - 1` bars ago) / 2.",
+      "free_fn": "ft_stream_adxr_free",
+      "handle": "FtStreamAdxr",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_adxr_load",
+      "name": "adxr",
+      "new_fn": "ft_stream_adxr_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_adxr_peek",
+      "reset_fn": "ft_stream_adxr_reset",
+      "save_fn": "ft_stream_adxr_save",
+      "update_fn": "ft_stream_adxr_update"
+    },
+    {
+      "doc": "Streaming money flow index over `timeperiod` bars of typical-price money flow. Mirrors the batch zero-exact running flow sums, so a window without money flow (e.g. all-zero volume) is 0 exactly as in the batch function.",
+      "free_fn": "ft_stream_mfi_free",
+      "handle": "FtStreamMfi",
+      "inputs": [
+        "high",
+        "low",
+        "close",
+        "volume"
+      ],
+      "load_fn": "ft_stream_mfi_load",
+      "name": "mfi",
+      "new_fn": "ft_stream_mfi_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_mfi_peek",
+      "reset_fn": "ft_stream_mfi_reset",
+      "save_fn": "ft_stream_mfi_save",
+      "update_fn": "ft_stream_mfi_update"
+    },
+    {
+      "doc": "Streaming true range (NaN on the first bar: no previous close).",
+      "free_fn": "ft_stream_trange_free",
+      "handle": "FtStreamTrange",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_trange_load",
+      "name": "trange",
+      "new_fn": "ft_stream_trange_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_trange_peek",
+      "reset_fn": "ft_stream_trange_reset",
+      "save_fn": "ft_stream_trange_save",
+      "update_fn": "ft_stream_trange_update"
+    },
+    {
+      "doc": "Streaming normalized ATR: Wilder ATR / close * 100 (NaN where close is 0).",
+      "free_fn": "ft_stream_natr_free",
+      "handle": "FtStreamNatr",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_natr_load",
+      "name": "natr",
+      "new_fn": "ft_stream_natr_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_natr_peek",
+      "reset_fn": "ft_stream_natr_reset",
+      "save_fn": "ft_stream_natr_save",
+      "update_fn": "ft_stream_natr_update"
+    },
+    {
+      "doc": "Streaming on-balance volume; the first bar is the first volume.",
+      "free_fn": "ft_stream_obv_free",
+      "handle": "FtStreamObv",
+      "inputs": [
+        "close",
+        "volume"
+      ],
+      "load_fn": "ft_stream_obv_load",
+      "name": "obv",
+      "new_fn": "ft_stream_obv_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_obv_peek",
+      "reset_fn": "ft_stream_obv_reset",
+      "save_fn": "ft_stream_obv_save",
+      "update_fn": "ft_stream_obv_update"
+    },
+    {
+      "doc": "Streaming Chaikin accumulation / distribution line.",
+      "free_fn": "ft_stream_ad_free",
+      "handle": "FtStreamAd",
+      "inputs": [
+        "high",
+        "low",
+        "close",
+        "volume"
+      ],
+      "load_fn": "ft_stream_ad_load",
+      "name": "ad",
+      "new_fn": "ft_stream_ad_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_ad_peek",
+      "reset_fn": "ft_stream_ad_reset",
+      "save_fn": "ft_stream_ad_save",
+      "update_fn": "ft_stream_ad_update"
+    },
+    {
+      "doc": "Streaming Chaikin A/D oscillator: fast EMA - slow EMA of the A/D line, both seeded from its first value.",
+      "free_fn": "ft_stream_adosc_free",
+      "handle": "FtStreamAdosc",
+      "inputs": [
+        "high",
+        "low",
+        "close",
+        "volume"
+      ],
+      "load_fn": "ft_stream_adosc_load",
+      "name": "adosc",
+      "new_fn": "ft_stream_adosc_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "fastperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "slowperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_adosc_peek",
+      "reset_fn": "ft_stream_adosc_reset",
+      "save_fn": "ft_stream_adosc_save",
+      "update_fn": "ft_stream_adosc_update"
+    },
+    {
+      "doc": "Streaming Two Crows candlestick pattern: -100 (bearish) when matched, else 0.",
+      "free_fn": "ft_stream_cdl2crows_free",
+      "handle": "FtStreamCdl2crows",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdl2crows_load",
+      "name": "cdl2crows",
+      "new_fn": "ft_stream_cdl2crows_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdl2crows_peek",
+      "reset_fn": "ft_stream_cdl2crows_reset",
+      "save_fn": "ft_stream_cdl2crows_save",
+      "update_fn": "ft_stream_cdl2crows_update"
+    },
+    {
+      "doc": "Streaming Three Black Crows candlestick pattern: -100 (bearish) when matched, else 0.",
+      "free_fn": "ft_stream_cdl3blackcrows_free",
+      "handle": "FtStreamCdl3blackcrows",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdl3blackcrows_load",
+      "name": "cdl3blackcrows",
+      "new_fn": "ft_stream_cdl3blackcrows_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdl3blackcrows_peek",
+      "reset_fn": "ft_stream_cdl3blackcrows_reset",
+      "save_fn": "ft_stream_cdl3blackcrows_save",
+      "update_fn": "ft_stream_cdl3blackcrows_update"
+    },
+    {
+      "doc": "Streaming Three Inside Up/Down candlestick pattern: 100 bullish, -100 bearish, else 0.",
+      "free_fn": "ft_stream_cdl3inside_free",
+      "handle": "FtStreamCdl3inside",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdl3inside_load",
+      "name": "cdl3inside",
+      "new_fn": "ft_stream_cdl3inside_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdl3inside_peek",
+      "reset_fn": "ft_stream_cdl3inside_reset",
+      "save_fn": "ft_stream_cdl3inside_save",
+      "update_fn": "ft_stream_cdl3inside_update"
+    },
+    {
+      "doc": "Streaming Three-Line Strike candlestick pattern: 100 bullish, -100 bearish, else 0.",
+      "free_fn": "ft_stream_cdl3linestrike_free",
+      "handle": "FtStreamCdl3linestrike",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdl3linestrike_load",
+      "name": "cdl3linestrike",
+      "new_fn": "ft_stream_cdl3linestrike_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdl3linestrike_peek",
+      "reset_fn": "ft_stream_cdl3linestrike_reset",
+      "save_fn": "ft_stream_cdl3linestrike_save",
+      "update_fn": "ft_stream_cdl3linestrike_update"
+    },
+    {
+      "doc": "Streaming Three Outside Up/Down candlestick pattern: 100 bullish, -100 bearish, else 0.",
+      "free_fn": "ft_stream_cdl3outside_free",
+      "handle": "FtStreamCdl3outside",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdl3outside_load",
+      "name": "cdl3outside",
+      "new_fn": "ft_stream_cdl3outside_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdl3outside_peek",
+      "reset_fn": "ft_stream_cdl3outside_reset",
+      "save_fn": "ft_stream_cdl3outside_save",
+      "update_fn": "ft_stream_cdl3outside_update"
+    },
+    {
+      "doc": "Streaming Three Stars In The South candlestick pattern: 100 (bullish) when matched, else 0.",
+      "free_fn": "ft_stream_cdl3starsinsouth_free",
+      "handle": "FtStreamCdl3starsinsouth",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdl3starsinsouth_load",
+      "name": "cdl3starsinsouth",
+      "new_fn": "ft_stream_cdl3starsinsouth_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdl3starsinsouth_peek",
+      "reset_fn": "ft_stream_cdl3starsinsouth_reset",
+      "save_fn": "ft_stream_cdl3starsinsouth_save",
+      "update_fn": "ft_stream_cdl3starsinsouth_update"
+    },
+    {
+      "doc": "Streaming Three Advancing White Soldiers candlestick pattern: 100 (bullish) when matched, else 0.",
+      "free_fn": "ft_stream_cdl3whitesoldiers_free",
+      "handle": "FtStreamCdl3whitesoldiers",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdl3whitesoldiers_load",
+      "name": "cdl3whitesoldiers",
+      "new_fn": "ft_stream_cdl3whitesoldiers_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdl3whitesoldiers_peek",
+      "reset_fn": "ft_stream_cdl3whitesoldiers_reset",
+      "save_fn": "ft_stream_cdl3whitesoldiers_save",
+      "update_fn": "ft_stream_cdl3whitesoldiers_update"
+    },
+    {
+      "doc": "Streaming Abandoned Baby candlestick pattern: 100 bullish, -100 bearish, else 0.",
+      "free_fn": "ft_stream_cdlabandonedbaby_free",
+      "handle": "FtStreamCdlabandonedbaby",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlabandonedbaby_load",
+      "name": "cdlabandonedbaby",
+      "new_fn": "ft_stream_cdlabandonedbaby_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlabandonedbaby_peek",
+      "reset_fn": "ft_stream_cdlabandonedbaby_reset",
+      "save_fn": "ft_stream_cdlabandonedbaby_save",
+      "update_fn": "ft_stream_cdlabandonedbaby_update"
+    },
+    {
+      "doc": "Streaming Advance Block candlestick pattern: -100 (bearish) when matched, else 0.",
+      "free_fn": "ft_stream_cdladvanceblock_free",
+      "handle": "FtStreamCdladvanceblock",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdladvanceblock_load",
+      "name": "cdladvanceblock",
+      "new_fn": "ft_stream_cdladvanceblock_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdladvanceblock_peek",
+      "reset_fn": "ft_stream_cdladvanceblock_reset",
+      "save_fn": "ft_stream_cdladvanceblock_save",
+      "update_fn": "ft_stream_cdladvanceblock_update"
+    },
+    {
+      "doc": "Streaming Belt-hold candlestick pattern: 100 bullish, -100 bearish, else 0.",
+      "free_fn": "ft_stream_cdlbelthold_free",
+      "handle": "FtStreamCdlbelthold",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlbelthold_load",
+      "name": "cdlbelthold",
+      "new_fn": "ft_stream_cdlbelthold_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlbelthold_peek",
+      "reset_fn": "ft_stream_cdlbelthold_reset",
+      "save_fn": "ft_stream_cdlbelthold_save",
+      "update_fn": "ft_stream_cdlbelthold_update"
+    },
+    {
+      "doc": "Streaming Breakaway candlestick pattern: 100 bullish, -100 bearish, else 0.",
+      "free_fn": "ft_stream_cdlbreakaway_free",
+      "handle": "FtStreamCdlbreakaway",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlbreakaway_load",
+      "name": "cdlbreakaway",
+      "new_fn": "ft_stream_cdlbreakaway_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlbreakaway_peek",
+      "reset_fn": "ft_stream_cdlbreakaway_reset",
+      "save_fn": "ft_stream_cdlbreakaway_save",
+      "update_fn": "ft_stream_cdlbreakaway_update"
+    },
+    {
+      "doc": "Streaming Closing Marubozu candlestick pattern: 100 bullish, -100 bearish, else 0.",
+      "free_fn": "ft_stream_cdlclosingmarubozu_free",
+      "handle": "FtStreamCdlclosingmarubozu",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlclosingmarubozu_load",
+      "name": "cdlclosingmarubozu",
+      "new_fn": "ft_stream_cdlclosingmarubozu_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlclosingmarubozu_peek",
+      "reset_fn": "ft_stream_cdlclosingmarubozu_reset",
+      "save_fn": "ft_stream_cdlclosingmarubozu_save",
+      "update_fn": "ft_stream_cdlclosingmarubozu_update"
+    },
+    {
+      "doc": "Streaming Concealing Baby Swallow candlestick pattern: 100 (bullish) when matched, else 0.",
+      "free_fn": "ft_stream_cdlconcealbabyswall_free",
+      "handle": "FtStreamCdlconcealbabyswall",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlconcealbabyswall_load",
+      "name": "cdlconcealbabyswall",
+      "new_fn": "ft_stream_cdlconcealbabyswall_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlconcealbabyswall_peek",
+      "reset_fn": "ft_stream_cdlconcealbabyswall_reset",
+      "save_fn": "ft_stream_cdlconcealbabyswall_save",
+      "update_fn": "ft_stream_cdlconcealbabyswall_update"
+    },
+    {
+      "doc": "Streaming Counterattack candlestick pattern: 100 bullish, -100 bearish, else 0.",
+      "free_fn": "ft_stream_cdlcounterattack_free",
+      "handle": "FtStreamCdlcounterattack",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlcounterattack_load",
+      "name": "cdlcounterattack",
+      "new_fn": "ft_stream_cdlcounterattack_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlcounterattack_peek",
+      "reset_fn": "ft_stream_cdlcounterattack_reset",
+      "save_fn": "ft_stream_cdlcounterattack_save",
+      "update_fn": "ft_stream_cdlcounterattack_update"
+    },
+    {
+      "doc": "Streaming Dark Cloud Cover candlestick pattern: -100 (bearish) when matched, else 0.",
+      "free_fn": "ft_stream_cdldarkcloudcover_free",
+      "handle": "FtStreamCdldarkcloudcover",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdldarkcloudcover_load",
+      "name": "cdldarkcloudcover",
+      "new_fn": "ft_stream_cdldarkcloudcover_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdldarkcloudcover_peek",
+      "reset_fn": "ft_stream_cdldarkcloudcover_reset",
+      "save_fn": "ft_stream_cdldarkcloudcover_save",
+      "update_fn": "ft_stream_cdldarkcloudcover_update"
+    },
+    {
+      "doc": "Streaming Doji candlestick pattern: 100 when the candle matches (pattern present, not a direction), else 0.",
+      "free_fn": "ft_stream_cdldoji_free",
+      "handle": "FtStreamCdldoji",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdldoji_load",
+      "name": "cdldoji",
+      "new_fn": "ft_stream_cdldoji_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdldoji_peek",
+      "reset_fn": "ft_stream_cdldoji_reset",
+      "save_fn": "ft_stream_cdldoji_save",
+      "update_fn": "ft_stream_cdldoji_update"
+    },
+    {
+      "doc": "Streaming Doji Star candlestick pattern: 100 bullish, -100 bearish, else 0.",
+      "free_fn": "ft_stream_cdldojistar_free",
+      "handle": "FtStreamCdldojistar",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdldojistar_load",
+      "name": "cdldojistar",
+      "new_fn": "ft_stream_cdldojistar_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdldojistar_peek",
+      "reset_fn": "ft_stream_cdldojistar_reset",
+      "save_fn": "ft_stream_cdldojistar_save",
+      "update_fn": "ft_stream_cdldojistar_update"
+    },
+    {
+      "doc": "Streaming Dragonfly Doji candlestick pattern: 100 when the candle matches (pattern present, not a direction), else 0.",
+      "free_fn": "ft_stream_cdldragonflydoji_free",
+      "handle": "FtStreamCdldragonflydoji",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdldragonflydoji_load",
+      "name": "cdldragonflydoji",
+      "new_fn": "ft_stream_cdldragonflydoji_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdldragonflydoji_peek",
+      "reset_fn": "ft_stream_cdldragonflydoji_reset",
+      "save_fn": "ft_stream_cdldragonflydoji_save",
+      "update_fn": "ft_stream_cdldragonflydoji_update"
+    },
+    {
+      "doc": "Streaming Engulfing candlestick pattern: 100 bullish, -100 bearish, else 0.",
+      "free_fn": "ft_stream_cdlengulfing_free",
+      "handle": "FtStreamCdlengulfing",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlengulfing_load",
+      "name": "cdlengulfing",
+      "new_fn": "ft_stream_cdlengulfing_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlengulfing_peek",
+      "reset_fn": "ft_stream_cdlengulfing_reset",
+      "save_fn": "ft_stream_cdlengulfing_save",
+      "update_fn": "ft_stream_cdlengulfing_update"
+    },
+    {
+      "doc": "Streaming Evening Doji Star candlestick pattern: -100 (bearish) when matched, else 0.",
+      "free_fn": "ft_stream_cdleveningdojistar_free",
+      "handle": "FtStreamCdleveningdojistar",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdleveningdojistar_load",
+      "name": "cdleveningdojistar",
+      "new_fn": "ft_stream_cdleveningdojistar_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdleveningdojistar_peek",
+      "reset_fn": "ft_stream_cdleveningdojistar_reset",
+      "save_fn": "ft_stream_cdleveningdojistar_save",
+      "update_fn": "ft_stream_cdleveningdojistar_update"
+    },
+    {
+      "doc": "Streaming Evening Star candlestick pattern: -100 (bearish) when matched, else 0.",
+      "free_fn": "ft_stream_cdleveningstar_free",
+      "handle": "FtStreamCdleveningstar",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdleveningstar_load",
+      "name": "cdleveningstar",
+      "new_fn": "ft_stream_cdleveningstar_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdleveningstar_peek",
+      "reset_fn": "ft_stream_cdleveningstar_reset",
+      "save_fn": "ft_stream_cdleveningstar_save",
+      "update_fn": "ft_stream_cdleveningstar_update"
+    },
+    {
+      "doc": "Streaming Up/Down-gap side-by-side white lines candlestick pattern: 100 bullish, -100 bearish, else 0.",
+      "free_fn": "ft_stream_cdlgapsidesidewhite_free",
+      "handle": "FtStreamCdlgapsidesidewhite",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlgapsidesidewhite_load",
+      "name": "cdlgapsidesidewhite",
+      "new_fn": "ft_stream_cdlgapsidesidewhite_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlgapsidesidewhite_peek",
+      "reset_fn": "ft_stream_cdlgapsidesidewhite_reset",
+      "save_fn": "ft_stream_cdlgapsidesidewhite_save",
+      "update_fn": "ft_stream_cdlgapsidesidewhite_update"
+    },
+    {
+      "doc": "Streaming Gravestone Doji candlestick pattern: -100 (bearish) when matched, else 0.",
+      "free_fn": "ft_stream_cdlgravestonedoji_free",
+      "handle": "FtStreamCdlgravestonedoji",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlgravestonedoji_load",
+      "name": "cdlgravestonedoji",
+      "new_fn": "ft_stream_cdlgravestonedoji_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlgravestonedoji_peek",
+      "reset_fn": "ft_stream_cdlgravestonedoji_reset",
+      "save_fn": "ft_stream_cdlgravestonedoji_save",
+      "update_fn": "ft_stream_cdlgravestonedoji_update"
+    },
+    {
+      "doc": "Streaming Hammer candlestick pattern: 100 (bullish) when matched, else 0.",
+      "free_fn": "ft_stream_cdlhammer_free",
+      "handle": "FtStreamCdlhammer",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlhammer_load",
+      "name": "cdlhammer",
+      "new_fn": "ft_stream_cdlhammer_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlhammer_peek",
+      "reset_fn": "ft_stream_cdlhammer_reset",
+      "save_fn": "ft_stream_cdlhammer_save",
+      "update_fn": "ft_stream_cdlhammer_update"
+    },
+    {
+      "doc": "Streaming Hanging Man candlestick pattern: -100 (bearish) when matched, else 0.",
+      "free_fn": "ft_stream_cdlhangingman_free",
+      "handle": "FtStreamCdlhangingman",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlhangingman_load",
+      "name": "cdlhangingman",
+      "new_fn": "ft_stream_cdlhangingman_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlhangingman_peek",
+      "reset_fn": "ft_stream_cdlhangingman_reset",
+      "save_fn": "ft_stream_cdlhangingman_save",
+      "update_fn": "ft_stream_cdlhangingman_update"
+    },
+    {
+      "doc": "Streaming Harami candlestick pattern: 100 bullish, -100 bearish, else 0.",
+      "free_fn": "ft_stream_cdlharami_free",
+      "handle": "FtStreamCdlharami",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlharami_load",
+      "name": "cdlharami",
+      "new_fn": "ft_stream_cdlharami_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlharami_peek",
+      "reset_fn": "ft_stream_cdlharami_reset",
+      "save_fn": "ft_stream_cdlharami_save",
+      "update_fn": "ft_stream_cdlharami_update"
+    },
+    {
+      "doc": "Streaming Harami Cross candlestick pattern: 100 bullish, -100 bearish, else 0.",
+      "free_fn": "ft_stream_cdlharamicross_free",
+      "handle": "FtStreamCdlharamicross",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlharamicross_load",
+      "name": "cdlharamicross",
+      "new_fn": "ft_stream_cdlharamicross_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlharamicross_peek",
+      "reset_fn": "ft_stream_cdlharamicross_reset",
+      "save_fn": "ft_stream_cdlharamicross_save",
+      "update_fn": "ft_stream_cdlharamicross_update"
+    },
+    {
+      "doc": "Streaming High-Wave Candle candlestick pattern: 100 bullish, -100 bearish, else 0.",
+      "free_fn": "ft_stream_cdlhighwave_free",
+      "handle": "FtStreamCdlhighwave",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlhighwave_load",
+      "name": "cdlhighwave",
+      "new_fn": "ft_stream_cdlhighwave_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlhighwave_peek",
+      "reset_fn": "ft_stream_cdlhighwave_reset",
+      "save_fn": "ft_stream_cdlhighwave_save",
+      "update_fn": "ft_stream_cdlhighwave_update"
+    },
+    {
+      "doc": "Streaming Hikkake Pattern candlestick pattern: 100 bullish, -100 bearish, else 0.",
+      "free_fn": "ft_stream_cdlhikkake_free",
+      "handle": "FtStreamCdlhikkake",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlhikkake_load",
+      "name": "cdlhikkake",
+      "new_fn": "ft_stream_cdlhikkake_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlhikkake_peek",
+      "reset_fn": "ft_stream_cdlhikkake_reset",
+      "save_fn": "ft_stream_cdlhikkake_save",
+      "update_fn": "ft_stream_cdlhikkake_update"
+    },
+    {
+      "doc": "Streaming Modified Hikkake Pattern candlestick pattern: 100 bullish, -100 bearish, else 0.",
+      "free_fn": "ft_stream_cdlhikkakemod_free",
+      "handle": "FtStreamCdlhikkakemod",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlhikkakemod_load",
+      "name": "cdlhikkakemod",
+      "new_fn": "ft_stream_cdlhikkakemod_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlhikkakemod_peek",
+      "reset_fn": "ft_stream_cdlhikkakemod_reset",
+      "save_fn": "ft_stream_cdlhikkakemod_save",
+      "update_fn": "ft_stream_cdlhikkakemod_update"
+    },
+    {
+      "doc": "Streaming Homing Pigeon candlestick pattern: 100 (bullish) when matched, else 0.",
+      "free_fn": "ft_stream_cdlhomingpigeon_free",
+      "handle": "FtStreamCdlhomingpigeon",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlhomingpigeon_load",
+      "name": "cdlhomingpigeon",
+      "new_fn": "ft_stream_cdlhomingpigeon_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlhomingpigeon_peek",
+      "reset_fn": "ft_stream_cdlhomingpigeon_reset",
+      "save_fn": "ft_stream_cdlhomingpigeon_save",
+      "update_fn": "ft_stream_cdlhomingpigeon_update"
+    },
+    {
+      "doc": "Streaming Identical Three Crows candlestick pattern: -100 (bearish) when matched, else 0.",
+      "free_fn": "ft_stream_cdlidentical3crows_free",
+      "handle": "FtStreamCdlidentical3crows",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlidentical3crows_load",
+      "name": "cdlidentical3crows",
+      "new_fn": "ft_stream_cdlidentical3crows_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlidentical3crows_peek",
+      "reset_fn": "ft_stream_cdlidentical3crows_reset",
+      "save_fn": "ft_stream_cdlidentical3crows_save",
+      "update_fn": "ft_stream_cdlidentical3crows_update"
+    },
+    {
+      "doc": "Streaming In-Neck Pattern candlestick pattern: -100 (bearish) when matched, else 0.",
+      "free_fn": "ft_stream_cdlinneck_free",
+      "handle": "FtStreamCdlinneck",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlinneck_load",
+      "name": "cdlinneck",
+      "new_fn": "ft_stream_cdlinneck_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlinneck_peek",
+      "reset_fn": "ft_stream_cdlinneck_reset",
+      "save_fn": "ft_stream_cdlinneck_save",
+      "update_fn": "ft_stream_cdlinneck_update"
+    },
+    {
+      "doc": "Streaming Inverted Hammer candlestick pattern: 100 (bullish) when matched, else 0.",
+      "free_fn": "ft_stream_cdlinvertedhammer_free",
+      "handle": "FtStreamCdlinvertedhammer",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlinvertedhammer_load",
+      "name": "cdlinvertedhammer",
+      "new_fn": "ft_stream_cdlinvertedhammer_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlinvertedhammer_peek",
+      "reset_fn": "ft_stream_cdlinvertedhammer_reset",
+      "save_fn": "ft_stream_cdlinvertedhammer_save",
+      "update_fn": "ft_stream_cdlinvertedhammer_update"
+    },
+    {
+      "doc": "Streaming Kicking candlestick pattern: 100 bullish, -100 bearish, else 0.",
+      "free_fn": "ft_stream_cdlkicking_free",
+      "handle": "FtStreamCdlkicking",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlkicking_load",
+      "name": "cdlkicking",
+      "new_fn": "ft_stream_cdlkicking_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlkicking_peek",
+      "reset_fn": "ft_stream_cdlkicking_reset",
+      "save_fn": "ft_stream_cdlkicking_save",
+      "update_fn": "ft_stream_cdlkicking_update"
+    },
+    {
+      "doc": "Streaming Kicking by length (direction follows the longer marubozu) candlestick pattern: 100 bullish, -100 bearish, else 0.",
+      "free_fn": "ft_stream_cdlkickingbylength_free",
+      "handle": "FtStreamCdlkickingbylength",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlkickingbylength_load",
+      "name": "cdlkickingbylength",
+      "new_fn": "ft_stream_cdlkickingbylength_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlkickingbylength_peek",
+      "reset_fn": "ft_stream_cdlkickingbylength_reset",
+      "save_fn": "ft_stream_cdlkickingbylength_save",
+      "update_fn": "ft_stream_cdlkickingbylength_update"
+    },
+    {
+      "doc": "Streaming Ladder Bottom candlestick pattern: 100 (bullish) when matched, else 0.",
+      "free_fn": "ft_stream_cdlladderbottom_free",
+      "handle": "FtStreamCdlladderbottom",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlladderbottom_load",
+      "name": "cdlladderbottom",
+      "new_fn": "ft_stream_cdlladderbottom_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlladderbottom_peek",
+      "reset_fn": "ft_stream_cdlladderbottom_reset",
+      "save_fn": "ft_stream_cdlladderbottom_save",
+      "update_fn": "ft_stream_cdlladderbottom_update"
+    },
+    {
+      "doc": "Streaming Long Legged Doji candlestick pattern: 100 when the candle matches (pattern present, not a direction), else 0.",
+      "free_fn": "ft_stream_cdllongleggeddoji_free",
+      "handle": "FtStreamCdllongleggeddoji",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdllongleggeddoji_load",
+      "name": "cdllongleggeddoji",
+      "new_fn": "ft_stream_cdllongleggeddoji_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdllongleggeddoji_peek",
+      "reset_fn": "ft_stream_cdllongleggeddoji_reset",
+      "save_fn": "ft_stream_cdllongleggeddoji_save",
+      "update_fn": "ft_stream_cdllongleggeddoji_update"
+    },
+    {
+      "doc": "Streaming Long Line Candle candlestick pattern: 100 bullish, -100 bearish, else 0.",
+      "free_fn": "ft_stream_cdllongline_free",
+      "handle": "FtStreamCdllongline",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdllongline_load",
+      "name": "cdllongline",
+      "new_fn": "ft_stream_cdllongline_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdllongline_peek",
+      "reset_fn": "ft_stream_cdllongline_reset",
+      "save_fn": "ft_stream_cdllongline_save",
+      "update_fn": "ft_stream_cdllongline_update"
+    },
+    {
+      "doc": "Streaming Marubozu candlestick pattern: 100 bullish, -100 bearish, else 0.",
+      "free_fn": "ft_stream_cdlmarubozu_free",
+      "handle": "FtStreamCdlmarubozu",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlmarubozu_load",
+      "name": "cdlmarubozu",
+      "new_fn": "ft_stream_cdlmarubozu_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlmarubozu_peek",
+      "reset_fn": "ft_stream_cdlmarubozu_reset",
+      "save_fn": "ft_stream_cdlmarubozu_save",
+      "update_fn": "ft_stream_cdlmarubozu_update"
+    },
+    {
+      "doc": "Streaming Matching Low candlestick pattern: 100 (bullish) when matched, else 0.",
+      "free_fn": "ft_stream_cdlmatchinglow_free",
+      "handle": "FtStreamCdlmatchinglow",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlmatchinglow_load",
+      "name": "cdlmatchinglow",
+      "new_fn": "ft_stream_cdlmatchinglow_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlmatchinglow_peek",
+      "reset_fn": "ft_stream_cdlmatchinglow_reset",
+      "save_fn": "ft_stream_cdlmatchinglow_save",
+      "update_fn": "ft_stream_cdlmatchinglow_update"
+    },
+    {
+      "doc": "Streaming Mat Hold candlestick pattern: 100 (bullish) when matched, else 0.",
+      "free_fn": "ft_stream_cdlmathold_free",
+      "handle": "FtStreamCdlmathold",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlmathold_load",
+      "name": "cdlmathold",
+      "new_fn": "ft_stream_cdlmathold_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlmathold_peek",
+      "reset_fn": "ft_stream_cdlmathold_reset",
+      "save_fn": "ft_stream_cdlmathold_save",
+      "update_fn": "ft_stream_cdlmathold_update"
+    },
+    {
+      "doc": "Streaming Morning Doji Star candlestick pattern: 100 (bullish) when matched, else 0.",
+      "free_fn": "ft_stream_cdlmorningdojistar_free",
+      "handle": "FtStreamCdlmorningdojistar",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlmorningdojistar_load",
+      "name": "cdlmorningdojistar",
+      "new_fn": "ft_stream_cdlmorningdojistar_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlmorningdojistar_peek",
+      "reset_fn": "ft_stream_cdlmorningdojistar_reset",
+      "save_fn": "ft_stream_cdlmorningdojistar_save",
+      "update_fn": "ft_stream_cdlmorningdojistar_update"
+    },
+    {
+      "doc": "Streaming Morning Star candlestick pattern: 100 (bullish) when matched, else 0.",
+      "free_fn": "ft_stream_cdlmorningstar_free",
+      "handle": "FtStreamCdlmorningstar",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlmorningstar_load",
+      "name": "cdlmorningstar",
+      "new_fn": "ft_stream_cdlmorningstar_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlmorningstar_peek",
+      "reset_fn": "ft_stream_cdlmorningstar_reset",
+      "save_fn": "ft_stream_cdlmorningstar_save",
+      "update_fn": "ft_stream_cdlmorningstar_update"
+    },
+    {
+      "doc": "Streaming On-Neck Pattern candlestick pattern: -100 (bearish) when matched, else 0.",
+      "free_fn": "ft_stream_cdlonneck_free",
+      "handle": "FtStreamCdlonneck",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlonneck_load",
+      "name": "cdlonneck",
+      "new_fn": "ft_stream_cdlonneck_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlonneck_peek",
+      "reset_fn": "ft_stream_cdlonneck_reset",
+      "save_fn": "ft_stream_cdlonneck_save",
+      "update_fn": "ft_stream_cdlonneck_update"
+    },
+    {
+      "doc": "Streaming Piercing Pattern candlestick pattern: 100 (bullish) when matched, else 0.",
+      "free_fn": "ft_stream_cdlpiercing_free",
+      "handle": "FtStreamCdlpiercing",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlpiercing_load",
+      "name": "cdlpiercing",
+      "new_fn": "ft_stream_cdlpiercing_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlpiercing_peek",
+      "reset_fn": "ft_stream_cdlpiercing_reset",
+      "save_fn": "ft_stream_cdlpiercing_save",
+      "update_fn": "ft_stream_cdlpiercing_update"
+    },
+    {
+      "doc": "Streaming Rickshaw Man candlestick pattern: 100 when the candle matches (pattern present, not a direction), else 0.",
+      "free_fn": "ft_stream_cdlrickshawman_free",
+      "handle": "FtStreamCdlrickshawman",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlrickshawman_load",
+      "name": "cdlrickshawman",
+      "new_fn": "ft_stream_cdlrickshawman_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlrickshawman_peek",
+      "reset_fn": "ft_stream_cdlrickshawman_reset",
+      "save_fn": "ft_stream_cdlrickshawman_save",
+      "update_fn": "ft_stream_cdlrickshawman_update"
+    },
+    {
+      "doc": "Streaming Rising/Falling Three Methods candlestick pattern: 100 bullish, -100 bearish, else 0.",
+      "free_fn": "ft_stream_cdlrisefall3methods_free",
+      "handle": "FtStreamCdlrisefall3methods",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlrisefall3methods_load",
+      "name": "cdlrisefall3methods",
+      "new_fn": "ft_stream_cdlrisefall3methods_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlrisefall3methods_peek",
+      "reset_fn": "ft_stream_cdlrisefall3methods_reset",
+      "save_fn": "ft_stream_cdlrisefall3methods_save",
+      "update_fn": "ft_stream_cdlrisefall3methods_update"
+    },
+    {
+      "doc": "Streaming Separating Lines candlestick pattern: 100 bullish, -100 bearish, else 0.",
+      "free_fn": "ft_stream_cdlseparatinglines_free",
+      "handle": "FtStreamCdlseparatinglines",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlseparatinglines_load",
+      "name": "cdlseparatinglines",
+      "new_fn": "ft_stream_cdlseparatinglines_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlseparatinglines_peek",
+      "reset_fn": "ft_stream_cdlseparatinglines_reset",
+      "save_fn": "ft_stream_cdlseparatinglines_save",
+      "update_fn": "ft_stream_cdlseparatinglines_update"
+    },
+    {
+      "doc": "Streaming Shooting Star candlestick pattern: -100 (bearish) when matched, else 0.",
+      "free_fn": "ft_stream_cdlshootingstar_free",
+      "handle": "FtStreamCdlshootingstar",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlshootingstar_load",
+      "name": "cdlshootingstar",
+      "new_fn": "ft_stream_cdlshootingstar_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlshootingstar_peek",
+      "reset_fn": "ft_stream_cdlshootingstar_reset",
+      "save_fn": "ft_stream_cdlshootingstar_save",
+      "update_fn": "ft_stream_cdlshootingstar_update"
+    },
+    {
+      "doc": "Streaming Short Line Candle candlestick pattern: 100 bullish, -100 bearish, else 0.",
+      "free_fn": "ft_stream_cdlshortline_free",
+      "handle": "FtStreamCdlshortline",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlshortline_load",
+      "name": "cdlshortline",
+      "new_fn": "ft_stream_cdlshortline_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlshortline_peek",
+      "reset_fn": "ft_stream_cdlshortline_reset",
+      "save_fn": "ft_stream_cdlshortline_save",
+      "update_fn": "ft_stream_cdlshortline_update"
+    },
+    {
+      "doc": "Streaming Spinning Top candlestick pattern: 100 bullish, -100 bearish, else 0.",
+      "free_fn": "ft_stream_cdlspinningtop_free",
+      "handle": "FtStreamCdlspinningtop",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlspinningtop_load",
+      "name": "cdlspinningtop",
+      "new_fn": "ft_stream_cdlspinningtop_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlspinningtop_peek",
+      "reset_fn": "ft_stream_cdlspinningtop_reset",
+      "save_fn": "ft_stream_cdlspinningtop_save",
+      "update_fn": "ft_stream_cdlspinningtop_update"
+    },
+    {
+      "doc": "Streaming Stalled Pattern candlestick pattern: -100 (bearish) when matched, else 0.",
+      "free_fn": "ft_stream_cdlstalledpattern_free",
+      "handle": "FtStreamCdlstalledpattern",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlstalledpattern_load",
+      "name": "cdlstalledpattern",
+      "new_fn": "ft_stream_cdlstalledpattern_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlstalledpattern_peek",
+      "reset_fn": "ft_stream_cdlstalledpattern_reset",
+      "save_fn": "ft_stream_cdlstalledpattern_save",
+      "update_fn": "ft_stream_cdlstalledpattern_update"
+    },
+    {
+      "doc": "Streaming Stick Sandwich candlestick pattern: 100 (bullish) when matched, else 0.",
+      "free_fn": "ft_stream_cdlsticksandwich_free",
+      "handle": "FtStreamCdlsticksandwich",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlsticksandwich_load",
+      "name": "cdlsticksandwich",
+      "new_fn": "ft_stream_cdlsticksandwich_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlsticksandwich_peek",
+      "reset_fn": "ft_stream_cdlsticksandwich_reset",
+      "save_fn": "ft_stream_cdlsticksandwich_save",
+      "update_fn": "ft_stream_cdlsticksandwich_update"
+    },
+    {
+      "doc": "Streaming Takuri (Dragonfly Doji with very long lower shadow) candlestick pattern: 100 when the candle matches (pattern present, not a direction), else 0.",
+      "free_fn": "ft_stream_cdltakuri_free",
+      "handle": "FtStreamCdltakuri",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdltakuri_load",
+      "name": "cdltakuri",
+      "new_fn": "ft_stream_cdltakuri_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdltakuri_peek",
+      "reset_fn": "ft_stream_cdltakuri_reset",
+      "save_fn": "ft_stream_cdltakuri_save",
+      "update_fn": "ft_stream_cdltakuri_update"
+    },
+    {
+      "doc": "Streaming Tasuki Gap candlestick pattern: 100 bullish, -100 bearish, else 0.",
+      "free_fn": "ft_stream_cdltasukigap_free",
+      "handle": "FtStreamCdltasukigap",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdltasukigap_load",
+      "name": "cdltasukigap",
+      "new_fn": "ft_stream_cdltasukigap_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdltasukigap_peek",
+      "reset_fn": "ft_stream_cdltasukigap_reset",
+      "save_fn": "ft_stream_cdltasukigap_save",
+      "update_fn": "ft_stream_cdltasukigap_update"
+    },
+    {
+      "doc": "Streaming Thrusting Pattern candlestick pattern: -100 (bearish) when matched, else 0.",
+      "free_fn": "ft_stream_cdlthrusting_free",
+      "handle": "FtStreamCdlthrusting",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlthrusting_load",
+      "name": "cdlthrusting",
+      "new_fn": "ft_stream_cdlthrusting_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlthrusting_peek",
+      "reset_fn": "ft_stream_cdlthrusting_reset",
+      "save_fn": "ft_stream_cdlthrusting_save",
+      "update_fn": "ft_stream_cdlthrusting_update"
+    },
+    {
+      "doc": "Streaming Tristar Pattern candlestick pattern: 100 bullish, -100 bearish, else 0.",
+      "free_fn": "ft_stream_cdltristar_free",
+      "handle": "FtStreamCdltristar",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdltristar_load",
+      "name": "cdltristar",
+      "new_fn": "ft_stream_cdltristar_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdltristar_peek",
+      "reset_fn": "ft_stream_cdltristar_reset",
+      "save_fn": "ft_stream_cdltristar_save",
+      "update_fn": "ft_stream_cdltristar_update"
+    },
+    {
+      "doc": "Streaming Unique 3 River candlestick pattern: 100 (bullish) when matched, else 0.",
+      "free_fn": "ft_stream_cdlunique3river_free",
+      "handle": "FtStreamCdlunique3river",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlunique3river_load",
+      "name": "cdlunique3river",
+      "new_fn": "ft_stream_cdlunique3river_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlunique3river_peek",
+      "reset_fn": "ft_stream_cdlunique3river_reset",
+      "save_fn": "ft_stream_cdlunique3river_save",
+      "update_fn": "ft_stream_cdlunique3river_update"
+    },
+    {
+      "doc": "Streaming Upside Gap Two Crows candlestick pattern: -100 (bearish) when matched, else 0.",
+      "free_fn": "ft_stream_cdlupsidegap2crows_free",
+      "handle": "FtStreamCdlupsidegap2crows",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlupsidegap2crows_load",
+      "name": "cdlupsidegap2crows",
+      "new_fn": "ft_stream_cdlupsidegap2crows_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlupsidegap2crows_peek",
+      "reset_fn": "ft_stream_cdlupsidegap2crows_reset",
+      "save_fn": "ft_stream_cdlupsidegap2crows_save",
+      "update_fn": "ft_stream_cdlupsidegap2crows_update"
+    },
+    {
+      "doc": "Streaming Upside/Downside Gap Three Methods candlestick pattern: 100 bullish, -100 bearish, else 0.",
+      "free_fn": "ft_stream_cdlxsidegap3methods_free",
+      "handle": "FtStreamCdlxsidegap3methods",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_cdlxsidegap3methods_load",
+      "name": "cdlxsidegap3methods",
+      "new_fn": "ft_stream_cdlxsidegap3methods_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_cdlxsidegap3methods_peek",
+      "reset_fn": "ft_stream_cdlxsidegap3methods_reset",
+      "save_fn": "ft_stream_cdlxsidegap3methods_save",
+      "update_fn": "ft_stream_cdlxsidegap3methods_update"
+    },
+    {
+      "doc": "Streaming rolling population standard deviation over `timeperiod` bars, scaled by `nbdev`.",
+      "free_fn": "ft_stream_stddev_free",
+      "handle": "FtStreamStddev",
+      "inputs": [
+        "real"
+      ],
+      "load_fn": "ft_stream_stddev_load",
+      "name": "stddev",
+      "new_fn": "ft_stream_stddev_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "nbdev"
+        }
+      ],
+      "peek_fn": "ft_stream_stddev_peek",
+      "reset_fn": "ft_stream_stddev_reset",
+      "save_fn": "ft_stream_stddev_save",
+      "update_fn": "ft_stream_stddev_update"
+    },
+    {
+      "doc": "Streaming rolling population variance over `timeperiod` bars, scaled by `nbdev**2`.",
+      "free_fn": "ft_stream_var_free",
+      "handle": "FtStreamVar",
+      "inputs": [
+        "real"
+      ],
+      "load_fn": "ft_stream_var_load",
+      "name": "var",
+      "new_fn": "ft_stream_var_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "nbdev"
+        }
+      ],
+      "peek_fn": "ft_stream_var_peek",
+      "reset_fn": "ft_stream_var_reset",
+      "save_fn": "ft_stream_var_save",
+      "update_fn": "ft_stream_var_update"
+    },
+    {
+      "doc": "Streaming linear regression fitted value at the last bar of the window.",
+      "free_fn": "ft_stream_linearreg_free",
+      "handle": "FtStreamLinearreg",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_linearreg_load",
+      "name": "linearreg",
+      "new_fn": "ft_stream_linearreg_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_linearreg_peek",
+      "reset_fn": "ft_stream_linearreg_reset",
+      "save_fn": "ft_stream_linearreg_save",
+      "update_fn": "ft_stream_linearreg_update"
+    },
+    {
+      "doc": "Streaming slope of the rolling linear regression line.",
+      "free_fn": "ft_stream_linearreg_slope_free",
+      "handle": "FtStreamLinearregSlope",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_linearreg_slope_load",
+      "name": "linearreg_slope",
+      "new_fn": "ft_stream_linearreg_slope_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_linearreg_slope_peek",
+      "reset_fn": "ft_stream_linearreg_slope_reset",
+      "save_fn": "ft_stream_linearreg_slope_save",
+      "update_fn": "ft_stream_linearreg_slope_update"
+    },
+    {
+      "doc": "Streaming intercept of the rolling linear regression line.",
+      "free_fn": "ft_stream_linearreg_intercept_free",
+      "handle": "FtStreamLinearregIntercept",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_linearreg_intercept_load",
+      "name": "linearreg_intercept",
+      "new_fn": "ft_stream_linearreg_intercept_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_linearreg_intercept_peek",
+      "reset_fn": "ft_stream_linearreg_intercept_reset",
+      "save_fn": "ft_stream_linearreg_intercept_save",
+      "update_fn": "ft_stream_linearreg_intercept_update"
+    },
+    {
+      "doc": "Streaming angle of the rolling regression line in degrees.",
+      "free_fn": "ft_stream_linearreg_angle_free",
+      "handle": "FtStreamLinearregAngle",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_linearreg_angle_load",
+      "name": "linearreg_angle",
+      "new_fn": "ft_stream_linearreg_angle_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_linearreg_angle_peek",
+      "reset_fn": "ft_stream_linearreg_angle_reset",
+      "save_fn": "ft_stream_linearreg_angle_save",
+      "update_fn": "ft_stream_linearreg_angle_update"
+    },
+    {
+      "doc": "Streaming time series forecast: the regression line extrapolated one bar ahead.",
+      "free_fn": "ft_stream_tsf_free",
+      "handle": "FtStreamTsf",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_tsf_load",
+      "name": "tsf",
+      "new_fn": "ft_stream_tsf_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_tsf_peek",
+      "reset_fn": "ft_stream_tsf_reset",
+      "save_fn": "ft_stream_tsf_save",
+      "update_fn": "ft_stream_tsf_update"
+    },
+    {
+      "doc": "Streaming rolling beta of `real1` returns on `real0` returns over `timeperiod` returns.",
+      "free_fn": "ft_stream_beta_free",
+      "handle": "FtStreamBeta",
+      "inputs": [
+        "real0",
+        "real1"
+      ],
+      "load_fn": "ft_stream_beta_load",
+      "name": "beta",
+      "new_fn": "ft_stream_beta_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_beta_peek",
+      "reset_fn": "ft_stream_beta_reset",
+      "save_fn": "ft_stream_beta_save",
+      "update_fn": "ft_stream_beta_update"
+    },
+    {
+      "doc": "Streaming rolling Pearson correlation of two series over `timeperiod` bars.",
+      "free_fn": "ft_stream_correl_free",
+      "handle": "FtStreamCorrel",
+      "inputs": [
+        "real0",
+        "real1"
+      ],
+      "load_fn": "ft_stream_correl_load",
+      "name": "correl",
+      "new_fn": "ft_stream_correl_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_correl_peek",
+      "reset_fn": "ft_stream_correl_reset",
+      "save_fn": "ft_stream_correl_save",
+      "update_fn": "ft_stream_correl_update"
+    },
+    {
+      "doc": "Streaming IV rank: position of the latest IV between the window's min and max.",
+      "free_fn": "ft_stream_iv_rank_free",
+      "handle": "FtStreamIvRank",
+      "inputs": [
+        "iv_series"
+      ],
+      "load_fn": "ft_stream_iv_rank_load",
+      "name": "iv_rank",
+      "new_fn": "ft_stream_iv_rank_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "window"
+        }
+      ],
+      "peek_fn": "ft_stream_iv_rank_peek",
+      "reset_fn": "ft_stream_iv_rank_reset",
+      "save_fn": "ft_stream_iv_rank_save",
+      "update_fn": "ft_stream_iv_rank_update"
+    },
+    {
+      "doc": "Streaming IV percentile: share of window values at or below the latest IV.",
+      "free_fn": "ft_stream_iv_percentile_free",
+      "handle": "FtStreamIvPercentile",
+      "inputs": [
+        "iv_series"
+      ],
+      "load_fn": "ft_stream_iv_percentile_load",
+      "name": "iv_percentile",
+      "new_fn": "ft_stream_iv_percentile_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "window"
+        }
+      ],
+      "peek_fn": "ft_stream_iv_percentile_peek",
+      "reset_fn": "ft_stream_iv_percentile_reset",
+      "save_fn": "ft_stream_iv_percentile_save",
+      "update_fn": "ft_stream_iv_percentile_update"
+    },
+    {
+      "doc": "Streaming IV z-score of the latest IV against the window mean and deviation.",
+      "free_fn": "ft_stream_iv_zscore_free",
+      "handle": "FtStreamIvZscore",
+      "inputs": [
+        "iv_series"
+      ],
+      "load_fn": "ft_stream_iv_zscore_load",
+      "name": "iv_zscore",
+      "new_fn": "ft_stream_iv_zscore_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "window"
+        }
+      ],
+      "peek_fn": "ft_stream_iv_zscore_peek",
+      "reset_fn": "ft_stream_iv_zscore_reset",
+      "save_fn": "ft_stream_iv_zscore_save",
+      "update_fn": "ft_stream_iv_zscore_update"
+    },
+    {
+      "doc": "Streaming annualised close-to-close realized volatility (first value after `window` returns).",
+      "free_fn": "ft_stream_close_to_close_vol_free",
+      "handle": "FtStreamCloseToCloseVol",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_close_to_close_vol_load",
+      "name": "close_to_close_vol",
+      "new_fn": "ft_stream_close_to_close_vol_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "window"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "trading_days"
+        }
+      ],
+      "peek_fn": "ft_stream_close_to_close_vol_peek",
+      "reset_fn": "ft_stream_close_to_close_vol_reset",
+      "save_fn": "ft_stream_close_to_close_vol_save",
+      "update_fn": "ft_stream_close_to_close_vol_update"
+    },
+    {
+      "doc": "Streaming annualised Parkinson high-low realized volatility.",
+      "free_fn": "ft_stream_parkinson_vol_free",
+      "handle": "FtStreamParkinsonVol",
+      "inputs": [
+        "high",
+        "low"
+      ],
+      "load_fn": "ft_stream_parkinson_vol_load",
+      "name": "parkinson_vol",
+      "new_fn": "ft_stream_parkinson_vol_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "window"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "trading_days"
+        }
+      ],
+      "peek_fn": "ft_stream_parkinson_vol_peek",
+      "reset_fn": "ft_stream_parkinson_vol_reset",
+      "save_fn": "ft_stream_parkinson_vol_save",
+      "update_fn": "ft_stream_parkinson_vol_update"
+    },
+    {
+      "doc": "Streaming annualised Garman-Klass OHLC realized volatility.",
+      "free_fn": "ft_stream_garman_klass_vol_free",
+      "handle": "FtStreamGarmanKlassVol",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_garman_klass_vol_load",
+      "name": "garman_klass_vol",
+      "new_fn": "ft_stream_garman_klass_vol_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "window"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "trading_days"
+        }
+      ],
+      "peek_fn": "ft_stream_garman_klass_vol_peek",
+      "reset_fn": "ft_stream_garman_klass_vol_reset",
+      "save_fn": "ft_stream_garman_klass_vol_save",
+      "update_fn": "ft_stream_garman_klass_vol_update"
+    },
+    {
+      "doc": "Streaming annualised Rogers-Satchell OHLC realized volatility.",
+      "free_fn": "ft_stream_rogers_satchell_vol_free",
+      "handle": "FtStreamRogersSatchellVol",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_rogers_satchell_vol_load",
+      "name": "rogers_satchell_vol",
+      "new_fn": "ft_stream_rogers_satchell_vol_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "window"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "trading_days"
+        }
+      ],
+      "peek_fn": "ft_stream_rogers_satchell_vol_peek",
+      "reset_fn": "ft_stream_rogers_satchell_vol_reset",
+      "save_fn": "ft_stream_rogers_satchell_vol_save",
+      "update_fn": "ft_stream_rogers_satchell_vol_update"
+    },
+    {
+      "doc": "Streaming annualised Yang-Zhang OHLC realized volatility (first value after `window` bars plus the prior close).",
+      "free_fn": "ft_stream_yang_zhang_vol_free",
+      "handle": "FtStreamYangZhangVol",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_yang_zhang_vol_load",
+      "name": "yang_zhang_vol",
+      "new_fn": "ft_stream_yang_zhang_vol_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "window"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "trading_days"
+        }
+      ],
+      "peek_fn": "ft_stream_yang_zhang_vol_peek",
+      "reset_fn": "ft_stream_yang_zhang_vol_reset",
+      "save_fn": "ft_stream_yang_zhang_vol_save",
+      "update_fn": "ft_stream_yang_zhang_vol_update"
+    },
+    {
+      "doc": "Streaming trend (1) / range (0) label from ADX against `threshold` (-1 where ADX is NaN).",
+      "free_fn": "ft_stream_regime_adx_free",
+      "handle": "FtStreamRegimeAdx",
+      "inputs": [
+        "adx"
+      ],
+      "load_fn": "ft_stream_regime_adx_load",
+      "name": "regime_adx",
+      "new_fn": "ft_stream_regime_adx_new",
+      "outputs": [
+        {
+          "c_type": "int8_t",
+          "elem": "i8",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "threshold"
+        }
+      ],
+      "peek_fn": "ft_stream_regime_adx_peek",
+      "reset_fn": "ft_stream_regime_adx_reset",
+      "save_fn": "ft_stream_regime_adx_save",
+      "update_fn": "ft_stream_regime_adx_update"
+    },
+    {
+      "doc": "Streaming trend (1) / range (0) label: ADX above `adx_threshold` and ATR / close above `atr_pct_threshold`.",
+      "free_fn": "ft_stream_regime_combined_free",
+      "handle": "FtStreamRegimeCombined",
+      "inputs": [
+        "adx",
+        "atr",
+        "close"
+      ],
+      "load_fn": "ft_stream_regime_combined_load",
+      "name": "regime_combined",
+      "new_fn": "ft_stream_regime_combined_new",
+      "outputs": [
+        {
+          "c_type": "int8_t",
+          "elem": "i8",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "adx_threshold"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "atr_pct_threshold"
+        }
+      ],
+      "peek_fn": "ft_stream_regime_combined_peek",
+      "reset_fn": "ft_stream_regime_combined_reset",
+      "save_fn": "ft_stream_regime_combined_save",
+      "update_fn": "ft_stream_regime_combined_update"
+    },
+    {
+      "doc": "Streaming CUSUM structural-break flag (1 at a break bar) against the previous `window` bars.",
+      "free_fn": "ft_stream_detect_breaks_cusum_free",
+      "handle": "FtStreamDetectBreaksCusum",
+      "inputs": [
+        "series"
+      ],
+      "load_fn": "ft_stream_detect_breaks_cusum_load",
+      "name": "detect_breaks_cusum",
+      "new_fn": "ft_stream_detect_breaks_cusum_new",
+      "outputs": [
+        {
+          "c_type": "int8_t",
+          "elem": "i8",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 2,
+          "name": "window"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "threshold"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "slack"
+        }
+      ],
+      "peek_fn": "ft_stream_detect_breaks_cusum_peek",
+      "reset_fn": "ft_stream_detect_breaks_cusum_reset",
+      "save_fn": "ft_stream_detect_breaks_cusum_save",
+      "update_fn": "ft_stream_detect_breaks_cusum_update"
+    },
+    {
+      "doc": "Streaming volatility-regime break flag: short / long window variance ratio above `threshold` (current bar excluded).",
+      "free_fn": "ft_stream_rolling_variance_break_free",
+      "handle": "FtStreamRollingVarianceBreak",
+      "inputs": [
+        "series"
+      ],
+      "load_fn": "ft_stream_rolling_variance_break_load",
+      "name": "rolling_variance_break",
+      "new_fn": "ft_stream_rolling_variance_break_new",
+      "outputs": [
+        {
+          "c_type": "int8_t",
+          "elem": "i8",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 2,
+          "name": "short_window"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "long_window"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "threshold"
+        }
+      ],
+      "peek_fn": "ft_stream_rolling_variance_break_peek",
+      "reset_fn": "ft_stream_rolling_variance_break_reset",
+      "save_fn": "ft_stream_rolling_variance_break_save",
+      "update_fn": "ft_stream_rolling_variance_break_update"
+    },
+    {
+      "doc": "Streaming rolling beta of `asset` against `benchmark` over `window` bars.",
+      "free_fn": "ft_stream_rolling_beta_free",
+      "handle": "FtStreamRollingBeta",
+      "inputs": [
+        "asset",
+        "benchmark"
+      ],
+      "load_fn": "ft_stream_rolling_beta_load",
+      "name": "rolling_beta",
+      "new_fn": "ft_stream_rolling_beta_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 2,
+          "name": "window"
+        }
+      ],
+      "peek_fn": "ft_stream_rolling_beta_peek",
+      "reset_fn": "ft_stream_rolling_beta_reset",
+      "save_fn": "ft_stream_rolling_beta_save",
+      "update_fn": "ft_stream_rolling_beta_update"
+    },
+    {
+      "doc": "Streaming relative strength: cumulative product of (1 + asset return) over that of the benchmark.",
+      "free_fn": "ft_stream_relative_strength_free",
+      "handle": "FtStreamRelativeStrength",
+      "inputs": [
+        "asset_returns",
+        "benchmark_returns"
+      ],
+      "load_fn": "ft_stream_relative_strength_load",
+      "name": "relative_strength",
+      "new_fn": "ft_stream_relative_strength_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_relative_strength_peek",
+      "reset_fn": "ft_stream_relative_strength_reset",
+      "save_fn": "ft_stream_relative_strength_save",
+      "update_fn": "ft_stream_relative_strength_update"
+    },
+    {
+      "doc": "Streaming spread a - hedge * b.",
+      "free_fn": "ft_stream_spread_free",
+      "handle": "FtStreamSpread",
+      "inputs": [
+        "a",
+        "b"
+      ],
+      "load_fn": "ft_stream_spread_load",
+      "name": "spread",
+      "new_fn": "ft_stream_spread_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "hedge"
+        }
+      ],
+      "peek_fn": "ft_stream_spread_peek",
+      "reset_fn": "ft_stream_spread_reset",
+      "save_fn": "ft_stream_spread_save",
+      "update_fn": "ft_stream_spread_update"
+    },
+    {
+      "doc": "Streaming ratio a / b (NaN where b is 0).",
+      "free_fn": "ft_stream_ratio_free",
+      "handle": "FtStreamRatio",
+      "inputs": [
+        "a",
+        "b"
+      ],
+      "load_fn": "ft_stream_ratio_load",
+      "name": "ratio",
+      "new_fn": "ft_stream_ratio_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_ratio_peek",
+      "reset_fn": "ft_stream_ratio_reset",
+      "save_fn": "ft_stream_ratio_save",
+      "update_fn": "ft_stream_ratio_update"
+    },
+    {
+      "doc": "Streaming rolling z-score of `x` over `window` bars.",
+      "free_fn": "ft_stream_zscore_series_free",
+      "handle": "FtStreamZscoreSeries",
+      "inputs": [
+        "x"
+      ],
+      "load_fn": "ft_stream_zscore_series_load",
+      "name": "zscore_series",
+      "new_fn": "ft_stream_zscore_series_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 2,
+          "name": "window"
+        }
+      ],
+      "peek_fn": "ft_stream_zscore_series_peek",
+      "reset_fn": "ft_stream_zscore_series_reset",
+      "save_fn": "ft_stream_zscore_series_save",
+      "update_fn": "ft_stream_zscore_series_update"
+    },
+    {
+      "doc": "Streaming weighted contract stitching: front * (1 - w) + next * w.",
+      "free_fn": "ft_stream_weighted_continuous_free",
+      "handle": "FtStreamWeightedContinuous",
+      "inputs": [
+        "front",
+        "next",
+        "next_weights"
+      ],
+      "load_fn": "ft_stream_weighted_continuous_load",
+      "name": "weighted_continuous",
+      "new_fn": "ft_stream_weighted_continuous_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_weighted_continuous_peek",
+      "reset_fn": "ft_stream_weighted_continuous_reset",
+      "save_fn": "ft_stream_weighted_continuous_save",
+      "update_fn": "ft_stream_weighted_continuous_update"
+    },
+    {
+      "doc": "Streaming cross event between `fast` and `slow`: 1 cross-over, -1 cross-under, 0 none.",
+      "free_fn": "ft_stream_check_cross_free",
+      "handle": "FtStreamCheckCross",
+      "inputs": [
+        "fast",
+        "slow"
+      ],
+      "load_fn": "ft_stream_check_cross_load",
+      "name": "check_cross",
+      "new_fn": "ft_stream_check_cross_new",
+      "outputs": [
+        {
+          "c_type": "int8_t",
+          "elem": "i8",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_check_cross_peek",
+      "reset_fn": "ft_stream_check_cross_reset",
+      "save_fn": "ft_stream_check_cross_save",
+      "update_fn": "ft_stream_check_cross_update"
+    },
+    {
+      "doc": "Streaming cumulative funding PnL: running sum of -position_size * funding_rate.",
+      "free_fn": "ft_stream_funding_cumulative_pnl_free",
+      "handle": "FtStreamFundingCumulativePnl",
+      "inputs": [
+        "position_size",
+        "funding_rate"
+      ],
+      "load_fn": "ft_stream_funding_cumulative_pnl_load",
+      "name": "funding_cumulative_pnl",
+      "new_fn": "ft_stream_funding_cumulative_pnl_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_funding_cumulative_pnl_peek",
+      "reset_fn": "ft_stream_funding_cumulative_pnl_reset",
+      "save_fn": "ft_stream_funding_cumulative_pnl_save",
+      "update_fn": "ft_stream_funding_cumulative_pnl_update"
+    },
+    {
+      "doc": "Streaming RSI threshold signal: +1 at or below `oversold`, -1 at or above `overbought`, else 0 (NaN during warm-up).",
+      "free_fn": "ft_stream_rsi_threshold_signals_free",
+      "handle": "FtStreamRsiThresholdSignals",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_rsi_threshold_signals_load",
+      "name": "rsi_threshold_signals",
+      "new_fn": "ft_stream_rsi_threshold_signals_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "oversold"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "overbought"
+        }
+      ],
+      "peek_fn": "ft_stream_rsi_threshold_signals_peek",
+      "reset_fn": "ft_stream_rsi_threshold_signals_reset",
+      "save_fn": "ft_stream_rsi_threshold_signals_save",
+      "update_fn": "ft_stream_rsi_threshold_signals_update"
+    },
+    {
+      "doc": "Streaming Donchian channels: (upper, middle, lower) = rolling highest high, midpoint, lowest low over `timeperiod` bars.",
+      "free_fn": "ft_stream_donchian_free",
+      "handle": "FtStreamDonchian",
+      "inputs": [
+        "high",
+        "low"
+      ],
+      "load_fn": "ft_stream_donchian_load",
+      "name": "donchian",
+      "new_fn": "ft_stream_donchian_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_upper"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_middle"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_lower"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_donchian_peek",
+      "reset_fn": "ft_stream_donchian_reset",
+      "save_fn": "ft_stream_donchian_save",
+      "update_fn": "ft_stream_donchian_update"
+    },
+    {
+      "doc": "Streaming Choppiness Index over `timeperiod` bars (first value at bar `timeperiod`).",
+      "free_fn": "ft_stream_choppiness_index_free",
+      "handle": "FtStreamChoppinessIndex",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_choppiness_index_load",
+      "name": "choppiness_index",
+      "new_fn": "ft_stream_choppiness_index_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_choppiness_index_peek",
+      "reset_fn": "ft_stream_choppiness_index_reset",
+      "save_fn": "ft_stream_choppiness_index_save",
+      "update_fn": "ft_stream_choppiness_index_update"
+    },
+    {
+      "doc": "Streaming Bollinger %B: (close - lower) / (upper - lower) of SMA bands (NaN on a zero-width band).",
+      "free_fn": "ft_stream_bbpercent_free",
+      "handle": "FtStreamBbpercent",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_bbpercent_load",
+      "name": "bbpercent",
+      "new_fn": "ft_stream_bbpercent_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "nbdevup"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "nbdevdn"
+        }
+      ],
+      "peek_fn": "ft_stream_bbpercent_peek",
+      "reset_fn": "ft_stream_bbpercent_reset",
+      "save_fn": "ft_stream_bbpercent_save",
+      "update_fn": "ft_stream_bbpercent_update"
+    },
+    {
+      "doc": "Streaming Bollinger bandwidth: (upper - lower) / middle of SMA bands (NaN on a zero middle).",
+      "free_fn": "ft_stream_bbwidth_free",
+      "handle": "FtStreamBbwidth",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_bbwidth_load",
+      "name": "bbwidth",
+      "new_fn": "ft_stream_bbwidth_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "nbdevup"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "nbdevdn"
+        }
+      ],
+      "peek_fn": "ft_stream_bbwidth_peek",
+      "reset_fn": "ft_stream_bbwidth_reset",
+      "save_fn": "ft_stream_bbwidth_save",
+      "update_fn": "ft_stream_bbwidth_update"
+    },
+    {
+      "doc": "Streaming close-to-close historical volatility: population stddev of `timeperiod` log returns, annualised, in percent.",
+      "free_fn": "ft_stream_historical_volatility_free",
+      "handle": "FtStreamHistoricalVolatility",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_historical_volatility_load",
+      "name": "historical_volatility",
+      "new_fn": "ft_stream_historical_volatility_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "annual"
+        }
+      ],
+      "peek_fn": "ft_stream_historical_volatility_peek",
+      "reset_fn": "ft_stream_historical_volatility_reset",
+      "save_fn": "ft_stream_historical_volatility_save",
+      "update_fn": "ft_stream_historical_volatility_update"
+    },
+    {
+      "doc": "Streaming Ulcer Index: RMS over `timeperiod` bars of the percent drawdown from the rolling `timeperiod`-bar high (the batch running sum is mirrored, so a rounding-negative mean square is NaN as in the batch function).",
+      "free_fn": "ft_stream_ulcer_index_free",
+      "handle": "FtStreamUlcerIndex",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_ulcer_index_load",
+      "name": "ulcer_index",
+      "new_fn": "ft_stream_ulcer_index_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_ulcer_index_peek",
+      "reset_fn": "ft_stream_ulcer_index_reset",
+      "save_fn": "ft_stream_ulcer_index_save",
+      "update_fn": "ft_stream_ulcer_index_update"
+    },
+    {
+      "doc": "Streaming rolling median over `timeperiod` bars (even windows average the two central values).",
+      "free_fn": "ft_stream_median_free",
+      "handle": "FtStreamMedian",
+      "inputs": [
+        "real"
+      ],
+      "load_fn": "ft_stream_median_load",
+      "name": "median",
+      "new_fn": "ft_stream_median_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_median_peek",
+      "reset_fn": "ft_stream_median_reset",
+      "save_fn": "ft_stream_median_save",
+      "update_fn": "ft_stream_median_update"
+    },
+    {
+      "doc": "Streaming rolling mode: centre of the most populous of `bins` equal-width bins over `timeperiod` bars.",
+      "free_fn": "ft_stream_mode_free",
+      "handle": "FtStreamMode",
+      "inputs": [
+        "real"
+      ],
+      "load_fn": "ft_stream_mode_load",
+      "name": "mode",
+      "new_fn": "ft_stream_mode_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "bins"
+        }
+      ],
+      "peek_fn": "ft_stream_mode_peek",
+      "reset_fn": "ft_stream_mode_reset",
+      "save_fn": "ft_stream_mode_save",
+      "update_fn": "ft_stream_mode_update"
+    },
+    {
+      "doc": "Streaming Keltner channels: (upper, middle, lower) = EMA(close) +/- `multiplier` * ATR(`atr_period`); the middle EMA is emitted on its own once seeded.",
+      "free_fn": "ft_stream_keltner_channels_free",
+      "handle": "FtStreamKeltnerChannels",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_keltner_channels_load",
+      "name": "keltner_channels",
+      "new_fn": "ft_stream_keltner_channels_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_upper"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_middle"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_lower"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "atr_period"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "multiplier"
+        }
+      ],
+      "peek_fn": "ft_stream_keltner_channels_peek",
+      "reset_fn": "ft_stream_keltner_channels_reset",
+      "save_fn": "ft_stream_keltner_channels_save",
+      "update_fn": "ft_stream_keltner_channels_update"
+    },
+    {
+      "doc": "Streaming Chandelier exit: (highest high - `multiplier` * ATR, lowest low + `multiplier` * ATR) over `timeperiod` bars.",
+      "free_fn": "ft_stream_chandelier_exit_free",
+      "handle": "FtStreamChandelierExit",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_chandelier_exit_load",
+      "name": "chandelier_exit",
+      "new_fn": "ft_stream_chandelier_exit_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_long_exit"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_short_exit"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "multiplier"
+        }
+      ],
+      "peek_fn": "ft_stream_chandelier_exit_peek",
+      "reset_fn": "ft_stream_chandelier_exit_reset",
+      "save_fn": "ft_stream_chandelier_exit_save",
+      "update_fn": "ft_stream_chandelier_exit_update"
+    },
+    {
+      "doc": "Streaming STARC bands: (upper, middle, lower) = SMA(close) +/- `multiplier` * ATR(`atr_period`); the middle SMA is emitted on its own once full.",
+      "free_fn": "ft_stream_starc_free",
+      "handle": "FtStreamStarc",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_starc_load",
+      "name": "starc",
+      "new_fn": "ft_stream_starc_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_upper"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_middle"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_lower"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "atr_period"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "multiplier"
+        }
+      ],
+      "peek_fn": "ft_stream_starc_peek",
+      "reset_fn": "ft_stream_starc_reset",
+      "save_fn": "ft_stream_starc_save",
+      "update_fn": "ft_stream_starc_update"
+    },
+    {
+      "doc": "Streaming median bands: (median, upper, lower, median EMA) from the rolling median of (high + low) / 2, ATR envelopes and an EMA of the median.",
+      "free_fn": "ft_stream_median_bands_free",
+      "handle": "FtStreamMedianBands",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_median_bands_load",
+      "name": "median_bands",
+      "new_fn": "ft_stream_median_bands_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_median"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_upper"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_lower"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_median_ema"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "atr_period"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "multiplier"
+        }
+      ],
+      "peek_fn": "ft_stream_median_bands_peek",
+      "reset_fn": "ft_stream_median_bands_reset",
+      "save_fn": "ft_stream_median_bands_save",
+      "update_fn": "ft_stream_median_bands_update"
+    },
+    {
+      "doc": "Streaming Chande Kroll stop: rolling `stop_period` extremes of the ATR-offset `timeperiod` highest high / lowest low.",
+      "free_fn": "ft_stream_chande_kroll_stop_free",
+      "handle": "FtStreamChandeKrollStop",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_chande_kroll_stop_load",
+      "name": "chande_kroll_stop",
+      "new_fn": "ft_stream_chande_kroll_stop_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_long_stop"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_short_stop"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "multiplier"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "stop_period"
+        }
+      ],
+      "peek_fn": "ft_stream_chande_kroll_stop_peek",
+      "reset_fn": "ft_stream_chande_kroll_stop_reset",
+      "save_fn": "ft_stream_chande_kroll_stop_save",
+      "update_fn": "ft_stream_chande_kroll_stop_update"
+    },
+    {
+      "doc": "Streaming moving-average envelopes: (upper, middle, lower) = MA * (1 +/- `percent` / 100), MA of type `matype`.",
+      "free_fn": "ft_stream_ma_envelopes_free",
+      "handle": "FtStreamMaEnvelopes",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_ma_envelopes_load",
+      "name": "ma_envelopes",
+      "new_fn": "ft_stream_ma_envelopes_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_upper"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_middle"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_lower"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "percent"
+        },
+        {
+          "c_type": "int32_t",
+          "kind": "matype",
+          "max": 8,
+          "min": 0,
+          "name": "matype"
+        }
+      ],
+      "peek_fn": "ft_stream_ma_envelopes_peek",
+      "reset_fn": "ft_stream_ma_envelopes_reset",
+      "save_fn": "ft_stream_ma_envelopes_save",
+      "update_fn": "ft_stream_ma_envelopes_update"
+    },
+    {
+      "doc": "Streaming Chaikin volatility: `rocperiod`-bar percent rate of change of an EMA of the high-low range.",
+      "free_fn": "ft_stream_chaikin_vol_free",
+      "handle": "FtStreamChaikinVol",
+      "inputs": [
+        "high",
+        "low"
+      ],
+      "load_fn": "ft_stream_chaikin_vol_load",
+      "name": "chaikin_vol",
+      "new_fn": "ft_stream_chaikin_vol_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "rocperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_chaikin_vol_peek",
+      "reset_fn": "ft_stream_chaikin_vol_reset",
+      "save_fn": "ft_stream_chaikin_vol_save",
+      "update_fn": "ft_stream_chaikin_vol_update"
+    },
+    {
+      "doc": "Streaming Mass index: `sumperiod`-bar sum of EMA(range) / EMA(EMA(range)); the sum restarts after a non-finite ratio.",
+      "free_fn": "ft_stream_mass_free",
+      "handle": "FtStreamMass",
+      "inputs": [
+        "high",
+        "low"
+      ],
+      "load_fn": "ft_stream_mass_load",
+      "name": "mass",
+      "new_fn": "ft_stream_mass_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "sumperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_mass_peek",
+      "reset_fn": "ft_stream_mass_reset",
+      "save_fn": "ft_stream_mass_save",
+      "update_fn": "ft_stream_mass_update"
+    },
+    {
+      "doc": "Streaming Random Walk Index: (high, low) maxima over lookbacks 2..=`timeperiod` of the range move per ATR * sqrt(lookback).",
+      "free_fn": "ft_stream_rwi_free",
+      "handle": "FtStreamRwi",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_rwi_load",
+      "name": "rwi",
+      "new_fn": "ft_stream_rwi_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_rwi_high"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_rwi_low"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 2,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_rwi_peek",
+      "reset_fn": "ft_stream_rwi_reset",
+      "save_fn": "ft_stream_rwi_save",
+      "update_fn": "ft_stream_rwi_update"
+    },
+    {
+      "doc": "Streaming Awesome Oscillator: SMA(median price, fast) - SMA(median price, slow).",
+      "free_fn": "ft_stream_ao_free",
+      "handle": "FtStreamAo",
+      "inputs": [
+        "high",
+        "low"
+      ],
+      "load_fn": "ft_stream_ao_load",
+      "name": "ao",
+      "new_fn": "ft_stream_ao_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "fastperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "slowperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_ao_peek",
+      "reset_fn": "ft_stream_ao_reset",
+      "save_fn": "ft_stream_ao_save",
+      "update_fn": "ft_stream_ao_update"
+    },
+    {
+      "doc": "Streaming Accelerator Oscillator: AO - SMA(AO, `timeperiod`).",
+      "free_fn": "ft_stream_ac_free",
+      "handle": "FtStreamAc",
+      "inputs": [
+        "high",
+        "low"
+      ],
+      "load_fn": "ft_stream_ac_load",
+      "name": "ac",
+      "new_fn": "ft_stream_ac_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "fastperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "slowperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_ac_peek",
+      "reset_fn": "ft_stream_ac_reset",
+      "save_fn": "ft_stream_ac_save",
+      "update_fn": "ft_stream_ac_update"
+    },
+    {
+      "doc": "Streaming price oscillator: SMA(close, fast) - SMA(close, slow).",
+      "free_fn": "ft_stream_po_free",
+      "handle": "FtStreamPo",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_po_load",
+      "name": "po",
+      "new_fn": "ft_stream_po_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "fastperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "slowperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_po_peek",
+      "reset_fn": "ft_stream_po_reset",
+      "save_fn": "ft_stream_po_save",
+      "update_fn": "ft_stream_po_update"
+    },
+    {
+      "doc": "Streaming detrended price oscillator: close `timeperiod / 2 + 1` bars ago minus SMA(close, `timeperiod`).",
+      "free_fn": "ft_stream_dpo_free",
+      "handle": "FtStreamDpo",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_dpo_load",
+      "name": "dpo",
+      "new_fn": "ft_stream_dpo_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_dpo_peek",
+      "reset_fn": "ft_stream_dpo_reset",
+      "save_fn": "ft_stream_dpo_save",
+      "update_fn": "ft_stream_dpo_update"
+    },
+    {
+      "doc": "Streaming Relative Vigor Index and its 4-bar weighted signal (the batch running window sums are mirrored, so a flat window's zero denominator matches the batch function).",
+      "free_fn": "ft_stream_rvi_free",
+      "handle": "FtStreamRvi",
+      "inputs": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_rvi_load",
+      "name": "rvi",
+      "new_fn": "ft_stream_rvi_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_rvi"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_signal"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_rvi_peek",
+      "reset_fn": "ft_stream_rvi_reset",
+      "save_fn": "ft_stream_rvi_save",
+      "update_fn": "ft_stream_rvi_update"
+    },
+    {
+      "doc": "Streaming Know Sure Thing: weighted sum of four SMA-smoothed ROCs, plus an SMA signal.",
+      "free_fn": "ft_stream_kst_free",
+      "handle": "FtStreamKst",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_kst_load",
+      "name": "kst",
+      "new_fn": "ft_stream_kst_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_kst"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_signal"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "roc1"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "roc2"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "roc3"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "roc4"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "sma1"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "sma2"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "sma3"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "sma4"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "signalperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_kst_peek",
+      "reset_fn": "ft_stream_kst_reset",
+      "save_fn": "ft_stream_kst_save",
+      "update_fn": "ft_stream_kst_update"
+    },
+    {
+      "doc": "Streaming Vortex indicator: (+VI, -VI) over `timeperiod` bars; a non-finite true range counts as 0.",
+      "free_fn": "ft_stream_vortex_free",
+      "handle": "FtStreamVortex",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_vortex_load",
+      "name": "vortex",
+      "new_fn": "ft_stream_vortex_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_plus_vi"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_minus_vi"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_vortex_peek",
+      "reset_fn": "ft_stream_vortex_reset",
+      "save_fn": "ft_stream_vortex_save",
+      "update_fn": "ft_stream_vortex_update"
+    },
+    {
+      "doc": "Streaming Coppock curve: WMA(ROC(`roc1`) + ROC(`roc2`), `wma_period`).",
+      "free_fn": "ft_stream_coppock_free",
+      "handle": "FtStreamCoppock",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_coppock_load",
+      "name": "coppock",
+      "new_fn": "ft_stream_coppock_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "wma_period"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "roc1"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "roc2"
+        }
+      ],
+      "peek_fn": "ft_stream_coppock_peek",
+      "reset_fn": "ft_stream_coppock_reset",
+      "save_fn": "ft_stream_coppock_save",
+      "update_fn": "ft_stream_coppock_update"
+    },
+    {
+      "doc": "Streaming directional movement index: (+DI, -DI, ADX) from one Wilder state.",
+      "free_fn": "ft_stream_dmi_free",
+      "handle": "FtStreamDmi",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_dmi_load",
+      "name": "dmi",
+      "new_fn": "ft_stream_dmi_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_plus_di"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_minus_di"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_adx"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_dmi_peek",
+      "reset_fn": "ft_stream_dmi_reset",
+      "save_fn": "ft_stream_dmi_save",
+      "update_fn": "ft_stream_dmi_update"
+    },
+    {
+      "doc": "Streaming Elder Ray: (bull, bear) = (high - EMA(close), low - EMA(close)).",
+      "free_fn": "ft_stream_elder_ray_free",
+      "handle": "FtStreamElderRay",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_elder_ray_load",
+      "name": "elder_ray",
+      "new_fn": "ft_stream_elder_ray_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_bull"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_bear"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_elder_ray_peek",
+      "reset_fn": "ft_stream_elder_ray_reset",
+      "save_fn": "ft_stream_elder_ray_save",
+      "update_fn": "ft_stream_elder_ray_update"
+    },
+    {
+      "doc": "Streaming Ehlers Fisher transform of the median price over `timeperiod` bars, plus the previous value as signal.",
+      "free_fn": "ft_stream_fisher_free",
+      "handle": "FtStreamFisher",
+      "inputs": [
+        "high",
+        "low"
+      ],
+      "load_fn": "ft_stream_fisher_load",
+      "name": "fisher",
+      "new_fn": "ft_stream_fisher_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_fisher"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_signal"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_fisher_peek",
+      "reset_fn": "ft_stream_fisher_reset",
+      "save_fn": "ft_stream_fisher_save",
+      "update_fn": "ft_stream_fisher_update"
+    },
+    {
+      "doc": "Streaming Connors RSI: mean of RSI(close), RSI(up/down streak) and the percent rank of the 1-bar ROC.",
+      "free_fn": "ft_stream_crsi_free",
+      "handle": "FtStreamCrsi",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_crsi_load",
+      "name": "crsi",
+      "new_fn": "ft_stream_crsi_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "streakperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "rankperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_crsi_peek",
+      "reset_fn": "ft_stream_crsi_reset",
+      "save_fn": "ft_stream_crsi_save",
+      "update_fn": "ft_stream_crsi_update"
+    },
+    {
+      "doc": "Streaming True Strength Index: 100 * double-EMA(momentum) / double-EMA(abs(momentum)), plus an EMA signal.",
+      "free_fn": "ft_stream_tsi_free",
+      "handle": "FtStreamTsi",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_tsi_load",
+      "name": "tsi",
+      "new_fn": "ft_stream_tsi_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_tsi"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_signal"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "longperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "shortperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "signalperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_tsi_peek",
+      "reset_fn": "ft_stream_tsi_reset",
+      "save_fn": "ft_stream_tsi_save",
+      "update_fn": "ft_stream_tsi_update"
+    },
+    {
+      "doc": "Streaming Schaff Trend Cycle: stochastic of the EMA MACD, EMA-smoothed, stochastic again, EMA-smoothed, clamped to [0, 100].",
+      "free_fn": "ft_stream_stc_free",
+      "handle": "FtStreamStc",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_stc_load",
+      "name": "stc",
+      "new_fn": "ft_stream_stc_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "fastperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "slowperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "cycleperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "d1"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "d2"
+        }
+      ],
+      "peek_fn": "ft_stream_stc_peek",
+      "reset_fn": "ft_stream_stc_reset",
+      "save_fn": "ft_stream_stc_save",
+      "update_fn": "ft_stream_stc_update"
+    },
+    {
+      "doc": "Streaming Hull moving average: WMA(2 * WMA(n/2) - WMA(n), sqrt(n)).",
+      "free_fn": "ft_stream_hull_ma_free",
+      "handle": "FtStreamHullMa",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_hull_ma_load",
+      "name": "hull_ma",
+      "new_fn": "ft_stream_hull_ma_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_hull_ma_peek",
+      "reset_fn": "ft_stream_hull_ma_reset",
+      "save_fn": "ft_stream_hull_ma_save",
+      "update_fn": "ft_stream_hull_ma_update"
+    },
+    {
+      "doc": "Streaming Arnaud Legoux moving average: Gaussian-weighted mean of the last `timeperiod` closes.",
+      "free_fn": "ft_stream_alma_free",
+      "handle": "FtStreamAlma",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_alma_load",
+      "name": "alma",
+      "new_fn": "ft_stream_alma_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "offset"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "sigma"
+        }
+      ],
+      "peek_fn": "ft_stream_alma_peek",
+      "reset_fn": "ft_stream_alma_reset",
+      "save_fn": "ft_stream_alma_save",
+      "update_fn": "ft_stream_alma_update"
+    },
+    {
+      "doc": "Streaming Bill Williams Alligator: (jaw, teeth, lips) SMMAs of the median price, each shifted forward by its shift.",
+      "free_fn": "ft_stream_alligator_free",
+      "handle": "FtStreamAlligator",
+      "inputs": [
+        "high",
+        "low"
+      ],
+      "load_fn": "ft_stream_alligator_load",
+      "name": "alligator",
+      "new_fn": "ft_stream_alligator_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_jaw"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_teeth"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_lips"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "jaw_period"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "count",
+          "min": 0,
+          "name": "jaw_shift"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "teeth_period"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "count",
+          "min": 0,
+          "name": "teeth_shift"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "lips_period"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "count",
+          "min": 0,
+          "name": "lips_shift"
+        }
+      ],
+      "peek_fn": "ft_stream_alligator_peek",
+      "reset_fn": "ft_stream_alligator_reset",
+      "save_fn": "ft_stream_alligator_save",
+      "update_fn": "ft_stream_alligator_update"
+    },
+    {
+      "doc": "Streaming Gator oscillator: (abs(jaw - teeth), -abs(teeth - lips)) of the Alligator lines.",
+      "free_fn": "ft_stream_gator_free",
+      "handle": "FtStreamGator",
+      "inputs": [
+        "high",
+        "low"
+      ],
+      "load_fn": "ft_stream_gator_load",
+      "name": "gator",
+      "new_fn": "ft_stream_gator_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_upper"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_lower"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "jaw_period"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "count",
+          "min": 0,
+          "name": "jaw_shift"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "teeth_period"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "count",
+          "min": 0,
+          "name": "teeth_shift"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "lips_period"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "count",
+          "min": 0,
+          "name": "lips_shift"
+        }
+      ],
+      "peek_fn": "ft_stream_gator_peek",
+      "reset_fn": "ft_stream_gator_reset",
+      "save_fn": "ft_stream_gator_save",
+      "update_fn": "ft_stream_gator_update"
+    },
+    {
+      "doc": "Streaming zero-lag EMA: EMA of close + (close - close `(timeperiod - 1) / 2` bars ago), seeded on the first full finite window.",
+      "free_fn": "ft_stream_zlema_free",
+      "handle": "FtStreamZlema",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_zlema_load",
+      "name": "zlema",
+      "new_fn": "ft_stream_zlema_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_zlema_peek",
+      "reset_fn": "ft_stream_zlema_reset",
+      "save_fn": "ft_stream_zlema_save",
+      "update_fn": "ft_stream_zlema_update"
+    },
+    {
+      "doc": "Streaming Ehlers fractal adaptive moving average, seeded with the close at bar `timeperiod - 1`.",
+      "free_fn": "ft_stream_frama_free",
+      "handle": "FtStreamFrama",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_frama_load",
+      "name": "frama",
+      "new_fn": "ft_stream_frama_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 2,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_frama_peek",
+      "reset_fn": "ft_stream_frama_reset",
+      "save_fn": "ft_stream_frama_save",
+      "update_fn": "ft_stream_frama_update"
+    },
+    {
+      "doc": "Streaming McGinley dynamic, seeded with the SMA of the first `timeperiod` closes.",
+      "free_fn": "ft_stream_mcginley_free",
+      "handle": "FtStreamMcginley",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_mcginley_load",
+      "name": "mcginley",
+      "new_fn": "ft_stream_mcginley_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_mcginley_peek",
+      "reset_fn": "ft_stream_mcginley_reset",
+      "save_fn": "ft_stream_mcginley_save",
+      "update_fn": "ft_stream_mcginley_update"
+    },
+    {
+      "doc": "Streaming Chande VIDYA: an EMA whose factor is scaled by abs(CMO(`cmo_period`)) / 100, seeded with the close on the first CMO bar.",
+      "free_fn": "ft_stream_vidya_free",
+      "handle": "FtStreamVidya",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_vidya_load",
+      "name": "vidya",
+      "new_fn": "ft_stream_vidya_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "cmo_period"
+        }
+      ],
+      "peek_fn": "ft_stream_vidya_peek",
+      "reset_fn": "ft_stream_vidya_reset",
+      "save_fn": "ft_stream_vidya_save",
+      "update_fn": "ft_stream_vidya_update"
+    },
+    {
+      "doc": "Streaming Ichimoku cloud: (tenkan, kijun, senkou_a, senkou_b); the senkou spans are the values computed `displacement` bars ago. Chikou (close `displacement` bars ahead) needs future bars and is not streamed.",
+      "free_fn": "ft_stream_ichimoku_free",
+      "handle": "FtStreamIchimoku",
+      "inputs": [
+        "high",
+        "low",
+        "close"
+      ],
+      "load_fn": "ft_stream_ichimoku_load",
+      "name": "ichimoku",
+      "new_fn": "ft_stream_ichimoku_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_tenkan"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_kijun"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_senkou_a"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_senkou_b"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "tenkan_period"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "kijun_period"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "senkou_b_period"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "count",
+          "min": 0,
+          "name": "displacement"
+        }
+      ],
+      "peek_fn": "ft_stream_ichimoku_peek",
+      "reset_fn": "ft_stream_ichimoku_reset",
+      "save_fn": "ft_stream_ichimoku_save",
+      "update_fn": "ft_stream_ichimoku_update"
+    },
+    {
+      "doc": "Streaming Chaikin money flow: `timeperiod`-bar sum of CLV * volume over the volume sum. Mirrors the batch zero-exact running volume sums, so an all-zero-volume window is NaN exactly as in the batch function.",
+      "free_fn": "ft_stream_cmf_free",
+      "handle": "FtStreamCmf",
+      "inputs": [
+        "high",
+        "low",
+        "close",
+        "volume"
+      ],
+      "load_fn": "ft_stream_cmf_load",
+      "name": "cmf",
+      "new_fn": "ft_stream_cmf_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_cmf_peek",
+      "reset_fn": "ft_stream_cmf_reset",
+      "save_fn": "ft_stream_cmf_save",
+      "update_fn": "ft_stream_cmf_update"
+    },
+    {
+      "doc": "Streaming ease of movement: SMA over `timeperiod` bars of midpoint move * range * `scale` / volume (raw when `timeperiod` is 1).",
+      "free_fn": "ft_stream_emv_free",
+      "handle": "FtStreamEmv",
+      "inputs": [
+        "high",
+        "low",
+        "volume"
+      ],
+      "load_fn": "ft_stream_emv_load",
+      "name": "emv",
+      "new_fn": "ft_stream_emv_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "scale"
+        }
+      ],
+      "peek_fn": "ft_stream_emv_peek",
+      "reset_fn": "ft_stream_emv_reset",
+      "save_fn": "ft_stream_emv_save",
+      "update_fn": "ft_stream_emv_update"
+    },
+    {
+      "doc": "Streaming volume oscillator: 100 * (SMA(volume, fast) - SMA(volume, slow)) / SMA(volume, slow). Mirrors the batch zero-exact running volume sums, so an all-zero-volume window is NaN exactly as in the batch function.",
+      "free_fn": "ft_stream_volosc_free",
+      "handle": "FtStreamVolosc",
+      "inputs": [
+        "volume"
+      ],
+      "load_fn": "ft_stream_volosc_load",
+      "name": "volosc",
+      "new_fn": "ft_stream_volosc_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "fastperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "slowperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_volosc_peek",
+      "reset_fn": "ft_stream_volosc_reset",
+      "save_fn": "ft_stream_volosc_save",
+      "update_fn": "ft_stream_volosc_update"
+    },
+    {
+      "doc": "Streaming volume rate of change over `timeperiod` bars, in percent.",
+      "free_fn": "ft_stream_vroc_free",
+      "handle": "FtStreamVroc",
+      "inputs": [
+        "volume"
+      ],
+      "load_fn": "ft_stream_vroc_load",
+      "name": "vroc",
+      "new_fn": "ft_stream_vroc_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_vroc_peek",
+      "reset_fn": "ft_stream_vroc_reset",
+      "save_fn": "ft_stream_vroc_save",
+      "update_fn": "ft_stream_vroc_update"
+    },
+    {
+      "doc": "Streaming relative volume: volume / SMA(volume, `timeperiod`). Mirrors the batch zero-exact running volume sums, so an all-zero-volume window is NaN exactly as in the batch function.",
+      "free_fn": "ft_stream_rvol_free",
+      "handle": "FtStreamRvol",
+      "inputs": [
+        "volume"
+      ],
+      "load_fn": "ft_stream_rvol_load",
+      "name": "rvol",
+      "new_fn": "ft_stream_rvol_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_rvol_peek",
+      "reset_fn": "ft_stream_rvol_reset",
+      "save_fn": "ft_stream_rvol_save",
+      "update_fn": "ft_stream_rvol_update"
+    },
+    {
+      "doc": "Streaming volume-weighted moving average over `timeperiod` bars.",
+      "free_fn": "ft_stream_vwma_free",
+      "handle": "FtStreamVwma",
+      "inputs": [
+        "close",
+        "volume"
+      ],
+      "load_fn": "ft_stream_vwma_load",
+      "name": "vwma",
+      "new_fn": "ft_stream_vwma_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_vwma_peek",
+      "reset_fn": "ft_stream_vwma_reset",
+      "save_fn": "ft_stream_vwma_save",
+      "update_fn": "ft_stream_vwma_update"
+    },
+    {
+      "doc": "Streaming Chaikin oscillator: fast EMA - slow EMA of the A/D line, both seeded from its first value (same as ADOSC).",
+      "free_fn": "ft_stream_cho_free",
+      "handle": "FtStreamCho",
+      "inputs": [
+        "high",
+        "low",
+        "close",
+        "volume"
+      ],
+      "load_fn": "ft_stream_cho_load",
+      "name": "cho",
+      "new_fn": "ft_stream_cho_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "fastperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "slowperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_cho_peek",
+      "reset_fn": "ft_stream_cho_reset",
+      "save_fn": "ft_stream_cho_save",
+      "update_fn": "ft_stream_cho_update"
+    },
+    {
+      "doc": "Streaming on-balance volume smoothed by a moving average of type `matype`.",
+      "free_fn": "ft_stream_obv_smoothed_free",
+      "handle": "FtStreamObvSmoothed",
+      "inputs": [
+        "close",
+        "volume"
+      ],
+      "load_fn": "ft_stream_obv_smoothed_load",
+      "name": "obv_smoothed",
+      "new_fn": "ft_stream_obv_smoothed_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "int32_t",
+          "kind": "matype",
+          "max": 8,
+          "min": 0,
+          "name": "matype"
+        }
+      ],
+      "peek_fn": "ft_stream_obv_smoothed_peek",
+      "reset_fn": "ft_stream_obv_smoothed_reset",
+      "save_fn": "ft_stream_obv_smoothed_save",
+      "update_fn": "ft_stream_obv_smoothed_update"
+    },
+    {
+      "doc": "Streaming force index: EMA of (close - previous close) * volume (raw when `timeperiod` is 1).",
+      "free_fn": "ft_stream_force_index_free",
+      "handle": "FtStreamForceIndex",
+      "inputs": [
+        "close",
+        "volume"
+      ],
+      "load_fn": "ft_stream_force_index_load",
+      "name": "force_index",
+      "new_fn": "ft_stream_force_index_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_force_index_peek",
+      "reset_fn": "ft_stream_force_index_reset",
+      "save_fn": "ft_stream_force_index_save",
+      "update_fn": "ft_stream_force_index_update"
+    },
+    {
+      "doc": "Streaming negative volume index from 1000: moves with the close only on bars whose volume falls.",
+      "free_fn": "ft_stream_nvi_free",
+      "handle": "FtStreamNvi",
+      "inputs": [
+        "close",
+        "volume"
+      ],
+      "load_fn": "ft_stream_nvi_load",
+      "name": "nvi",
+      "new_fn": "ft_stream_nvi_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_nvi_peek",
+      "reset_fn": "ft_stream_nvi_reset",
+      "save_fn": "ft_stream_nvi_save",
+      "update_fn": "ft_stream_nvi_update"
+    },
+    {
+      "doc": "Streaming positive volume index from 1000: moves with the close only on bars whose volume rises.",
+      "free_fn": "ft_stream_pvi_free",
+      "handle": "FtStreamPvi",
+      "inputs": [
+        "close",
+        "volume"
+      ],
+      "load_fn": "ft_stream_pvi_load",
+      "name": "pvi",
+      "new_fn": "ft_stream_pvi_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_pvi_peek",
+      "reset_fn": "ft_stream_pvi_reset",
+      "save_fn": "ft_stream_pvi_save",
+      "update_fn": "ft_stream_pvi_update"
+    },
+    {
+      "doc": "Streaming negative volume index and an EMA signal of it.",
+      "free_fn": "ft_stream_nvi_with_ema_free",
+      "handle": "FtStreamNviWithEma",
+      "inputs": [
+        "close",
+        "volume"
+      ],
+      "load_fn": "ft_stream_nvi_with_ema_load",
+      "name": "nvi_with_ema",
+      "new_fn": "ft_stream_nvi_with_ema_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_nvi"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_signal"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_nvi_with_ema_peek",
+      "reset_fn": "ft_stream_nvi_with_ema_reset",
+      "save_fn": "ft_stream_nvi_with_ema_save",
+      "update_fn": "ft_stream_nvi_with_ema_update"
+    },
+    {
+      "doc": "Streaming positive volume index and a moving-average signal of type `matype`.",
+      "free_fn": "ft_stream_pvi_with_signal_free",
+      "handle": "FtStreamPviWithSignal",
+      "inputs": [
+        "close",
+        "volume"
+      ],
+      "load_fn": "ft_stream_pvi_with_signal_load",
+      "name": "pvi_with_signal",
+      "new_fn": "ft_stream_pvi_with_signal_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_pvi"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_signal"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "timeperiod"
+        },
+        {
+          "c_type": "int32_t",
+          "kind": "matype",
+          "max": 8,
+          "min": 0,
+          "name": "matype"
+        }
+      ],
+      "peek_fn": "ft_stream_pvi_with_signal_peek",
+      "reset_fn": "ft_stream_pvi_with_signal_reset",
+      "save_fn": "ft_stream_pvi_with_signal_save",
+      "update_fn": "ft_stream_pvi_with_signal_update"
+    },
+    {
+      "doc": "Streaming Klinger volume oscillator: EMA(volume force, fast) - EMA(volume force, slow), plus an EMA signal.",
+      "free_fn": "ft_stream_kvo_free",
+      "handle": "FtStreamKvo",
+      "inputs": [
+        "high",
+        "low",
+        "close",
+        "volume"
+      ],
+      "load_fn": "ft_stream_kvo_load",
+      "name": "kvo",
+      "new_fn": "ft_stream_kvo_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_kvo"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_signal"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "fastperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "slowperiod"
+        },
+        {
+          "c_type": "int64_t",
+          "kind": "period",
+          "min": 1,
+          "name": "signalperiod"
+        }
+      ],
+      "peek_fn": "ft_stream_kvo_peek",
+      "reset_fn": "ft_stream_kvo_reset",
+      "save_fn": "ft_stream_kvo_save",
+      "update_fn": "ft_stream_kvo_update"
+    },
+    {
+      "doc": "Streaming price volume trend: cumulative volume * (close - previous close) / previous close, from 0.",
+      "free_fn": "ft_stream_pvt_free",
+      "handle": "FtStreamPvt",
+      "inputs": [
+        "close",
+        "volume"
+      ],
+      "load_fn": "ft_stream_pvt_load",
+      "name": "pvt",
+      "new_fn": "ft_stream_pvt_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_pvt_peek",
+      "reset_fn": "ft_stream_pvt_reset",
+      "save_fn": "ft_stream_pvt_save",
+      "update_fn": "ft_stream_pvt_update"
+    },
+    {
+      "doc": "Streaming parabolic SAR; first value at bar 1, initial direction rising when `high[1] >= high[0]`.",
+      "free_fn": "ft_stream_sar_free",
+      "handle": "FtStreamSar",
+      "inputs": [
+        "high",
+        "low"
+      ],
+      "load_fn": "ft_stream_sar_load",
+      "name": "sar",
+      "new_fn": "ft_stream_sar_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "acceleration"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "maximum"
+        }
+      ],
+      "peek_fn": "ft_stream_sar_peek",
+      "reset_fn": "ft_stream_sar_reset",
+      "save_fn": "ft_stream_sar_save",
+      "update_fn": "ft_stream_sar_update"
+    },
+    {
+      "doc": "Streaming extended parabolic SAR: signed start value, offset on reverse, separate long / short acceleration; first value at bar 1.",
+      "free_fn": "ft_stream_sarext_free",
+      "handle": "FtStreamSarext",
+      "inputs": [
+        "high",
+        "low"
+      ],
+      "load_fn": "ft_stream_sarext_load",
+      "name": "sarext",
+      "new_fn": "ft_stream_sarext_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "startvalue"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "offsetonreverse"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "accelerationinitlong"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "accelerationlong"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "accelerationmaxlong"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "accelerationinitshort"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "accelerationshort"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "accelerationmaxshort"
+        }
+      ],
+      "peek_fn": "ft_stream_sarext_peek",
+      "reset_fn": "ft_stream_sarext_reset",
+      "save_fn": "ft_stream_sarext_save",
+      "update_fn": "ft_stream_sarext_update"
+    },
+    {
+      "doc": "Streaming Hilbert-transform instantaneous trendline: mean of the 4-bar smoothed price over the rounded dominant cycle period; first value at bar 63.",
+      "free_fn": "ft_stream_ht_trendline_free",
+      "handle": "FtStreamHtTrendline",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_ht_trendline_load",
+      "name": "ht_trendline",
+      "new_fn": "ft_stream_ht_trendline_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_ht_trendline_peek",
+      "reset_fn": "ft_stream_ht_trendline_reset",
+      "save_fn": "ft_stream_ht_trendline_save",
+      "update_fn": "ft_stream_ht_trendline_update"
+    },
+    {
+      "doc": "Streaming Hilbert-transform dominant cycle period in bars; first value at bar 63.",
+      "free_fn": "ft_stream_ht_dcperiod_free",
+      "handle": "FtStreamHtDcperiod",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_ht_dcperiod_load",
+      "name": "ht_dcperiod",
+      "new_fn": "ft_stream_ht_dcperiod_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_ht_dcperiod_peek",
+      "reset_fn": "ft_stream_ht_dcperiod_reset",
+      "save_fn": "ft_stream_ht_dcperiod_save",
+      "update_fn": "ft_stream_ht_dcperiod_update"
+    },
+    {
+      "doc": "Streaming Hilbert-transform dominant cycle phase in degrees; first value at bar 63.",
+      "free_fn": "ft_stream_ht_dcphase_free",
+      "handle": "FtStreamHtDcphase",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_ht_dcphase_load",
+      "name": "ht_dcphase",
+      "new_fn": "ft_stream_ht_dcphase_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_ht_dcphase_peek",
+      "reset_fn": "ft_stream_ht_dcphase_reset",
+      "save_fn": "ft_stream_ht_dcphase_save",
+      "update_fn": "ft_stream_ht_dcphase_update"
+    },
+    {
+      "doc": "Streaming Hilbert-transform phasor components (inphase, quadrature); first value at bar 63.",
+      "free_fn": "ft_stream_ht_phasor_free",
+      "handle": "FtStreamHtPhasor",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_ht_phasor_load",
+      "name": "ht_phasor",
+      "new_fn": "ft_stream_ht_phasor_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_inphase"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_quadrature"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_ht_phasor_peek",
+      "reset_fn": "ft_stream_ht_phasor_reset",
+      "save_fn": "ft_stream_ht_phasor_save",
+      "update_fn": "ft_stream_ht_phasor_update"
+    },
+    {
+      "doc": "Streaming Hilbert-transform sine wave (sine, leadsine = sine 45 degrees ahead); first value at bar 63.",
+      "free_fn": "ft_stream_ht_sine_free",
+      "handle": "FtStreamHtSine",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_ht_sine_load",
+      "name": "ht_sine",
+      "new_fn": "ft_stream_ht_sine_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_sine"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_leadsine"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_ht_sine_peek",
+      "reset_fn": "ft_stream_ht_sine_reset",
+      "save_fn": "ft_stream_ht_sine_save",
+      "update_fn": "ft_stream_ht_sine_update"
+    },
+    {
+      "doc": "Streaming Hilbert-transform trend mode: 1 while the smoothed dominant cycle period is below 20 bars, else 0; 0 before bar 63.",
+      "free_fn": "ft_stream_ht_trendmode_free",
+      "handle": "FtStreamHtTrendmode",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_ht_trendmode_load",
+      "name": "ht_trendmode",
+      "new_fn": "ft_stream_ht_trendmode_new",
+      "outputs": [
+        {
+          "c_type": "int32_t",
+          "elem": "i32",
+          "name": "out"
+        }
+      ],
+      "params": [],
+      "peek_fn": "ft_stream_ht_trendmode_peek",
+      "reset_fn": "ft_stream_ht_trendmode_reset",
+      "save_fn": "ft_stream_ht_trendmode_save",
+      "update_fn": "ft_stream_ht_trendmode_update"
+    },
+    {
+      "doc": "Streaming MESA adaptive moving average (mama, fama); first value at bar 32. Requires `slowlimit <= fastlimit`.",
+      "free_fn": "ft_stream_mama_free",
+      "handle": "FtStreamMama",
+      "inputs": [
+        "close"
+      ],
+      "load_fn": "ft_stream_mama_load",
+      "name": "mama",
+      "new_fn": "ft_stream_mama_new",
+      "outputs": [
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_mama"
+        },
+        {
+          "c_type": "double",
+          "elem": "f64",
+          "name": "out_fama"
+        }
+      ],
+      "params": [
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "fastlimit"
+        },
+        {
+          "c_type": "double",
+          "kind": "float",
+          "name": "slowlimit"
+        }
+      ],
+      "peek_fn": "ft_stream_mama_peek",
+      "reset_fn": "ft_stream_mama_reset",
+      "save_fn": "ft_stream_mama_save",
+      "update_fn": "ft_stream_mama_update"
     }
   ],
   "version": "1.5.1"

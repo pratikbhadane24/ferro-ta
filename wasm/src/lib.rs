@@ -2565,8 +2565,10 @@ pub fn dtw_distance(series1: &Float64Array, series2: &Float64Array, window: usiz
 // Streaming / Stateful API
 // ===========================================================================
 
-/// Converts a core streaming output into its JS return value.
-trait IntoJsOutput {
+/// Converts a core streaming output into its JS return value. Public only
+/// because generated classes name `IntoJsOutput::Js` in their signatures.
+#[doc(hidden)]
+pub trait IntoJsOutput {
     type Js;
     fn into_js(self) -> Self::Js;
 }
@@ -2585,6 +2587,22 @@ impl IntoJsOutput for i8 {
     }
 }
 
+/// Pattern / mode codes, as the batch exports' `Int32Array` elements.
+impl IntoJsOutput for i32 {
+    type Js = i32;
+    fn into_js(self) -> i32 {
+        self
+    }
+}
+
+/// Bar indices, as the batch exports' `Float64Array` elements (`-1` in warm-up).
+impl IntoJsOutput for i64 {
+    type Js = f64;
+    fn into_js(self) -> f64 {
+        self as f64
+    }
+}
+
 impl IntoJsOutput for (f64, f64) {
     type Js = Array;
     fn into_js(self) -> Array {
@@ -2599,6 +2617,18 @@ impl IntoJsOutput for (f64, f64, f64) {
             &JsValue::from_f64(self.0),
             &JsValue::from_f64(self.1),
             &JsValue::from_f64(self.2),
+        )
+    }
+}
+
+impl IntoJsOutput for (f64, f64, f64, f64) {
+    type Js = Array;
+    fn into_js(self) -> Array {
+        Array::of4(
+            &JsValue::from_f64(self.0),
+            &JsValue::from_f64(self.1),
+            &JsValue::from_f64(self.2),
+            &JsValue::from_f64(self.3),
         )
     }
 }
@@ -4631,6 +4661,73 @@ pub fn strategy_value_grid(
     ))
 }
 
+/// `Wasm<Type>` class per registry entry (`ferro_ta_core::for_each_stream!`),
+/// with the same surface as `wasm_streaming_class!`: params are positional
+/// constructor arguments (no defaults in JS) and getters.
+macro_rules! wasm_stream_gen {
+    ($(
+        $name:ident => $Ty:ident, doc $doc:literal,
+            params($($p:ident: $kind:ident $(($min:literal))? = $default:tt),* $(,)?),
+            inputs($($i:ident),+ $(,)?),
+            outputs($($o:ident: $elem:ident),+ $(,)?),
+            $imp:ident($($body:tt)*);
+    )*) => {
+        $(
+            pastey::paste! {
+                #[doc = $doc]
+                #[wasm_bindgen]
+                pub struct [<Wasm $Ty>] {
+                    inner: ferro_ta_core::streaming::Live<ferro_ta_core::streaming::$Ty>,
+                }
+
+                #[wasm_bindgen]
+                impl [<Wasm $Ty>] {
+                    #[wasm_bindgen(constructor)]
+                    pub fn new($($p: ferro_ta_core::__stream_param_ty!($kind)),*) -> Result<[<Wasm $Ty>], JsError> {
+                        let indicator = ferro_ta_core::streaming::$Ty::new($($p),*)
+                            .map_err(|e| JsError::new(&e.0))?;
+                        Ok(Self { inner: ferro_ta_core::streaming::Live::new(indicator) })
+                    }
+                    /// Commit one bar and return its value(s) (NaN during warm-up).
+                    pub fn update(&mut self, $($i: f64),+) -> <<ferro_ta_core::streaming::$Ty as ferro_ta_core::streaming::StreamingIndicator>::Output as IntoJsOutput>::Js {
+                        self.inner.update(($($i),+), true).into_js()
+                    }
+                    /// Preview the still-forming bar without changing state.
+                    pub fn peek(&mut self, $($i: f64),+) -> <<ferro_ta_core::streaming::$Ty as ferro_ta_core::streaming::StreamingIndicator>::Output as IntoJsOutput>::Js {
+                        self.inner.update(($($i),+), false).into_js()
+                    }
+                    pub fn reset(&mut self) { self.inner.reset(); }
+                    /// Versioned JSON snapshot of the full state.
+                    #[cfg(feature = "snapshot")]
+                    #[wasm_bindgen(js_name = saveState)]
+                    pub fn save_state(&self) -> Result<String, JsError> {
+                        self.inner.save().map_err(|e| JsError::new(&e.0))
+                    }
+                    /// Restore a snapshot made by `saveState` of this same class.
+                    #[cfg(feature = "snapshot")]
+                    #[wasm_bindgen(js_name = loadState)]
+                    pub fn load_state(json: &str) -> Result<[<Wasm $Ty>], JsError> {
+                        let inner = ferro_ta_core::streaming::Live::load(json).map_err(|e| JsError::new(&e.0))?;
+                        Ok(Self { inner })
+                    }
+                    /// Number of committed bars.
+                    #[wasm_bindgen(getter)]
+                    pub fn count(&self) -> usize { self.inner.count() }
+                    /// True once the last committed bar produced a value.
+                    #[wasm_bindgen(getter, js_name = isReady)]
+                    pub fn is_ready(&self) -> bool { self.inner.is_ready() }
+                    $(
+                        #[wasm_bindgen(getter)]
+                        pub fn $p(&self) -> ferro_ta_core::__stream_param_ty!($kind) { self.inner.inner().$p() }
+                    )*
+                }
+            }
+        )*
+    };
+}
+
+ferro_ta_core::for_each_stream!(wasm_stream_gen);
+
 // ---------------------------------------------------------------------------
 // WASM tests (run with `wasm-pack test --node`)
 // ---------------------------------------------------------------------------
@@ -4650,6 +4747,24 @@ mod tests {
         let mut v = vec![0.0f64; arr.length() as usize];
         arr.copy_to(&mut v);
         v.into_iter().filter(|x| x.is_finite()).collect()
+    }
+
+    // -----------------------------------------------------------------------
+    // MAMA: inverted limits must not trap
+    // -----------------------------------------------------------------------
+
+    /// `slowlimit > fastlimit` used to panic in the core clamp past bar 32
+    /// (a WASM trap); it now returns all-NaN like any invalid parameter.
+    #[wasm_bindgen_test]
+    fn test_mama_inverted_limits_return_nan() {
+        let v: Vec<f64> = (0..64).map(|i| 100.0 + (i as f64 * 0.3).sin()).collect();
+        let out = mama(&make_arr(&v), 0.05, 0.5);
+        assert_eq!(out.length(), 2);
+        for k in 0..2 {
+            let arr: Float64Array = out.get(k).into();
+            assert_eq!(arr.length(), 64);
+            assert!(get_finite(&arr).is_empty());
+        }
     }
 
     // -----------------------------------------------------------------------
@@ -5720,5 +5835,50 @@ mod tests {
             assert_eq!(a.update(v).to_bits(), b.update(v).to_bits());
         }
         assert!(WasmStreamingEMA::load_state(&a.save_state().unwrap()).is_err());
+    }
+
+    /// Registry classes: 1-in/1-out, 4-in, 2-in, and an i64 output, each
+    /// matching its batch export bar by bar.
+    #[wasm_bindgen_test]
+    fn every_generated_stream_constructs_and_updates() {
+        let close: Vec<f64> = (0..40).map(|i| 100.0 + (i as f64 * 0.7).sin() * 5.0).collect();
+        let open: Vec<f64> = close.iter().map(|c| c - 0.3).collect();
+        let high: Vec<f64> = close.iter().map(|c| c + 1.0).collect();
+        let low: Vec<f64> = close.iter().map(|c| c - 1.0).collect();
+
+        let batch = |arr: Float64Array| {
+            let mut v = vec![0.0f64; arr.length() as usize];
+            arr.copy_to(&mut v);
+            v
+        };
+        let same = |a: f64, b: f64| (a.is_nan() && b.is_nan()) || (a - b).abs() <= 1e-9 * b.abs().max(1.0);
+
+        let mut sum = WasmStreamingSum::new(5).unwrap();
+        assert_eq!(sum.timeperiod(), 5);
+        let want = batch(rolling_sum(&make_arr(&close), 5));
+        for (i, &c) in close.iter().enumerate() {
+            assert!(same(sum.peek(c), want[i]));
+            assert!(same(sum.update(c), want[i]), "sum bar {i}");
+        }
+        assert!(sum.is_ready());
+        assert_eq!(sum.count(), close.len());
+        assert!(WasmStreamingSum::new(0).is_err());
+
+        let mut avg = WasmStreamingAvgprice::new().unwrap();
+        let want = batch(avgprice(&make_arr(&open), &make_arr(&high), &make_arr(&low), &make_arr(&close)));
+        for i in 0..close.len() {
+            assert!(same(avg.update(open[i], high[i], low[i], close[i]), want[i]), "avgprice bar {i}");
+        }
+
+        let mut add = WasmStreamingAdd::new().unwrap();
+        for i in 0..close.len() {
+            assert_eq!(add.update(close[i], open[i]), close[i] + open[i]);
+        }
+
+        let mut idx = WasmStreamingRollingMaxindex::new(4).unwrap();
+        let want = batch(rolling_maxindex(&make_arr(&close), 4));
+        for (i, &c) in close.iter().enumerate() {
+            assert_eq!(idx.update(c), want[i], "rolling_maxindex bar {i}");
+        }
     }
 }

@@ -1557,3 +1557,23808 @@ func (s *StreamOptionGreeks) Close() error {
 	}
 	return nil
 }
+
+// StreamAvgprice is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming average price: (open + high + low + close) / 4.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamAvgprice struct {
+	mu sync.Mutex
+	h  *C.FtStreamAvgprice
+}
+
+// NewStreamAvgprice creates a StreamAvgprice.
+func NewStreamAvgprice() (*StreamAvgprice, error) {
+	var h *C.FtStreamAvgprice
+	if err := statusError("NewStreamAvgprice", C.ft_stream_avgprice_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamAvgprice{h: h}
+	runtime.SetFinalizer(s, (*StreamAvgprice).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamAvgprice) Update(open float64, high float64, low float64, close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamAvgprice.Update")
+	}
+	if err := statusError("StreamAvgprice.Update", C.ft_stream_avgprice_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamAvgprice) Peek(open float64, high float64, low float64, close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamAvgprice.Peek")
+	}
+	if err := statusError("StreamAvgprice.Peek", C.ft_stream_avgprice_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamAvgprice.
+func (s *StreamAvgprice) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamAvgprice.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_avgprice_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamAvgprice.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_avgprice_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamAvgprice.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamAvgprice restores a StreamAvgprice from a snapshot made by Save.
+func LoadStreamAvgprice(snapshot []byte) (*StreamAvgprice, error) {
+	var h *C.FtStreamAvgprice
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamAvgprice", C.ft_stream_avgprice_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamAvgprice{h: h}
+	runtime.SetFinalizer(s, (*StreamAvgprice).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamAvgprice) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamAvgprice.Reset")
+	}
+	return statusError("StreamAvgprice.Reset", C.ft_stream_avgprice_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamAvgprice) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_avgprice_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamMedprice is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming median price: (high + low) / 2.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamMedprice struct {
+	mu sync.Mutex
+	h  *C.FtStreamMedprice
+}
+
+// NewStreamMedprice creates a StreamMedprice.
+func NewStreamMedprice() (*StreamMedprice, error) {
+	var h *C.FtStreamMedprice
+	if err := statusError("NewStreamMedprice", C.ft_stream_medprice_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMedprice{h: h}
+	runtime.SetFinalizer(s, (*StreamMedprice).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamMedprice) Update(high float64, low float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamMedprice.Update")
+	}
+	if err := statusError("StreamMedprice.Update", C.ft_stream_medprice_update(s.h, C.double(high), C.double(low), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamMedprice) Peek(high float64, low float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamMedprice.Peek")
+	}
+	if err := statusError("StreamMedprice.Peek", C.ft_stream_medprice_peek(s.h, C.double(high), C.double(low), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamMedprice.
+func (s *StreamMedprice) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamMedprice.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_medprice_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamMedprice.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_medprice_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamMedprice.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamMedprice restores a StreamMedprice from a snapshot made by Save.
+func LoadStreamMedprice(snapshot []byte) (*StreamMedprice, error) {
+	var h *C.FtStreamMedprice
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamMedprice", C.ft_stream_medprice_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMedprice{h: h}
+	runtime.SetFinalizer(s, (*StreamMedprice).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamMedprice) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamMedprice.Reset")
+	}
+	return statusError("StreamMedprice.Reset", C.ft_stream_medprice_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamMedprice) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_medprice_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamTypprice is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming typical price: (high + low + close) / 3.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamTypprice struct {
+	mu sync.Mutex
+	h  *C.FtStreamTypprice
+}
+
+// NewStreamTypprice creates a StreamTypprice.
+func NewStreamTypprice() (*StreamTypprice, error) {
+	var h *C.FtStreamTypprice
+	if err := statusError("NewStreamTypprice", C.ft_stream_typprice_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamTypprice{h: h}
+	runtime.SetFinalizer(s, (*StreamTypprice).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamTypprice) Update(high float64, low float64, close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamTypprice.Update")
+	}
+	if err := statusError("StreamTypprice.Update", C.ft_stream_typprice_update(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamTypprice) Peek(high float64, low float64, close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamTypprice.Peek")
+	}
+	if err := statusError("StreamTypprice.Peek", C.ft_stream_typprice_peek(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamTypprice.
+func (s *StreamTypprice) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamTypprice.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_typprice_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamTypprice.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_typprice_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamTypprice.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamTypprice restores a StreamTypprice from a snapshot made by Save.
+func LoadStreamTypprice(snapshot []byte) (*StreamTypprice, error) {
+	var h *C.FtStreamTypprice
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamTypprice", C.ft_stream_typprice_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamTypprice{h: h}
+	runtime.SetFinalizer(s, (*StreamTypprice).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamTypprice) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamTypprice.Reset")
+	}
+	return statusError("StreamTypprice.Reset", C.ft_stream_typprice_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamTypprice) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_typprice_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamWclprice is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming weighted close price: (high + low + 2 * close) / 4.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamWclprice struct {
+	mu sync.Mutex
+	h  *C.FtStreamWclprice
+}
+
+// NewStreamWclprice creates a StreamWclprice.
+func NewStreamWclprice() (*StreamWclprice, error) {
+	var h *C.FtStreamWclprice
+	if err := statusError("NewStreamWclprice", C.ft_stream_wclprice_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamWclprice{h: h}
+	runtime.SetFinalizer(s, (*StreamWclprice).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamWclprice) Update(high float64, low float64, close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamWclprice.Update")
+	}
+	if err := statusError("StreamWclprice.Update", C.ft_stream_wclprice_update(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamWclprice) Peek(high float64, low float64, close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamWclprice.Peek")
+	}
+	if err := statusError("StreamWclprice.Peek", C.ft_stream_wclprice_peek(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamWclprice.
+func (s *StreamWclprice) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamWclprice.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_wclprice_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamWclprice.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_wclprice_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamWclprice.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamWclprice restores a StreamWclprice from a snapshot made by Save.
+func LoadStreamWclprice(snapshot []byte) (*StreamWclprice, error) {
+	var h *C.FtStreamWclprice
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamWclprice", C.ft_stream_wclprice_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamWclprice{h: h}
+	runtime.SetFinalizer(s, (*StreamWclprice).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamWclprice) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamWclprice.Reset")
+	}
+	return statusError("StreamWclprice.Reset", C.ft_stream_wclprice_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamWclprice) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_wclprice_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamAdd is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming element-wise a + b.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamAdd struct {
+	mu sync.Mutex
+	h  *C.FtStreamAdd
+}
+
+// NewStreamAdd creates a StreamAdd.
+func NewStreamAdd() (*StreamAdd, error) {
+	var h *C.FtStreamAdd
+	if err := statusError("NewStreamAdd", C.ft_stream_add_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamAdd{h: h}
+	runtime.SetFinalizer(s, (*StreamAdd).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamAdd) Update(a float64, b float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamAdd.Update")
+	}
+	if err := statusError("StreamAdd.Update", C.ft_stream_add_update(s.h, C.double(a), C.double(b), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamAdd) Peek(a float64, b float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamAdd.Peek")
+	}
+	if err := statusError("StreamAdd.Peek", C.ft_stream_add_peek(s.h, C.double(a), C.double(b), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamAdd.
+func (s *StreamAdd) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamAdd.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_add_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamAdd.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_add_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamAdd.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamAdd restores a StreamAdd from a snapshot made by Save.
+func LoadStreamAdd(snapshot []byte) (*StreamAdd, error) {
+	var h *C.FtStreamAdd
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamAdd", C.ft_stream_add_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamAdd{h: h}
+	runtime.SetFinalizer(s, (*StreamAdd).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamAdd) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamAdd.Reset")
+	}
+	return statusError("StreamAdd.Reset", C.ft_stream_add_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamAdd) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_add_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamSub is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming element-wise a - b.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamSub struct {
+	mu sync.Mutex
+	h  *C.FtStreamSub
+}
+
+// NewStreamSub creates a StreamSub.
+func NewStreamSub() (*StreamSub, error) {
+	var h *C.FtStreamSub
+	if err := statusError("NewStreamSub", C.ft_stream_sub_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamSub{h: h}
+	runtime.SetFinalizer(s, (*StreamSub).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamSub) Update(a float64, b float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamSub.Update")
+	}
+	if err := statusError("StreamSub.Update", C.ft_stream_sub_update(s.h, C.double(a), C.double(b), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamSub) Peek(a float64, b float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamSub.Peek")
+	}
+	if err := statusError("StreamSub.Peek", C.ft_stream_sub_peek(s.h, C.double(a), C.double(b), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamSub.
+func (s *StreamSub) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamSub.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_sub_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamSub.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_sub_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamSub.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamSub restores a StreamSub from a snapshot made by Save.
+func LoadStreamSub(snapshot []byte) (*StreamSub, error) {
+	var h *C.FtStreamSub
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamSub", C.ft_stream_sub_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamSub{h: h}
+	runtime.SetFinalizer(s, (*StreamSub).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamSub) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamSub.Reset")
+	}
+	return statusError("StreamSub.Reset", C.ft_stream_sub_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamSub) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_sub_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamMult is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming element-wise a * b.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamMult struct {
+	mu sync.Mutex
+	h  *C.FtStreamMult
+}
+
+// NewStreamMult creates a StreamMult.
+func NewStreamMult() (*StreamMult, error) {
+	var h *C.FtStreamMult
+	if err := statusError("NewStreamMult", C.ft_stream_mult_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMult{h: h}
+	runtime.SetFinalizer(s, (*StreamMult).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamMult) Update(a float64, b float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamMult.Update")
+	}
+	if err := statusError("StreamMult.Update", C.ft_stream_mult_update(s.h, C.double(a), C.double(b), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamMult) Peek(a float64, b float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamMult.Peek")
+	}
+	if err := statusError("StreamMult.Peek", C.ft_stream_mult_peek(s.h, C.double(a), C.double(b), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamMult.
+func (s *StreamMult) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamMult.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_mult_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamMult.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_mult_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamMult.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamMult restores a StreamMult from a snapshot made by Save.
+func LoadStreamMult(snapshot []byte) (*StreamMult, error) {
+	var h *C.FtStreamMult
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamMult", C.ft_stream_mult_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMult{h: h}
+	runtime.SetFinalizer(s, (*StreamMult).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamMult) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamMult.Reset")
+	}
+	return statusError("StreamMult.Reset", C.ft_stream_mult_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamMult) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_mult_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamDiv is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming element-wise a / b (NaN where b = 0).
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamDiv struct {
+	mu sync.Mutex
+	h  *C.FtStreamDiv
+}
+
+// NewStreamDiv creates a StreamDiv.
+func NewStreamDiv() (*StreamDiv, error) {
+	var h *C.FtStreamDiv
+	if err := statusError("NewStreamDiv", C.ft_stream_div_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamDiv{h: h}
+	runtime.SetFinalizer(s, (*StreamDiv).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamDiv) Update(a float64, b float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamDiv.Update")
+	}
+	if err := statusError("StreamDiv.Update", C.ft_stream_div_update(s.h, C.double(a), C.double(b), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamDiv) Peek(a float64, b float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamDiv.Peek")
+	}
+	if err := statusError("StreamDiv.Peek", C.ft_stream_div_peek(s.h, C.double(a), C.double(b), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamDiv.
+func (s *StreamDiv) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamDiv.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_div_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamDiv.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_div_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamDiv.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamDiv restores a StreamDiv from a snapshot made by Save.
+func LoadStreamDiv(snapshot []byte) (*StreamDiv, error) {
+	var h *C.FtStreamDiv
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamDiv", C.ft_stream_div_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamDiv{h: h}
+	runtime.SetFinalizer(s, (*StreamDiv).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamDiv) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamDiv.Reset")
+	}
+	return statusError("StreamDiv.Reset", C.ft_stream_div_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamDiv) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_div_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamSum is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming rolling sum over `timeperiod` bars.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamSum struct {
+	mu sync.Mutex
+	h  *C.FtStreamSum
+}
+
+// NewStreamSum creates a StreamSum.
+func NewStreamSum(timeperiod int) (*StreamSum, error) {
+	var h *C.FtStreamSum
+	if err := statusError("NewStreamSum", C.ft_stream_sum_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamSum{h: h}
+	runtime.SetFinalizer(s, (*StreamSum).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamSum) Update(real float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamSum.Update")
+	}
+	if err := statusError("StreamSum.Update", C.ft_stream_sum_update(s.h, C.double(real), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamSum) Peek(real float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamSum.Peek")
+	}
+	if err := statusError("StreamSum.Peek", C.ft_stream_sum_peek(s.h, C.double(real), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamSum.
+func (s *StreamSum) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamSum.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_sum_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamSum.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_sum_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamSum.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamSum restores a StreamSum from a snapshot made by Save.
+func LoadStreamSum(snapshot []byte) (*StreamSum, error) {
+	var h *C.FtStreamSum
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamSum", C.ft_stream_sum_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamSum{h: h}
+	runtime.SetFinalizer(s, (*StreamSum).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamSum) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamSum.Reset")
+	}
+	return statusError("StreamSum.Reset", C.ft_stream_sum_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamSum) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_sum_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamMax is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming rolling maximum over `timeperiod` bars.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamMax struct {
+	mu sync.Mutex
+	h  *C.FtStreamMax
+}
+
+// NewStreamMax creates a StreamMax.
+func NewStreamMax(timeperiod int) (*StreamMax, error) {
+	var h *C.FtStreamMax
+	if err := statusError("NewStreamMax", C.ft_stream_max_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMax{h: h}
+	runtime.SetFinalizer(s, (*StreamMax).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamMax) Update(real float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamMax.Update")
+	}
+	if err := statusError("StreamMax.Update", C.ft_stream_max_update(s.h, C.double(real), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamMax) Peek(real float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamMax.Peek")
+	}
+	if err := statusError("StreamMax.Peek", C.ft_stream_max_peek(s.h, C.double(real), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamMax.
+func (s *StreamMax) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamMax.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_max_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamMax.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_max_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamMax.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamMax restores a StreamMax from a snapshot made by Save.
+func LoadStreamMax(snapshot []byte) (*StreamMax, error) {
+	var h *C.FtStreamMax
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamMax", C.ft_stream_max_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMax{h: h}
+	runtime.SetFinalizer(s, (*StreamMax).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamMax) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamMax.Reset")
+	}
+	return statusError("StreamMax.Reset", C.ft_stream_max_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamMax) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_max_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamMin is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming rolling minimum over `timeperiod` bars.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamMin struct {
+	mu sync.Mutex
+	h  *C.FtStreamMin
+}
+
+// NewStreamMin creates a StreamMin.
+func NewStreamMin(timeperiod int) (*StreamMin, error) {
+	var h *C.FtStreamMin
+	if err := statusError("NewStreamMin", C.ft_stream_min_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMin{h: h}
+	runtime.SetFinalizer(s, (*StreamMin).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamMin) Update(real float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamMin.Update")
+	}
+	if err := statusError("StreamMin.Update", C.ft_stream_min_update(s.h, C.double(real), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamMin) Peek(real float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamMin.Peek")
+	}
+	if err := statusError("StreamMin.Peek", C.ft_stream_min_peek(s.h, C.double(real), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamMin.
+func (s *StreamMin) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamMin.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_min_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamMin.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_min_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamMin.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamMin restores a StreamMin from a snapshot made by Save.
+func LoadStreamMin(snapshot []byte) (*StreamMin, error) {
+	var h *C.FtStreamMin
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamMin", C.ft_stream_min_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMin{h: h}
+	runtime.SetFinalizer(s, (*StreamMin).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamMin) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamMin.Reset")
+	}
+	return statusError("StreamMin.Reset", C.ft_stream_min_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamMin) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_min_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamSlidingMax is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming sliding maximum over `timeperiod` bars.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamSlidingMax struct {
+	mu sync.Mutex
+	h  *C.FtStreamSlidingMax
+}
+
+// NewStreamSlidingMax creates a StreamSlidingMax.
+func NewStreamSlidingMax(timeperiod int) (*StreamSlidingMax, error) {
+	var h *C.FtStreamSlidingMax
+	if err := statusError("NewStreamSlidingMax", C.ft_stream_sliding_max_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamSlidingMax{h: h}
+	runtime.SetFinalizer(s, (*StreamSlidingMax).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamSlidingMax) Update(real float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamSlidingMax.Update")
+	}
+	if err := statusError("StreamSlidingMax.Update", C.ft_stream_sliding_max_update(s.h, C.double(real), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamSlidingMax) Peek(real float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamSlidingMax.Peek")
+	}
+	if err := statusError("StreamSlidingMax.Peek", C.ft_stream_sliding_max_peek(s.h, C.double(real), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamSlidingMax.
+func (s *StreamSlidingMax) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamSlidingMax.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_sliding_max_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamSlidingMax.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_sliding_max_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamSlidingMax.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamSlidingMax restores a StreamSlidingMax from a snapshot made by Save.
+func LoadStreamSlidingMax(snapshot []byte) (*StreamSlidingMax, error) {
+	var h *C.FtStreamSlidingMax
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamSlidingMax", C.ft_stream_sliding_max_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamSlidingMax{h: h}
+	runtime.SetFinalizer(s, (*StreamSlidingMax).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamSlidingMax) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamSlidingMax.Reset")
+	}
+	return statusError("StreamSlidingMax.Reset", C.ft_stream_sliding_max_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamSlidingMax) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_sliding_max_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamSlidingMin is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming sliding minimum over `timeperiod` bars.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamSlidingMin struct {
+	mu sync.Mutex
+	h  *C.FtStreamSlidingMin
+}
+
+// NewStreamSlidingMin creates a StreamSlidingMin.
+func NewStreamSlidingMin(timeperiod int) (*StreamSlidingMin, error) {
+	var h *C.FtStreamSlidingMin
+	if err := statusError("NewStreamSlidingMin", C.ft_stream_sliding_min_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamSlidingMin{h: h}
+	runtime.SetFinalizer(s, (*StreamSlidingMin).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamSlidingMin) Update(real float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamSlidingMin.Update")
+	}
+	if err := statusError("StreamSlidingMin.Update", C.ft_stream_sliding_min_update(s.h, C.double(real), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamSlidingMin) Peek(real float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamSlidingMin.Peek")
+	}
+	if err := statusError("StreamSlidingMin.Peek", C.ft_stream_sliding_min_peek(s.h, C.double(real), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamSlidingMin.
+func (s *StreamSlidingMin) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamSlidingMin.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_sliding_min_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamSlidingMin.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_sliding_min_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamSlidingMin.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamSlidingMin restores a StreamSlidingMin from a snapshot made by Save.
+func LoadStreamSlidingMin(snapshot []byte) (*StreamSlidingMin, error) {
+	var h *C.FtStreamSlidingMin
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamSlidingMin", C.ft_stream_sliding_min_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamSlidingMin{h: h}
+	runtime.SetFinalizer(s, (*StreamSlidingMin).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamSlidingMin) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamSlidingMin.Reset")
+	}
+	return statusError("StreamSlidingMin.Reset", C.ft_stream_sliding_min_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamSlidingMin) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_sliding_min_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamRollingSum is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming rolling sum over `timeperiod` bars.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamRollingSum struct {
+	mu sync.Mutex
+	h  *C.FtStreamRollingSum
+}
+
+// NewStreamRollingSum creates a StreamRollingSum.
+func NewStreamRollingSum(timeperiod int) (*StreamRollingSum, error) {
+	var h *C.FtStreamRollingSum
+	if err := statusError("NewStreamRollingSum", C.ft_stream_rolling_sum_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamRollingSum{h: h}
+	runtime.SetFinalizer(s, (*StreamRollingSum).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamRollingSum) Update(real float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamRollingSum.Update")
+	}
+	if err := statusError("StreamRollingSum.Update", C.ft_stream_rolling_sum_update(s.h, C.double(real), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamRollingSum) Peek(real float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamRollingSum.Peek")
+	}
+	if err := statusError("StreamRollingSum.Peek", C.ft_stream_rolling_sum_peek(s.h, C.double(real), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamRollingSum.
+func (s *StreamRollingSum) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamRollingSum.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_rolling_sum_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamRollingSum.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_rolling_sum_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamRollingSum.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamRollingSum restores a StreamRollingSum from a snapshot made by Save.
+func LoadStreamRollingSum(snapshot []byte) (*StreamRollingSum, error) {
+	var h *C.FtStreamRollingSum
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamRollingSum", C.ft_stream_rolling_sum_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamRollingSum{h: h}
+	runtime.SetFinalizer(s, (*StreamRollingSum).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamRollingSum) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamRollingSum.Reset")
+	}
+	return statusError("StreamRollingSum.Reset", C.ft_stream_rolling_sum_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamRollingSum) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_rolling_sum_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamRollingMax is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming rolling maximum over `timeperiod` bars.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamRollingMax struct {
+	mu sync.Mutex
+	h  *C.FtStreamRollingMax
+}
+
+// NewStreamRollingMax creates a StreamRollingMax.
+func NewStreamRollingMax(timeperiod int) (*StreamRollingMax, error) {
+	var h *C.FtStreamRollingMax
+	if err := statusError("NewStreamRollingMax", C.ft_stream_rolling_max_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamRollingMax{h: h}
+	runtime.SetFinalizer(s, (*StreamRollingMax).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamRollingMax) Update(real float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamRollingMax.Update")
+	}
+	if err := statusError("StreamRollingMax.Update", C.ft_stream_rolling_max_update(s.h, C.double(real), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamRollingMax) Peek(real float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamRollingMax.Peek")
+	}
+	if err := statusError("StreamRollingMax.Peek", C.ft_stream_rolling_max_peek(s.h, C.double(real), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamRollingMax.
+func (s *StreamRollingMax) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamRollingMax.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_rolling_max_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamRollingMax.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_rolling_max_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamRollingMax.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamRollingMax restores a StreamRollingMax from a snapshot made by Save.
+func LoadStreamRollingMax(snapshot []byte) (*StreamRollingMax, error) {
+	var h *C.FtStreamRollingMax
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamRollingMax", C.ft_stream_rolling_max_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamRollingMax{h: h}
+	runtime.SetFinalizer(s, (*StreamRollingMax).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamRollingMax) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamRollingMax.Reset")
+	}
+	return statusError("StreamRollingMax.Reset", C.ft_stream_rolling_max_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamRollingMax) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_rolling_max_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamRollingMin is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming rolling minimum over `timeperiod` bars.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamRollingMin struct {
+	mu sync.Mutex
+	h  *C.FtStreamRollingMin
+}
+
+// NewStreamRollingMin creates a StreamRollingMin.
+func NewStreamRollingMin(timeperiod int) (*StreamRollingMin, error) {
+	var h *C.FtStreamRollingMin
+	if err := statusError("NewStreamRollingMin", C.ft_stream_rolling_min_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamRollingMin{h: h}
+	runtime.SetFinalizer(s, (*StreamRollingMin).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamRollingMin) Update(real float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamRollingMin.Update")
+	}
+	if err := statusError("StreamRollingMin.Update", C.ft_stream_rolling_min_update(s.h, C.double(real), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamRollingMin) Peek(real float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamRollingMin.Peek")
+	}
+	if err := statusError("StreamRollingMin.Peek", C.ft_stream_rolling_min_peek(s.h, C.double(real), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamRollingMin.
+func (s *StreamRollingMin) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamRollingMin.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_rolling_min_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamRollingMin.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_rolling_min_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamRollingMin.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamRollingMin restores a StreamRollingMin from a snapshot made by Save.
+func LoadStreamRollingMin(snapshot []byte) (*StreamRollingMin, error) {
+	var h *C.FtStreamRollingMin
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamRollingMin", C.ft_stream_rolling_min_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamRollingMin{h: h}
+	runtime.SetFinalizer(s, (*StreamRollingMin).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamRollingMin) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamRollingMin.Reset")
+	}
+	return statusError("StreamRollingMin.Reset", C.ft_stream_rolling_min_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamRollingMin) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_rolling_min_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamRollingMaxindex is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming index of the rolling maximum: the absolute 0-based bar index since the first bar (most recent on ties), -1 during warm-up.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamRollingMaxindex struct {
+	mu sync.Mutex
+	h  *C.FtStreamRollingMaxindex
+}
+
+// NewStreamRollingMaxindex creates a StreamRollingMaxindex.
+func NewStreamRollingMaxindex(timeperiod int) (*StreamRollingMaxindex, error) {
+	var h *C.FtStreamRollingMaxindex
+	if err := statusError("NewStreamRollingMaxindex", C.ft_stream_rolling_maxindex_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamRollingMaxindex{h: h}
+	runtime.SetFinalizer(s, (*StreamRollingMaxindex).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamRollingMaxindex) Update(real float64) (int64, error) {
+	var out int64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamRollingMaxindex.Update")
+	}
+	if err := statusError("StreamRollingMaxindex.Update", C.ft_stream_rolling_maxindex_update(s.h, C.double(real), (*C.int64_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamRollingMaxindex) Peek(real float64) (int64, error) {
+	var out int64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamRollingMaxindex.Peek")
+	}
+	if err := statusError("StreamRollingMaxindex.Peek", C.ft_stream_rolling_maxindex_peek(s.h, C.double(real), (*C.int64_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamRollingMaxindex.
+func (s *StreamRollingMaxindex) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamRollingMaxindex.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_rolling_maxindex_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamRollingMaxindex.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_rolling_maxindex_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamRollingMaxindex.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamRollingMaxindex restores a StreamRollingMaxindex from a snapshot made by Save.
+func LoadStreamRollingMaxindex(snapshot []byte) (*StreamRollingMaxindex, error) {
+	var h *C.FtStreamRollingMaxindex
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamRollingMaxindex", C.ft_stream_rolling_maxindex_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamRollingMaxindex{h: h}
+	runtime.SetFinalizer(s, (*StreamRollingMaxindex).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamRollingMaxindex) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamRollingMaxindex.Reset")
+	}
+	return statusError("StreamRollingMaxindex.Reset", C.ft_stream_rolling_maxindex_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamRollingMaxindex) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_rolling_maxindex_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamRollingMinindex is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming index of the rolling minimum: the absolute 0-based bar index since the first bar (most recent on ties), -1 during warm-up.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamRollingMinindex struct {
+	mu sync.Mutex
+	h  *C.FtStreamRollingMinindex
+}
+
+// NewStreamRollingMinindex creates a StreamRollingMinindex.
+func NewStreamRollingMinindex(timeperiod int) (*StreamRollingMinindex, error) {
+	var h *C.FtStreamRollingMinindex
+	if err := statusError("NewStreamRollingMinindex", C.ft_stream_rolling_minindex_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamRollingMinindex{h: h}
+	runtime.SetFinalizer(s, (*StreamRollingMinindex).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamRollingMinindex) Update(real float64) (int64, error) {
+	var out int64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamRollingMinindex.Update")
+	}
+	if err := statusError("StreamRollingMinindex.Update", C.ft_stream_rolling_minindex_update(s.h, C.double(real), (*C.int64_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamRollingMinindex) Peek(real float64) (int64, error) {
+	var out int64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamRollingMinindex.Peek")
+	}
+	if err := statusError("StreamRollingMinindex.Peek", C.ft_stream_rolling_minindex_peek(s.h, C.double(real), (*C.int64_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamRollingMinindex.
+func (s *StreamRollingMinindex) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamRollingMinindex.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_rolling_minindex_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamRollingMinindex.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_rolling_minindex_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamRollingMinindex.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamRollingMinindex restores a StreamRollingMinindex from a snapshot made by Save.
+func LoadStreamRollingMinindex(snapshot []byte) (*StreamRollingMinindex, error) {
+	var h *C.FtStreamRollingMinindex
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamRollingMinindex", C.ft_stream_rolling_minindex_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamRollingMinindex{h: h}
+	runtime.SetFinalizer(s, (*StreamRollingMinindex).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamRollingMinindex) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamRollingMinindex.Reset")
+	}
+	return statusError("StreamRollingMinindex.Reset", C.ft_stream_rolling_minindex_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamRollingMinindex) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_rolling_minindex_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamDema is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming double exponential moving average: 2*EMA - EMA(EMA).
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamDema struct {
+	mu sync.Mutex
+	h  *C.FtStreamDema
+}
+
+// NewStreamDema creates a StreamDema.
+func NewStreamDema(timeperiod int) (*StreamDema, error) {
+	var h *C.FtStreamDema
+	if err := statusError("NewStreamDema", C.ft_stream_dema_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamDema{h: h}
+	runtime.SetFinalizer(s, (*StreamDema).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamDema) Update(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamDema.Update")
+	}
+	if err := statusError("StreamDema.Update", C.ft_stream_dema_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamDema) Peek(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamDema.Peek")
+	}
+	if err := statusError("StreamDema.Peek", C.ft_stream_dema_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamDema.
+func (s *StreamDema) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamDema.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_dema_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamDema.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_dema_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamDema.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamDema restores a StreamDema from a snapshot made by Save.
+func LoadStreamDema(snapshot []byte) (*StreamDema, error) {
+	var h *C.FtStreamDema
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamDema", C.ft_stream_dema_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamDema{h: h}
+	runtime.SetFinalizer(s, (*StreamDema).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamDema) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamDema.Reset")
+	}
+	return statusError("StreamDema.Reset", C.ft_stream_dema_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamDema) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_dema_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamTema is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming triple exponential moving average: 3*EMA - 3*EMA(EMA) + EMA(EMA(EMA)).
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamTema struct {
+	mu sync.Mutex
+	h  *C.FtStreamTema
+}
+
+// NewStreamTema creates a StreamTema.
+func NewStreamTema(timeperiod int) (*StreamTema, error) {
+	var h *C.FtStreamTema
+	if err := statusError("NewStreamTema", C.ft_stream_tema_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamTema{h: h}
+	runtime.SetFinalizer(s, (*StreamTema).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamTema) Update(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamTema.Update")
+	}
+	if err := statusError("StreamTema.Update", C.ft_stream_tema_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamTema) Peek(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamTema.Peek")
+	}
+	if err := statusError("StreamTema.Peek", C.ft_stream_tema_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamTema.
+func (s *StreamTema) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamTema.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_tema_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamTema.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_tema_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamTema.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamTema restores a StreamTema from a snapshot made by Save.
+func LoadStreamTema(snapshot []byte) (*StreamTema, error) {
+	var h *C.FtStreamTema
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamTema", C.ft_stream_tema_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamTema{h: h}
+	runtime.SetFinalizer(s, (*StreamTema).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamTema) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamTema.Reset")
+	}
+	return statusError("StreamTema.Reset", C.ft_stream_tema_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamTema) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_tema_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamT3 is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Tillson T3: six cascaded EMAs combined with volume factor `vfactor`.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamT3 struct {
+	mu sync.Mutex
+	h  *C.FtStreamT3
+}
+
+// NewStreamT3 creates a StreamT3.
+func NewStreamT3(timeperiod int, vfactor float64) (*StreamT3, error) {
+	var h *C.FtStreamT3
+	if err := statusError("NewStreamT3", C.ft_stream_t3_new(C.int64_t(timeperiod), C.double(vfactor), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamT3{h: h}
+	runtime.SetFinalizer(s, (*StreamT3).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamT3) Update(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamT3.Update")
+	}
+	if err := statusError("StreamT3.Update", C.ft_stream_t3_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamT3) Peek(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamT3.Peek")
+	}
+	if err := statusError("StreamT3.Peek", C.ft_stream_t3_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamT3.
+func (s *StreamT3) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamT3.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_t3_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamT3.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_t3_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamT3.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamT3 restores a StreamT3 from a snapshot made by Save.
+func LoadStreamT3(snapshot []byte) (*StreamT3, error) {
+	var h *C.FtStreamT3
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamT3", C.ft_stream_t3_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamT3{h: h}
+	runtime.SetFinalizer(s, (*StreamT3).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamT3) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamT3.Reset")
+	}
+	return statusError("StreamT3.Reset", C.ft_stream_t3_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamT3) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_t3_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamTrima is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming triangular moving average over `timeperiod` bars.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamTrima struct {
+	mu sync.Mutex
+	h  *C.FtStreamTrima
+}
+
+// NewStreamTrima creates a StreamTrima.
+func NewStreamTrima(timeperiod int) (*StreamTrima, error) {
+	var h *C.FtStreamTrima
+	if err := statusError("NewStreamTrima", C.ft_stream_trima_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamTrima{h: h}
+	runtime.SetFinalizer(s, (*StreamTrima).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamTrima) Update(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamTrima.Update")
+	}
+	if err := statusError("StreamTrima.Update", C.ft_stream_trima_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamTrima) Peek(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamTrima.Peek")
+	}
+	if err := statusError("StreamTrima.Peek", C.ft_stream_trima_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamTrima.
+func (s *StreamTrima) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamTrima.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_trima_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamTrima.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_trima_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamTrima.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamTrima restores a StreamTrima from a snapshot made by Save.
+func LoadStreamTrima(snapshot []byte) (*StreamTrima, error) {
+	var h *C.FtStreamTrima
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamTrima", C.ft_stream_trima_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamTrima{h: h}
+	runtime.SetFinalizer(s, (*StreamTrima).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamTrima) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamTrima.Reset")
+	}
+	return statusError("StreamTrima.Reset", C.ft_stream_trima_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamTrima) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_trima_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamWma is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming linearly weighted moving average over `timeperiod` bars.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamWma struct {
+	mu sync.Mutex
+	h  *C.FtStreamWma
+}
+
+// NewStreamWma creates a StreamWma.
+func NewStreamWma(timeperiod int) (*StreamWma, error) {
+	var h *C.FtStreamWma
+	if err := statusError("NewStreamWma", C.ft_stream_wma_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamWma{h: h}
+	runtime.SetFinalizer(s, (*StreamWma).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamWma) Update(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamWma.Update")
+	}
+	if err := statusError("StreamWma.Update", C.ft_stream_wma_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamWma) Peek(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamWma.Peek")
+	}
+	if err := statusError("StreamWma.Peek", C.ft_stream_wma_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamWma.
+func (s *StreamWma) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamWma.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_wma_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamWma.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_wma_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamWma.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamWma restores a StreamWma from a snapshot made by Save.
+func LoadStreamWma(snapshot []byte) (*StreamWma, error) {
+	var h *C.FtStreamWma
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamWma", C.ft_stream_wma_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamWma{h: h}
+	runtime.SetFinalizer(s, (*StreamWma).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamWma) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamWma.Reset")
+	}
+	return statusError("StreamWma.Reset", C.ft_stream_wma_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamWma) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_wma_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamMidpoint is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming midpoint: (max(close) + min(close)) / 2 over `timeperiod` bars.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamMidpoint struct {
+	mu sync.Mutex
+	h  *C.FtStreamMidpoint
+}
+
+// NewStreamMidpoint creates a StreamMidpoint.
+func NewStreamMidpoint(timeperiod int) (*StreamMidpoint, error) {
+	var h *C.FtStreamMidpoint
+	if err := statusError("NewStreamMidpoint", C.ft_stream_midpoint_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMidpoint{h: h}
+	runtime.SetFinalizer(s, (*StreamMidpoint).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamMidpoint) Update(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamMidpoint.Update")
+	}
+	if err := statusError("StreamMidpoint.Update", C.ft_stream_midpoint_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamMidpoint) Peek(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamMidpoint.Peek")
+	}
+	if err := statusError("StreamMidpoint.Peek", C.ft_stream_midpoint_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamMidpoint.
+func (s *StreamMidpoint) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamMidpoint.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_midpoint_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamMidpoint.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_midpoint_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamMidpoint.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamMidpoint restores a StreamMidpoint from a snapshot made by Save.
+func LoadStreamMidpoint(snapshot []byte) (*StreamMidpoint, error) {
+	var h *C.FtStreamMidpoint
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamMidpoint", C.ft_stream_midpoint_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMidpoint{h: h}
+	runtime.SetFinalizer(s, (*StreamMidpoint).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamMidpoint) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamMidpoint.Reset")
+	}
+	return statusError("StreamMidpoint.Reset", C.ft_stream_midpoint_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamMidpoint) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_midpoint_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamMidprice is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming midprice: (highest high + lowest low) / 2 over `timeperiod` bars.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamMidprice struct {
+	mu sync.Mutex
+	h  *C.FtStreamMidprice
+}
+
+// NewStreamMidprice creates a StreamMidprice.
+func NewStreamMidprice(timeperiod int) (*StreamMidprice, error) {
+	var h *C.FtStreamMidprice
+	if err := statusError("NewStreamMidprice", C.ft_stream_midprice_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMidprice{h: h}
+	runtime.SetFinalizer(s, (*StreamMidprice).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamMidprice) Update(high float64, low float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamMidprice.Update")
+	}
+	if err := statusError("StreamMidprice.Update", C.ft_stream_midprice_update(s.h, C.double(high), C.double(low), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamMidprice) Peek(high float64, low float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamMidprice.Peek")
+	}
+	if err := statusError("StreamMidprice.Peek", C.ft_stream_midprice_peek(s.h, C.double(high), C.double(low), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamMidprice.
+func (s *StreamMidprice) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamMidprice.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_midprice_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamMidprice.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_midprice_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamMidprice.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamMidprice restores a StreamMidprice from a snapshot made by Save.
+func LoadStreamMidprice(snapshot []byte) (*StreamMidprice, error) {
+	var h *C.FtStreamMidprice
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamMidprice", C.ft_stream_midprice_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMidprice{h: h}
+	runtime.SetFinalizer(s, (*StreamMidprice).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamMidprice) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamMidprice.Reset")
+	}
+	return statusError("StreamMidprice.Reset", C.ft_stream_midprice_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamMidprice) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_midprice_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamKama is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Kaufman adaptive moving average (TA-Lib); first value at bar `timeperiod`.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamKama struct {
+	mu sync.Mutex
+	h  *C.FtStreamKama
+}
+
+// NewStreamKama creates a StreamKama.
+func NewStreamKama(timeperiod int) (*StreamKama, error) {
+	var h *C.FtStreamKama
+	if err := statusError("NewStreamKama", C.ft_stream_kama_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamKama{h: h}
+	runtime.SetFinalizer(s, (*StreamKama).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamKama) Update(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamKama.Update")
+	}
+	if err := statusError("StreamKama.Update", C.ft_stream_kama_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamKama) Peek(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamKama.Peek")
+	}
+	if err := statusError("StreamKama.Peek", C.ft_stream_kama_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamKama.
+func (s *StreamKama) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamKama.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_kama_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamKama.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_kama_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamKama.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamKama restores a StreamKama from a snapshot made by Save.
+func LoadStreamKama(snapshot []byte) (*StreamKama, error) {
+	var h *C.FtStreamKama
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamKama", C.ft_stream_kama_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamKama{h: h}
+	runtime.SetFinalizer(s, (*StreamKama).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamKama) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamKama.Reset")
+	}
+	return statusError("StreamKama.Reset", C.ft_stream_kama_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamKama) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_kama_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamMa is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming moving average of type `matype` (0=SMA, 1=EMA, 2=WMA, 3=DEMA, 4=TEMA, 5=TRIMA, 6=KAMA, 7/8=T3).
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamMa struct {
+	mu sync.Mutex
+	h  *C.FtStreamMa
+}
+
+// NewStreamMa creates a StreamMa.
+func NewStreamMa(timeperiod int, matype MAType) (*StreamMa, error) {
+	var h *C.FtStreamMa
+	if err := statusError("NewStreamMa", C.ft_stream_ma_new(C.int64_t(timeperiod), C.int32_t(matype), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMa{h: h}
+	runtime.SetFinalizer(s, (*StreamMa).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamMa) Update(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamMa.Update")
+	}
+	if err := statusError("StreamMa.Update", C.ft_stream_ma_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamMa) Peek(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamMa.Peek")
+	}
+	if err := statusError("StreamMa.Peek", C.ft_stream_ma_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamMa.
+func (s *StreamMa) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamMa.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_ma_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamMa.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_ma_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamMa.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamMa restores a StreamMa from a snapshot made by Save.
+func LoadStreamMa(snapshot []byte) (*StreamMa, error) {
+	var h *C.FtStreamMa
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamMa", C.ft_stream_ma_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMa{h: h}
+	runtime.SetFinalizer(s, (*StreamMa).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamMa) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamMa.Reset")
+	}
+	return statusError("StreamMa.Reset", C.ft_stream_ma_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamMa) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_ma_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamMavp is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming moving average with a per-bar period: `periods` is rounded and clamped to [minperiod, maxperiod].
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamMavp struct {
+	mu sync.Mutex
+	h  *C.FtStreamMavp
+}
+
+// NewStreamMavp creates a StreamMavp.
+func NewStreamMavp(minperiod int, maxperiod int, matype MAType) (*StreamMavp, error) {
+	var h *C.FtStreamMavp
+	if err := statusError("NewStreamMavp", C.ft_stream_mavp_new(C.int64_t(minperiod), C.int64_t(maxperiod), C.int32_t(matype), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMavp{h: h}
+	runtime.SetFinalizer(s, (*StreamMavp).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamMavp) Update(close float64, periods float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamMavp.Update")
+	}
+	if err := statusError("StreamMavp.Update", C.ft_stream_mavp_update(s.h, C.double(close), C.double(periods), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamMavp) Peek(close float64, periods float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamMavp.Peek")
+	}
+	if err := statusError("StreamMavp.Peek", C.ft_stream_mavp_peek(s.h, C.double(close), C.double(periods), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamMavp.
+func (s *StreamMavp) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamMavp.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_mavp_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamMavp.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_mavp_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamMavp.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamMavp restores a StreamMavp from a snapshot made by Save.
+func LoadStreamMavp(snapshot []byte) (*StreamMavp, error) {
+	var h *C.FtStreamMavp
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamMavp", C.ft_stream_mavp_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMavp{h: h}
+	runtime.SetFinalizer(s, (*StreamMavp).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamMavp) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamMavp.Reset")
+	}
+	return statusError("StreamMavp.Reset", C.ft_stream_mavp_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamMavp) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_mavp_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamMacdfix is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming MACD with fixed 12/26 EMAs: (macd, signal, hist), NaN until the signal is valid.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamMacdfix struct {
+	mu sync.Mutex
+	h  *C.FtStreamMacdfix
+}
+
+// NewStreamMacdfix creates a StreamMacdfix.
+func NewStreamMacdfix(signalperiod int) (*StreamMacdfix, error) {
+	var h *C.FtStreamMacdfix
+	if err := statusError("NewStreamMacdfix", C.ft_stream_macdfix_new(C.int64_t(signalperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMacdfix{h: h}
+	runtime.SetFinalizer(s, (*StreamMacdfix).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamMacdfix) Update(close float64) (macd float64, signal float64, hist float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, 0, closedError("StreamMacdfix.Update")
+	}
+	if err := statusError("StreamMacdfix.Update", C.ft_stream_macdfix_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&macd)), (*C.double)(unsafe.Pointer(&signal)), (*C.double)(unsafe.Pointer(&hist)))); err != nil {
+		return 0, 0, 0, err
+	}
+	return macd, signal, hist, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamMacdfix) Peek(close float64) (macd float64, signal float64, hist float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, 0, closedError("StreamMacdfix.Peek")
+	}
+	if err := statusError("StreamMacdfix.Peek", C.ft_stream_macdfix_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&macd)), (*C.double)(unsafe.Pointer(&signal)), (*C.double)(unsafe.Pointer(&hist)))); err != nil {
+		return 0, 0, 0, err
+	}
+	return macd, signal, hist, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamMacdfix.
+func (s *StreamMacdfix) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamMacdfix.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_macdfix_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamMacdfix.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_macdfix_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamMacdfix.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamMacdfix restores a StreamMacdfix from a snapshot made by Save.
+func LoadStreamMacdfix(snapshot []byte) (*StreamMacdfix, error) {
+	var h *C.FtStreamMacdfix
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamMacdfix", C.ft_stream_macdfix_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMacdfix{h: h}
+	runtime.SetFinalizer(s, (*StreamMacdfix).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamMacdfix) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamMacdfix.Reset")
+	}
+	return statusError("StreamMacdfix.Reset", C.ft_stream_macdfix_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamMacdfix) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_macdfix_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamMacdext is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming MACD with a moving-average type per leg: (macd, signal, hist), NaN until the signal is valid.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamMacdext struct {
+	mu sync.Mutex
+	h  *C.FtStreamMacdext
+}
+
+// NewStreamMacdext creates a StreamMacdext.
+func NewStreamMacdext(fastperiod int, fastmatype MAType, slowperiod int, slowmatype MAType, signalperiod int, signalmatype MAType) (*StreamMacdext, error) {
+	var h *C.FtStreamMacdext
+	if err := statusError("NewStreamMacdext", C.ft_stream_macdext_new(C.int64_t(fastperiod), C.int32_t(fastmatype), C.int64_t(slowperiod), C.int32_t(slowmatype), C.int64_t(signalperiod), C.int32_t(signalmatype), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMacdext{h: h}
+	runtime.SetFinalizer(s, (*StreamMacdext).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamMacdext) Update(close float64) (macd float64, signal float64, hist float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, 0, closedError("StreamMacdext.Update")
+	}
+	if err := statusError("StreamMacdext.Update", C.ft_stream_macdext_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&macd)), (*C.double)(unsafe.Pointer(&signal)), (*C.double)(unsafe.Pointer(&hist)))); err != nil {
+		return 0, 0, 0, err
+	}
+	return macd, signal, hist, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamMacdext) Peek(close float64) (macd float64, signal float64, hist float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, 0, closedError("StreamMacdext.Peek")
+	}
+	if err := statusError("StreamMacdext.Peek", C.ft_stream_macdext_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&macd)), (*C.double)(unsafe.Pointer(&signal)), (*C.double)(unsafe.Pointer(&hist)))); err != nil {
+		return 0, 0, 0, err
+	}
+	return macd, signal, hist, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamMacdext.
+func (s *StreamMacdext) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamMacdext.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_macdext_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamMacdext.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_macdext_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamMacdext.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamMacdext restores a StreamMacdext from a snapshot made by Save.
+func LoadStreamMacdext(snapshot []byte) (*StreamMacdext, error) {
+	var h *C.FtStreamMacdext
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamMacdext", C.ft_stream_macdext_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMacdext{h: h}
+	runtime.SetFinalizer(s, (*StreamMacdext).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamMacdext) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamMacdext.Reset")
+	}
+	return statusError("StreamMacdext.Reset", C.ft_stream_macdext_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamMacdext) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_macdext_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamApo is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming absolute price oscillator: fast MA - slow MA (both of type `matype`).
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamApo struct {
+	mu sync.Mutex
+	h  *C.FtStreamApo
+}
+
+// NewStreamApo creates a StreamApo.
+func NewStreamApo(fastperiod int, slowperiod int, matype MAType) (*StreamApo, error) {
+	var h *C.FtStreamApo
+	if err := statusError("NewStreamApo", C.ft_stream_apo_new(C.int64_t(fastperiod), C.int64_t(slowperiod), C.int32_t(matype), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamApo{h: h}
+	runtime.SetFinalizer(s, (*StreamApo).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamApo) Update(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamApo.Update")
+	}
+	if err := statusError("StreamApo.Update", C.ft_stream_apo_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamApo) Peek(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamApo.Peek")
+	}
+	if err := statusError("StreamApo.Peek", C.ft_stream_apo_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamApo.
+func (s *StreamApo) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamApo.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_apo_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamApo.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_apo_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamApo.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamApo restores a StreamApo from a snapshot made by Save.
+func LoadStreamApo(snapshot []byte) (*StreamApo, error) {
+	var h *C.FtStreamApo
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamApo", C.ft_stream_apo_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamApo{h: h}
+	runtime.SetFinalizer(s, (*StreamApo).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamApo) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamApo.Reset")
+	}
+	return statusError("StreamApo.Reset", C.ft_stream_apo_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamApo) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_apo_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamPpo is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming percentage price oscillator: (ppo, signal, hist); the signal is an EMA of the PPO line.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamPpo struct {
+	mu sync.Mutex
+	h  *C.FtStreamPpo
+}
+
+// NewStreamPpo creates a StreamPpo.
+func NewStreamPpo(fastperiod int, slowperiod int, signalperiod int, matype MAType) (*StreamPpo, error) {
+	var h *C.FtStreamPpo
+	if err := statusError("NewStreamPpo", C.ft_stream_ppo_new(C.int64_t(fastperiod), C.int64_t(slowperiod), C.int64_t(signalperiod), C.int32_t(matype), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamPpo{h: h}
+	runtime.SetFinalizer(s, (*StreamPpo).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamPpo) Update(close float64) (ppo float64, signal float64, hist float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, 0, closedError("StreamPpo.Update")
+	}
+	if err := statusError("StreamPpo.Update", C.ft_stream_ppo_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&ppo)), (*C.double)(unsafe.Pointer(&signal)), (*C.double)(unsafe.Pointer(&hist)))); err != nil {
+		return 0, 0, 0, err
+	}
+	return ppo, signal, hist, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamPpo) Peek(close float64) (ppo float64, signal float64, hist float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, 0, closedError("StreamPpo.Peek")
+	}
+	if err := statusError("StreamPpo.Peek", C.ft_stream_ppo_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&ppo)), (*C.double)(unsafe.Pointer(&signal)), (*C.double)(unsafe.Pointer(&hist)))); err != nil {
+		return 0, 0, 0, err
+	}
+	return ppo, signal, hist, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamPpo.
+func (s *StreamPpo) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamPpo.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_ppo_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamPpo.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_ppo_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamPpo.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamPpo restores a StreamPpo from a snapshot made by Save.
+func LoadStreamPpo(snapshot []byte) (*StreamPpo, error) {
+	var h *C.FtStreamPpo
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamPpo", C.ft_stream_ppo_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamPpo{h: h}
+	runtime.SetFinalizer(s, (*StreamPpo).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamPpo) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamPpo.Reset")
+	}
+	return statusError("StreamPpo.Reset", C.ft_stream_ppo_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamPpo) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_ppo_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamTrix is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming TRIX: one-bar percent rate of change of a triple EMA.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamTrix struct {
+	mu sync.Mutex
+	h  *C.FtStreamTrix
+}
+
+// NewStreamTrix creates a StreamTrix.
+func NewStreamTrix(timeperiod int) (*StreamTrix, error) {
+	var h *C.FtStreamTrix
+	if err := statusError("NewStreamTrix", C.ft_stream_trix_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamTrix{h: h}
+	runtime.SetFinalizer(s, (*StreamTrix).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamTrix) Update(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamTrix.Update")
+	}
+	if err := statusError("StreamTrix.Update", C.ft_stream_trix_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamTrix) Peek(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamTrix.Peek")
+	}
+	if err := statusError("StreamTrix.Peek", C.ft_stream_trix_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamTrix.
+func (s *StreamTrix) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamTrix.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_trix_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamTrix.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_trix_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamTrix.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamTrix restores a StreamTrix from a snapshot made by Save.
+func LoadStreamTrix(snapshot []byte) (*StreamTrix, error) {
+	var h *C.FtStreamTrix
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamTrix", C.ft_stream_trix_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamTrix{h: h}
+	runtime.SetFinalizer(s, (*StreamTrix).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamTrix) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamTrix.Reset")
+	}
+	return statusError("StreamTrix.Reset", C.ft_stream_trix_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamTrix) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_trix_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamWillr is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Williams %R: -100 * (highest high - close) / (highest high - lowest low) over `timeperiod` bars.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamWillr struct {
+	mu sync.Mutex
+	h  *C.FtStreamWillr
+}
+
+// NewStreamWillr creates a StreamWillr.
+func NewStreamWillr(timeperiod int) (*StreamWillr, error) {
+	var h *C.FtStreamWillr
+	if err := statusError("NewStreamWillr", C.ft_stream_willr_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamWillr{h: h}
+	runtime.SetFinalizer(s, (*StreamWillr).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamWillr) Update(high float64, low float64, close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamWillr.Update")
+	}
+	if err := statusError("StreamWillr.Update", C.ft_stream_willr_update(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamWillr) Peek(high float64, low float64, close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamWillr.Peek")
+	}
+	if err := statusError("StreamWillr.Peek", C.ft_stream_willr_peek(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamWillr.
+func (s *StreamWillr) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamWillr.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_willr_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamWillr.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_willr_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamWillr.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamWillr restores a StreamWillr from a snapshot made by Save.
+func LoadStreamWillr(snapshot []byte) (*StreamWillr, error) {
+	var h *C.FtStreamWillr
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamWillr", C.ft_stream_willr_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamWillr{h: h}
+	runtime.SetFinalizer(s, (*StreamWillr).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamWillr) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamWillr.Reset")
+	}
+	return statusError("StreamWillr.Reset", C.ft_stream_willr_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamWillr) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_willr_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCci is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Commodity Channel Index over `timeperiod` bars.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCci struct {
+	mu sync.Mutex
+	h  *C.FtStreamCci
+}
+
+// NewStreamCci creates a StreamCci.
+func NewStreamCci(timeperiod int) (*StreamCci, error) {
+	var h *C.FtStreamCci
+	if err := statusError("NewStreamCci", C.ft_stream_cci_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCci{h: h}
+	runtime.SetFinalizer(s, (*StreamCci).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCci) Update(high float64, low float64, close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCci.Update")
+	}
+	if err := statusError("StreamCci.Update", C.ft_stream_cci_update(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCci) Peek(high float64, low float64, close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCci.Peek")
+	}
+	if err := statusError("StreamCci.Peek", C.ft_stream_cci_peek(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCci.
+func (s *StreamCci) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCci.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cci_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCci.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cci_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCci.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCci restores a StreamCci from a snapshot made by Save.
+func LoadStreamCci(snapshot []byte) (*StreamCci, error) {
+	var h *C.FtStreamCci
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCci", C.ft_stream_cci_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCci{h: h}
+	runtime.SetFinalizer(s, (*StreamCci).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCci) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCci.Reset")
+	}
+	return statusError("StreamCci.Reset", C.ft_stream_cci_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCci) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cci_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamBop is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Balance of Power: (close - open) / (high - low).
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamBop struct {
+	mu sync.Mutex
+	h  *C.FtStreamBop
+}
+
+// NewStreamBop creates a StreamBop.
+func NewStreamBop() (*StreamBop, error) {
+	var h *C.FtStreamBop
+	if err := statusError("NewStreamBop", C.ft_stream_bop_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamBop{h: h}
+	runtime.SetFinalizer(s, (*StreamBop).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamBop) Update(open float64, high float64, low float64, close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamBop.Update")
+	}
+	if err := statusError("StreamBop.Update", C.ft_stream_bop_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamBop) Peek(open float64, high float64, low float64, close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamBop.Peek")
+	}
+	if err := statusError("StreamBop.Peek", C.ft_stream_bop_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamBop.
+func (s *StreamBop) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamBop.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_bop_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamBop.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_bop_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamBop.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamBop restores a StreamBop from a snapshot made by Save.
+func LoadStreamBop(snapshot []byte) (*StreamBop, error) {
+	var h *C.FtStreamBop
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamBop", C.ft_stream_bop_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamBop{h: h}
+	runtime.SetFinalizer(s, (*StreamBop).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamBop) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamBop.Reset")
+	}
+	return statusError("StreamBop.Reset", C.ft_stream_bop_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamBop) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_bop_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamMom is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming momentum: close - close[timeperiod bars ago].
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamMom struct {
+	mu sync.Mutex
+	h  *C.FtStreamMom
+}
+
+// NewStreamMom creates a StreamMom.
+func NewStreamMom(timeperiod int) (*StreamMom, error) {
+	var h *C.FtStreamMom
+	if err := statusError("NewStreamMom", C.ft_stream_mom_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMom{h: h}
+	runtime.SetFinalizer(s, (*StreamMom).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamMom) Update(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamMom.Update")
+	}
+	if err := statusError("StreamMom.Update", C.ft_stream_mom_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamMom) Peek(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamMom.Peek")
+	}
+	if err := statusError("StreamMom.Peek", C.ft_stream_mom_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamMom.
+func (s *StreamMom) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamMom.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_mom_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamMom.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_mom_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamMom.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamMom restores a StreamMom from a snapshot made by Save.
+func LoadStreamMom(snapshot []byte) (*StreamMom, error) {
+	var h *C.FtStreamMom
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamMom", C.ft_stream_mom_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMom{h: h}
+	runtime.SetFinalizer(s, (*StreamMom).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamMom) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamMom.Reset")
+	}
+	return statusError("StreamMom.Reset", C.ft_stream_mom_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamMom) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_mom_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamRoc is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming rate of change: (close - prev) / prev * 100 (NaN where prev is 0).
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamRoc struct {
+	mu sync.Mutex
+	h  *C.FtStreamRoc
+}
+
+// NewStreamRoc creates a StreamRoc.
+func NewStreamRoc(timeperiod int) (*StreamRoc, error) {
+	var h *C.FtStreamRoc
+	if err := statusError("NewStreamRoc", C.ft_stream_roc_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamRoc{h: h}
+	runtime.SetFinalizer(s, (*StreamRoc).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamRoc) Update(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamRoc.Update")
+	}
+	if err := statusError("StreamRoc.Update", C.ft_stream_roc_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamRoc) Peek(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamRoc.Peek")
+	}
+	if err := statusError("StreamRoc.Peek", C.ft_stream_roc_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamRoc.
+func (s *StreamRoc) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamRoc.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_roc_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamRoc.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_roc_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamRoc.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamRoc restores a StreamRoc from a snapshot made by Save.
+func LoadStreamRoc(snapshot []byte) (*StreamRoc, error) {
+	var h *C.FtStreamRoc
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamRoc", C.ft_stream_roc_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamRoc{h: h}
+	runtime.SetFinalizer(s, (*StreamRoc).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamRoc) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamRoc.Reset")
+	}
+	return statusError("StreamRoc.Reset", C.ft_stream_roc_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamRoc) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_roc_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamRocp is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming rate of change percentage: (close - prev) / prev (NaN where prev is 0).
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamRocp struct {
+	mu sync.Mutex
+	h  *C.FtStreamRocp
+}
+
+// NewStreamRocp creates a StreamRocp.
+func NewStreamRocp(timeperiod int) (*StreamRocp, error) {
+	var h *C.FtStreamRocp
+	if err := statusError("NewStreamRocp", C.ft_stream_rocp_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamRocp{h: h}
+	runtime.SetFinalizer(s, (*StreamRocp).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamRocp) Update(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamRocp.Update")
+	}
+	if err := statusError("StreamRocp.Update", C.ft_stream_rocp_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamRocp) Peek(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamRocp.Peek")
+	}
+	if err := statusError("StreamRocp.Peek", C.ft_stream_rocp_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamRocp.
+func (s *StreamRocp) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamRocp.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_rocp_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamRocp.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_rocp_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamRocp.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamRocp restores a StreamRocp from a snapshot made by Save.
+func LoadStreamRocp(snapshot []byte) (*StreamRocp, error) {
+	var h *C.FtStreamRocp
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamRocp", C.ft_stream_rocp_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamRocp{h: h}
+	runtime.SetFinalizer(s, (*StreamRocp).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamRocp) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamRocp.Reset")
+	}
+	return statusError("StreamRocp.Reset", C.ft_stream_rocp_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamRocp) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_rocp_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamRocr is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming rate of change ratio: close / prev (NaN where prev is 0).
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamRocr struct {
+	mu sync.Mutex
+	h  *C.FtStreamRocr
+}
+
+// NewStreamRocr creates a StreamRocr.
+func NewStreamRocr(timeperiod int) (*StreamRocr, error) {
+	var h *C.FtStreamRocr
+	if err := statusError("NewStreamRocr", C.ft_stream_rocr_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamRocr{h: h}
+	runtime.SetFinalizer(s, (*StreamRocr).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamRocr) Update(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamRocr.Update")
+	}
+	if err := statusError("StreamRocr.Update", C.ft_stream_rocr_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamRocr) Peek(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamRocr.Peek")
+	}
+	if err := statusError("StreamRocr.Peek", C.ft_stream_rocr_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamRocr.
+func (s *StreamRocr) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamRocr.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_rocr_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamRocr.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_rocr_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamRocr.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamRocr restores a StreamRocr from a snapshot made by Save.
+func LoadStreamRocr(snapshot []byte) (*StreamRocr, error) {
+	var h *C.FtStreamRocr
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamRocr", C.ft_stream_rocr_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamRocr{h: h}
+	runtime.SetFinalizer(s, (*StreamRocr).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamRocr) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamRocr.Reset")
+	}
+	return statusError("StreamRocr.Reset", C.ft_stream_rocr_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamRocr) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_rocr_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamRocr100 is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming rate of change ratio x 100: close / prev * 100 (NaN where prev is 0).
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamRocr100 struct {
+	mu sync.Mutex
+	h  *C.FtStreamRocr100
+}
+
+// NewStreamRocr100 creates a StreamRocr100.
+func NewStreamRocr100(timeperiod int) (*StreamRocr100, error) {
+	var h *C.FtStreamRocr100
+	if err := statusError("NewStreamRocr100", C.ft_stream_rocr100_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamRocr100{h: h}
+	runtime.SetFinalizer(s, (*StreamRocr100).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamRocr100) Update(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamRocr100.Update")
+	}
+	if err := statusError("StreamRocr100.Update", C.ft_stream_rocr100_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamRocr100) Peek(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamRocr100.Peek")
+	}
+	if err := statusError("StreamRocr100.Peek", C.ft_stream_rocr100_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamRocr100.
+func (s *StreamRocr100) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamRocr100.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_rocr100_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamRocr100.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_rocr100_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamRocr100.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamRocr100 restores a StreamRocr100 from a snapshot made by Save.
+func LoadStreamRocr100(snapshot []byte) (*StreamRocr100, error) {
+	var h *C.FtStreamRocr100
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamRocr100", C.ft_stream_rocr100_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamRocr100{h: h}
+	runtime.SetFinalizer(s, (*StreamRocr100).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamRocr100) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamRocr100.Reset")
+	}
+	return statusError("StreamRocr100.Reset", C.ft_stream_rocr100_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamRocr100) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_rocr100_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamAroon is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Aroon: (aroon_down, aroon_up) over a `timeperiod + 1` bar window; ties go to the most recent bar.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamAroon struct {
+	mu sync.Mutex
+	h  *C.FtStreamAroon
+}
+
+// NewStreamAroon creates a StreamAroon.
+func NewStreamAroon(timeperiod int) (*StreamAroon, error) {
+	var h *C.FtStreamAroon
+	if err := statusError("NewStreamAroon", C.ft_stream_aroon_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamAroon{h: h}
+	runtime.SetFinalizer(s, (*StreamAroon).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamAroon) Update(high float64, low float64) (aroondown float64, aroonup float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, closedError("StreamAroon.Update")
+	}
+	if err := statusError("StreamAroon.Update", C.ft_stream_aroon_update(s.h, C.double(high), C.double(low), (*C.double)(unsafe.Pointer(&aroondown)), (*C.double)(unsafe.Pointer(&aroonup)))); err != nil {
+		return 0, 0, err
+	}
+	return aroondown, aroonup, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamAroon) Peek(high float64, low float64) (aroondown float64, aroonup float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, closedError("StreamAroon.Peek")
+	}
+	if err := statusError("StreamAroon.Peek", C.ft_stream_aroon_peek(s.h, C.double(high), C.double(low), (*C.double)(unsafe.Pointer(&aroondown)), (*C.double)(unsafe.Pointer(&aroonup)))); err != nil {
+		return 0, 0, err
+	}
+	return aroondown, aroonup, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamAroon.
+func (s *StreamAroon) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamAroon.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_aroon_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamAroon.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_aroon_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamAroon.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamAroon restores a StreamAroon from a snapshot made by Save.
+func LoadStreamAroon(snapshot []byte) (*StreamAroon, error) {
+	var h *C.FtStreamAroon
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamAroon", C.ft_stream_aroon_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamAroon{h: h}
+	runtime.SetFinalizer(s, (*StreamAroon).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamAroon) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamAroon.Reset")
+	}
+	return statusError("StreamAroon.Reset", C.ft_stream_aroon_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamAroon) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_aroon_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamAroonosc is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Aroon oscillator: aroon_up - aroon_down.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamAroonosc struct {
+	mu sync.Mutex
+	h  *C.FtStreamAroonosc
+}
+
+// NewStreamAroonosc creates a StreamAroonosc.
+func NewStreamAroonosc(timeperiod int) (*StreamAroonosc, error) {
+	var h *C.FtStreamAroonosc
+	if err := statusError("NewStreamAroonosc", C.ft_stream_aroonosc_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamAroonosc{h: h}
+	runtime.SetFinalizer(s, (*StreamAroonosc).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamAroonosc) Update(high float64, low float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamAroonosc.Update")
+	}
+	if err := statusError("StreamAroonosc.Update", C.ft_stream_aroonosc_update(s.h, C.double(high), C.double(low), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamAroonosc) Peek(high float64, low float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamAroonosc.Peek")
+	}
+	if err := statusError("StreamAroonosc.Peek", C.ft_stream_aroonosc_peek(s.h, C.double(high), C.double(low), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamAroonosc.
+func (s *StreamAroonosc) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamAroonosc.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_aroonosc_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamAroonosc.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_aroonosc_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamAroonosc.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamAroonosc restores a StreamAroonosc from a snapshot made by Save.
+func LoadStreamAroonosc(snapshot []byte) (*StreamAroonosc, error) {
+	var h *C.FtStreamAroonosc
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamAroonosc", C.ft_stream_aroonosc_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamAroonosc{h: h}
+	runtime.SetFinalizer(s, (*StreamAroonosc).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamAroonosc) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamAroonosc.Reset")
+	}
+	return statusError("StreamAroonosc.Reset", C.ft_stream_aroonosc_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamAroonosc) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_aroonosc_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamUltosc is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Ultimate Oscillator: buying pressure over three periods weighted 4 / 2 / 1.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamUltosc struct {
+	mu sync.Mutex
+	h  *C.FtStreamUltosc
+}
+
+// NewStreamUltosc creates a StreamUltosc.
+func NewStreamUltosc(timeperiod1 int, timeperiod2 int, timeperiod3 int) (*StreamUltosc, error) {
+	var h *C.FtStreamUltosc
+	if err := statusError("NewStreamUltosc", C.ft_stream_ultosc_new(C.int64_t(timeperiod1), C.int64_t(timeperiod2), C.int64_t(timeperiod3), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamUltosc{h: h}
+	runtime.SetFinalizer(s, (*StreamUltosc).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamUltosc) Update(high float64, low float64, close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamUltosc.Update")
+	}
+	if err := statusError("StreamUltosc.Update", C.ft_stream_ultosc_update(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamUltosc) Peek(high float64, low float64, close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamUltosc.Peek")
+	}
+	if err := statusError("StreamUltosc.Peek", C.ft_stream_ultosc_peek(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamUltosc.
+func (s *StreamUltosc) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamUltosc.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_ultosc_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamUltosc.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_ultosc_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamUltosc.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamUltosc restores a StreamUltosc from a snapshot made by Save.
+func LoadStreamUltosc(snapshot []byte) (*StreamUltosc, error) {
+	var h *C.FtStreamUltosc
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamUltosc", C.ft_stream_ultosc_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamUltosc{h: h}
+	runtime.SetFinalizer(s, (*StreamUltosc).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamUltosc) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamUltosc.Reset")
+	}
+	return statusError("StreamUltosc.Reset", C.ft_stream_ultosc_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamUltosc) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_ultosc_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCmo is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Chande momentum oscillator (Wilder smoothed gains and losses).
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCmo struct {
+	mu sync.Mutex
+	h  *C.FtStreamCmo
+}
+
+// NewStreamCmo creates a StreamCmo.
+func NewStreamCmo(timeperiod int) (*StreamCmo, error) {
+	var h *C.FtStreamCmo
+	if err := statusError("NewStreamCmo", C.ft_stream_cmo_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCmo{h: h}
+	runtime.SetFinalizer(s, (*StreamCmo).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCmo) Update(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCmo.Update")
+	}
+	if err := statusError("StreamCmo.Update", C.ft_stream_cmo_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCmo) Peek(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCmo.Peek")
+	}
+	if err := statusError("StreamCmo.Peek", C.ft_stream_cmo_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCmo.
+func (s *StreamCmo) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCmo.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cmo_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCmo.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cmo_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCmo.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCmo restores a StreamCmo from a snapshot made by Save.
+func LoadStreamCmo(snapshot []byte) (*StreamCmo, error) {
+	var h *C.FtStreamCmo
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCmo", C.ft_stream_cmo_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCmo{h: h}
+	runtime.SetFinalizer(s, (*StreamCmo).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCmo) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCmo.Reset")
+	}
+	return statusError("StreamCmo.Reset", C.ft_stream_cmo_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCmo) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cmo_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamStochf is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming fast stochastic: (fastk, fastd); both NaN until %D is valid.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamStochf struct {
+	mu sync.Mutex
+	h  *C.FtStreamStochf
+}
+
+// NewStreamStochf creates a StreamStochf.
+func NewStreamStochf(fastkPeriod int, fastdPeriod int, fastdMatype MAType) (*StreamStochf, error) {
+	var h *C.FtStreamStochf
+	if err := statusError("NewStreamStochf", C.ft_stream_stochf_new(C.int64_t(fastkPeriod), C.int64_t(fastdPeriod), C.int32_t(fastdMatype), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamStochf{h: h}
+	runtime.SetFinalizer(s, (*StreamStochf).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamStochf) Update(high float64, low float64, close float64) (fastk float64, fastd float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, closedError("StreamStochf.Update")
+	}
+	if err := statusError("StreamStochf.Update", C.ft_stream_stochf_update(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&fastk)), (*C.double)(unsafe.Pointer(&fastd)))); err != nil {
+		return 0, 0, err
+	}
+	return fastk, fastd, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamStochf) Peek(high float64, low float64, close float64) (fastk float64, fastd float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, closedError("StreamStochf.Peek")
+	}
+	if err := statusError("StreamStochf.Peek", C.ft_stream_stochf_peek(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&fastk)), (*C.double)(unsafe.Pointer(&fastd)))); err != nil {
+		return 0, 0, err
+	}
+	return fastk, fastd, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamStochf.
+func (s *StreamStochf) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamStochf.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_stochf_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamStochf.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_stochf_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamStochf.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamStochf restores a StreamStochf from a snapshot made by Save.
+func LoadStreamStochf(snapshot []byte) (*StreamStochf, error) {
+	var h *C.FtStreamStochf
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamStochf", C.ft_stream_stochf_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamStochf{h: h}
+	runtime.SetFinalizer(s, (*StreamStochf).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamStochf) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamStochf.Reset")
+	}
+	return statusError("StreamStochf.Reset", C.ft_stream_stochf_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamStochf) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_stochf_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamStochrsi is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming stochastic RSI: (fastk, fastd); both NaN until %D is valid.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamStochrsi struct {
+	mu sync.Mutex
+	h  *C.FtStreamStochrsi
+}
+
+// NewStreamStochrsi creates a StreamStochrsi.
+func NewStreamStochrsi(timeperiod int, fastkPeriod int, fastdPeriod int, fastdMatype MAType) (*StreamStochrsi, error) {
+	var h *C.FtStreamStochrsi
+	if err := statusError("NewStreamStochrsi", C.ft_stream_stochrsi_new(C.int64_t(timeperiod), C.int64_t(fastkPeriod), C.int64_t(fastdPeriod), C.int32_t(fastdMatype), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamStochrsi{h: h}
+	runtime.SetFinalizer(s, (*StreamStochrsi).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamStochrsi) Update(close float64) (fastk float64, fastd float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, closedError("StreamStochrsi.Update")
+	}
+	if err := statusError("StreamStochrsi.Update", C.ft_stream_stochrsi_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&fastk)), (*C.double)(unsafe.Pointer(&fastd)))); err != nil {
+		return 0, 0, err
+	}
+	return fastk, fastd, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamStochrsi) Peek(close float64) (fastk float64, fastd float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, closedError("StreamStochrsi.Peek")
+	}
+	if err := statusError("StreamStochrsi.Peek", C.ft_stream_stochrsi_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&fastk)), (*C.double)(unsafe.Pointer(&fastd)))); err != nil {
+		return 0, 0, err
+	}
+	return fastk, fastd, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamStochrsi.
+func (s *StreamStochrsi) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamStochrsi.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_stochrsi_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamStochrsi.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_stochrsi_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamStochrsi.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamStochrsi restores a StreamStochrsi from a snapshot made by Save.
+func LoadStreamStochrsi(snapshot []byte) (*StreamStochrsi, error) {
+	var h *C.FtStreamStochrsi
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamStochrsi", C.ft_stream_stochrsi_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamStochrsi{h: h}
+	runtime.SetFinalizer(s, (*StreamStochrsi).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamStochrsi) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamStochrsi.Reset")
+	}
+	return statusError("StreamStochrsi.Reset", C.ft_stream_stochrsi_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamStochrsi) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_stochrsi_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamPlusDm is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming +DM, Wilder smoothed; first value at bar `timeperiod - 1` (raw +DM when `timeperiod` is 1).
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamPlusDm struct {
+	mu sync.Mutex
+	h  *C.FtStreamPlusDm
+}
+
+// NewStreamPlusDm creates a StreamPlusDm.
+func NewStreamPlusDm(timeperiod int) (*StreamPlusDm, error) {
+	var h *C.FtStreamPlusDm
+	if err := statusError("NewStreamPlusDm", C.ft_stream_plus_dm_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamPlusDm{h: h}
+	runtime.SetFinalizer(s, (*StreamPlusDm).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamPlusDm) Update(high float64, low float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamPlusDm.Update")
+	}
+	if err := statusError("StreamPlusDm.Update", C.ft_stream_plus_dm_update(s.h, C.double(high), C.double(low), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamPlusDm) Peek(high float64, low float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamPlusDm.Peek")
+	}
+	if err := statusError("StreamPlusDm.Peek", C.ft_stream_plus_dm_peek(s.h, C.double(high), C.double(low), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamPlusDm.
+func (s *StreamPlusDm) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamPlusDm.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_plus_dm_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamPlusDm.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_plus_dm_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamPlusDm.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamPlusDm restores a StreamPlusDm from a snapshot made by Save.
+func LoadStreamPlusDm(snapshot []byte) (*StreamPlusDm, error) {
+	var h *C.FtStreamPlusDm
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamPlusDm", C.ft_stream_plus_dm_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamPlusDm{h: h}
+	runtime.SetFinalizer(s, (*StreamPlusDm).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamPlusDm) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamPlusDm.Reset")
+	}
+	return statusError("StreamPlusDm.Reset", C.ft_stream_plus_dm_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamPlusDm) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_plus_dm_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamMinusDm is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming -DM, Wilder smoothed; first value at bar `timeperiod - 1` (raw -DM when `timeperiod` is 1).
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamMinusDm struct {
+	mu sync.Mutex
+	h  *C.FtStreamMinusDm
+}
+
+// NewStreamMinusDm creates a StreamMinusDm.
+func NewStreamMinusDm(timeperiod int) (*StreamMinusDm, error) {
+	var h *C.FtStreamMinusDm
+	if err := statusError("NewStreamMinusDm", C.ft_stream_minus_dm_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMinusDm{h: h}
+	runtime.SetFinalizer(s, (*StreamMinusDm).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamMinusDm) Update(high float64, low float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamMinusDm.Update")
+	}
+	if err := statusError("StreamMinusDm.Update", C.ft_stream_minus_dm_update(s.h, C.double(high), C.double(low), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamMinusDm) Peek(high float64, low float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamMinusDm.Peek")
+	}
+	if err := statusError("StreamMinusDm.Peek", C.ft_stream_minus_dm_peek(s.h, C.double(high), C.double(low), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamMinusDm.
+func (s *StreamMinusDm) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamMinusDm.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_minus_dm_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamMinusDm.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_minus_dm_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamMinusDm.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamMinusDm restores a StreamMinusDm from a snapshot made by Save.
+func LoadStreamMinusDm(snapshot []byte) (*StreamMinusDm, error) {
+	var h *C.FtStreamMinusDm
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamMinusDm", C.ft_stream_minus_dm_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMinusDm{h: h}
+	runtime.SetFinalizer(s, (*StreamMinusDm).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamMinusDm) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamMinusDm.Reset")
+	}
+	return statusError("StreamMinusDm.Reset", C.ft_stream_minus_dm_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamMinusDm) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_minus_dm_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamPlusDi is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming +DI = 100 * smoothed +DM / smoothed TR; first value at bar `timeperiod`.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamPlusDi struct {
+	mu sync.Mutex
+	h  *C.FtStreamPlusDi
+}
+
+// NewStreamPlusDi creates a StreamPlusDi.
+func NewStreamPlusDi(timeperiod int) (*StreamPlusDi, error) {
+	var h *C.FtStreamPlusDi
+	if err := statusError("NewStreamPlusDi", C.ft_stream_plus_di_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamPlusDi{h: h}
+	runtime.SetFinalizer(s, (*StreamPlusDi).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamPlusDi) Update(high float64, low float64, close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamPlusDi.Update")
+	}
+	if err := statusError("StreamPlusDi.Update", C.ft_stream_plus_di_update(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamPlusDi) Peek(high float64, low float64, close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamPlusDi.Peek")
+	}
+	if err := statusError("StreamPlusDi.Peek", C.ft_stream_plus_di_peek(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamPlusDi.
+func (s *StreamPlusDi) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamPlusDi.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_plus_di_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamPlusDi.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_plus_di_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamPlusDi.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamPlusDi restores a StreamPlusDi from a snapshot made by Save.
+func LoadStreamPlusDi(snapshot []byte) (*StreamPlusDi, error) {
+	var h *C.FtStreamPlusDi
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamPlusDi", C.ft_stream_plus_di_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamPlusDi{h: h}
+	runtime.SetFinalizer(s, (*StreamPlusDi).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamPlusDi) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamPlusDi.Reset")
+	}
+	return statusError("StreamPlusDi.Reset", C.ft_stream_plus_di_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamPlusDi) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_plus_di_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamMinusDi is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming -DI = 100 * smoothed -DM / smoothed TR; first value at bar `timeperiod`.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamMinusDi struct {
+	mu sync.Mutex
+	h  *C.FtStreamMinusDi
+}
+
+// NewStreamMinusDi creates a StreamMinusDi.
+func NewStreamMinusDi(timeperiod int) (*StreamMinusDi, error) {
+	var h *C.FtStreamMinusDi
+	if err := statusError("NewStreamMinusDi", C.ft_stream_minus_di_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMinusDi{h: h}
+	runtime.SetFinalizer(s, (*StreamMinusDi).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamMinusDi) Update(high float64, low float64, close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamMinusDi.Update")
+	}
+	if err := statusError("StreamMinusDi.Update", C.ft_stream_minus_di_update(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamMinusDi) Peek(high float64, low float64, close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamMinusDi.Peek")
+	}
+	if err := statusError("StreamMinusDi.Peek", C.ft_stream_minus_di_peek(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamMinusDi.
+func (s *StreamMinusDi) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamMinusDi.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_minus_di_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamMinusDi.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_minus_di_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamMinusDi.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamMinusDi restores a StreamMinusDi from a snapshot made by Save.
+func LoadStreamMinusDi(snapshot []byte) (*StreamMinusDi, error) {
+	var h *C.FtStreamMinusDi
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamMinusDi", C.ft_stream_minus_di_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMinusDi{h: h}
+	runtime.SetFinalizer(s, (*StreamMinusDi).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamMinusDi) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamMinusDi.Reset")
+	}
+	return statusError("StreamMinusDi.Reset", C.ft_stream_minus_di_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamMinusDi) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_minus_di_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamDx is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming directional movement index: 100 * abs(+DI - -DI) / (+DI + -DI); first value at bar `timeperiod`.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamDx struct {
+	mu sync.Mutex
+	h  *C.FtStreamDx
+}
+
+// NewStreamDx creates a StreamDx.
+func NewStreamDx(timeperiod int) (*StreamDx, error) {
+	var h *C.FtStreamDx
+	if err := statusError("NewStreamDx", C.ft_stream_dx_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamDx{h: h}
+	runtime.SetFinalizer(s, (*StreamDx).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamDx) Update(high float64, low float64, close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamDx.Update")
+	}
+	if err := statusError("StreamDx.Update", C.ft_stream_dx_update(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamDx) Peek(high float64, low float64, close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamDx.Peek")
+	}
+	if err := statusError("StreamDx.Peek", C.ft_stream_dx_peek(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamDx.
+func (s *StreamDx) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamDx.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_dx_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamDx.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_dx_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamDx.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamDx restores a StreamDx from a snapshot made by Save.
+func LoadStreamDx(snapshot []byte) (*StreamDx, error) {
+	var h *C.FtStreamDx
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamDx", C.ft_stream_dx_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamDx{h: h}
+	runtime.SetFinalizer(s, (*StreamDx).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamDx) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamDx.Reset")
+	}
+	return statusError("StreamDx.Reset", C.ft_stream_dx_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamDx) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_dx_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamAdx is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming average directional index; first value at bar `2 * timeperiod - 1`.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamAdx struct {
+	mu sync.Mutex
+	h  *C.FtStreamAdx
+}
+
+// NewStreamAdx creates a StreamAdx.
+func NewStreamAdx(timeperiod int) (*StreamAdx, error) {
+	var h *C.FtStreamAdx
+	if err := statusError("NewStreamAdx", C.ft_stream_adx_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamAdx{h: h}
+	runtime.SetFinalizer(s, (*StreamAdx).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamAdx) Update(high float64, low float64, close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamAdx.Update")
+	}
+	if err := statusError("StreamAdx.Update", C.ft_stream_adx_update(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamAdx) Peek(high float64, low float64, close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamAdx.Peek")
+	}
+	if err := statusError("StreamAdx.Peek", C.ft_stream_adx_peek(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamAdx.
+func (s *StreamAdx) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamAdx.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_adx_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamAdx.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_adx_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamAdx.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamAdx restores a StreamAdx from a snapshot made by Save.
+func LoadStreamAdx(snapshot []byte) (*StreamAdx, error) {
+	var h *C.FtStreamAdx
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamAdx", C.ft_stream_adx_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamAdx{h: h}
+	runtime.SetFinalizer(s, (*StreamAdx).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamAdx) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamAdx.Reset")
+	}
+	return statusError("StreamAdx.Reset", C.ft_stream_adx_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamAdx) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_adx_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamAdxr is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming ADX rating: (ADX + ADX `timeperiod - 1` bars ago) / 2.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamAdxr struct {
+	mu sync.Mutex
+	h  *C.FtStreamAdxr
+}
+
+// NewStreamAdxr creates a StreamAdxr.
+func NewStreamAdxr(timeperiod int) (*StreamAdxr, error) {
+	var h *C.FtStreamAdxr
+	if err := statusError("NewStreamAdxr", C.ft_stream_adxr_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamAdxr{h: h}
+	runtime.SetFinalizer(s, (*StreamAdxr).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamAdxr) Update(high float64, low float64, close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamAdxr.Update")
+	}
+	if err := statusError("StreamAdxr.Update", C.ft_stream_adxr_update(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamAdxr) Peek(high float64, low float64, close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamAdxr.Peek")
+	}
+	if err := statusError("StreamAdxr.Peek", C.ft_stream_adxr_peek(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamAdxr.
+func (s *StreamAdxr) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamAdxr.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_adxr_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamAdxr.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_adxr_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamAdxr.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamAdxr restores a StreamAdxr from a snapshot made by Save.
+func LoadStreamAdxr(snapshot []byte) (*StreamAdxr, error) {
+	var h *C.FtStreamAdxr
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamAdxr", C.ft_stream_adxr_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamAdxr{h: h}
+	runtime.SetFinalizer(s, (*StreamAdxr).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamAdxr) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamAdxr.Reset")
+	}
+	return statusError("StreamAdxr.Reset", C.ft_stream_adxr_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamAdxr) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_adxr_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamMfi is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming money flow index over `timeperiod` bars of typical-price money flow. Mirrors the batch zero-exact running flow sums, so a window without money flow (e.g. all-zero volume) is 0 exactly as in the batch function.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamMfi struct {
+	mu sync.Mutex
+	h  *C.FtStreamMfi
+}
+
+// NewStreamMfi creates a StreamMfi.
+func NewStreamMfi(timeperiod int) (*StreamMfi, error) {
+	var h *C.FtStreamMfi
+	if err := statusError("NewStreamMfi", C.ft_stream_mfi_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMfi{h: h}
+	runtime.SetFinalizer(s, (*StreamMfi).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamMfi) Update(high float64, low float64, close float64, volume float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamMfi.Update")
+	}
+	if err := statusError("StreamMfi.Update", C.ft_stream_mfi_update(s.h, C.double(high), C.double(low), C.double(close), C.double(volume), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamMfi) Peek(high float64, low float64, close float64, volume float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamMfi.Peek")
+	}
+	if err := statusError("StreamMfi.Peek", C.ft_stream_mfi_peek(s.h, C.double(high), C.double(low), C.double(close), C.double(volume), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamMfi.
+func (s *StreamMfi) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamMfi.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_mfi_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamMfi.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_mfi_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamMfi.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamMfi restores a StreamMfi from a snapshot made by Save.
+func LoadStreamMfi(snapshot []byte) (*StreamMfi, error) {
+	var h *C.FtStreamMfi
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamMfi", C.ft_stream_mfi_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMfi{h: h}
+	runtime.SetFinalizer(s, (*StreamMfi).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamMfi) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamMfi.Reset")
+	}
+	return statusError("StreamMfi.Reset", C.ft_stream_mfi_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamMfi) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_mfi_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamTrange is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming true range (NaN on the first bar: no previous close).
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamTrange struct {
+	mu sync.Mutex
+	h  *C.FtStreamTrange
+}
+
+// NewStreamTrange creates a StreamTrange.
+func NewStreamTrange() (*StreamTrange, error) {
+	var h *C.FtStreamTrange
+	if err := statusError("NewStreamTrange", C.ft_stream_trange_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamTrange{h: h}
+	runtime.SetFinalizer(s, (*StreamTrange).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamTrange) Update(high float64, low float64, close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamTrange.Update")
+	}
+	if err := statusError("StreamTrange.Update", C.ft_stream_trange_update(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamTrange) Peek(high float64, low float64, close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamTrange.Peek")
+	}
+	if err := statusError("StreamTrange.Peek", C.ft_stream_trange_peek(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamTrange.
+func (s *StreamTrange) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamTrange.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_trange_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamTrange.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_trange_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamTrange.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamTrange restores a StreamTrange from a snapshot made by Save.
+func LoadStreamTrange(snapshot []byte) (*StreamTrange, error) {
+	var h *C.FtStreamTrange
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamTrange", C.ft_stream_trange_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamTrange{h: h}
+	runtime.SetFinalizer(s, (*StreamTrange).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamTrange) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamTrange.Reset")
+	}
+	return statusError("StreamTrange.Reset", C.ft_stream_trange_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamTrange) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_trange_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamNatr is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming normalized ATR: Wilder ATR / close * 100 (NaN where close is 0).
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamNatr struct {
+	mu sync.Mutex
+	h  *C.FtStreamNatr
+}
+
+// NewStreamNatr creates a StreamNatr.
+func NewStreamNatr(timeperiod int) (*StreamNatr, error) {
+	var h *C.FtStreamNatr
+	if err := statusError("NewStreamNatr", C.ft_stream_natr_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamNatr{h: h}
+	runtime.SetFinalizer(s, (*StreamNatr).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamNatr) Update(high float64, low float64, close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamNatr.Update")
+	}
+	if err := statusError("StreamNatr.Update", C.ft_stream_natr_update(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamNatr) Peek(high float64, low float64, close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamNatr.Peek")
+	}
+	if err := statusError("StreamNatr.Peek", C.ft_stream_natr_peek(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamNatr.
+func (s *StreamNatr) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamNatr.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_natr_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamNatr.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_natr_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamNatr.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamNatr restores a StreamNatr from a snapshot made by Save.
+func LoadStreamNatr(snapshot []byte) (*StreamNatr, error) {
+	var h *C.FtStreamNatr
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamNatr", C.ft_stream_natr_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamNatr{h: h}
+	runtime.SetFinalizer(s, (*StreamNatr).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamNatr) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamNatr.Reset")
+	}
+	return statusError("StreamNatr.Reset", C.ft_stream_natr_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamNatr) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_natr_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamObv is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming on-balance volume; the first bar is the first volume.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamObv struct {
+	mu sync.Mutex
+	h  *C.FtStreamObv
+}
+
+// NewStreamObv creates a StreamObv.
+func NewStreamObv() (*StreamObv, error) {
+	var h *C.FtStreamObv
+	if err := statusError("NewStreamObv", C.ft_stream_obv_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamObv{h: h}
+	runtime.SetFinalizer(s, (*StreamObv).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamObv) Update(close float64, volume float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamObv.Update")
+	}
+	if err := statusError("StreamObv.Update", C.ft_stream_obv_update(s.h, C.double(close), C.double(volume), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamObv) Peek(close float64, volume float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamObv.Peek")
+	}
+	if err := statusError("StreamObv.Peek", C.ft_stream_obv_peek(s.h, C.double(close), C.double(volume), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamObv.
+func (s *StreamObv) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamObv.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_obv_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamObv.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_obv_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamObv.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamObv restores a StreamObv from a snapshot made by Save.
+func LoadStreamObv(snapshot []byte) (*StreamObv, error) {
+	var h *C.FtStreamObv
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamObv", C.ft_stream_obv_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamObv{h: h}
+	runtime.SetFinalizer(s, (*StreamObv).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamObv) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamObv.Reset")
+	}
+	return statusError("StreamObv.Reset", C.ft_stream_obv_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamObv) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_obv_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamAd is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Chaikin accumulation / distribution line.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamAd struct {
+	mu sync.Mutex
+	h  *C.FtStreamAd
+}
+
+// NewStreamAd creates a StreamAd.
+func NewStreamAd() (*StreamAd, error) {
+	var h *C.FtStreamAd
+	if err := statusError("NewStreamAd", C.ft_stream_ad_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamAd{h: h}
+	runtime.SetFinalizer(s, (*StreamAd).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamAd) Update(high float64, low float64, close float64, volume float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamAd.Update")
+	}
+	if err := statusError("StreamAd.Update", C.ft_stream_ad_update(s.h, C.double(high), C.double(low), C.double(close), C.double(volume), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamAd) Peek(high float64, low float64, close float64, volume float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamAd.Peek")
+	}
+	if err := statusError("StreamAd.Peek", C.ft_stream_ad_peek(s.h, C.double(high), C.double(low), C.double(close), C.double(volume), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamAd.
+func (s *StreamAd) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamAd.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_ad_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamAd.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_ad_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamAd.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamAd restores a StreamAd from a snapshot made by Save.
+func LoadStreamAd(snapshot []byte) (*StreamAd, error) {
+	var h *C.FtStreamAd
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamAd", C.ft_stream_ad_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamAd{h: h}
+	runtime.SetFinalizer(s, (*StreamAd).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamAd) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamAd.Reset")
+	}
+	return statusError("StreamAd.Reset", C.ft_stream_ad_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamAd) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_ad_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamAdosc is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Chaikin A/D oscillator: fast EMA - slow EMA of the A/D line, both seeded from its first value.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamAdosc struct {
+	mu sync.Mutex
+	h  *C.FtStreamAdosc
+}
+
+// NewStreamAdosc creates a StreamAdosc.
+func NewStreamAdosc(fastperiod int, slowperiod int) (*StreamAdosc, error) {
+	var h *C.FtStreamAdosc
+	if err := statusError("NewStreamAdosc", C.ft_stream_adosc_new(C.int64_t(fastperiod), C.int64_t(slowperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamAdosc{h: h}
+	runtime.SetFinalizer(s, (*StreamAdosc).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamAdosc) Update(high float64, low float64, close float64, volume float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamAdosc.Update")
+	}
+	if err := statusError("StreamAdosc.Update", C.ft_stream_adosc_update(s.h, C.double(high), C.double(low), C.double(close), C.double(volume), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamAdosc) Peek(high float64, low float64, close float64, volume float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamAdosc.Peek")
+	}
+	if err := statusError("StreamAdosc.Peek", C.ft_stream_adosc_peek(s.h, C.double(high), C.double(low), C.double(close), C.double(volume), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamAdosc.
+func (s *StreamAdosc) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamAdosc.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_adosc_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamAdosc.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_adosc_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamAdosc.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamAdosc restores a StreamAdosc from a snapshot made by Save.
+func LoadStreamAdosc(snapshot []byte) (*StreamAdosc, error) {
+	var h *C.FtStreamAdosc
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamAdosc", C.ft_stream_adosc_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamAdosc{h: h}
+	runtime.SetFinalizer(s, (*StreamAdosc).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamAdosc) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamAdosc.Reset")
+	}
+	return statusError("StreamAdosc.Reset", C.ft_stream_adosc_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamAdosc) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_adosc_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdl2crows is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Two Crows candlestick pattern: -100 (bearish) when matched, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdl2crows struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdl2crows
+}
+
+// NewStreamCdl2crows creates a StreamCdl2crows.
+func NewStreamCdl2crows() (*StreamCdl2crows, error) {
+	var h *C.FtStreamCdl2crows
+	if err := statusError("NewStreamCdl2crows", C.ft_stream_cdl2crows_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdl2crows{h: h}
+	runtime.SetFinalizer(s, (*StreamCdl2crows).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdl2crows) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdl2crows.Update")
+	}
+	if err := statusError("StreamCdl2crows.Update", C.ft_stream_cdl2crows_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdl2crows) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdl2crows.Peek")
+	}
+	if err := statusError("StreamCdl2crows.Peek", C.ft_stream_cdl2crows_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdl2crows.
+func (s *StreamCdl2crows) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdl2crows.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdl2crows_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdl2crows.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdl2crows_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdl2crows.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdl2crows restores a StreamCdl2crows from a snapshot made by Save.
+func LoadStreamCdl2crows(snapshot []byte) (*StreamCdl2crows, error) {
+	var h *C.FtStreamCdl2crows
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdl2crows", C.ft_stream_cdl2crows_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdl2crows{h: h}
+	runtime.SetFinalizer(s, (*StreamCdl2crows).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdl2crows) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdl2crows.Reset")
+	}
+	return statusError("StreamCdl2crows.Reset", C.ft_stream_cdl2crows_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdl2crows) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdl2crows_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdl3blackcrows is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Three Black Crows candlestick pattern: -100 (bearish) when matched, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdl3blackcrows struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdl3blackcrows
+}
+
+// NewStreamCdl3blackcrows creates a StreamCdl3blackcrows.
+func NewStreamCdl3blackcrows() (*StreamCdl3blackcrows, error) {
+	var h *C.FtStreamCdl3blackcrows
+	if err := statusError("NewStreamCdl3blackcrows", C.ft_stream_cdl3blackcrows_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdl3blackcrows{h: h}
+	runtime.SetFinalizer(s, (*StreamCdl3blackcrows).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdl3blackcrows) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdl3blackcrows.Update")
+	}
+	if err := statusError("StreamCdl3blackcrows.Update", C.ft_stream_cdl3blackcrows_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdl3blackcrows) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdl3blackcrows.Peek")
+	}
+	if err := statusError("StreamCdl3blackcrows.Peek", C.ft_stream_cdl3blackcrows_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdl3blackcrows.
+func (s *StreamCdl3blackcrows) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdl3blackcrows.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdl3blackcrows_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdl3blackcrows.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdl3blackcrows_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdl3blackcrows.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdl3blackcrows restores a StreamCdl3blackcrows from a snapshot made by Save.
+func LoadStreamCdl3blackcrows(snapshot []byte) (*StreamCdl3blackcrows, error) {
+	var h *C.FtStreamCdl3blackcrows
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdl3blackcrows", C.ft_stream_cdl3blackcrows_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdl3blackcrows{h: h}
+	runtime.SetFinalizer(s, (*StreamCdl3blackcrows).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdl3blackcrows) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdl3blackcrows.Reset")
+	}
+	return statusError("StreamCdl3blackcrows.Reset", C.ft_stream_cdl3blackcrows_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdl3blackcrows) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdl3blackcrows_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdl3inside is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Three Inside Up/Down candlestick pattern: 100 bullish, -100 bearish, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdl3inside struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdl3inside
+}
+
+// NewStreamCdl3inside creates a StreamCdl3inside.
+func NewStreamCdl3inside() (*StreamCdl3inside, error) {
+	var h *C.FtStreamCdl3inside
+	if err := statusError("NewStreamCdl3inside", C.ft_stream_cdl3inside_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdl3inside{h: h}
+	runtime.SetFinalizer(s, (*StreamCdl3inside).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdl3inside) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdl3inside.Update")
+	}
+	if err := statusError("StreamCdl3inside.Update", C.ft_stream_cdl3inside_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdl3inside) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdl3inside.Peek")
+	}
+	if err := statusError("StreamCdl3inside.Peek", C.ft_stream_cdl3inside_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdl3inside.
+func (s *StreamCdl3inside) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdl3inside.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdl3inside_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdl3inside.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdl3inside_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdl3inside.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdl3inside restores a StreamCdl3inside from a snapshot made by Save.
+func LoadStreamCdl3inside(snapshot []byte) (*StreamCdl3inside, error) {
+	var h *C.FtStreamCdl3inside
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdl3inside", C.ft_stream_cdl3inside_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdl3inside{h: h}
+	runtime.SetFinalizer(s, (*StreamCdl3inside).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdl3inside) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdl3inside.Reset")
+	}
+	return statusError("StreamCdl3inside.Reset", C.ft_stream_cdl3inside_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdl3inside) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdl3inside_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdl3linestrike is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Three-Line Strike candlestick pattern: 100 bullish, -100 bearish, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdl3linestrike struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdl3linestrike
+}
+
+// NewStreamCdl3linestrike creates a StreamCdl3linestrike.
+func NewStreamCdl3linestrike() (*StreamCdl3linestrike, error) {
+	var h *C.FtStreamCdl3linestrike
+	if err := statusError("NewStreamCdl3linestrike", C.ft_stream_cdl3linestrike_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdl3linestrike{h: h}
+	runtime.SetFinalizer(s, (*StreamCdl3linestrike).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdl3linestrike) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdl3linestrike.Update")
+	}
+	if err := statusError("StreamCdl3linestrike.Update", C.ft_stream_cdl3linestrike_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdl3linestrike) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdl3linestrike.Peek")
+	}
+	if err := statusError("StreamCdl3linestrike.Peek", C.ft_stream_cdl3linestrike_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdl3linestrike.
+func (s *StreamCdl3linestrike) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdl3linestrike.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdl3linestrike_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdl3linestrike.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdl3linestrike_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdl3linestrike.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdl3linestrike restores a StreamCdl3linestrike from a snapshot made by Save.
+func LoadStreamCdl3linestrike(snapshot []byte) (*StreamCdl3linestrike, error) {
+	var h *C.FtStreamCdl3linestrike
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdl3linestrike", C.ft_stream_cdl3linestrike_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdl3linestrike{h: h}
+	runtime.SetFinalizer(s, (*StreamCdl3linestrike).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdl3linestrike) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdl3linestrike.Reset")
+	}
+	return statusError("StreamCdl3linestrike.Reset", C.ft_stream_cdl3linestrike_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdl3linestrike) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdl3linestrike_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdl3outside is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Three Outside Up/Down candlestick pattern: 100 bullish, -100 bearish, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdl3outside struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdl3outside
+}
+
+// NewStreamCdl3outside creates a StreamCdl3outside.
+func NewStreamCdl3outside() (*StreamCdl3outside, error) {
+	var h *C.FtStreamCdl3outside
+	if err := statusError("NewStreamCdl3outside", C.ft_stream_cdl3outside_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdl3outside{h: h}
+	runtime.SetFinalizer(s, (*StreamCdl3outside).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdl3outside) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdl3outside.Update")
+	}
+	if err := statusError("StreamCdl3outside.Update", C.ft_stream_cdl3outside_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdl3outside) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdl3outside.Peek")
+	}
+	if err := statusError("StreamCdl3outside.Peek", C.ft_stream_cdl3outside_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdl3outside.
+func (s *StreamCdl3outside) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdl3outside.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdl3outside_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdl3outside.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdl3outside_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdl3outside.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdl3outside restores a StreamCdl3outside from a snapshot made by Save.
+func LoadStreamCdl3outside(snapshot []byte) (*StreamCdl3outside, error) {
+	var h *C.FtStreamCdl3outside
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdl3outside", C.ft_stream_cdl3outside_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdl3outside{h: h}
+	runtime.SetFinalizer(s, (*StreamCdl3outside).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdl3outside) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdl3outside.Reset")
+	}
+	return statusError("StreamCdl3outside.Reset", C.ft_stream_cdl3outside_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdl3outside) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdl3outside_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdl3starsinsouth is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Three Stars In The South candlestick pattern: 100 (bullish) when matched, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdl3starsinsouth struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdl3starsinsouth
+}
+
+// NewStreamCdl3starsinsouth creates a StreamCdl3starsinsouth.
+func NewStreamCdl3starsinsouth() (*StreamCdl3starsinsouth, error) {
+	var h *C.FtStreamCdl3starsinsouth
+	if err := statusError("NewStreamCdl3starsinsouth", C.ft_stream_cdl3starsinsouth_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdl3starsinsouth{h: h}
+	runtime.SetFinalizer(s, (*StreamCdl3starsinsouth).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdl3starsinsouth) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdl3starsinsouth.Update")
+	}
+	if err := statusError("StreamCdl3starsinsouth.Update", C.ft_stream_cdl3starsinsouth_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdl3starsinsouth) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdl3starsinsouth.Peek")
+	}
+	if err := statusError("StreamCdl3starsinsouth.Peek", C.ft_stream_cdl3starsinsouth_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdl3starsinsouth.
+func (s *StreamCdl3starsinsouth) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdl3starsinsouth.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdl3starsinsouth_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdl3starsinsouth.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdl3starsinsouth_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdl3starsinsouth.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdl3starsinsouth restores a StreamCdl3starsinsouth from a snapshot made by Save.
+func LoadStreamCdl3starsinsouth(snapshot []byte) (*StreamCdl3starsinsouth, error) {
+	var h *C.FtStreamCdl3starsinsouth
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdl3starsinsouth", C.ft_stream_cdl3starsinsouth_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdl3starsinsouth{h: h}
+	runtime.SetFinalizer(s, (*StreamCdl3starsinsouth).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdl3starsinsouth) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdl3starsinsouth.Reset")
+	}
+	return statusError("StreamCdl3starsinsouth.Reset", C.ft_stream_cdl3starsinsouth_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdl3starsinsouth) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdl3starsinsouth_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdl3whitesoldiers is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Three Advancing White Soldiers candlestick pattern: 100 (bullish) when matched, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdl3whitesoldiers struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdl3whitesoldiers
+}
+
+// NewStreamCdl3whitesoldiers creates a StreamCdl3whitesoldiers.
+func NewStreamCdl3whitesoldiers() (*StreamCdl3whitesoldiers, error) {
+	var h *C.FtStreamCdl3whitesoldiers
+	if err := statusError("NewStreamCdl3whitesoldiers", C.ft_stream_cdl3whitesoldiers_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdl3whitesoldiers{h: h}
+	runtime.SetFinalizer(s, (*StreamCdl3whitesoldiers).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdl3whitesoldiers) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdl3whitesoldiers.Update")
+	}
+	if err := statusError("StreamCdl3whitesoldiers.Update", C.ft_stream_cdl3whitesoldiers_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdl3whitesoldiers) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdl3whitesoldiers.Peek")
+	}
+	if err := statusError("StreamCdl3whitesoldiers.Peek", C.ft_stream_cdl3whitesoldiers_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdl3whitesoldiers.
+func (s *StreamCdl3whitesoldiers) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdl3whitesoldiers.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdl3whitesoldiers_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdl3whitesoldiers.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdl3whitesoldiers_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdl3whitesoldiers.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdl3whitesoldiers restores a StreamCdl3whitesoldiers from a snapshot made by Save.
+func LoadStreamCdl3whitesoldiers(snapshot []byte) (*StreamCdl3whitesoldiers, error) {
+	var h *C.FtStreamCdl3whitesoldiers
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdl3whitesoldiers", C.ft_stream_cdl3whitesoldiers_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdl3whitesoldiers{h: h}
+	runtime.SetFinalizer(s, (*StreamCdl3whitesoldiers).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdl3whitesoldiers) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdl3whitesoldiers.Reset")
+	}
+	return statusError("StreamCdl3whitesoldiers.Reset", C.ft_stream_cdl3whitesoldiers_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdl3whitesoldiers) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdl3whitesoldiers_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdlabandonedbaby is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Abandoned Baby candlestick pattern: 100 bullish, -100 bearish, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdlabandonedbaby struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdlabandonedbaby
+}
+
+// NewStreamCdlabandonedbaby creates a StreamCdlabandonedbaby.
+func NewStreamCdlabandonedbaby() (*StreamCdlabandonedbaby, error) {
+	var h *C.FtStreamCdlabandonedbaby
+	if err := statusError("NewStreamCdlabandonedbaby", C.ft_stream_cdlabandonedbaby_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlabandonedbaby{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlabandonedbaby).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdlabandonedbaby) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlabandonedbaby.Update")
+	}
+	if err := statusError("StreamCdlabandonedbaby.Update", C.ft_stream_cdlabandonedbaby_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdlabandonedbaby) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlabandonedbaby.Peek")
+	}
+	if err := statusError("StreamCdlabandonedbaby.Peek", C.ft_stream_cdlabandonedbaby_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdlabandonedbaby.
+func (s *StreamCdlabandonedbaby) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdlabandonedbaby.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdlabandonedbaby_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdlabandonedbaby.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdlabandonedbaby_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdlabandonedbaby.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdlabandonedbaby restores a StreamCdlabandonedbaby from a snapshot made by Save.
+func LoadStreamCdlabandonedbaby(snapshot []byte) (*StreamCdlabandonedbaby, error) {
+	var h *C.FtStreamCdlabandonedbaby
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdlabandonedbaby", C.ft_stream_cdlabandonedbaby_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlabandonedbaby{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlabandonedbaby).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdlabandonedbaby) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdlabandonedbaby.Reset")
+	}
+	return statusError("StreamCdlabandonedbaby.Reset", C.ft_stream_cdlabandonedbaby_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdlabandonedbaby) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdlabandonedbaby_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdladvanceblock is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Advance Block candlestick pattern: -100 (bearish) when matched, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdladvanceblock struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdladvanceblock
+}
+
+// NewStreamCdladvanceblock creates a StreamCdladvanceblock.
+func NewStreamCdladvanceblock() (*StreamCdladvanceblock, error) {
+	var h *C.FtStreamCdladvanceblock
+	if err := statusError("NewStreamCdladvanceblock", C.ft_stream_cdladvanceblock_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdladvanceblock{h: h}
+	runtime.SetFinalizer(s, (*StreamCdladvanceblock).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdladvanceblock) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdladvanceblock.Update")
+	}
+	if err := statusError("StreamCdladvanceblock.Update", C.ft_stream_cdladvanceblock_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdladvanceblock) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdladvanceblock.Peek")
+	}
+	if err := statusError("StreamCdladvanceblock.Peek", C.ft_stream_cdladvanceblock_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdladvanceblock.
+func (s *StreamCdladvanceblock) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdladvanceblock.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdladvanceblock_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdladvanceblock.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdladvanceblock_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdladvanceblock.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdladvanceblock restores a StreamCdladvanceblock from a snapshot made by Save.
+func LoadStreamCdladvanceblock(snapshot []byte) (*StreamCdladvanceblock, error) {
+	var h *C.FtStreamCdladvanceblock
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdladvanceblock", C.ft_stream_cdladvanceblock_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdladvanceblock{h: h}
+	runtime.SetFinalizer(s, (*StreamCdladvanceblock).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdladvanceblock) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdladvanceblock.Reset")
+	}
+	return statusError("StreamCdladvanceblock.Reset", C.ft_stream_cdladvanceblock_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdladvanceblock) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdladvanceblock_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdlbelthold is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Belt-hold candlestick pattern: 100 bullish, -100 bearish, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdlbelthold struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdlbelthold
+}
+
+// NewStreamCdlbelthold creates a StreamCdlbelthold.
+func NewStreamCdlbelthold() (*StreamCdlbelthold, error) {
+	var h *C.FtStreamCdlbelthold
+	if err := statusError("NewStreamCdlbelthold", C.ft_stream_cdlbelthold_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlbelthold{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlbelthold).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdlbelthold) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlbelthold.Update")
+	}
+	if err := statusError("StreamCdlbelthold.Update", C.ft_stream_cdlbelthold_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdlbelthold) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlbelthold.Peek")
+	}
+	if err := statusError("StreamCdlbelthold.Peek", C.ft_stream_cdlbelthold_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdlbelthold.
+func (s *StreamCdlbelthold) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdlbelthold.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdlbelthold_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdlbelthold.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdlbelthold_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdlbelthold.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdlbelthold restores a StreamCdlbelthold from a snapshot made by Save.
+func LoadStreamCdlbelthold(snapshot []byte) (*StreamCdlbelthold, error) {
+	var h *C.FtStreamCdlbelthold
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdlbelthold", C.ft_stream_cdlbelthold_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlbelthold{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlbelthold).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdlbelthold) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdlbelthold.Reset")
+	}
+	return statusError("StreamCdlbelthold.Reset", C.ft_stream_cdlbelthold_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdlbelthold) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdlbelthold_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdlbreakaway is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Breakaway candlestick pattern: 100 bullish, -100 bearish, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdlbreakaway struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdlbreakaway
+}
+
+// NewStreamCdlbreakaway creates a StreamCdlbreakaway.
+func NewStreamCdlbreakaway() (*StreamCdlbreakaway, error) {
+	var h *C.FtStreamCdlbreakaway
+	if err := statusError("NewStreamCdlbreakaway", C.ft_stream_cdlbreakaway_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlbreakaway{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlbreakaway).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdlbreakaway) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlbreakaway.Update")
+	}
+	if err := statusError("StreamCdlbreakaway.Update", C.ft_stream_cdlbreakaway_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdlbreakaway) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlbreakaway.Peek")
+	}
+	if err := statusError("StreamCdlbreakaway.Peek", C.ft_stream_cdlbreakaway_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdlbreakaway.
+func (s *StreamCdlbreakaway) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdlbreakaway.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdlbreakaway_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdlbreakaway.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdlbreakaway_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdlbreakaway.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdlbreakaway restores a StreamCdlbreakaway from a snapshot made by Save.
+func LoadStreamCdlbreakaway(snapshot []byte) (*StreamCdlbreakaway, error) {
+	var h *C.FtStreamCdlbreakaway
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdlbreakaway", C.ft_stream_cdlbreakaway_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlbreakaway{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlbreakaway).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdlbreakaway) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdlbreakaway.Reset")
+	}
+	return statusError("StreamCdlbreakaway.Reset", C.ft_stream_cdlbreakaway_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdlbreakaway) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdlbreakaway_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdlclosingmarubozu is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Closing Marubozu candlestick pattern: 100 bullish, -100 bearish, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdlclosingmarubozu struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdlclosingmarubozu
+}
+
+// NewStreamCdlclosingmarubozu creates a StreamCdlclosingmarubozu.
+func NewStreamCdlclosingmarubozu() (*StreamCdlclosingmarubozu, error) {
+	var h *C.FtStreamCdlclosingmarubozu
+	if err := statusError("NewStreamCdlclosingmarubozu", C.ft_stream_cdlclosingmarubozu_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlclosingmarubozu{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlclosingmarubozu).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdlclosingmarubozu) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlclosingmarubozu.Update")
+	}
+	if err := statusError("StreamCdlclosingmarubozu.Update", C.ft_stream_cdlclosingmarubozu_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdlclosingmarubozu) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlclosingmarubozu.Peek")
+	}
+	if err := statusError("StreamCdlclosingmarubozu.Peek", C.ft_stream_cdlclosingmarubozu_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdlclosingmarubozu.
+func (s *StreamCdlclosingmarubozu) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdlclosingmarubozu.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdlclosingmarubozu_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdlclosingmarubozu.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdlclosingmarubozu_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdlclosingmarubozu.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdlclosingmarubozu restores a StreamCdlclosingmarubozu from a snapshot made by Save.
+func LoadStreamCdlclosingmarubozu(snapshot []byte) (*StreamCdlclosingmarubozu, error) {
+	var h *C.FtStreamCdlclosingmarubozu
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdlclosingmarubozu", C.ft_stream_cdlclosingmarubozu_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlclosingmarubozu{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlclosingmarubozu).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdlclosingmarubozu) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdlclosingmarubozu.Reset")
+	}
+	return statusError("StreamCdlclosingmarubozu.Reset", C.ft_stream_cdlclosingmarubozu_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdlclosingmarubozu) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdlclosingmarubozu_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdlconcealbabyswall is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Concealing Baby Swallow candlestick pattern: 100 (bullish) when matched, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdlconcealbabyswall struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdlconcealbabyswall
+}
+
+// NewStreamCdlconcealbabyswall creates a StreamCdlconcealbabyswall.
+func NewStreamCdlconcealbabyswall() (*StreamCdlconcealbabyswall, error) {
+	var h *C.FtStreamCdlconcealbabyswall
+	if err := statusError("NewStreamCdlconcealbabyswall", C.ft_stream_cdlconcealbabyswall_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlconcealbabyswall{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlconcealbabyswall).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdlconcealbabyswall) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlconcealbabyswall.Update")
+	}
+	if err := statusError("StreamCdlconcealbabyswall.Update", C.ft_stream_cdlconcealbabyswall_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdlconcealbabyswall) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlconcealbabyswall.Peek")
+	}
+	if err := statusError("StreamCdlconcealbabyswall.Peek", C.ft_stream_cdlconcealbabyswall_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdlconcealbabyswall.
+func (s *StreamCdlconcealbabyswall) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdlconcealbabyswall.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdlconcealbabyswall_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdlconcealbabyswall.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdlconcealbabyswall_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdlconcealbabyswall.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdlconcealbabyswall restores a StreamCdlconcealbabyswall from a snapshot made by Save.
+func LoadStreamCdlconcealbabyswall(snapshot []byte) (*StreamCdlconcealbabyswall, error) {
+	var h *C.FtStreamCdlconcealbabyswall
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdlconcealbabyswall", C.ft_stream_cdlconcealbabyswall_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlconcealbabyswall{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlconcealbabyswall).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdlconcealbabyswall) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdlconcealbabyswall.Reset")
+	}
+	return statusError("StreamCdlconcealbabyswall.Reset", C.ft_stream_cdlconcealbabyswall_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdlconcealbabyswall) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdlconcealbabyswall_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdlcounterattack is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Counterattack candlestick pattern: 100 bullish, -100 bearish, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdlcounterattack struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdlcounterattack
+}
+
+// NewStreamCdlcounterattack creates a StreamCdlcounterattack.
+func NewStreamCdlcounterattack() (*StreamCdlcounterattack, error) {
+	var h *C.FtStreamCdlcounterattack
+	if err := statusError("NewStreamCdlcounterattack", C.ft_stream_cdlcounterattack_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlcounterattack{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlcounterattack).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdlcounterattack) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlcounterattack.Update")
+	}
+	if err := statusError("StreamCdlcounterattack.Update", C.ft_stream_cdlcounterattack_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdlcounterattack) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlcounterattack.Peek")
+	}
+	if err := statusError("StreamCdlcounterattack.Peek", C.ft_stream_cdlcounterattack_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdlcounterattack.
+func (s *StreamCdlcounterattack) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdlcounterattack.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdlcounterattack_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdlcounterattack.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdlcounterattack_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdlcounterattack.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdlcounterattack restores a StreamCdlcounterattack from a snapshot made by Save.
+func LoadStreamCdlcounterattack(snapshot []byte) (*StreamCdlcounterattack, error) {
+	var h *C.FtStreamCdlcounterattack
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdlcounterattack", C.ft_stream_cdlcounterattack_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlcounterattack{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlcounterattack).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdlcounterattack) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdlcounterattack.Reset")
+	}
+	return statusError("StreamCdlcounterattack.Reset", C.ft_stream_cdlcounterattack_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdlcounterattack) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdlcounterattack_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdldarkcloudcover is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Dark Cloud Cover candlestick pattern: -100 (bearish) when matched, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdldarkcloudcover struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdldarkcloudcover
+}
+
+// NewStreamCdldarkcloudcover creates a StreamCdldarkcloudcover.
+func NewStreamCdldarkcloudcover() (*StreamCdldarkcloudcover, error) {
+	var h *C.FtStreamCdldarkcloudcover
+	if err := statusError("NewStreamCdldarkcloudcover", C.ft_stream_cdldarkcloudcover_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdldarkcloudcover{h: h}
+	runtime.SetFinalizer(s, (*StreamCdldarkcloudcover).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdldarkcloudcover) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdldarkcloudcover.Update")
+	}
+	if err := statusError("StreamCdldarkcloudcover.Update", C.ft_stream_cdldarkcloudcover_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdldarkcloudcover) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdldarkcloudcover.Peek")
+	}
+	if err := statusError("StreamCdldarkcloudcover.Peek", C.ft_stream_cdldarkcloudcover_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdldarkcloudcover.
+func (s *StreamCdldarkcloudcover) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdldarkcloudcover.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdldarkcloudcover_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdldarkcloudcover.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdldarkcloudcover_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdldarkcloudcover.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdldarkcloudcover restores a StreamCdldarkcloudcover from a snapshot made by Save.
+func LoadStreamCdldarkcloudcover(snapshot []byte) (*StreamCdldarkcloudcover, error) {
+	var h *C.FtStreamCdldarkcloudcover
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdldarkcloudcover", C.ft_stream_cdldarkcloudcover_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdldarkcloudcover{h: h}
+	runtime.SetFinalizer(s, (*StreamCdldarkcloudcover).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdldarkcloudcover) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdldarkcloudcover.Reset")
+	}
+	return statusError("StreamCdldarkcloudcover.Reset", C.ft_stream_cdldarkcloudcover_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdldarkcloudcover) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdldarkcloudcover_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdldoji is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Doji candlestick pattern: 100 when the candle matches (pattern present, not a direction), else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdldoji struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdldoji
+}
+
+// NewStreamCdldoji creates a StreamCdldoji.
+func NewStreamCdldoji() (*StreamCdldoji, error) {
+	var h *C.FtStreamCdldoji
+	if err := statusError("NewStreamCdldoji", C.ft_stream_cdldoji_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdldoji{h: h}
+	runtime.SetFinalizer(s, (*StreamCdldoji).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdldoji) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdldoji.Update")
+	}
+	if err := statusError("StreamCdldoji.Update", C.ft_stream_cdldoji_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdldoji) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdldoji.Peek")
+	}
+	if err := statusError("StreamCdldoji.Peek", C.ft_stream_cdldoji_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdldoji.
+func (s *StreamCdldoji) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdldoji.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdldoji_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdldoji.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdldoji_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdldoji.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdldoji restores a StreamCdldoji from a snapshot made by Save.
+func LoadStreamCdldoji(snapshot []byte) (*StreamCdldoji, error) {
+	var h *C.FtStreamCdldoji
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdldoji", C.ft_stream_cdldoji_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdldoji{h: h}
+	runtime.SetFinalizer(s, (*StreamCdldoji).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdldoji) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdldoji.Reset")
+	}
+	return statusError("StreamCdldoji.Reset", C.ft_stream_cdldoji_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdldoji) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdldoji_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdldojistar is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Doji Star candlestick pattern: 100 bullish, -100 bearish, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdldojistar struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdldojistar
+}
+
+// NewStreamCdldojistar creates a StreamCdldojistar.
+func NewStreamCdldojistar() (*StreamCdldojistar, error) {
+	var h *C.FtStreamCdldojistar
+	if err := statusError("NewStreamCdldojistar", C.ft_stream_cdldojistar_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdldojistar{h: h}
+	runtime.SetFinalizer(s, (*StreamCdldojistar).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdldojistar) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdldojistar.Update")
+	}
+	if err := statusError("StreamCdldojistar.Update", C.ft_stream_cdldojistar_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdldojistar) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdldojistar.Peek")
+	}
+	if err := statusError("StreamCdldojistar.Peek", C.ft_stream_cdldojistar_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdldojistar.
+func (s *StreamCdldojistar) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdldojistar.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdldojistar_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdldojistar.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdldojistar_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdldojistar.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdldojistar restores a StreamCdldojistar from a snapshot made by Save.
+func LoadStreamCdldojistar(snapshot []byte) (*StreamCdldojistar, error) {
+	var h *C.FtStreamCdldojistar
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdldojistar", C.ft_stream_cdldojistar_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdldojistar{h: h}
+	runtime.SetFinalizer(s, (*StreamCdldojistar).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdldojistar) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdldojistar.Reset")
+	}
+	return statusError("StreamCdldojistar.Reset", C.ft_stream_cdldojistar_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdldojistar) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdldojistar_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdldragonflydoji is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Dragonfly Doji candlestick pattern: 100 when the candle matches (pattern present, not a direction), else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdldragonflydoji struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdldragonflydoji
+}
+
+// NewStreamCdldragonflydoji creates a StreamCdldragonflydoji.
+func NewStreamCdldragonflydoji() (*StreamCdldragonflydoji, error) {
+	var h *C.FtStreamCdldragonflydoji
+	if err := statusError("NewStreamCdldragonflydoji", C.ft_stream_cdldragonflydoji_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdldragonflydoji{h: h}
+	runtime.SetFinalizer(s, (*StreamCdldragonflydoji).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdldragonflydoji) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdldragonflydoji.Update")
+	}
+	if err := statusError("StreamCdldragonflydoji.Update", C.ft_stream_cdldragonflydoji_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdldragonflydoji) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdldragonflydoji.Peek")
+	}
+	if err := statusError("StreamCdldragonflydoji.Peek", C.ft_stream_cdldragonflydoji_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdldragonflydoji.
+func (s *StreamCdldragonflydoji) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdldragonflydoji.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdldragonflydoji_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdldragonflydoji.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdldragonflydoji_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdldragonflydoji.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdldragonflydoji restores a StreamCdldragonflydoji from a snapshot made by Save.
+func LoadStreamCdldragonflydoji(snapshot []byte) (*StreamCdldragonflydoji, error) {
+	var h *C.FtStreamCdldragonflydoji
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdldragonflydoji", C.ft_stream_cdldragonflydoji_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdldragonflydoji{h: h}
+	runtime.SetFinalizer(s, (*StreamCdldragonflydoji).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdldragonflydoji) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdldragonflydoji.Reset")
+	}
+	return statusError("StreamCdldragonflydoji.Reset", C.ft_stream_cdldragonflydoji_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdldragonflydoji) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdldragonflydoji_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdlengulfing is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Engulfing candlestick pattern: 100 bullish, -100 bearish, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdlengulfing struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdlengulfing
+}
+
+// NewStreamCdlengulfing creates a StreamCdlengulfing.
+func NewStreamCdlengulfing() (*StreamCdlengulfing, error) {
+	var h *C.FtStreamCdlengulfing
+	if err := statusError("NewStreamCdlengulfing", C.ft_stream_cdlengulfing_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlengulfing{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlengulfing).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdlengulfing) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlengulfing.Update")
+	}
+	if err := statusError("StreamCdlengulfing.Update", C.ft_stream_cdlengulfing_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdlengulfing) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlengulfing.Peek")
+	}
+	if err := statusError("StreamCdlengulfing.Peek", C.ft_stream_cdlengulfing_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdlengulfing.
+func (s *StreamCdlengulfing) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdlengulfing.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdlengulfing_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdlengulfing.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdlengulfing_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdlengulfing.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdlengulfing restores a StreamCdlengulfing from a snapshot made by Save.
+func LoadStreamCdlengulfing(snapshot []byte) (*StreamCdlengulfing, error) {
+	var h *C.FtStreamCdlengulfing
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdlengulfing", C.ft_stream_cdlengulfing_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlengulfing{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlengulfing).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdlengulfing) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdlengulfing.Reset")
+	}
+	return statusError("StreamCdlengulfing.Reset", C.ft_stream_cdlengulfing_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdlengulfing) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdlengulfing_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdleveningdojistar is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Evening Doji Star candlestick pattern: -100 (bearish) when matched, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdleveningdojistar struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdleveningdojistar
+}
+
+// NewStreamCdleveningdojistar creates a StreamCdleveningdojistar.
+func NewStreamCdleveningdojistar() (*StreamCdleveningdojistar, error) {
+	var h *C.FtStreamCdleveningdojistar
+	if err := statusError("NewStreamCdleveningdojistar", C.ft_stream_cdleveningdojistar_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdleveningdojistar{h: h}
+	runtime.SetFinalizer(s, (*StreamCdleveningdojistar).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdleveningdojistar) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdleveningdojistar.Update")
+	}
+	if err := statusError("StreamCdleveningdojistar.Update", C.ft_stream_cdleveningdojistar_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdleveningdojistar) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdleveningdojistar.Peek")
+	}
+	if err := statusError("StreamCdleveningdojistar.Peek", C.ft_stream_cdleveningdojistar_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdleveningdojistar.
+func (s *StreamCdleveningdojistar) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdleveningdojistar.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdleveningdojistar_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdleveningdojistar.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdleveningdojistar_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdleveningdojistar.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdleveningdojistar restores a StreamCdleveningdojistar from a snapshot made by Save.
+func LoadStreamCdleveningdojistar(snapshot []byte) (*StreamCdleveningdojistar, error) {
+	var h *C.FtStreamCdleveningdojistar
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdleveningdojistar", C.ft_stream_cdleveningdojistar_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdleveningdojistar{h: h}
+	runtime.SetFinalizer(s, (*StreamCdleveningdojistar).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdleveningdojistar) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdleveningdojistar.Reset")
+	}
+	return statusError("StreamCdleveningdojistar.Reset", C.ft_stream_cdleveningdojistar_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdleveningdojistar) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdleveningdojistar_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdleveningstar is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Evening Star candlestick pattern: -100 (bearish) when matched, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdleveningstar struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdleveningstar
+}
+
+// NewStreamCdleveningstar creates a StreamCdleveningstar.
+func NewStreamCdleveningstar() (*StreamCdleveningstar, error) {
+	var h *C.FtStreamCdleveningstar
+	if err := statusError("NewStreamCdleveningstar", C.ft_stream_cdleveningstar_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdleveningstar{h: h}
+	runtime.SetFinalizer(s, (*StreamCdleveningstar).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdleveningstar) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdleveningstar.Update")
+	}
+	if err := statusError("StreamCdleveningstar.Update", C.ft_stream_cdleveningstar_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdleveningstar) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdleveningstar.Peek")
+	}
+	if err := statusError("StreamCdleveningstar.Peek", C.ft_stream_cdleveningstar_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdleveningstar.
+func (s *StreamCdleveningstar) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdleveningstar.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdleveningstar_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdleveningstar.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdleveningstar_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdleveningstar.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdleveningstar restores a StreamCdleveningstar from a snapshot made by Save.
+func LoadStreamCdleveningstar(snapshot []byte) (*StreamCdleveningstar, error) {
+	var h *C.FtStreamCdleveningstar
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdleveningstar", C.ft_stream_cdleveningstar_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdleveningstar{h: h}
+	runtime.SetFinalizer(s, (*StreamCdleveningstar).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdleveningstar) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdleveningstar.Reset")
+	}
+	return statusError("StreamCdleveningstar.Reset", C.ft_stream_cdleveningstar_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdleveningstar) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdleveningstar_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdlgapsidesidewhite is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Up/Down-gap side-by-side white lines candlestick pattern: 100 bullish, -100 bearish, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdlgapsidesidewhite struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdlgapsidesidewhite
+}
+
+// NewStreamCdlgapsidesidewhite creates a StreamCdlgapsidesidewhite.
+func NewStreamCdlgapsidesidewhite() (*StreamCdlgapsidesidewhite, error) {
+	var h *C.FtStreamCdlgapsidesidewhite
+	if err := statusError("NewStreamCdlgapsidesidewhite", C.ft_stream_cdlgapsidesidewhite_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlgapsidesidewhite{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlgapsidesidewhite).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdlgapsidesidewhite) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlgapsidesidewhite.Update")
+	}
+	if err := statusError("StreamCdlgapsidesidewhite.Update", C.ft_stream_cdlgapsidesidewhite_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdlgapsidesidewhite) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlgapsidesidewhite.Peek")
+	}
+	if err := statusError("StreamCdlgapsidesidewhite.Peek", C.ft_stream_cdlgapsidesidewhite_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdlgapsidesidewhite.
+func (s *StreamCdlgapsidesidewhite) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdlgapsidesidewhite.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdlgapsidesidewhite_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdlgapsidesidewhite.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdlgapsidesidewhite_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdlgapsidesidewhite.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdlgapsidesidewhite restores a StreamCdlgapsidesidewhite from a snapshot made by Save.
+func LoadStreamCdlgapsidesidewhite(snapshot []byte) (*StreamCdlgapsidesidewhite, error) {
+	var h *C.FtStreamCdlgapsidesidewhite
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdlgapsidesidewhite", C.ft_stream_cdlgapsidesidewhite_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlgapsidesidewhite{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlgapsidesidewhite).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdlgapsidesidewhite) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdlgapsidesidewhite.Reset")
+	}
+	return statusError("StreamCdlgapsidesidewhite.Reset", C.ft_stream_cdlgapsidesidewhite_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdlgapsidesidewhite) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdlgapsidesidewhite_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdlgravestonedoji is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Gravestone Doji candlestick pattern: -100 (bearish) when matched, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdlgravestonedoji struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdlgravestonedoji
+}
+
+// NewStreamCdlgravestonedoji creates a StreamCdlgravestonedoji.
+func NewStreamCdlgravestonedoji() (*StreamCdlgravestonedoji, error) {
+	var h *C.FtStreamCdlgravestonedoji
+	if err := statusError("NewStreamCdlgravestonedoji", C.ft_stream_cdlgravestonedoji_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlgravestonedoji{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlgravestonedoji).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdlgravestonedoji) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlgravestonedoji.Update")
+	}
+	if err := statusError("StreamCdlgravestonedoji.Update", C.ft_stream_cdlgravestonedoji_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdlgravestonedoji) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlgravestonedoji.Peek")
+	}
+	if err := statusError("StreamCdlgravestonedoji.Peek", C.ft_stream_cdlgravestonedoji_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdlgravestonedoji.
+func (s *StreamCdlgravestonedoji) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdlgravestonedoji.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdlgravestonedoji_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdlgravestonedoji.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdlgravestonedoji_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdlgravestonedoji.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdlgravestonedoji restores a StreamCdlgravestonedoji from a snapshot made by Save.
+func LoadStreamCdlgravestonedoji(snapshot []byte) (*StreamCdlgravestonedoji, error) {
+	var h *C.FtStreamCdlgravestonedoji
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdlgravestonedoji", C.ft_stream_cdlgravestonedoji_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlgravestonedoji{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlgravestonedoji).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdlgravestonedoji) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdlgravestonedoji.Reset")
+	}
+	return statusError("StreamCdlgravestonedoji.Reset", C.ft_stream_cdlgravestonedoji_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdlgravestonedoji) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdlgravestonedoji_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdlhammer is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Hammer candlestick pattern: 100 (bullish) when matched, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdlhammer struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdlhammer
+}
+
+// NewStreamCdlhammer creates a StreamCdlhammer.
+func NewStreamCdlhammer() (*StreamCdlhammer, error) {
+	var h *C.FtStreamCdlhammer
+	if err := statusError("NewStreamCdlhammer", C.ft_stream_cdlhammer_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlhammer{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlhammer).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdlhammer) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlhammer.Update")
+	}
+	if err := statusError("StreamCdlhammer.Update", C.ft_stream_cdlhammer_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdlhammer) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlhammer.Peek")
+	}
+	if err := statusError("StreamCdlhammer.Peek", C.ft_stream_cdlhammer_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdlhammer.
+func (s *StreamCdlhammer) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdlhammer.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdlhammer_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdlhammer.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdlhammer_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdlhammer.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdlhammer restores a StreamCdlhammer from a snapshot made by Save.
+func LoadStreamCdlhammer(snapshot []byte) (*StreamCdlhammer, error) {
+	var h *C.FtStreamCdlhammer
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdlhammer", C.ft_stream_cdlhammer_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlhammer{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlhammer).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdlhammer) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdlhammer.Reset")
+	}
+	return statusError("StreamCdlhammer.Reset", C.ft_stream_cdlhammer_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdlhammer) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdlhammer_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdlhangingman is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Hanging Man candlestick pattern: -100 (bearish) when matched, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdlhangingman struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdlhangingman
+}
+
+// NewStreamCdlhangingman creates a StreamCdlhangingman.
+func NewStreamCdlhangingman() (*StreamCdlhangingman, error) {
+	var h *C.FtStreamCdlhangingman
+	if err := statusError("NewStreamCdlhangingman", C.ft_stream_cdlhangingman_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlhangingman{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlhangingman).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdlhangingman) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlhangingman.Update")
+	}
+	if err := statusError("StreamCdlhangingman.Update", C.ft_stream_cdlhangingman_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdlhangingman) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlhangingman.Peek")
+	}
+	if err := statusError("StreamCdlhangingman.Peek", C.ft_stream_cdlhangingman_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdlhangingman.
+func (s *StreamCdlhangingman) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdlhangingman.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdlhangingman_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdlhangingman.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdlhangingman_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdlhangingman.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdlhangingman restores a StreamCdlhangingman from a snapshot made by Save.
+func LoadStreamCdlhangingman(snapshot []byte) (*StreamCdlhangingman, error) {
+	var h *C.FtStreamCdlhangingman
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdlhangingman", C.ft_stream_cdlhangingman_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlhangingman{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlhangingman).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdlhangingman) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdlhangingman.Reset")
+	}
+	return statusError("StreamCdlhangingman.Reset", C.ft_stream_cdlhangingman_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdlhangingman) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdlhangingman_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdlharami is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Harami candlestick pattern: 100 bullish, -100 bearish, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdlharami struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdlharami
+}
+
+// NewStreamCdlharami creates a StreamCdlharami.
+func NewStreamCdlharami() (*StreamCdlharami, error) {
+	var h *C.FtStreamCdlharami
+	if err := statusError("NewStreamCdlharami", C.ft_stream_cdlharami_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlharami{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlharami).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdlharami) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlharami.Update")
+	}
+	if err := statusError("StreamCdlharami.Update", C.ft_stream_cdlharami_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdlharami) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlharami.Peek")
+	}
+	if err := statusError("StreamCdlharami.Peek", C.ft_stream_cdlharami_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdlharami.
+func (s *StreamCdlharami) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdlharami.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdlharami_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdlharami.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdlharami_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdlharami.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdlharami restores a StreamCdlharami from a snapshot made by Save.
+func LoadStreamCdlharami(snapshot []byte) (*StreamCdlharami, error) {
+	var h *C.FtStreamCdlharami
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdlharami", C.ft_stream_cdlharami_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlharami{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlharami).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdlharami) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdlharami.Reset")
+	}
+	return statusError("StreamCdlharami.Reset", C.ft_stream_cdlharami_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdlharami) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdlharami_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdlharamicross is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Harami Cross candlestick pattern: 100 bullish, -100 bearish, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdlharamicross struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdlharamicross
+}
+
+// NewStreamCdlharamicross creates a StreamCdlharamicross.
+func NewStreamCdlharamicross() (*StreamCdlharamicross, error) {
+	var h *C.FtStreamCdlharamicross
+	if err := statusError("NewStreamCdlharamicross", C.ft_stream_cdlharamicross_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlharamicross{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlharamicross).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdlharamicross) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlharamicross.Update")
+	}
+	if err := statusError("StreamCdlharamicross.Update", C.ft_stream_cdlharamicross_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdlharamicross) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlharamicross.Peek")
+	}
+	if err := statusError("StreamCdlharamicross.Peek", C.ft_stream_cdlharamicross_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdlharamicross.
+func (s *StreamCdlharamicross) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdlharamicross.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdlharamicross_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdlharamicross.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdlharamicross_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdlharamicross.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdlharamicross restores a StreamCdlharamicross from a snapshot made by Save.
+func LoadStreamCdlharamicross(snapshot []byte) (*StreamCdlharamicross, error) {
+	var h *C.FtStreamCdlharamicross
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdlharamicross", C.ft_stream_cdlharamicross_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlharamicross{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlharamicross).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdlharamicross) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdlharamicross.Reset")
+	}
+	return statusError("StreamCdlharamicross.Reset", C.ft_stream_cdlharamicross_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdlharamicross) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdlharamicross_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdlhighwave is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming High-Wave Candle candlestick pattern: 100 bullish, -100 bearish, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdlhighwave struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdlhighwave
+}
+
+// NewStreamCdlhighwave creates a StreamCdlhighwave.
+func NewStreamCdlhighwave() (*StreamCdlhighwave, error) {
+	var h *C.FtStreamCdlhighwave
+	if err := statusError("NewStreamCdlhighwave", C.ft_stream_cdlhighwave_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlhighwave{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlhighwave).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdlhighwave) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlhighwave.Update")
+	}
+	if err := statusError("StreamCdlhighwave.Update", C.ft_stream_cdlhighwave_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdlhighwave) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlhighwave.Peek")
+	}
+	if err := statusError("StreamCdlhighwave.Peek", C.ft_stream_cdlhighwave_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdlhighwave.
+func (s *StreamCdlhighwave) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdlhighwave.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdlhighwave_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdlhighwave.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdlhighwave_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdlhighwave.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdlhighwave restores a StreamCdlhighwave from a snapshot made by Save.
+func LoadStreamCdlhighwave(snapshot []byte) (*StreamCdlhighwave, error) {
+	var h *C.FtStreamCdlhighwave
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdlhighwave", C.ft_stream_cdlhighwave_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlhighwave{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlhighwave).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdlhighwave) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdlhighwave.Reset")
+	}
+	return statusError("StreamCdlhighwave.Reset", C.ft_stream_cdlhighwave_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdlhighwave) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdlhighwave_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdlhikkake is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Hikkake Pattern candlestick pattern: 100 bullish, -100 bearish, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdlhikkake struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdlhikkake
+}
+
+// NewStreamCdlhikkake creates a StreamCdlhikkake.
+func NewStreamCdlhikkake() (*StreamCdlhikkake, error) {
+	var h *C.FtStreamCdlhikkake
+	if err := statusError("NewStreamCdlhikkake", C.ft_stream_cdlhikkake_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlhikkake{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlhikkake).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdlhikkake) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlhikkake.Update")
+	}
+	if err := statusError("StreamCdlhikkake.Update", C.ft_stream_cdlhikkake_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdlhikkake) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlhikkake.Peek")
+	}
+	if err := statusError("StreamCdlhikkake.Peek", C.ft_stream_cdlhikkake_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdlhikkake.
+func (s *StreamCdlhikkake) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdlhikkake.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdlhikkake_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdlhikkake.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdlhikkake_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdlhikkake.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdlhikkake restores a StreamCdlhikkake from a snapshot made by Save.
+func LoadStreamCdlhikkake(snapshot []byte) (*StreamCdlhikkake, error) {
+	var h *C.FtStreamCdlhikkake
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdlhikkake", C.ft_stream_cdlhikkake_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlhikkake{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlhikkake).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdlhikkake) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdlhikkake.Reset")
+	}
+	return statusError("StreamCdlhikkake.Reset", C.ft_stream_cdlhikkake_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdlhikkake) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdlhikkake_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdlhikkakemod is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Modified Hikkake Pattern candlestick pattern: 100 bullish, -100 bearish, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdlhikkakemod struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdlhikkakemod
+}
+
+// NewStreamCdlhikkakemod creates a StreamCdlhikkakemod.
+func NewStreamCdlhikkakemod() (*StreamCdlhikkakemod, error) {
+	var h *C.FtStreamCdlhikkakemod
+	if err := statusError("NewStreamCdlhikkakemod", C.ft_stream_cdlhikkakemod_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlhikkakemod{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlhikkakemod).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdlhikkakemod) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlhikkakemod.Update")
+	}
+	if err := statusError("StreamCdlhikkakemod.Update", C.ft_stream_cdlhikkakemod_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdlhikkakemod) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlhikkakemod.Peek")
+	}
+	if err := statusError("StreamCdlhikkakemod.Peek", C.ft_stream_cdlhikkakemod_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdlhikkakemod.
+func (s *StreamCdlhikkakemod) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdlhikkakemod.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdlhikkakemod_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdlhikkakemod.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdlhikkakemod_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdlhikkakemod.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdlhikkakemod restores a StreamCdlhikkakemod from a snapshot made by Save.
+func LoadStreamCdlhikkakemod(snapshot []byte) (*StreamCdlhikkakemod, error) {
+	var h *C.FtStreamCdlhikkakemod
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdlhikkakemod", C.ft_stream_cdlhikkakemod_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlhikkakemod{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlhikkakemod).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdlhikkakemod) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdlhikkakemod.Reset")
+	}
+	return statusError("StreamCdlhikkakemod.Reset", C.ft_stream_cdlhikkakemod_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdlhikkakemod) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdlhikkakemod_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdlhomingpigeon is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Homing Pigeon candlestick pattern: 100 (bullish) when matched, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdlhomingpigeon struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdlhomingpigeon
+}
+
+// NewStreamCdlhomingpigeon creates a StreamCdlhomingpigeon.
+func NewStreamCdlhomingpigeon() (*StreamCdlhomingpigeon, error) {
+	var h *C.FtStreamCdlhomingpigeon
+	if err := statusError("NewStreamCdlhomingpigeon", C.ft_stream_cdlhomingpigeon_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlhomingpigeon{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlhomingpigeon).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdlhomingpigeon) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlhomingpigeon.Update")
+	}
+	if err := statusError("StreamCdlhomingpigeon.Update", C.ft_stream_cdlhomingpigeon_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdlhomingpigeon) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlhomingpigeon.Peek")
+	}
+	if err := statusError("StreamCdlhomingpigeon.Peek", C.ft_stream_cdlhomingpigeon_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdlhomingpigeon.
+func (s *StreamCdlhomingpigeon) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdlhomingpigeon.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdlhomingpigeon_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdlhomingpigeon.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdlhomingpigeon_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdlhomingpigeon.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdlhomingpigeon restores a StreamCdlhomingpigeon from a snapshot made by Save.
+func LoadStreamCdlhomingpigeon(snapshot []byte) (*StreamCdlhomingpigeon, error) {
+	var h *C.FtStreamCdlhomingpigeon
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdlhomingpigeon", C.ft_stream_cdlhomingpigeon_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlhomingpigeon{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlhomingpigeon).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdlhomingpigeon) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdlhomingpigeon.Reset")
+	}
+	return statusError("StreamCdlhomingpigeon.Reset", C.ft_stream_cdlhomingpigeon_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdlhomingpigeon) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdlhomingpigeon_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdlidentical3crows is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Identical Three Crows candlestick pattern: -100 (bearish) when matched, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdlidentical3crows struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdlidentical3crows
+}
+
+// NewStreamCdlidentical3crows creates a StreamCdlidentical3crows.
+func NewStreamCdlidentical3crows() (*StreamCdlidentical3crows, error) {
+	var h *C.FtStreamCdlidentical3crows
+	if err := statusError("NewStreamCdlidentical3crows", C.ft_stream_cdlidentical3crows_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlidentical3crows{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlidentical3crows).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdlidentical3crows) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlidentical3crows.Update")
+	}
+	if err := statusError("StreamCdlidentical3crows.Update", C.ft_stream_cdlidentical3crows_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdlidentical3crows) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlidentical3crows.Peek")
+	}
+	if err := statusError("StreamCdlidentical3crows.Peek", C.ft_stream_cdlidentical3crows_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdlidentical3crows.
+func (s *StreamCdlidentical3crows) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdlidentical3crows.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdlidentical3crows_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdlidentical3crows.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdlidentical3crows_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdlidentical3crows.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdlidentical3crows restores a StreamCdlidentical3crows from a snapshot made by Save.
+func LoadStreamCdlidentical3crows(snapshot []byte) (*StreamCdlidentical3crows, error) {
+	var h *C.FtStreamCdlidentical3crows
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdlidentical3crows", C.ft_stream_cdlidentical3crows_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlidentical3crows{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlidentical3crows).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdlidentical3crows) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdlidentical3crows.Reset")
+	}
+	return statusError("StreamCdlidentical3crows.Reset", C.ft_stream_cdlidentical3crows_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdlidentical3crows) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdlidentical3crows_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdlinneck is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming In-Neck Pattern candlestick pattern: -100 (bearish) when matched, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdlinneck struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdlinneck
+}
+
+// NewStreamCdlinneck creates a StreamCdlinneck.
+func NewStreamCdlinneck() (*StreamCdlinneck, error) {
+	var h *C.FtStreamCdlinneck
+	if err := statusError("NewStreamCdlinneck", C.ft_stream_cdlinneck_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlinneck{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlinneck).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdlinneck) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlinneck.Update")
+	}
+	if err := statusError("StreamCdlinneck.Update", C.ft_stream_cdlinneck_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdlinneck) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlinneck.Peek")
+	}
+	if err := statusError("StreamCdlinneck.Peek", C.ft_stream_cdlinneck_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdlinneck.
+func (s *StreamCdlinneck) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdlinneck.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdlinneck_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdlinneck.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdlinneck_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdlinneck.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdlinneck restores a StreamCdlinneck from a snapshot made by Save.
+func LoadStreamCdlinneck(snapshot []byte) (*StreamCdlinneck, error) {
+	var h *C.FtStreamCdlinneck
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdlinneck", C.ft_stream_cdlinneck_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlinneck{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlinneck).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdlinneck) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdlinneck.Reset")
+	}
+	return statusError("StreamCdlinneck.Reset", C.ft_stream_cdlinneck_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdlinneck) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdlinneck_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdlinvertedhammer is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Inverted Hammer candlestick pattern: 100 (bullish) when matched, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdlinvertedhammer struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdlinvertedhammer
+}
+
+// NewStreamCdlinvertedhammer creates a StreamCdlinvertedhammer.
+func NewStreamCdlinvertedhammer() (*StreamCdlinvertedhammer, error) {
+	var h *C.FtStreamCdlinvertedhammer
+	if err := statusError("NewStreamCdlinvertedhammer", C.ft_stream_cdlinvertedhammer_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlinvertedhammer{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlinvertedhammer).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdlinvertedhammer) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlinvertedhammer.Update")
+	}
+	if err := statusError("StreamCdlinvertedhammer.Update", C.ft_stream_cdlinvertedhammer_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdlinvertedhammer) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlinvertedhammer.Peek")
+	}
+	if err := statusError("StreamCdlinvertedhammer.Peek", C.ft_stream_cdlinvertedhammer_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdlinvertedhammer.
+func (s *StreamCdlinvertedhammer) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdlinvertedhammer.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdlinvertedhammer_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdlinvertedhammer.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdlinvertedhammer_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdlinvertedhammer.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdlinvertedhammer restores a StreamCdlinvertedhammer from a snapshot made by Save.
+func LoadStreamCdlinvertedhammer(snapshot []byte) (*StreamCdlinvertedhammer, error) {
+	var h *C.FtStreamCdlinvertedhammer
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdlinvertedhammer", C.ft_stream_cdlinvertedhammer_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlinvertedhammer{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlinvertedhammer).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdlinvertedhammer) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdlinvertedhammer.Reset")
+	}
+	return statusError("StreamCdlinvertedhammer.Reset", C.ft_stream_cdlinvertedhammer_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdlinvertedhammer) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdlinvertedhammer_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdlkicking is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Kicking candlestick pattern: 100 bullish, -100 bearish, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdlkicking struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdlkicking
+}
+
+// NewStreamCdlkicking creates a StreamCdlkicking.
+func NewStreamCdlkicking() (*StreamCdlkicking, error) {
+	var h *C.FtStreamCdlkicking
+	if err := statusError("NewStreamCdlkicking", C.ft_stream_cdlkicking_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlkicking{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlkicking).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdlkicking) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlkicking.Update")
+	}
+	if err := statusError("StreamCdlkicking.Update", C.ft_stream_cdlkicking_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdlkicking) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlkicking.Peek")
+	}
+	if err := statusError("StreamCdlkicking.Peek", C.ft_stream_cdlkicking_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdlkicking.
+func (s *StreamCdlkicking) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdlkicking.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdlkicking_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdlkicking.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdlkicking_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdlkicking.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdlkicking restores a StreamCdlkicking from a snapshot made by Save.
+func LoadStreamCdlkicking(snapshot []byte) (*StreamCdlkicking, error) {
+	var h *C.FtStreamCdlkicking
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdlkicking", C.ft_stream_cdlkicking_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlkicking{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlkicking).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdlkicking) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdlkicking.Reset")
+	}
+	return statusError("StreamCdlkicking.Reset", C.ft_stream_cdlkicking_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdlkicking) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdlkicking_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdlkickingbylength is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Kicking by length (direction follows the longer marubozu) candlestick pattern: 100 bullish, -100 bearish, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdlkickingbylength struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdlkickingbylength
+}
+
+// NewStreamCdlkickingbylength creates a StreamCdlkickingbylength.
+func NewStreamCdlkickingbylength() (*StreamCdlkickingbylength, error) {
+	var h *C.FtStreamCdlkickingbylength
+	if err := statusError("NewStreamCdlkickingbylength", C.ft_stream_cdlkickingbylength_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlkickingbylength{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlkickingbylength).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdlkickingbylength) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlkickingbylength.Update")
+	}
+	if err := statusError("StreamCdlkickingbylength.Update", C.ft_stream_cdlkickingbylength_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdlkickingbylength) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlkickingbylength.Peek")
+	}
+	if err := statusError("StreamCdlkickingbylength.Peek", C.ft_stream_cdlkickingbylength_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdlkickingbylength.
+func (s *StreamCdlkickingbylength) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdlkickingbylength.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdlkickingbylength_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdlkickingbylength.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdlkickingbylength_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdlkickingbylength.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdlkickingbylength restores a StreamCdlkickingbylength from a snapshot made by Save.
+func LoadStreamCdlkickingbylength(snapshot []byte) (*StreamCdlkickingbylength, error) {
+	var h *C.FtStreamCdlkickingbylength
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdlkickingbylength", C.ft_stream_cdlkickingbylength_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlkickingbylength{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlkickingbylength).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdlkickingbylength) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdlkickingbylength.Reset")
+	}
+	return statusError("StreamCdlkickingbylength.Reset", C.ft_stream_cdlkickingbylength_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdlkickingbylength) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdlkickingbylength_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdlladderbottom is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Ladder Bottom candlestick pattern: 100 (bullish) when matched, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdlladderbottom struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdlladderbottom
+}
+
+// NewStreamCdlladderbottom creates a StreamCdlladderbottom.
+func NewStreamCdlladderbottom() (*StreamCdlladderbottom, error) {
+	var h *C.FtStreamCdlladderbottom
+	if err := statusError("NewStreamCdlladderbottom", C.ft_stream_cdlladderbottom_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlladderbottom{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlladderbottom).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdlladderbottom) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlladderbottom.Update")
+	}
+	if err := statusError("StreamCdlladderbottom.Update", C.ft_stream_cdlladderbottom_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdlladderbottom) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlladderbottom.Peek")
+	}
+	if err := statusError("StreamCdlladderbottom.Peek", C.ft_stream_cdlladderbottom_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdlladderbottom.
+func (s *StreamCdlladderbottom) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdlladderbottom.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdlladderbottom_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdlladderbottom.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdlladderbottom_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdlladderbottom.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdlladderbottom restores a StreamCdlladderbottom from a snapshot made by Save.
+func LoadStreamCdlladderbottom(snapshot []byte) (*StreamCdlladderbottom, error) {
+	var h *C.FtStreamCdlladderbottom
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdlladderbottom", C.ft_stream_cdlladderbottom_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlladderbottom{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlladderbottom).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdlladderbottom) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdlladderbottom.Reset")
+	}
+	return statusError("StreamCdlladderbottom.Reset", C.ft_stream_cdlladderbottom_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdlladderbottom) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdlladderbottom_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdllongleggeddoji is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Long Legged Doji candlestick pattern: 100 when the candle matches (pattern present, not a direction), else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdllongleggeddoji struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdllongleggeddoji
+}
+
+// NewStreamCdllongleggeddoji creates a StreamCdllongleggeddoji.
+func NewStreamCdllongleggeddoji() (*StreamCdllongleggeddoji, error) {
+	var h *C.FtStreamCdllongleggeddoji
+	if err := statusError("NewStreamCdllongleggeddoji", C.ft_stream_cdllongleggeddoji_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdllongleggeddoji{h: h}
+	runtime.SetFinalizer(s, (*StreamCdllongleggeddoji).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdllongleggeddoji) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdllongleggeddoji.Update")
+	}
+	if err := statusError("StreamCdllongleggeddoji.Update", C.ft_stream_cdllongleggeddoji_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdllongleggeddoji) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdllongleggeddoji.Peek")
+	}
+	if err := statusError("StreamCdllongleggeddoji.Peek", C.ft_stream_cdllongleggeddoji_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdllongleggeddoji.
+func (s *StreamCdllongleggeddoji) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdllongleggeddoji.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdllongleggeddoji_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdllongleggeddoji.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdllongleggeddoji_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdllongleggeddoji.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdllongleggeddoji restores a StreamCdllongleggeddoji from a snapshot made by Save.
+func LoadStreamCdllongleggeddoji(snapshot []byte) (*StreamCdllongleggeddoji, error) {
+	var h *C.FtStreamCdllongleggeddoji
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdllongleggeddoji", C.ft_stream_cdllongleggeddoji_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdllongleggeddoji{h: h}
+	runtime.SetFinalizer(s, (*StreamCdllongleggeddoji).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdllongleggeddoji) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdllongleggeddoji.Reset")
+	}
+	return statusError("StreamCdllongleggeddoji.Reset", C.ft_stream_cdllongleggeddoji_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdllongleggeddoji) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdllongleggeddoji_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdllongline is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Long Line Candle candlestick pattern: 100 bullish, -100 bearish, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdllongline struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdllongline
+}
+
+// NewStreamCdllongline creates a StreamCdllongline.
+func NewStreamCdllongline() (*StreamCdllongline, error) {
+	var h *C.FtStreamCdllongline
+	if err := statusError("NewStreamCdllongline", C.ft_stream_cdllongline_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdllongline{h: h}
+	runtime.SetFinalizer(s, (*StreamCdllongline).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdllongline) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdllongline.Update")
+	}
+	if err := statusError("StreamCdllongline.Update", C.ft_stream_cdllongline_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdllongline) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdllongline.Peek")
+	}
+	if err := statusError("StreamCdllongline.Peek", C.ft_stream_cdllongline_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdllongline.
+func (s *StreamCdllongline) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdllongline.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdllongline_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdllongline.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdllongline_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdllongline.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdllongline restores a StreamCdllongline from a snapshot made by Save.
+func LoadStreamCdllongline(snapshot []byte) (*StreamCdllongline, error) {
+	var h *C.FtStreamCdllongline
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdllongline", C.ft_stream_cdllongline_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdllongline{h: h}
+	runtime.SetFinalizer(s, (*StreamCdllongline).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdllongline) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdllongline.Reset")
+	}
+	return statusError("StreamCdllongline.Reset", C.ft_stream_cdllongline_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdllongline) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdllongline_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdlmarubozu is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Marubozu candlestick pattern: 100 bullish, -100 bearish, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdlmarubozu struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdlmarubozu
+}
+
+// NewStreamCdlmarubozu creates a StreamCdlmarubozu.
+func NewStreamCdlmarubozu() (*StreamCdlmarubozu, error) {
+	var h *C.FtStreamCdlmarubozu
+	if err := statusError("NewStreamCdlmarubozu", C.ft_stream_cdlmarubozu_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlmarubozu{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlmarubozu).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdlmarubozu) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlmarubozu.Update")
+	}
+	if err := statusError("StreamCdlmarubozu.Update", C.ft_stream_cdlmarubozu_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdlmarubozu) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlmarubozu.Peek")
+	}
+	if err := statusError("StreamCdlmarubozu.Peek", C.ft_stream_cdlmarubozu_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdlmarubozu.
+func (s *StreamCdlmarubozu) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdlmarubozu.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdlmarubozu_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdlmarubozu.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdlmarubozu_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdlmarubozu.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdlmarubozu restores a StreamCdlmarubozu from a snapshot made by Save.
+func LoadStreamCdlmarubozu(snapshot []byte) (*StreamCdlmarubozu, error) {
+	var h *C.FtStreamCdlmarubozu
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdlmarubozu", C.ft_stream_cdlmarubozu_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlmarubozu{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlmarubozu).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdlmarubozu) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdlmarubozu.Reset")
+	}
+	return statusError("StreamCdlmarubozu.Reset", C.ft_stream_cdlmarubozu_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdlmarubozu) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdlmarubozu_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdlmatchinglow is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Matching Low candlestick pattern: 100 (bullish) when matched, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdlmatchinglow struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdlmatchinglow
+}
+
+// NewStreamCdlmatchinglow creates a StreamCdlmatchinglow.
+func NewStreamCdlmatchinglow() (*StreamCdlmatchinglow, error) {
+	var h *C.FtStreamCdlmatchinglow
+	if err := statusError("NewStreamCdlmatchinglow", C.ft_stream_cdlmatchinglow_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlmatchinglow{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlmatchinglow).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdlmatchinglow) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlmatchinglow.Update")
+	}
+	if err := statusError("StreamCdlmatchinglow.Update", C.ft_stream_cdlmatchinglow_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdlmatchinglow) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlmatchinglow.Peek")
+	}
+	if err := statusError("StreamCdlmatchinglow.Peek", C.ft_stream_cdlmatchinglow_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdlmatchinglow.
+func (s *StreamCdlmatchinglow) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdlmatchinglow.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdlmatchinglow_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdlmatchinglow.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdlmatchinglow_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdlmatchinglow.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdlmatchinglow restores a StreamCdlmatchinglow from a snapshot made by Save.
+func LoadStreamCdlmatchinglow(snapshot []byte) (*StreamCdlmatchinglow, error) {
+	var h *C.FtStreamCdlmatchinglow
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdlmatchinglow", C.ft_stream_cdlmatchinglow_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlmatchinglow{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlmatchinglow).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdlmatchinglow) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdlmatchinglow.Reset")
+	}
+	return statusError("StreamCdlmatchinglow.Reset", C.ft_stream_cdlmatchinglow_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdlmatchinglow) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdlmatchinglow_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdlmathold is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Mat Hold candlestick pattern: 100 (bullish) when matched, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdlmathold struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdlmathold
+}
+
+// NewStreamCdlmathold creates a StreamCdlmathold.
+func NewStreamCdlmathold() (*StreamCdlmathold, error) {
+	var h *C.FtStreamCdlmathold
+	if err := statusError("NewStreamCdlmathold", C.ft_stream_cdlmathold_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlmathold{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlmathold).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdlmathold) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlmathold.Update")
+	}
+	if err := statusError("StreamCdlmathold.Update", C.ft_stream_cdlmathold_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdlmathold) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlmathold.Peek")
+	}
+	if err := statusError("StreamCdlmathold.Peek", C.ft_stream_cdlmathold_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdlmathold.
+func (s *StreamCdlmathold) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdlmathold.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdlmathold_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdlmathold.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdlmathold_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdlmathold.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdlmathold restores a StreamCdlmathold from a snapshot made by Save.
+func LoadStreamCdlmathold(snapshot []byte) (*StreamCdlmathold, error) {
+	var h *C.FtStreamCdlmathold
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdlmathold", C.ft_stream_cdlmathold_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlmathold{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlmathold).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdlmathold) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdlmathold.Reset")
+	}
+	return statusError("StreamCdlmathold.Reset", C.ft_stream_cdlmathold_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdlmathold) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdlmathold_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdlmorningdojistar is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Morning Doji Star candlestick pattern: 100 (bullish) when matched, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdlmorningdojistar struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdlmorningdojistar
+}
+
+// NewStreamCdlmorningdojistar creates a StreamCdlmorningdojistar.
+func NewStreamCdlmorningdojistar() (*StreamCdlmorningdojistar, error) {
+	var h *C.FtStreamCdlmorningdojistar
+	if err := statusError("NewStreamCdlmorningdojistar", C.ft_stream_cdlmorningdojistar_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlmorningdojistar{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlmorningdojistar).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdlmorningdojistar) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlmorningdojistar.Update")
+	}
+	if err := statusError("StreamCdlmorningdojistar.Update", C.ft_stream_cdlmorningdojistar_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdlmorningdojistar) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlmorningdojistar.Peek")
+	}
+	if err := statusError("StreamCdlmorningdojistar.Peek", C.ft_stream_cdlmorningdojistar_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdlmorningdojistar.
+func (s *StreamCdlmorningdojistar) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdlmorningdojistar.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdlmorningdojistar_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdlmorningdojistar.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdlmorningdojistar_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdlmorningdojistar.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdlmorningdojistar restores a StreamCdlmorningdojistar from a snapshot made by Save.
+func LoadStreamCdlmorningdojistar(snapshot []byte) (*StreamCdlmorningdojistar, error) {
+	var h *C.FtStreamCdlmorningdojistar
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdlmorningdojistar", C.ft_stream_cdlmorningdojistar_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlmorningdojistar{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlmorningdojistar).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdlmorningdojistar) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdlmorningdojistar.Reset")
+	}
+	return statusError("StreamCdlmorningdojistar.Reset", C.ft_stream_cdlmorningdojistar_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdlmorningdojistar) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdlmorningdojistar_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdlmorningstar is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Morning Star candlestick pattern: 100 (bullish) when matched, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdlmorningstar struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdlmorningstar
+}
+
+// NewStreamCdlmorningstar creates a StreamCdlmorningstar.
+func NewStreamCdlmorningstar() (*StreamCdlmorningstar, error) {
+	var h *C.FtStreamCdlmorningstar
+	if err := statusError("NewStreamCdlmorningstar", C.ft_stream_cdlmorningstar_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlmorningstar{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlmorningstar).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdlmorningstar) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlmorningstar.Update")
+	}
+	if err := statusError("StreamCdlmorningstar.Update", C.ft_stream_cdlmorningstar_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdlmorningstar) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlmorningstar.Peek")
+	}
+	if err := statusError("StreamCdlmorningstar.Peek", C.ft_stream_cdlmorningstar_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdlmorningstar.
+func (s *StreamCdlmorningstar) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdlmorningstar.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdlmorningstar_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdlmorningstar.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdlmorningstar_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdlmorningstar.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdlmorningstar restores a StreamCdlmorningstar from a snapshot made by Save.
+func LoadStreamCdlmorningstar(snapshot []byte) (*StreamCdlmorningstar, error) {
+	var h *C.FtStreamCdlmorningstar
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdlmorningstar", C.ft_stream_cdlmorningstar_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlmorningstar{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlmorningstar).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdlmorningstar) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdlmorningstar.Reset")
+	}
+	return statusError("StreamCdlmorningstar.Reset", C.ft_stream_cdlmorningstar_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdlmorningstar) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdlmorningstar_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdlonneck is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming On-Neck Pattern candlestick pattern: -100 (bearish) when matched, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdlonneck struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdlonneck
+}
+
+// NewStreamCdlonneck creates a StreamCdlonneck.
+func NewStreamCdlonneck() (*StreamCdlonneck, error) {
+	var h *C.FtStreamCdlonneck
+	if err := statusError("NewStreamCdlonneck", C.ft_stream_cdlonneck_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlonneck{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlonneck).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdlonneck) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlonneck.Update")
+	}
+	if err := statusError("StreamCdlonneck.Update", C.ft_stream_cdlonneck_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdlonneck) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlonneck.Peek")
+	}
+	if err := statusError("StreamCdlonneck.Peek", C.ft_stream_cdlonneck_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdlonneck.
+func (s *StreamCdlonneck) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdlonneck.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdlonneck_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdlonneck.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdlonneck_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdlonneck.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdlonneck restores a StreamCdlonneck from a snapshot made by Save.
+func LoadStreamCdlonneck(snapshot []byte) (*StreamCdlonneck, error) {
+	var h *C.FtStreamCdlonneck
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdlonneck", C.ft_stream_cdlonneck_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlonneck{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlonneck).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdlonneck) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdlonneck.Reset")
+	}
+	return statusError("StreamCdlonneck.Reset", C.ft_stream_cdlonneck_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdlonneck) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdlonneck_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdlpiercing is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Piercing Pattern candlestick pattern: 100 (bullish) when matched, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdlpiercing struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdlpiercing
+}
+
+// NewStreamCdlpiercing creates a StreamCdlpiercing.
+func NewStreamCdlpiercing() (*StreamCdlpiercing, error) {
+	var h *C.FtStreamCdlpiercing
+	if err := statusError("NewStreamCdlpiercing", C.ft_stream_cdlpiercing_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlpiercing{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlpiercing).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdlpiercing) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlpiercing.Update")
+	}
+	if err := statusError("StreamCdlpiercing.Update", C.ft_stream_cdlpiercing_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdlpiercing) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlpiercing.Peek")
+	}
+	if err := statusError("StreamCdlpiercing.Peek", C.ft_stream_cdlpiercing_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdlpiercing.
+func (s *StreamCdlpiercing) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdlpiercing.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdlpiercing_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdlpiercing.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdlpiercing_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdlpiercing.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdlpiercing restores a StreamCdlpiercing from a snapshot made by Save.
+func LoadStreamCdlpiercing(snapshot []byte) (*StreamCdlpiercing, error) {
+	var h *C.FtStreamCdlpiercing
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdlpiercing", C.ft_stream_cdlpiercing_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlpiercing{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlpiercing).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdlpiercing) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdlpiercing.Reset")
+	}
+	return statusError("StreamCdlpiercing.Reset", C.ft_stream_cdlpiercing_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdlpiercing) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdlpiercing_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdlrickshawman is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Rickshaw Man candlestick pattern: 100 when the candle matches (pattern present, not a direction), else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdlrickshawman struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdlrickshawman
+}
+
+// NewStreamCdlrickshawman creates a StreamCdlrickshawman.
+func NewStreamCdlrickshawman() (*StreamCdlrickshawman, error) {
+	var h *C.FtStreamCdlrickshawman
+	if err := statusError("NewStreamCdlrickshawman", C.ft_stream_cdlrickshawman_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlrickshawman{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlrickshawman).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdlrickshawman) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlrickshawman.Update")
+	}
+	if err := statusError("StreamCdlrickshawman.Update", C.ft_stream_cdlrickshawman_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdlrickshawman) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlrickshawman.Peek")
+	}
+	if err := statusError("StreamCdlrickshawman.Peek", C.ft_stream_cdlrickshawman_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdlrickshawman.
+func (s *StreamCdlrickshawman) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdlrickshawman.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdlrickshawman_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdlrickshawman.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdlrickshawman_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdlrickshawman.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdlrickshawman restores a StreamCdlrickshawman from a snapshot made by Save.
+func LoadStreamCdlrickshawman(snapshot []byte) (*StreamCdlrickshawman, error) {
+	var h *C.FtStreamCdlrickshawman
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdlrickshawman", C.ft_stream_cdlrickshawman_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlrickshawman{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlrickshawman).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdlrickshawman) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdlrickshawman.Reset")
+	}
+	return statusError("StreamCdlrickshawman.Reset", C.ft_stream_cdlrickshawman_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdlrickshawman) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdlrickshawman_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdlrisefall3methods is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Rising/Falling Three Methods candlestick pattern: 100 bullish, -100 bearish, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdlrisefall3methods struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdlrisefall3methods
+}
+
+// NewStreamCdlrisefall3methods creates a StreamCdlrisefall3methods.
+func NewStreamCdlrisefall3methods() (*StreamCdlrisefall3methods, error) {
+	var h *C.FtStreamCdlrisefall3methods
+	if err := statusError("NewStreamCdlrisefall3methods", C.ft_stream_cdlrisefall3methods_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlrisefall3methods{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlrisefall3methods).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdlrisefall3methods) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlrisefall3methods.Update")
+	}
+	if err := statusError("StreamCdlrisefall3methods.Update", C.ft_stream_cdlrisefall3methods_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdlrisefall3methods) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlrisefall3methods.Peek")
+	}
+	if err := statusError("StreamCdlrisefall3methods.Peek", C.ft_stream_cdlrisefall3methods_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdlrisefall3methods.
+func (s *StreamCdlrisefall3methods) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdlrisefall3methods.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdlrisefall3methods_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdlrisefall3methods.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdlrisefall3methods_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdlrisefall3methods.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdlrisefall3methods restores a StreamCdlrisefall3methods from a snapshot made by Save.
+func LoadStreamCdlrisefall3methods(snapshot []byte) (*StreamCdlrisefall3methods, error) {
+	var h *C.FtStreamCdlrisefall3methods
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdlrisefall3methods", C.ft_stream_cdlrisefall3methods_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlrisefall3methods{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlrisefall3methods).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdlrisefall3methods) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdlrisefall3methods.Reset")
+	}
+	return statusError("StreamCdlrisefall3methods.Reset", C.ft_stream_cdlrisefall3methods_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdlrisefall3methods) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdlrisefall3methods_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdlseparatinglines is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Separating Lines candlestick pattern: 100 bullish, -100 bearish, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdlseparatinglines struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdlseparatinglines
+}
+
+// NewStreamCdlseparatinglines creates a StreamCdlseparatinglines.
+func NewStreamCdlseparatinglines() (*StreamCdlseparatinglines, error) {
+	var h *C.FtStreamCdlseparatinglines
+	if err := statusError("NewStreamCdlseparatinglines", C.ft_stream_cdlseparatinglines_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlseparatinglines{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlseparatinglines).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdlseparatinglines) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlseparatinglines.Update")
+	}
+	if err := statusError("StreamCdlseparatinglines.Update", C.ft_stream_cdlseparatinglines_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdlseparatinglines) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlseparatinglines.Peek")
+	}
+	if err := statusError("StreamCdlseparatinglines.Peek", C.ft_stream_cdlseparatinglines_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdlseparatinglines.
+func (s *StreamCdlseparatinglines) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdlseparatinglines.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdlseparatinglines_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdlseparatinglines.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdlseparatinglines_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdlseparatinglines.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdlseparatinglines restores a StreamCdlseparatinglines from a snapshot made by Save.
+func LoadStreamCdlseparatinglines(snapshot []byte) (*StreamCdlseparatinglines, error) {
+	var h *C.FtStreamCdlseparatinglines
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdlseparatinglines", C.ft_stream_cdlseparatinglines_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlseparatinglines{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlseparatinglines).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdlseparatinglines) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdlseparatinglines.Reset")
+	}
+	return statusError("StreamCdlseparatinglines.Reset", C.ft_stream_cdlseparatinglines_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdlseparatinglines) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdlseparatinglines_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdlshootingstar is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Shooting Star candlestick pattern: -100 (bearish) when matched, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdlshootingstar struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdlshootingstar
+}
+
+// NewStreamCdlshootingstar creates a StreamCdlshootingstar.
+func NewStreamCdlshootingstar() (*StreamCdlshootingstar, error) {
+	var h *C.FtStreamCdlshootingstar
+	if err := statusError("NewStreamCdlshootingstar", C.ft_stream_cdlshootingstar_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlshootingstar{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlshootingstar).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdlshootingstar) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlshootingstar.Update")
+	}
+	if err := statusError("StreamCdlshootingstar.Update", C.ft_stream_cdlshootingstar_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdlshootingstar) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlshootingstar.Peek")
+	}
+	if err := statusError("StreamCdlshootingstar.Peek", C.ft_stream_cdlshootingstar_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdlshootingstar.
+func (s *StreamCdlshootingstar) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdlshootingstar.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdlshootingstar_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdlshootingstar.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdlshootingstar_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdlshootingstar.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdlshootingstar restores a StreamCdlshootingstar from a snapshot made by Save.
+func LoadStreamCdlshootingstar(snapshot []byte) (*StreamCdlshootingstar, error) {
+	var h *C.FtStreamCdlshootingstar
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdlshootingstar", C.ft_stream_cdlshootingstar_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlshootingstar{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlshootingstar).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdlshootingstar) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdlshootingstar.Reset")
+	}
+	return statusError("StreamCdlshootingstar.Reset", C.ft_stream_cdlshootingstar_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdlshootingstar) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdlshootingstar_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdlshortline is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Short Line Candle candlestick pattern: 100 bullish, -100 bearish, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdlshortline struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdlshortline
+}
+
+// NewStreamCdlshortline creates a StreamCdlshortline.
+func NewStreamCdlshortline() (*StreamCdlshortline, error) {
+	var h *C.FtStreamCdlshortline
+	if err := statusError("NewStreamCdlshortline", C.ft_stream_cdlshortline_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlshortline{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlshortline).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdlshortline) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlshortline.Update")
+	}
+	if err := statusError("StreamCdlshortline.Update", C.ft_stream_cdlshortline_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdlshortline) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlshortline.Peek")
+	}
+	if err := statusError("StreamCdlshortline.Peek", C.ft_stream_cdlshortline_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdlshortline.
+func (s *StreamCdlshortline) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdlshortline.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdlshortline_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdlshortline.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdlshortline_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdlshortline.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdlshortline restores a StreamCdlshortline from a snapshot made by Save.
+func LoadStreamCdlshortline(snapshot []byte) (*StreamCdlshortline, error) {
+	var h *C.FtStreamCdlshortline
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdlshortline", C.ft_stream_cdlshortline_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlshortline{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlshortline).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdlshortline) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdlshortline.Reset")
+	}
+	return statusError("StreamCdlshortline.Reset", C.ft_stream_cdlshortline_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdlshortline) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdlshortline_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdlspinningtop is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Spinning Top candlestick pattern: 100 bullish, -100 bearish, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdlspinningtop struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdlspinningtop
+}
+
+// NewStreamCdlspinningtop creates a StreamCdlspinningtop.
+func NewStreamCdlspinningtop() (*StreamCdlspinningtop, error) {
+	var h *C.FtStreamCdlspinningtop
+	if err := statusError("NewStreamCdlspinningtop", C.ft_stream_cdlspinningtop_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlspinningtop{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlspinningtop).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdlspinningtop) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlspinningtop.Update")
+	}
+	if err := statusError("StreamCdlspinningtop.Update", C.ft_stream_cdlspinningtop_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdlspinningtop) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlspinningtop.Peek")
+	}
+	if err := statusError("StreamCdlspinningtop.Peek", C.ft_stream_cdlspinningtop_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdlspinningtop.
+func (s *StreamCdlspinningtop) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdlspinningtop.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdlspinningtop_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdlspinningtop.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdlspinningtop_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdlspinningtop.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdlspinningtop restores a StreamCdlspinningtop from a snapshot made by Save.
+func LoadStreamCdlspinningtop(snapshot []byte) (*StreamCdlspinningtop, error) {
+	var h *C.FtStreamCdlspinningtop
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdlspinningtop", C.ft_stream_cdlspinningtop_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlspinningtop{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlspinningtop).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdlspinningtop) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdlspinningtop.Reset")
+	}
+	return statusError("StreamCdlspinningtop.Reset", C.ft_stream_cdlspinningtop_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdlspinningtop) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdlspinningtop_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdlstalledpattern is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Stalled Pattern candlestick pattern: -100 (bearish) when matched, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdlstalledpattern struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdlstalledpattern
+}
+
+// NewStreamCdlstalledpattern creates a StreamCdlstalledpattern.
+func NewStreamCdlstalledpattern() (*StreamCdlstalledpattern, error) {
+	var h *C.FtStreamCdlstalledpattern
+	if err := statusError("NewStreamCdlstalledpattern", C.ft_stream_cdlstalledpattern_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlstalledpattern{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlstalledpattern).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdlstalledpattern) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlstalledpattern.Update")
+	}
+	if err := statusError("StreamCdlstalledpattern.Update", C.ft_stream_cdlstalledpattern_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdlstalledpattern) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlstalledpattern.Peek")
+	}
+	if err := statusError("StreamCdlstalledpattern.Peek", C.ft_stream_cdlstalledpattern_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdlstalledpattern.
+func (s *StreamCdlstalledpattern) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdlstalledpattern.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdlstalledpattern_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdlstalledpattern.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdlstalledpattern_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdlstalledpattern.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdlstalledpattern restores a StreamCdlstalledpattern from a snapshot made by Save.
+func LoadStreamCdlstalledpattern(snapshot []byte) (*StreamCdlstalledpattern, error) {
+	var h *C.FtStreamCdlstalledpattern
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdlstalledpattern", C.ft_stream_cdlstalledpattern_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlstalledpattern{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlstalledpattern).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdlstalledpattern) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdlstalledpattern.Reset")
+	}
+	return statusError("StreamCdlstalledpattern.Reset", C.ft_stream_cdlstalledpattern_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdlstalledpattern) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdlstalledpattern_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdlsticksandwich is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Stick Sandwich candlestick pattern: 100 (bullish) when matched, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdlsticksandwich struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdlsticksandwich
+}
+
+// NewStreamCdlsticksandwich creates a StreamCdlsticksandwich.
+func NewStreamCdlsticksandwich() (*StreamCdlsticksandwich, error) {
+	var h *C.FtStreamCdlsticksandwich
+	if err := statusError("NewStreamCdlsticksandwich", C.ft_stream_cdlsticksandwich_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlsticksandwich{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlsticksandwich).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdlsticksandwich) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlsticksandwich.Update")
+	}
+	if err := statusError("StreamCdlsticksandwich.Update", C.ft_stream_cdlsticksandwich_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdlsticksandwich) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlsticksandwich.Peek")
+	}
+	if err := statusError("StreamCdlsticksandwich.Peek", C.ft_stream_cdlsticksandwich_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdlsticksandwich.
+func (s *StreamCdlsticksandwich) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdlsticksandwich.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdlsticksandwich_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdlsticksandwich.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdlsticksandwich_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdlsticksandwich.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdlsticksandwich restores a StreamCdlsticksandwich from a snapshot made by Save.
+func LoadStreamCdlsticksandwich(snapshot []byte) (*StreamCdlsticksandwich, error) {
+	var h *C.FtStreamCdlsticksandwich
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdlsticksandwich", C.ft_stream_cdlsticksandwich_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlsticksandwich{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlsticksandwich).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdlsticksandwich) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdlsticksandwich.Reset")
+	}
+	return statusError("StreamCdlsticksandwich.Reset", C.ft_stream_cdlsticksandwich_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdlsticksandwich) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdlsticksandwich_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdltakuri is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Takuri (Dragonfly Doji with very long lower shadow) candlestick pattern: 100 when the candle matches (pattern present, not a direction), else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdltakuri struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdltakuri
+}
+
+// NewStreamCdltakuri creates a StreamCdltakuri.
+func NewStreamCdltakuri() (*StreamCdltakuri, error) {
+	var h *C.FtStreamCdltakuri
+	if err := statusError("NewStreamCdltakuri", C.ft_stream_cdltakuri_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdltakuri{h: h}
+	runtime.SetFinalizer(s, (*StreamCdltakuri).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdltakuri) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdltakuri.Update")
+	}
+	if err := statusError("StreamCdltakuri.Update", C.ft_stream_cdltakuri_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdltakuri) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdltakuri.Peek")
+	}
+	if err := statusError("StreamCdltakuri.Peek", C.ft_stream_cdltakuri_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdltakuri.
+func (s *StreamCdltakuri) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdltakuri.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdltakuri_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdltakuri.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdltakuri_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdltakuri.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdltakuri restores a StreamCdltakuri from a snapshot made by Save.
+func LoadStreamCdltakuri(snapshot []byte) (*StreamCdltakuri, error) {
+	var h *C.FtStreamCdltakuri
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdltakuri", C.ft_stream_cdltakuri_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdltakuri{h: h}
+	runtime.SetFinalizer(s, (*StreamCdltakuri).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdltakuri) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdltakuri.Reset")
+	}
+	return statusError("StreamCdltakuri.Reset", C.ft_stream_cdltakuri_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdltakuri) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdltakuri_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdltasukigap is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Tasuki Gap candlestick pattern: 100 bullish, -100 bearish, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdltasukigap struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdltasukigap
+}
+
+// NewStreamCdltasukigap creates a StreamCdltasukigap.
+func NewStreamCdltasukigap() (*StreamCdltasukigap, error) {
+	var h *C.FtStreamCdltasukigap
+	if err := statusError("NewStreamCdltasukigap", C.ft_stream_cdltasukigap_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdltasukigap{h: h}
+	runtime.SetFinalizer(s, (*StreamCdltasukigap).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdltasukigap) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdltasukigap.Update")
+	}
+	if err := statusError("StreamCdltasukigap.Update", C.ft_stream_cdltasukigap_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdltasukigap) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdltasukigap.Peek")
+	}
+	if err := statusError("StreamCdltasukigap.Peek", C.ft_stream_cdltasukigap_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdltasukigap.
+func (s *StreamCdltasukigap) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdltasukigap.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdltasukigap_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdltasukigap.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdltasukigap_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdltasukigap.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdltasukigap restores a StreamCdltasukigap from a snapshot made by Save.
+func LoadStreamCdltasukigap(snapshot []byte) (*StreamCdltasukigap, error) {
+	var h *C.FtStreamCdltasukigap
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdltasukigap", C.ft_stream_cdltasukigap_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdltasukigap{h: h}
+	runtime.SetFinalizer(s, (*StreamCdltasukigap).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdltasukigap) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdltasukigap.Reset")
+	}
+	return statusError("StreamCdltasukigap.Reset", C.ft_stream_cdltasukigap_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdltasukigap) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdltasukigap_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdlthrusting is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Thrusting Pattern candlestick pattern: -100 (bearish) when matched, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdlthrusting struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdlthrusting
+}
+
+// NewStreamCdlthrusting creates a StreamCdlthrusting.
+func NewStreamCdlthrusting() (*StreamCdlthrusting, error) {
+	var h *C.FtStreamCdlthrusting
+	if err := statusError("NewStreamCdlthrusting", C.ft_stream_cdlthrusting_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlthrusting{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlthrusting).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdlthrusting) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlthrusting.Update")
+	}
+	if err := statusError("StreamCdlthrusting.Update", C.ft_stream_cdlthrusting_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdlthrusting) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlthrusting.Peek")
+	}
+	if err := statusError("StreamCdlthrusting.Peek", C.ft_stream_cdlthrusting_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdlthrusting.
+func (s *StreamCdlthrusting) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdlthrusting.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdlthrusting_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdlthrusting.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdlthrusting_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdlthrusting.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdlthrusting restores a StreamCdlthrusting from a snapshot made by Save.
+func LoadStreamCdlthrusting(snapshot []byte) (*StreamCdlthrusting, error) {
+	var h *C.FtStreamCdlthrusting
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdlthrusting", C.ft_stream_cdlthrusting_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlthrusting{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlthrusting).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdlthrusting) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdlthrusting.Reset")
+	}
+	return statusError("StreamCdlthrusting.Reset", C.ft_stream_cdlthrusting_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdlthrusting) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdlthrusting_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdltristar is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Tristar Pattern candlestick pattern: 100 bullish, -100 bearish, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdltristar struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdltristar
+}
+
+// NewStreamCdltristar creates a StreamCdltristar.
+func NewStreamCdltristar() (*StreamCdltristar, error) {
+	var h *C.FtStreamCdltristar
+	if err := statusError("NewStreamCdltristar", C.ft_stream_cdltristar_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdltristar{h: h}
+	runtime.SetFinalizer(s, (*StreamCdltristar).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdltristar) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdltristar.Update")
+	}
+	if err := statusError("StreamCdltristar.Update", C.ft_stream_cdltristar_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdltristar) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdltristar.Peek")
+	}
+	if err := statusError("StreamCdltristar.Peek", C.ft_stream_cdltristar_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdltristar.
+func (s *StreamCdltristar) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdltristar.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdltristar_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdltristar.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdltristar_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdltristar.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdltristar restores a StreamCdltristar from a snapshot made by Save.
+func LoadStreamCdltristar(snapshot []byte) (*StreamCdltristar, error) {
+	var h *C.FtStreamCdltristar
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdltristar", C.ft_stream_cdltristar_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdltristar{h: h}
+	runtime.SetFinalizer(s, (*StreamCdltristar).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdltristar) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdltristar.Reset")
+	}
+	return statusError("StreamCdltristar.Reset", C.ft_stream_cdltristar_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdltristar) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdltristar_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdlunique3river is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Unique 3 River candlestick pattern: 100 (bullish) when matched, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdlunique3river struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdlunique3river
+}
+
+// NewStreamCdlunique3river creates a StreamCdlunique3river.
+func NewStreamCdlunique3river() (*StreamCdlunique3river, error) {
+	var h *C.FtStreamCdlunique3river
+	if err := statusError("NewStreamCdlunique3river", C.ft_stream_cdlunique3river_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlunique3river{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlunique3river).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdlunique3river) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlunique3river.Update")
+	}
+	if err := statusError("StreamCdlunique3river.Update", C.ft_stream_cdlunique3river_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdlunique3river) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlunique3river.Peek")
+	}
+	if err := statusError("StreamCdlunique3river.Peek", C.ft_stream_cdlunique3river_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdlunique3river.
+func (s *StreamCdlunique3river) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdlunique3river.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdlunique3river_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdlunique3river.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdlunique3river_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdlunique3river.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdlunique3river restores a StreamCdlunique3river from a snapshot made by Save.
+func LoadStreamCdlunique3river(snapshot []byte) (*StreamCdlunique3river, error) {
+	var h *C.FtStreamCdlunique3river
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdlunique3river", C.ft_stream_cdlunique3river_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlunique3river{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlunique3river).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdlunique3river) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdlunique3river.Reset")
+	}
+	return statusError("StreamCdlunique3river.Reset", C.ft_stream_cdlunique3river_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdlunique3river) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdlunique3river_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdlupsidegap2crows is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Upside Gap Two Crows candlestick pattern: -100 (bearish) when matched, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdlupsidegap2crows struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdlupsidegap2crows
+}
+
+// NewStreamCdlupsidegap2crows creates a StreamCdlupsidegap2crows.
+func NewStreamCdlupsidegap2crows() (*StreamCdlupsidegap2crows, error) {
+	var h *C.FtStreamCdlupsidegap2crows
+	if err := statusError("NewStreamCdlupsidegap2crows", C.ft_stream_cdlupsidegap2crows_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlupsidegap2crows{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlupsidegap2crows).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdlupsidegap2crows) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlupsidegap2crows.Update")
+	}
+	if err := statusError("StreamCdlupsidegap2crows.Update", C.ft_stream_cdlupsidegap2crows_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdlupsidegap2crows) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlupsidegap2crows.Peek")
+	}
+	if err := statusError("StreamCdlupsidegap2crows.Peek", C.ft_stream_cdlupsidegap2crows_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdlupsidegap2crows.
+func (s *StreamCdlupsidegap2crows) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdlupsidegap2crows.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdlupsidegap2crows_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdlupsidegap2crows.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdlupsidegap2crows_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdlupsidegap2crows.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdlupsidegap2crows restores a StreamCdlupsidegap2crows from a snapshot made by Save.
+func LoadStreamCdlupsidegap2crows(snapshot []byte) (*StreamCdlupsidegap2crows, error) {
+	var h *C.FtStreamCdlupsidegap2crows
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdlupsidegap2crows", C.ft_stream_cdlupsidegap2crows_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlupsidegap2crows{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlupsidegap2crows).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdlupsidegap2crows) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdlupsidegap2crows.Reset")
+	}
+	return statusError("StreamCdlupsidegap2crows.Reset", C.ft_stream_cdlupsidegap2crows_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdlupsidegap2crows) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdlupsidegap2crows_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCdlxsidegap3methods is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Upside/Downside Gap Three Methods candlestick pattern: 100 bullish, -100 bearish, else 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCdlxsidegap3methods struct {
+	mu sync.Mutex
+	h  *C.FtStreamCdlxsidegap3methods
+}
+
+// NewStreamCdlxsidegap3methods creates a StreamCdlxsidegap3methods.
+func NewStreamCdlxsidegap3methods() (*StreamCdlxsidegap3methods, error) {
+	var h *C.FtStreamCdlxsidegap3methods
+	if err := statusError("NewStreamCdlxsidegap3methods", C.ft_stream_cdlxsidegap3methods_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlxsidegap3methods{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlxsidegap3methods).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCdlxsidegap3methods) Update(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlxsidegap3methods.Update")
+	}
+	if err := statusError("StreamCdlxsidegap3methods.Update", C.ft_stream_cdlxsidegap3methods_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCdlxsidegap3methods) Peek(open float64, high float64, low float64, close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCdlxsidegap3methods.Peek")
+	}
+	if err := statusError("StreamCdlxsidegap3methods.Peek", C.ft_stream_cdlxsidegap3methods_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCdlxsidegap3methods.
+func (s *StreamCdlxsidegap3methods) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCdlxsidegap3methods.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cdlxsidegap3methods_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCdlxsidegap3methods.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cdlxsidegap3methods_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCdlxsidegap3methods.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCdlxsidegap3methods restores a StreamCdlxsidegap3methods from a snapshot made by Save.
+func LoadStreamCdlxsidegap3methods(snapshot []byte) (*StreamCdlxsidegap3methods, error) {
+	var h *C.FtStreamCdlxsidegap3methods
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCdlxsidegap3methods", C.ft_stream_cdlxsidegap3methods_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCdlxsidegap3methods{h: h}
+	runtime.SetFinalizer(s, (*StreamCdlxsidegap3methods).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCdlxsidegap3methods) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCdlxsidegap3methods.Reset")
+	}
+	return statusError("StreamCdlxsidegap3methods.Reset", C.ft_stream_cdlxsidegap3methods_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCdlxsidegap3methods) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cdlxsidegap3methods_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamStddev is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming rolling population standard deviation over `timeperiod` bars, scaled by `nbdev`.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamStddev struct {
+	mu sync.Mutex
+	h  *C.FtStreamStddev
+}
+
+// NewStreamStddev creates a StreamStddev.
+func NewStreamStddev(timeperiod int, nbdev float64) (*StreamStddev, error) {
+	var h *C.FtStreamStddev
+	if err := statusError("NewStreamStddev", C.ft_stream_stddev_new(C.int64_t(timeperiod), C.double(nbdev), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamStddev{h: h}
+	runtime.SetFinalizer(s, (*StreamStddev).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamStddev) Update(real float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamStddev.Update")
+	}
+	if err := statusError("StreamStddev.Update", C.ft_stream_stddev_update(s.h, C.double(real), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamStddev) Peek(real float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamStddev.Peek")
+	}
+	if err := statusError("StreamStddev.Peek", C.ft_stream_stddev_peek(s.h, C.double(real), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamStddev.
+func (s *StreamStddev) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamStddev.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_stddev_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamStddev.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_stddev_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamStddev.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamStddev restores a StreamStddev from a snapshot made by Save.
+func LoadStreamStddev(snapshot []byte) (*StreamStddev, error) {
+	var h *C.FtStreamStddev
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamStddev", C.ft_stream_stddev_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamStddev{h: h}
+	runtime.SetFinalizer(s, (*StreamStddev).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamStddev) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamStddev.Reset")
+	}
+	return statusError("StreamStddev.Reset", C.ft_stream_stddev_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamStddev) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_stddev_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamVar is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming rolling population variance over `timeperiod` bars, scaled by `nbdev**2`.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamVar struct {
+	mu sync.Mutex
+	h  *C.FtStreamVar
+}
+
+// NewStreamVar creates a StreamVar.
+func NewStreamVar(timeperiod int, nbdev float64) (*StreamVar, error) {
+	var h *C.FtStreamVar
+	if err := statusError("NewStreamVar", C.ft_stream_var_new(C.int64_t(timeperiod), C.double(nbdev), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamVar{h: h}
+	runtime.SetFinalizer(s, (*StreamVar).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamVar) Update(real float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamVar.Update")
+	}
+	if err := statusError("StreamVar.Update", C.ft_stream_var_update(s.h, C.double(real), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamVar) Peek(real float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamVar.Peek")
+	}
+	if err := statusError("StreamVar.Peek", C.ft_stream_var_peek(s.h, C.double(real), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamVar.
+func (s *StreamVar) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamVar.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_var_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamVar.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_var_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamVar.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamVar restores a StreamVar from a snapshot made by Save.
+func LoadStreamVar(snapshot []byte) (*StreamVar, error) {
+	var h *C.FtStreamVar
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamVar", C.ft_stream_var_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamVar{h: h}
+	runtime.SetFinalizer(s, (*StreamVar).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamVar) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamVar.Reset")
+	}
+	return statusError("StreamVar.Reset", C.ft_stream_var_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamVar) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_var_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamLinearreg is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming linear regression fitted value at the last bar of the window.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamLinearreg struct {
+	mu sync.Mutex
+	h  *C.FtStreamLinearreg
+}
+
+// NewStreamLinearreg creates a StreamLinearreg.
+func NewStreamLinearreg(timeperiod int) (*StreamLinearreg, error) {
+	var h *C.FtStreamLinearreg
+	if err := statusError("NewStreamLinearreg", C.ft_stream_linearreg_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamLinearreg{h: h}
+	runtime.SetFinalizer(s, (*StreamLinearreg).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamLinearreg) Update(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamLinearreg.Update")
+	}
+	if err := statusError("StreamLinearreg.Update", C.ft_stream_linearreg_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamLinearreg) Peek(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamLinearreg.Peek")
+	}
+	if err := statusError("StreamLinearreg.Peek", C.ft_stream_linearreg_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamLinearreg.
+func (s *StreamLinearreg) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamLinearreg.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_linearreg_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamLinearreg.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_linearreg_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamLinearreg.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamLinearreg restores a StreamLinearreg from a snapshot made by Save.
+func LoadStreamLinearreg(snapshot []byte) (*StreamLinearreg, error) {
+	var h *C.FtStreamLinearreg
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamLinearreg", C.ft_stream_linearreg_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamLinearreg{h: h}
+	runtime.SetFinalizer(s, (*StreamLinearreg).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamLinearreg) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamLinearreg.Reset")
+	}
+	return statusError("StreamLinearreg.Reset", C.ft_stream_linearreg_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamLinearreg) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_linearreg_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamLinearregSlope is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming slope of the rolling linear regression line.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamLinearregSlope struct {
+	mu sync.Mutex
+	h  *C.FtStreamLinearregSlope
+}
+
+// NewStreamLinearregSlope creates a StreamLinearregSlope.
+func NewStreamLinearregSlope(timeperiod int) (*StreamLinearregSlope, error) {
+	var h *C.FtStreamLinearregSlope
+	if err := statusError("NewStreamLinearregSlope", C.ft_stream_linearreg_slope_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamLinearregSlope{h: h}
+	runtime.SetFinalizer(s, (*StreamLinearregSlope).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamLinearregSlope) Update(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamLinearregSlope.Update")
+	}
+	if err := statusError("StreamLinearregSlope.Update", C.ft_stream_linearreg_slope_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamLinearregSlope) Peek(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamLinearregSlope.Peek")
+	}
+	if err := statusError("StreamLinearregSlope.Peek", C.ft_stream_linearreg_slope_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamLinearregSlope.
+func (s *StreamLinearregSlope) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamLinearregSlope.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_linearreg_slope_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamLinearregSlope.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_linearreg_slope_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamLinearregSlope.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamLinearregSlope restores a StreamLinearregSlope from a snapshot made by Save.
+func LoadStreamLinearregSlope(snapshot []byte) (*StreamLinearregSlope, error) {
+	var h *C.FtStreamLinearregSlope
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamLinearregSlope", C.ft_stream_linearreg_slope_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamLinearregSlope{h: h}
+	runtime.SetFinalizer(s, (*StreamLinearregSlope).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamLinearregSlope) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamLinearregSlope.Reset")
+	}
+	return statusError("StreamLinearregSlope.Reset", C.ft_stream_linearreg_slope_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamLinearregSlope) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_linearreg_slope_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamLinearregIntercept is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming intercept of the rolling linear regression line.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamLinearregIntercept struct {
+	mu sync.Mutex
+	h  *C.FtStreamLinearregIntercept
+}
+
+// NewStreamLinearregIntercept creates a StreamLinearregIntercept.
+func NewStreamLinearregIntercept(timeperiod int) (*StreamLinearregIntercept, error) {
+	var h *C.FtStreamLinearregIntercept
+	if err := statusError("NewStreamLinearregIntercept", C.ft_stream_linearreg_intercept_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamLinearregIntercept{h: h}
+	runtime.SetFinalizer(s, (*StreamLinearregIntercept).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamLinearregIntercept) Update(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamLinearregIntercept.Update")
+	}
+	if err := statusError("StreamLinearregIntercept.Update", C.ft_stream_linearreg_intercept_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamLinearregIntercept) Peek(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamLinearregIntercept.Peek")
+	}
+	if err := statusError("StreamLinearregIntercept.Peek", C.ft_stream_linearreg_intercept_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamLinearregIntercept.
+func (s *StreamLinearregIntercept) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamLinearregIntercept.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_linearreg_intercept_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamLinearregIntercept.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_linearreg_intercept_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamLinearregIntercept.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamLinearregIntercept restores a StreamLinearregIntercept from a snapshot made by Save.
+func LoadStreamLinearregIntercept(snapshot []byte) (*StreamLinearregIntercept, error) {
+	var h *C.FtStreamLinearregIntercept
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamLinearregIntercept", C.ft_stream_linearreg_intercept_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamLinearregIntercept{h: h}
+	runtime.SetFinalizer(s, (*StreamLinearregIntercept).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamLinearregIntercept) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamLinearregIntercept.Reset")
+	}
+	return statusError("StreamLinearregIntercept.Reset", C.ft_stream_linearreg_intercept_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamLinearregIntercept) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_linearreg_intercept_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamLinearregAngle is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming angle of the rolling regression line in degrees.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamLinearregAngle struct {
+	mu sync.Mutex
+	h  *C.FtStreamLinearregAngle
+}
+
+// NewStreamLinearregAngle creates a StreamLinearregAngle.
+func NewStreamLinearregAngle(timeperiod int) (*StreamLinearregAngle, error) {
+	var h *C.FtStreamLinearregAngle
+	if err := statusError("NewStreamLinearregAngle", C.ft_stream_linearreg_angle_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamLinearregAngle{h: h}
+	runtime.SetFinalizer(s, (*StreamLinearregAngle).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamLinearregAngle) Update(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamLinearregAngle.Update")
+	}
+	if err := statusError("StreamLinearregAngle.Update", C.ft_stream_linearreg_angle_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamLinearregAngle) Peek(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamLinearregAngle.Peek")
+	}
+	if err := statusError("StreamLinearregAngle.Peek", C.ft_stream_linearreg_angle_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamLinearregAngle.
+func (s *StreamLinearregAngle) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamLinearregAngle.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_linearreg_angle_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamLinearregAngle.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_linearreg_angle_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamLinearregAngle.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamLinearregAngle restores a StreamLinearregAngle from a snapshot made by Save.
+func LoadStreamLinearregAngle(snapshot []byte) (*StreamLinearregAngle, error) {
+	var h *C.FtStreamLinearregAngle
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamLinearregAngle", C.ft_stream_linearreg_angle_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamLinearregAngle{h: h}
+	runtime.SetFinalizer(s, (*StreamLinearregAngle).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamLinearregAngle) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamLinearregAngle.Reset")
+	}
+	return statusError("StreamLinearregAngle.Reset", C.ft_stream_linearreg_angle_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamLinearregAngle) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_linearreg_angle_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamTsf is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming time series forecast: the regression line extrapolated one bar ahead.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamTsf struct {
+	mu sync.Mutex
+	h  *C.FtStreamTsf
+}
+
+// NewStreamTsf creates a StreamTsf.
+func NewStreamTsf(timeperiod int) (*StreamTsf, error) {
+	var h *C.FtStreamTsf
+	if err := statusError("NewStreamTsf", C.ft_stream_tsf_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamTsf{h: h}
+	runtime.SetFinalizer(s, (*StreamTsf).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamTsf) Update(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamTsf.Update")
+	}
+	if err := statusError("StreamTsf.Update", C.ft_stream_tsf_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamTsf) Peek(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamTsf.Peek")
+	}
+	if err := statusError("StreamTsf.Peek", C.ft_stream_tsf_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamTsf.
+func (s *StreamTsf) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamTsf.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_tsf_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamTsf.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_tsf_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamTsf.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamTsf restores a StreamTsf from a snapshot made by Save.
+func LoadStreamTsf(snapshot []byte) (*StreamTsf, error) {
+	var h *C.FtStreamTsf
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamTsf", C.ft_stream_tsf_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamTsf{h: h}
+	runtime.SetFinalizer(s, (*StreamTsf).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamTsf) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamTsf.Reset")
+	}
+	return statusError("StreamTsf.Reset", C.ft_stream_tsf_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamTsf) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_tsf_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamBeta is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming rolling beta of `real1` returns on `real0` returns over `timeperiod` returns.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamBeta struct {
+	mu sync.Mutex
+	h  *C.FtStreamBeta
+}
+
+// NewStreamBeta creates a StreamBeta.
+func NewStreamBeta(timeperiod int) (*StreamBeta, error) {
+	var h *C.FtStreamBeta
+	if err := statusError("NewStreamBeta", C.ft_stream_beta_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamBeta{h: h}
+	runtime.SetFinalizer(s, (*StreamBeta).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamBeta) Update(real0 float64, real1 float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamBeta.Update")
+	}
+	if err := statusError("StreamBeta.Update", C.ft_stream_beta_update(s.h, C.double(real0), C.double(real1), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamBeta) Peek(real0 float64, real1 float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamBeta.Peek")
+	}
+	if err := statusError("StreamBeta.Peek", C.ft_stream_beta_peek(s.h, C.double(real0), C.double(real1), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamBeta.
+func (s *StreamBeta) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamBeta.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_beta_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamBeta.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_beta_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamBeta.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamBeta restores a StreamBeta from a snapshot made by Save.
+func LoadStreamBeta(snapshot []byte) (*StreamBeta, error) {
+	var h *C.FtStreamBeta
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamBeta", C.ft_stream_beta_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamBeta{h: h}
+	runtime.SetFinalizer(s, (*StreamBeta).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamBeta) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamBeta.Reset")
+	}
+	return statusError("StreamBeta.Reset", C.ft_stream_beta_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamBeta) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_beta_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCorrel is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming rolling Pearson correlation of two series over `timeperiod` bars.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCorrel struct {
+	mu sync.Mutex
+	h  *C.FtStreamCorrel
+}
+
+// NewStreamCorrel creates a StreamCorrel.
+func NewStreamCorrel(timeperiod int) (*StreamCorrel, error) {
+	var h *C.FtStreamCorrel
+	if err := statusError("NewStreamCorrel", C.ft_stream_correl_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCorrel{h: h}
+	runtime.SetFinalizer(s, (*StreamCorrel).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCorrel) Update(real0 float64, real1 float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCorrel.Update")
+	}
+	if err := statusError("StreamCorrel.Update", C.ft_stream_correl_update(s.h, C.double(real0), C.double(real1), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCorrel) Peek(real0 float64, real1 float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCorrel.Peek")
+	}
+	if err := statusError("StreamCorrel.Peek", C.ft_stream_correl_peek(s.h, C.double(real0), C.double(real1), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCorrel.
+func (s *StreamCorrel) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCorrel.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_correl_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCorrel.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_correl_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCorrel.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCorrel restores a StreamCorrel from a snapshot made by Save.
+func LoadStreamCorrel(snapshot []byte) (*StreamCorrel, error) {
+	var h *C.FtStreamCorrel
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCorrel", C.ft_stream_correl_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCorrel{h: h}
+	runtime.SetFinalizer(s, (*StreamCorrel).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCorrel) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCorrel.Reset")
+	}
+	return statusError("StreamCorrel.Reset", C.ft_stream_correl_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCorrel) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_correl_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamIvRank is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming IV rank: position of the latest IV between the window's min and max.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamIvRank struct {
+	mu sync.Mutex
+	h  *C.FtStreamIvRank
+}
+
+// NewStreamIvRank creates a StreamIvRank.
+func NewStreamIvRank(window int) (*StreamIvRank, error) {
+	var h *C.FtStreamIvRank
+	if err := statusError("NewStreamIvRank", C.ft_stream_iv_rank_new(C.int64_t(window), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamIvRank{h: h}
+	runtime.SetFinalizer(s, (*StreamIvRank).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamIvRank) Update(ivSeries float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamIvRank.Update")
+	}
+	if err := statusError("StreamIvRank.Update", C.ft_stream_iv_rank_update(s.h, C.double(ivSeries), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamIvRank) Peek(ivSeries float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamIvRank.Peek")
+	}
+	if err := statusError("StreamIvRank.Peek", C.ft_stream_iv_rank_peek(s.h, C.double(ivSeries), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamIvRank.
+func (s *StreamIvRank) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamIvRank.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_iv_rank_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamIvRank.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_iv_rank_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamIvRank.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamIvRank restores a StreamIvRank from a snapshot made by Save.
+func LoadStreamIvRank(snapshot []byte) (*StreamIvRank, error) {
+	var h *C.FtStreamIvRank
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamIvRank", C.ft_stream_iv_rank_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamIvRank{h: h}
+	runtime.SetFinalizer(s, (*StreamIvRank).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamIvRank) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamIvRank.Reset")
+	}
+	return statusError("StreamIvRank.Reset", C.ft_stream_iv_rank_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamIvRank) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_iv_rank_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamIvPercentile is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming IV percentile: share of window values at or below the latest IV.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamIvPercentile struct {
+	mu sync.Mutex
+	h  *C.FtStreamIvPercentile
+}
+
+// NewStreamIvPercentile creates a StreamIvPercentile.
+func NewStreamIvPercentile(window int) (*StreamIvPercentile, error) {
+	var h *C.FtStreamIvPercentile
+	if err := statusError("NewStreamIvPercentile", C.ft_stream_iv_percentile_new(C.int64_t(window), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamIvPercentile{h: h}
+	runtime.SetFinalizer(s, (*StreamIvPercentile).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamIvPercentile) Update(ivSeries float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamIvPercentile.Update")
+	}
+	if err := statusError("StreamIvPercentile.Update", C.ft_stream_iv_percentile_update(s.h, C.double(ivSeries), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamIvPercentile) Peek(ivSeries float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamIvPercentile.Peek")
+	}
+	if err := statusError("StreamIvPercentile.Peek", C.ft_stream_iv_percentile_peek(s.h, C.double(ivSeries), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamIvPercentile.
+func (s *StreamIvPercentile) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamIvPercentile.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_iv_percentile_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamIvPercentile.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_iv_percentile_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamIvPercentile.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamIvPercentile restores a StreamIvPercentile from a snapshot made by Save.
+func LoadStreamIvPercentile(snapshot []byte) (*StreamIvPercentile, error) {
+	var h *C.FtStreamIvPercentile
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamIvPercentile", C.ft_stream_iv_percentile_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamIvPercentile{h: h}
+	runtime.SetFinalizer(s, (*StreamIvPercentile).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamIvPercentile) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamIvPercentile.Reset")
+	}
+	return statusError("StreamIvPercentile.Reset", C.ft_stream_iv_percentile_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamIvPercentile) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_iv_percentile_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamIvZscore is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming IV z-score of the latest IV against the window mean and deviation.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamIvZscore struct {
+	mu sync.Mutex
+	h  *C.FtStreamIvZscore
+}
+
+// NewStreamIvZscore creates a StreamIvZscore.
+func NewStreamIvZscore(window int) (*StreamIvZscore, error) {
+	var h *C.FtStreamIvZscore
+	if err := statusError("NewStreamIvZscore", C.ft_stream_iv_zscore_new(C.int64_t(window), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamIvZscore{h: h}
+	runtime.SetFinalizer(s, (*StreamIvZscore).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamIvZscore) Update(ivSeries float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamIvZscore.Update")
+	}
+	if err := statusError("StreamIvZscore.Update", C.ft_stream_iv_zscore_update(s.h, C.double(ivSeries), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamIvZscore) Peek(ivSeries float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamIvZscore.Peek")
+	}
+	if err := statusError("StreamIvZscore.Peek", C.ft_stream_iv_zscore_peek(s.h, C.double(ivSeries), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamIvZscore.
+func (s *StreamIvZscore) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamIvZscore.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_iv_zscore_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamIvZscore.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_iv_zscore_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamIvZscore.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamIvZscore restores a StreamIvZscore from a snapshot made by Save.
+func LoadStreamIvZscore(snapshot []byte) (*StreamIvZscore, error) {
+	var h *C.FtStreamIvZscore
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamIvZscore", C.ft_stream_iv_zscore_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamIvZscore{h: h}
+	runtime.SetFinalizer(s, (*StreamIvZscore).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamIvZscore) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamIvZscore.Reset")
+	}
+	return statusError("StreamIvZscore.Reset", C.ft_stream_iv_zscore_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamIvZscore) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_iv_zscore_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCloseToCloseVol is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming annualised close-to-close realized volatility (first value after `window` returns).
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCloseToCloseVol struct {
+	mu sync.Mutex
+	h  *C.FtStreamCloseToCloseVol
+}
+
+// NewStreamCloseToCloseVol creates a StreamCloseToCloseVol.
+func NewStreamCloseToCloseVol(window int, tradingDays float64) (*StreamCloseToCloseVol, error) {
+	var h *C.FtStreamCloseToCloseVol
+	if err := statusError("NewStreamCloseToCloseVol", C.ft_stream_close_to_close_vol_new(C.int64_t(window), C.double(tradingDays), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCloseToCloseVol{h: h}
+	runtime.SetFinalizer(s, (*StreamCloseToCloseVol).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCloseToCloseVol) Update(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCloseToCloseVol.Update")
+	}
+	if err := statusError("StreamCloseToCloseVol.Update", C.ft_stream_close_to_close_vol_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCloseToCloseVol) Peek(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCloseToCloseVol.Peek")
+	}
+	if err := statusError("StreamCloseToCloseVol.Peek", C.ft_stream_close_to_close_vol_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCloseToCloseVol.
+func (s *StreamCloseToCloseVol) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCloseToCloseVol.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_close_to_close_vol_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCloseToCloseVol.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_close_to_close_vol_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCloseToCloseVol.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCloseToCloseVol restores a StreamCloseToCloseVol from a snapshot made by Save.
+func LoadStreamCloseToCloseVol(snapshot []byte) (*StreamCloseToCloseVol, error) {
+	var h *C.FtStreamCloseToCloseVol
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCloseToCloseVol", C.ft_stream_close_to_close_vol_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCloseToCloseVol{h: h}
+	runtime.SetFinalizer(s, (*StreamCloseToCloseVol).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCloseToCloseVol) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCloseToCloseVol.Reset")
+	}
+	return statusError("StreamCloseToCloseVol.Reset", C.ft_stream_close_to_close_vol_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCloseToCloseVol) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_close_to_close_vol_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamParkinsonVol is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming annualised Parkinson high-low realized volatility.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamParkinsonVol struct {
+	mu sync.Mutex
+	h  *C.FtStreamParkinsonVol
+}
+
+// NewStreamParkinsonVol creates a StreamParkinsonVol.
+func NewStreamParkinsonVol(window int, tradingDays float64) (*StreamParkinsonVol, error) {
+	var h *C.FtStreamParkinsonVol
+	if err := statusError("NewStreamParkinsonVol", C.ft_stream_parkinson_vol_new(C.int64_t(window), C.double(tradingDays), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamParkinsonVol{h: h}
+	runtime.SetFinalizer(s, (*StreamParkinsonVol).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamParkinsonVol) Update(high float64, low float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamParkinsonVol.Update")
+	}
+	if err := statusError("StreamParkinsonVol.Update", C.ft_stream_parkinson_vol_update(s.h, C.double(high), C.double(low), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamParkinsonVol) Peek(high float64, low float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamParkinsonVol.Peek")
+	}
+	if err := statusError("StreamParkinsonVol.Peek", C.ft_stream_parkinson_vol_peek(s.h, C.double(high), C.double(low), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamParkinsonVol.
+func (s *StreamParkinsonVol) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamParkinsonVol.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_parkinson_vol_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamParkinsonVol.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_parkinson_vol_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamParkinsonVol.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamParkinsonVol restores a StreamParkinsonVol from a snapshot made by Save.
+func LoadStreamParkinsonVol(snapshot []byte) (*StreamParkinsonVol, error) {
+	var h *C.FtStreamParkinsonVol
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamParkinsonVol", C.ft_stream_parkinson_vol_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamParkinsonVol{h: h}
+	runtime.SetFinalizer(s, (*StreamParkinsonVol).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamParkinsonVol) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamParkinsonVol.Reset")
+	}
+	return statusError("StreamParkinsonVol.Reset", C.ft_stream_parkinson_vol_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamParkinsonVol) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_parkinson_vol_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamGarmanKlassVol is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming annualised Garman-Klass OHLC realized volatility.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamGarmanKlassVol struct {
+	mu sync.Mutex
+	h  *C.FtStreamGarmanKlassVol
+}
+
+// NewStreamGarmanKlassVol creates a StreamGarmanKlassVol.
+func NewStreamGarmanKlassVol(window int, tradingDays float64) (*StreamGarmanKlassVol, error) {
+	var h *C.FtStreamGarmanKlassVol
+	if err := statusError("NewStreamGarmanKlassVol", C.ft_stream_garman_klass_vol_new(C.int64_t(window), C.double(tradingDays), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamGarmanKlassVol{h: h}
+	runtime.SetFinalizer(s, (*StreamGarmanKlassVol).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamGarmanKlassVol) Update(open float64, high float64, low float64, close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamGarmanKlassVol.Update")
+	}
+	if err := statusError("StreamGarmanKlassVol.Update", C.ft_stream_garman_klass_vol_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamGarmanKlassVol) Peek(open float64, high float64, low float64, close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamGarmanKlassVol.Peek")
+	}
+	if err := statusError("StreamGarmanKlassVol.Peek", C.ft_stream_garman_klass_vol_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamGarmanKlassVol.
+func (s *StreamGarmanKlassVol) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamGarmanKlassVol.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_garman_klass_vol_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamGarmanKlassVol.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_garman_klass_vol_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamGarmanKlassVol.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamGarmanKlassVol restores a StreamGarmanKlassVol from a snapshot made by Save.
+func LoadStreamGarmanKlassVol(snapshot []byte) (*StreamGarmanKlassVol, error) {
+	var h *C.FtStreamGarmanKlassVol
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamGarmanKlassVol", C.ft_stream_garman_klass_vol_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamGarmanKlassVol{h: h}
+	runtime.SetFinalizer(s, (*StreamGarmanKlassVol).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamGarmanKlassVol) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamGarmanKlassVol.Reset")
+	}
+	return statusError("StreamGarmanKlassVol.Reset", C.ft_stream_garman_klass_vol_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamGarmanKlassVol) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_garman_klass_vol_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamRogersSatchellVol is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming annualised Rogers-Satchell OHLC realized volatility.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamRogersSatchellVol struct {
+	mu sync.Mutex
+	h  *C.FtStreamRogersSatchellVol
+}
+
+// NewStreamRogersSatchellVol creates a StreamRogersSatchellVol.
+func NewStreamRogersSatchellVol(window int, tradingDays float64) (*StreamRogersSatchellVol, error) {
+	var h *C.FtStreamRogersSatchellVol
+	if err := statusError("NewStreamRogersSatchellVol", C.ft_stream_rogers_satchell_vol_new(C.int64_t(window), C.double(tradingDays), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamRogersSatchellVol{h: h}
+	runtime.SetFinalizer(s, (*StreamRogersSatchellVol).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamRogersSatchellVol) Update(open float64, high float64, low float64, close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamRogersSatchellVol.Update")
+	}
+	if err := statusError("StreamRogersSatchellVol.Update", C.ft_stream_rogers_satchell_vol_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamRogersSatchellVol) Peek(open float64, high float64, low float64, close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamRogersSatchellVol.Peek")
+	}
+	if err := statusError("StreamRogersSatchellVol.Peek", C.ft_stream_rogers_satchell_vol_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamRogersSatchellVol.
+func (s *StreamRogersSatchellVol) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamRogersSatchellVol.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_rogers_satchell_vol_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamRogersSatchellVol.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_rogers_satchell_vol_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamRogersSatchellVol.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamRogersSatchellVol restores a StreamRogersSatchellVol from a snapshot made by Save.
+func LoadStreamRogersSatchellVol(snapshot []byte) (*StreamRogersSatchellVol, error) {
+	var h *C.FtStreamRogersSatchellVol
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamRogersSatchellVol", C.ft_stream_rogers_satchell_vol_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamRogersSatchellVol{h: h}
+	runtime.SetFinalizer(s, (*StreamRogersSatchellVol).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamRogersSatchellVol) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamRogersSatchellVol.Reset")
+	}
+	return statusError("StreamRogersSatchellVol.Reset", C.ft_stream_rogers_satchell_vol_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamRogersSatchellVol) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_rogers_satchell_vol_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamYangZhangVol is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming annualised Yang-Zhang OHLC realized volatility (first value after `window` bars plus the prior close).
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamYangZhangVol struct {
+	mu sync.Mutex
+	h  *C.FtStreamYangZhangVol
+}
+
+// NewStreamYangZhangVol creates a StreamYangZhangVol.
+func NewStreamYangZhangVol(window int, tradingDays float64) (*StreamYangZhangVol, error) {
+	var h *C.FtStreamYangZhangVol
+	if err := statusError("NewStreamYangZhangVol", C.ft_stream_yang_zhang_vol_new(C.int64_t(window), C.double(tradingDays), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamYangZhangVol{h: h}
+	runtime.SetFinalizer(s, (*StreamYangZhangVol).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamYangZhangVol) Update(open float64, high float64, low float64, close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamYangZhangVol.Update")
+	}
+	if err := statusError("StreamYangZhangVol.Update", C.ft_stream_yang_zhang_vol_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamYangZhangVol) Peek(open float64, high float64, low float64, close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamYangZhangVol.Peek")
+	}
+	if err := statusError("StreamYangZhangVol.Peek", C.ft_stream_yang_zhang_vol_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamYangZhangVol.
+func (s *StreamYangZhangVol) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamYangZhangVol.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_yang_zhang_vol_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamYangZhangVol.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_yang_zhang_vol_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamYangZhangVol.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamYangZhangVol restores a StreamYangZhangVol from a snapshot made by Save.
+func LoadStreamYangZhangVol(snapshot []byte) (*StreamYangZhangVol, error) {
+	var h *C.FtStreamYangZhangVol
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamYangZhangVol", C.ft_stream_yang_zhang_vol_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamYangZhangVol{h: h}
+	runtime.SetFinalizer(s, (*StreamYangZhangVol).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamYangZhangVol) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamYangZhangVol.Reset")
+	}
+	return statusError("StreamYangZhangVol.Reset", C.ft_stream_yang_zhang_vol_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamYangZhangVol) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_yang_zhang_vol_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamRegimeAdx is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming trend (1) / range (0) label from ADX against `threshold` (-1 where ADX is NaN).
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamRegimeAdx struct {
+	mu sync.Mutex
+	h  *C.FtStreamRegimeAdx
+}
+
+// NewStreamRegimeAdx creates a StreamRegimeAdx.
+func NewStreamRegimeAdx(threshold float64) (*StreamRegimeAdx, error) {
+	var h *C.FtStreamRegimeAdx
+	if err := statusError("NewStreamRegimeAdx", C.ft_stream_regime_adx_new(C.double(threshold), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamRegimeAdx{h: h}
+	runtime.SetFinalizer(s, (*StreamRegimeAdx).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamRegimeAdx) Update(adx float64) (int8, error) {
+	var out int8
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamRegimeAdx.Update")
+	}
+	if err := statusError("StreamRegimeAdx.Update", C.ft_stream_regime_adx_update(s.h, C.double(adx), (*C.int8_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamRegimeAdx) Peek(adx float64) (int8, error) {
+	var out int8
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamRegimeAdx.Peek")
+	}
+	if err := statusError("StreamRegimeAdx.Peek", C.ft_stream_regime_adx_peek(s.h, C.double(adx), (*C.int8_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamRegimeAdx.
+func (s *StreamRegimeAdx) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamRegimeAdx.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_regime_adx_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamRegimeAdx.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_regime_adx_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamRegimeAdx.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamRegimeAdx restores a StreamRegimeAdx from a snapshot made by Save.
+func LoadStreamRegimeAdx(snapshot []byte) (*StreamRegimeAdx, error) {
+	var h *C.FtStreamRegimeAdx
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamRegimeAdx", C.ft_stream_regime_adx_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamRegimeAdx{h: h}
+	runtime.SetFinalizer(s, (*StreamRegimeAdx).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamRegimeAdx) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamRegimeAdx.Reset")
+	}
+	return statusError("StreamRegimeAdx.Reset", C.ft_stream_regime_adx_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamRegimeAdx) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_regime_adx_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamRegimeCombined is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming trend (1) / range (0) label: ADX above `adx_threshold` and ATR / close above `atr_pct_threshold`.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamRegimeCombined struct {
+	mu sync.Mutex
+	h  *C.FtStreamRegimeCombined
+}
+
+// NewStreamRegimeCombined creates a StreamRegimeCombined.
+func NewStreamRegimeCombined(adxThreshold float64, atrPctThreshold float64) (*StreamRegimeCombined, error) {
+	var h *C.FtStreamRegimeCombined
+	if err := statusError("NewStreamRegimeCombined", C.ft_stream_regime_combined_new(C.double(adxThreshold), C.double(atrPctThreshold), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamRegimeCombined{h: h}
+	runtime.SetFinalizer(s, (*StreamRegimeCombined).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamRegimeCombined) Update(adx float64, atr float64, close float64) (int8, error) {
+	var out int8
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamRegimeCombined.Update")
+	}
+	if err := statusError("StreamRegimeCombined.Update", C.ft_stream_regime_combined_update(s.h, C.double(adx), C.double(atr), C.double(close), (*C.int8_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamRegimeCombined) Peek(adx float64, atr float64, close float64) (int8, error) {
+	var out int8
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamRegimeCombined.Peek")
+	}
+	if err := statusError("StreamRegimeCombined.Peek", C.ft_stream_regime_combined_peek(s.h, C.double(adx), C.double(atr), C.double(close), (*C.int8_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamRegimeCombined.
+func (s *StreamRegimeCombined) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamRegimeCombined.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_regime_combined_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamRegimeCombined.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_regime_combined_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamRegimeCombined.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamRegimeCombined restores a StreamRegimeCombined from a snapshot made by Save.
+func LoadStreamRegimeCombined(snapshot []byte) (*StreamRegimeCombined, error) {
+	var h *C.FtStreamRegimeCombined
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamRegimeCombined", C.ft_stream_regime_combined_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamRegimeCombined{h: h}
+	runtime.SetFinalizer(s, (*StreamRegimeCombined).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamRegimeCombined) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamRegimeCombined.Reset")
+	}
+	return statusError("StreamRegimeCombined.Reset", C.ft_stream_regime_combined_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamRegimeCombined) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_regime_combined_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamDetectBreaksCusum is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming CUSUM structural-break flag (1 at a break bar) against the previous `window` bars.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamDetectBreaksCusum struct {
+	mu sync.Mutex
+	h  *C.FtStreamDetectBreaksCusum
+}
+
+// NewStreamDetectBreaksCusum creates a StreamDetectBreaksCusum.
+func NewStreamDetectBreaksCusum(window int, threshold float64, slack float64) (*StreamDetectBreaksCusum, error) {
+	var h *C.FtStreamDetectBreaksCusum
+	if err := statusError("NewStreamDetectBreaksCusum", C.ft_stream_detect_breaks_cusum_new(C.int64_t(window), C.double(threshold), C.double(slack), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamDetectBreaksCusum{h: h}
+	runtime.SetFinalizer(s, (*StreamDetectBreaksCusum).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamDetectBreaksCusum) Update(series float64) (int8, error) {
+	var out int8
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamDetectBreaksCusum.Update")
+	}
+	if err := statusError("StreamDetectBreaksCusum.Update", C.ft_stream_detect_breaks_cusum_update(s.h, C.double(series), (*C.int8_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamDetectBreaksCusum) Peek(series float64) (int8, error) {
+	var out int8
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamDetectBreaksCusum.Peek")
+	}
+	if err := statusError("StreamDetectBreaksCusum.Peek", C.ft_stream_detect_breaks_cusum_peek(s.h, C.double(series), (*C.int8_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamDetectBreaksCusum.
+func (s *StreamDetectBreaksCusum) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamDetectBreaksCusum.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_detect_breaks_cusum_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamDetectBreaksCusum.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_detect_breaks_cusum_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamDetectBreaksCusum.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamDetectBreaksCusum restores a StreamDetectBreaksCusum from a snapshot made by Save.
+func LoadStreamDetectBreaksCusum(snapshot []byte) (*StreamDetectBreaksCusum, error) {
+	var h *C.FtStreamDetectBreaksCusum
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamDetectBreaksCusum", C.ft_stream_detect_breaks_cusum_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamDetectBreaksCusum{h: h}
+	runtime.SetFinalizer(s, (*StreamDetectBreaksCusum).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamDetectBreaksCusum) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamDetectBreaksCusum.Reset")
+	}
+	return statusError("StreamDetectBreaksCusum.Reset", C.ft_stream_detect_breaks_cusum_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamDetectBreaksCusum) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_detect_breaks_cusum_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamRollingVarianceBreak is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming volatility-regime break flag: short / long window variance ratio above `threshold` (current bar excluded).
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamRollingVarianceBreak struct {
+	mu sync.Mutex
+	h  *C.FtStreamRollingVarianceBreak
+}
+
+// NewStreamRollingVarianceBreak creates a StreamRollingVarianceBreak.
+func NewStreamRollingVarianceBreak(shortWindow int, longWindow int, threshold float64) (*StreamRollingVarianceBreak, error) {
+	var h *C.FtStreamRollingVarianceBreak
+	if err := statusError("NewStreamRollingVarianceBreak", C.ft_stream_rolling_variance_break_new(C.int64_t(shortWindow), C.int64_t(longWindow), C.double(threshold), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamRollingVarianceBreak{h: h}
+	runtime.SetFinalizer(s, (*StreamRollingVarianceBreak).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamRollingVarianceBreak) Update(series float64) (int8, error) {
+	var out int8
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamRollingVarianceBreak.Update")
+	}
+	if err := statusError("StreamRollingVarianceBreak.Update", C.ft_stream_rolling_variance_break_update(s.h, C.double(series), (*C.int8_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamRollingVarianceBreak) Peek(series float64) (int8, error) {
+	var out int8
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamRollingVarianceBreak.Peek")
+	}
+	if err := statusError("StreamRollingVarianceBreak.Peek", C.ft_stream_rolling_variance_break_peek(s.h, C.double(series), (*C.int8_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamRollingVarianceBreak.
+func (s *StreamRollingVarianceBreak) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamRollingVarianceBreak.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_rolling_variance_break_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamRollingVarianceBreak.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_rolling_variance_break_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamRollingVarianceBreak.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamRollingVarianceBreak restores a StreamRollingVarianceBreak from a snapshot made by Save.
+func LoadStreamRollingVarianceBreak(snapshot []byte) (*StreamRollingVarianceBreak, error) {
+	var h *C.FtStreamRollingVarianceBreak
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamRollingVarianceBreak", C.ft_stream_rolling_variance_break_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamRollingVarianceBreak{h: h}
+	runtime.SetFinalizer(s, (*StreamRollingVarianceBreak).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamRollingVarianceBreak) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamRollingVarianceBreak.Reset")
+	}
+	return statusError("StreamRollingVarianceBreak.Reset", C.ft_stream_rolling_variance_break_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamRollingVarianceBreak) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_rolling_variance_break_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamRollingBeta is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming rolling beta of `asset` against `benchmark` over `window` bars.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamRollingBeta struct {
+	mu sync.Mutex
+	h  *C.FtStreamRollingBeta
+}
+
+// NewStreamRollingBeta creates a StreamRollingBeta.
+func NewStreamRollingBeta(window int) (*StreamRollingBeta, error) {
+	var h *C.FtStreamRollingBeta
+	if err := statusError("NewStreamRollingBeta", C.ft_stream_rolling_beta_new(C.int64_t(window), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamRollingBeta{h: h}
+	runtime.SetFinalizer(s, (*StreamRollingBeta).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamRollingBeta) Update(asset float64, benchmark float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamRollingBeta.Update")
+	}
+	if err := statusError("StreamRollingBeta.Update", C.ft_stream_rolling_beta_update(s.h, C.double(asset), C.double(benchmark), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamRollingBeta) Peek(asset float64, benchmark float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamRollingBeta.Peek")
+	}
+	if err := statusError("StreamRollingBeta.Peek", C.ft_stream_rolling_beta_peek(s.h, C.double(asset), C.double(benchmark), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamRollingBeta.
+func (s *StreamRollingBeta) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamRollingBeta.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_rolling_beta_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamRollingBeta.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_rolling_beta_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamRollingBeta.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamRollingBeta restores a StreamRollingBeta from a snapshot made by Save.
+func LoadStreamRollingBeta(snapshot []byte) (*StreamRollingBeta, error) {
+	var h *C.FtStreamRollingBeta
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamRollingBeta", C.ft_stream_rolling_beta_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamRollingBeta{h: h}
+	runtime.SetFinalizer(s, (*StreamRollingBeta).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamRollingBeta) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamRollingBeta.Reset")
+	}
+	return statusError("StreamRollingBeta.Reset", C.ft_stream_rolling_beta_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamRollingBeta) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_rolling_beta_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamRelativeStrength is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming relative strength: cumulative product of (1 + asset return) over that of the benchmark.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamRelativeStrength struct {
+	mu sync.Mutex
+	h  *C.FtStreamRelativeStrength
+}
+
+// NewStreamRelativeStrength creates a StreamRelativeStrength.
+func NewStreamRelativeStrength() (*StreamRelativeStrength, error) {
+	var h *C.FtStreamRelativeStrength
+	if err := statusError("NewStreamRelativeStrength", C.ft_stream_relative_strength_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamRelativeStrength{h: h}
+	runtime.SetFinalizer(s, (*StreamRelativeStrength).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamRelativeStrength) Update(assetReturns float64, benchmarkReturns float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamRelativeStrength.Update")
+	}
+	if err := statusError("StreamRelativeStrength.Update", C.ft_stream_relative_strength_update(s.h, C.double(assetReturns), C.double(benchmarkReturns), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamRelativeStrength) Peek(assetReturns float64, benchmarkReturns float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamRelativeStrength.Peek")
+	}
+	if err := statusError("StreamRelativeStrength.Peek", C.ft_stream_relative_strength_peek(s.h, C.double(assetReturns), C.double(benchmarkReturns), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamRelativeStrength.
+func (s *StreamRelativeStrength) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamRelativeStrength.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_relative_strength_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamRelativeStrength.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_relative_strength_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamRelativeStrength.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamRelativeStrength restores a StreamRelativeStrength from a snapshot made by Save.
+func LoadStreamRelativeStrength(snapshot []byte) (*StreamRelativeStrength, error) {
+	var h *C.FtStreamRelativeStrength
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamRelativeStrength", C.ft_stream_relative_strength_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamRelativeStrength{h: h}
+	runtime.SetFinalizer(s, (*StreamRelativeStrength).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamRelativeStrength) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamRelativeStrength.Reset")
+	}
+	return statusError("StreamRelativeStrength.Reset", C.ft_stream_relative_strength_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamRelativeStrength) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_relative_strength_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamSpread is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming spread a - hedge * b.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamSpread struct {
+	mu sync.Mutex
+	h  *C.FtStreamSpread
+}
+
+// NewStreamSpread creates a StreamSpread.
+func NewStreamSpread(hedge float64) (*StreamSpread, error) {
+	var h *C.FtStreamSpread
+	if err := statusError("NewStreamSpread", C.ft_stream_spread_new(C.double(hedge), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamSpread{h: h}
+	runtime.SetFinalizer(s, (*StreamSpread).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamSpread) Update(a float64, b float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamSpread.Update")
+	}
+	if err := statusError("StreamSpread.Update", C.ft_stream_spread_update(s.h, C.double(a), C.double(b), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamSpread) Peek(a float64, b float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamSpread.Peek")
+	}
+	if err := statusError("StreamSpread.Peek", C.ft_stream_spread_peek(s.h, C.double(a), C.double(b), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamSpread.
+func (s *StreamSpread) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamSpread.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_spread_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamSpread.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_spread_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamSpread.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamSpread restores a StreamSpread from a snapshot made by Save.
+func LoadStreamSpread(snapshot []byte) (*StreamSpread, error) {
+	var h *C.FtStreamSpread
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamSpread", C.ft_stream_spread_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamSpread{h: h}
+	runtime.SetFinalizer(s, (*StreamSpread).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamSpread) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamSpread.Reset")
+	}
+	return statusError("StreamSpread.Reset", C.ft_stream_spread_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamSpread) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_spread_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamRatio is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming ratio a / b (NaN where b is 0).
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamRatio struct {
+	mu sync.Mutex
+	h  *C.FtStreamRatio
+}
+
+// NewStreamRatio creates a StreamRatio.
+func NewStreamRatio() (*StreamRatio, error) {
+	var h *C.FtStreamRatio
+	if err := statusError("NewStreamRatio", C.ft_stream_ratio_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamRatio{h: h}
+	runtime.SetFinalizer(s, (*StreamRatio).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamRatio) Update(a float64, b float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamRatio.Update")
+	}
+	if err := statusError("StreamRatio.Update", C.ft_stream_ratio_update(s.h, C.double(a), C.double(b), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamRatio) Peek(a float64, b float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamRatio.Peek")
+	}
+	if err := statusError("StreamRatio.Peek", C.ft_stream_ratio_peek(s.h, C.double(a), C.double(b), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamRatio.
+func (s *StreamRatio) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamRatio.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_ratio_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamRatio.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_ratio_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamRatio.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamRatio restores a StreamRatio from a snapshot made by Save.
+func LoadStreamRatio(snapshot []byte) (*StreamRatio, error) {
+	var h *C.FtStreamRatio
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamRatio", C.ft_stream_ratio_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamRatio{h: h}
+	runtime.SetFinalizer(s, (*StreamRatio).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamRatio) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamRatio.Reset")
+	}
+	return statusError("StreamRatio.Reset", C.ft_stream_ratio_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamRatio) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_ratio_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamZscoreSeries is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming rolling z-score of `x` over `window` bars.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamZscoreSeries struct {
+	mu sync.Mutex
+	h  *C.FtStreamZscoreSeries
+}
+
+// NewStreamZscoreSeries creates a StreamZscoreSeries.
+func NewStreamZscoreSeries(window int) (*StreamZscoreSeries, error) {
+	var h *C.FtStreamZscoreSeries
+	if err := statusError("NewStreamZscoreSeries", C.ft_stream_zscore_series_new(C.int64_t(window), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamZscoreSeries{h: h}
+	runtime.SetFinalizer(s, (*StreamZscoreSeries).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamZscoreSeries) Update(x float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamZscoreSeries.Update")
+	}
+	if err := statusError("StreamZscoreSeries.Update", C.ft_stream_zscore_series_update(s.h, C.double(x), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamZscoreSeries) Peek(x float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamZscoreSeries.Peek")
+	}
+	if err := statusError("StreamZscoreSeries.Peek", C.ft_stream_zscore_series_peek(s.h, C.double(x), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamZscoreSeries.
+func (s *StreamZscoreSeries) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamZscoreSeries.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_zscore_series_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamZscoreSeries.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_zscore_series_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamZscoreSeries.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamZscoreSeries restores a StreamZscoreSeries from a snapshot made by Save.
+func LoadStreamZscoreSeries(snapshot []byte) (*StreamZscoreSeries, error) {
+	var h *C.FtStreamZscoreSeries
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamZscoreSeries", C.ft_stream_zscore_series_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamZscoreSeries{h: h}
+	runtime.SetFinalizer(s, (*StreamZscoreSeries).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamZscoreSeries) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamZscoreSeries.Reset")
+	}
+	return statusError("StreamZscoreSeries.Reset", C.ft_stream_zscore_series_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamZscoreSeries) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_zscore_series_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamWeightedContinuous is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming weighted contract stitching: front * (1 - w) + next * w.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamWeightedContinuous struct {
+	mu sync.Mutex
+	h  *C.FtStreamWeightedContinuous
+}
+
+// NewStreamWeightedContinuous creates a StreamWeightedContinuous.
+func NewStreamWeightedContinuous() (*StreamWeightedContinuous, error) {
+	var h *C.FtStreamWeightedContinuous
+	if err := statusError("NewStreamWeightedContinuous", C.ft_stream_weighted_continuous_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamWeightedContinuous{h: h}
+	runtime.SetFinalizer(s, (*StreamWeightedContinuous).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamWeightedContinuous) Update(front float64, next float64, nextWeights float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamWeightedContinuous.Update")
+	}
+	if err := statusError("StreamWeightedContinuous.Update", C.ft_stream_weighted_continuous_update(s.h, C.double(front), C.double(next), C.double(nextWeights), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamWeightedContinuous) Peek(front float64, next float64, nextWeights float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamWeightedContinuous.Peek")
+	}
+	if err := statusError("StreamWeightedContinuous.Peek", C.ft_stream_weighted_continuous_peek(s.h, C.double(front), C.double(next), C.double(nextWeights), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamWeightedContinuous.
+func (s *StreamWeightedContinuous) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamWeightedContinuous.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_weighted_continuous_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamWeightedContinuous.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_weighted_continuous_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamWeightedContinuous.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamWeightedContinuous restores a StreamWeightedContinuous from a snapshot made by Save.
+func LoadStreamWeightedContinuous(snapshot []byte) (*StreamWeightedContinuous, error) {
+	var h *C.FtStreamWeightedContinuous
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamWeightedContinuous", C.ft_stream_weighted_continuous_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamWeightedContinuous{h: h}
+	runtime.SetFinalizer(s, (*StreamWeightedContinuous).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamWeightedContinuous) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamWeightedContinuous.Reset")
+	}
+	return statusError("StreamWeightedContinuous.Reset", C.ft_stream_weighted_continuous_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamWeightedContinuous) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_weighted_continuous_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCheckCross is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming cross event between `fast` and `slow`: 1 cross-over, -1 cross-under, 0 none.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCheckCross struct {
+	mu sync.Mutex
+	h  *C.FtStreamCheckCross
+}
+
+// NewStreamCheckCross creates a StreamCheckCross.
+func NewStreamCheckCross() (*StreamCheckCross, error) {
+	var h *C.FtStreamCheckCross
+	if err := statusError("NewStreamCheckCross", C.ft_stream_check_cross_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCheckCross{h: h}
+	runtime.SetFinalizer(s, (*StreamCheckCross).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCheckCross) Update(fast float64, slow float64) (int8, error) {
+	var out int8
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCheckCross.Update")
+	}
+	if err := statusError("StreamCheckCross.Update", C.ft_stream_check_cross_update(s.h, C.double(fast), C.double(slow), (*C.int8_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCheckCross) Peek(fast float64, slow float64) (int8, error) {
+	var out int8
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCheckCross.Peek")
+	}
+	if err := statusError("StreamCheckCross.Peek", C.ft_stream_check_cross_peek(s.h, C.double(fast), C.double(slow), (*C.int8_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCheckCross.
+func (s *StreamCheckCross) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCheckCross.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_check_cross_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCheckCross.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_check_cross_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCheckCross.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCheckCross restores a StreamCheckCross from a snapshot made by Save.
+func LoadStreamCheckCross(snapshot []byte) (*StreamCheckCross, error) {
+	var h *C.FtStreamCheckCross
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCheckCross", C.ft_stream_check_cross_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCheckCross{h: h}
+	runtime.SetFinalizer(s, (*StreamCheckCross).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCheckCross) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCheckCross.Reset")
+	}
+	return statusError("StreamCheckCross.Reset", C.ft_stream_check_cross_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCheckCross) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_check_cross_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamFundingCumulativePnl is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming cumulative funding PnL: running sum of -position_size * funding_rate.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamFundingCumulativePnl struct {
+	mu sync.Mutex
+	h  *C.FtStreamFundingCumulativePnl
+}
+
+// NewStreamFundingCumulativePnl creates a StreamFundingCumulativePnl.
+func NewStreamFundingCumulativePnl() (*StreamFundingCumulativePnl, error) {
+	var h *C.FtStreamFundingCumulativePnl
+	if err := statusError("NewStreamFundingCumulativePnl", C.ft_stream_funding_cumulative_pnl_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamFundingCumulativePnl{h: h}
+	runtime.SetFinalizer(s, (*StreamFundingCumulativePnl).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamFundingCumulativePnl) Update(positionSize float64, fundingRate float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamFundingCumulativePnl.Update")
+	}
+	if err := statusError("StreamFundingCumulativePnl.Update", C.ft_stream_funding_cumulative_pnl_update(s.h, C.double(positionSize), C.double(fundingRate), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamFundingCumulativePnl) Peek(positionSize float64, fundingRate float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamFundingCumulativePnl.Peek")
+	}
+	if err := statusError("StreamFundingCumulativePnl.Peek", C.ft_stream_funding_cumulative_pnl_peek(s.h, C.double(positionSize), C.double(fundingRate), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamFundingCumulativePnl.
+func (s *StreamFundingCumulativePnl) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamFundingCumulativePnl.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_funding_cumulative_pnl_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamFundingCumulativePnl.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_funding_cumulative_pnl_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamFundingCumulativePnl.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamFundingCumulativePnl restores a StreamFundingCumulativePnl from a snapshot made by Save.
+func LoadStreamFundingCumulativePnl(snapshot []byte) (*StreamFundingCumulativePnl, error) {
+	var h *C.FtStreamFundingCumulativePnl
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamFundingCumulativePnl", C.ft_stream_funding_cumulative_pnl_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamFundingCumulativePnl{h: h}
+	runtime.SetFinalizer(s, (*StreamFundingCumulativePnl).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamFundingCumulativePnl) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamFundingCumulativePnl.Reset")
+	}
+	return statusError("StreamFundingCumulativePnl.Reset", C.ft_stream_funding_cumulative_pnl_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamFundingCumulativePnl) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_funding_cumulative_pnl_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamRsiThresholdSignals is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming RSI threshold signal: +1 at or below `oversold`, -1 at or above `overbought`, else 0 (NaN during warm-up).
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamRsiThresholdSignals struct {
+	mu sync.Mutex
+	h  *C.FtStreamRsiThresholdSignals
+}
+
+// NewStreamRsiThresholdSignals creates a StreamRsiThresholdSignals.
+func NewStreamRsiThresholdSignals(timeperiod int, oversold float64, overbought float64) (*StreamRsiThresholdSignals, error) {
+	var h *C.FtStreamRsiThresholdSignals
+	if err := statusError("NewStreamRsiThresholdSignals", C.ft_stream_rsi_threshold_signals_new(C.int64_t(timeperiod), C.double(oversold), C.double(overbought), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamRsiThresholdSignals{h: h}
+	runtime.SetFinalizer(s, (*StreamRsiThresholdSignals).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamRsiThresholdSignals) Update(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamRsiThresholdSignals.Update")
+	}
+	if err := statusError("StreamRsiThresholdSignals.Update", C.ft_stream_rsi_threshold_signals_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamRsiThresholdSignals) Peek(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamRsiThresholdSignals.Peek")
+	}
+	if err := statusError("StreamRsiThresholdSignals.Peek", C.ft_stream_rsi_threshold_signals_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamRsiThresholdSignals.
+func (s *StreamRsiThresholdSignals) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamRsiThresholdSignals.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_rsi_threshold_signals_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamRsiThresholdSignals.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_rsi_threshold_signals_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamRsiThresholdSignals.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamRsiThresholdSignals restores a StreamRsiThresholdSignals from a snapshot made by Save.
+func LoadStreamRsiThresholdSignals(snapshot []byte) (*StreamRsiThresholdSignals, error) {
+	var h *C.FtStreamRsiThresholdSignals
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamRsiThresholdSignals", C.ft_stream_rsi_threshold_signals_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamRsiThresholdSignals{h: h}
+	runtime.SetFinalizer(s, (*StreamRsiThresholdSignals).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamRsiThresholdSignals) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamRsiThresholdSignals.Reset")
+	}
+	return statusError("StreamRsiThresholdSignals.Reset", C.ft_stream_rsi_threshold_signals_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamRsiThresholdSignals) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_rsi_threshold_signals_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamDonchian is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Donchian channels: (upper, middle, lower) = rolling highest high, midpoint, lowest low over `timeperiod` bars.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamDonchian struct {
+	mu sync.Mutex
+	h  *C.FtStreamDonchian
+}
+
+// NewStreamDonchian creates a StreamDonchian.
+func NewStreamDonchian(timeperiod int) (*StreamDonchian, error) {
+	var h *C.FtStreamDonchian
+	if err := statusError("NewStreamDonchian", C.ft_stream_donchian_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamDonchian{h: h}
+	runtime.SetFinalizer(s, (*StreamDonchian).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamDonchian) Update(high float64, low float64) (upper float64, middle float64, lower float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, 0, closedError("StreamDonchian.Update")
+	}
+	if err := statusError("StreamDonchian.Update", C.ft_stream_donchian_update(s.h, C.double(high), C.double(low), (*C.double)(unsafe.Pointer(&upper)), (*C.double)(unsafe.Pointer(&middle)), (*C.double)(unsafe.Pointer(&lower)))); err != nil {
+		return 0, 0, 0, err
+	}
+	return upper, middle, lower, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamDonchian) Peek(high float64, low float64) (upper float64, middle float64, lower float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, 0, closedError("StreamDonchian.Peek")
+	}
+	if err := statusError("StreamDonchian.Peek", C.ft_stream_donchian_peek(s.h, C.double(high), C.double(low), (*C.double)(unsafe.Pointer(&upper)), (*C.double)(unsafe.Pointer(&middle)), (*C.double)(unsafe.Pointer(&lower)))); err != nil {
+		return 0, 0, 0, err
+	}
+	return upper, middle, lower, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamDonchian.
+func (s *StreamDonchian) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamDonchian.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_donchian_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamDonchian.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_donchian_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamDonchian.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamDonchian restores a StreamDonchian from a snapshot made by Save.
+func LoadStreamDonchian(snapshot []byte) (*StreamDonchian, error) {
+	var h *C.FtStreamDonchian
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamDonchian", C.ft_stream_donchian_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamDonchian{h: h}
+	runtime.SetFinalizer(s, (*StreamDonchian).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamDonchian) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamDonchian.Reset")
+	}
+	return statusError("StreamDonchian.Reset", C.ft_stream_donchian_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamDonchian) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_donchian_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamChoppinessIndex is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Choppiness Index over `timeperiod` bars (first value at bar `timeperiod`).
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamChoppinessIndex struct {
+	mu sync.Mutex
+	h  *C.FtStreamChoppinessIndex
+}
+
+// NewStreamChoppinessIndex creates a StreamChoppinessIndex.
+func NewStreamChoppinessIndex(timeperiod int) (*StreamChoppinessIndex, error) {
+	var h *C.FtStreamChoppinessIndex
+	if err := statusError("NewStreamChoppinessIndex", C.ft_stream_choppiness_index_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamChoppinessIndex{h: h}
+	runtime.SetFinalizer(s, (*StreamChoppinessIndex).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamChoppinessIndex) Update(high float64, low float64, close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamChoppinessIndex.Update")
+	}
+	if err := statusError("StreamChoppinessIndex.Update", C.ft_stream_choppiness_index_update(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamChoppinessIndex) Peek(high float64, low float64, close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamChoppinessIndex.Peek")
+	}
+	if err := statusError("StreamChoppinessIndex.Peek", C.ft_stream_choppiness_index_peek(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamChoppinessIndex.
+func (s *StreamChoppinessIndex) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamChoppinessIndex.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_choppiness_index_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamChoppinessIndex.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_choppiness_index_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamChoppinessIndex.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamChoppinessIndex restores a StreamChoppinessIndex from a snapshot made by Save.
+func LoadStreamChoppinessIndex(snapshot []byte) (*StreamChoppinessIndex, error) {
+	var h *C.FtStreamChoppinessIndex
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamChoppinessIndex", C.ft_stream_choppiness_index_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamChoppinessIndex{h: h}
+	runtime.SetFinalizer(s, (*StreamChoppinessIndex).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamChoppinessIndex) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamChoppinessIndex.Reset")
+	}
+	return statusError("StreamChoppinessIndex.Reset", C.ft_stream_choppiness_index_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamChoppinessIndex) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_choppiness_index_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamBbpercent is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Bollinger %B: (close - lower) / (upper - lower) of SMA bands (NaN on a zero-width band).
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamBbpercent struct {
+	mu sync.Mutex
+	h  *C.FtStreamBbpercent
+}
+
+// NewStreamBbpercent creates a StreamBbpercent.
+func NewStreamBbpercent(timeperiod int, nbdevup float64, nbdevdn float64) (*StreamBbpercent, error) {
+	var h *C.FtStreamBbpercent
+	if err := statusError("NewStreamBbpercent", C.ft_stream_bbpercent_new(C.int64_t(timeperiod), C.double(nbdevup), C.double(nbdevdn), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamBbpercent{h: h}
+	runtime.SetFinalizer(s, (*StreamBbpercent).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamBbpercent) Update(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamBbpercent.Update")
+	}
+	if err := statusError("StreamBbpercent.Update", C.ft_stream_bbpercent_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamBbpercent) Peek(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamBbpercent.Peek")
+	}
+	if err := statusError("StreamBbpercent.Peek", C.ft_stream_bbpercent_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamBbpercent.
+func (s *StreamBbpercent) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamBbpercent.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_bbpercent_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamBbpercent.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_bbpercent_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamBbpercent.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamBbpercent restores a StreamBbpercent from a snapshot made by Save.
+func LoadStreamBbpercent(snapshot []byte) (*StreamBbpercent, error) {
+	var h *C.FtStreamBbpercent
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamBbpercent", C.ft_stream_bbpercent_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamBbpercent{h: h}
+	runtime.SetFinalizer(s, (*StreamBbpercent).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamBbpercent) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamBbpercent.Reset")
+	}
+	return statusError("StreamBbpercent.Reset", C.ft_stream_bbpercent_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamBbpercent) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_bbpercent_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamBbwidth is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Bollinger bandwidth: (upper - lower) / middle of SMA bands (NaN on a zero middle).
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamBbwidth struct {
+	mu sync.Mutex
+	h  *C.FtStreamBbwidth
+}
+
+// NewStreamBbwidth creates a StreamBbwidth.
+func NewStreamBbwidth(timeperiod int, nbdevup float64, nbdevdn float64) (*StreamBbwidth, error) {
+	var h *C.FtStreamBbwidth
+	if err := statusError("NewStreamBbwidth", C.ft_stream_bbwidth_new(C.int64_t(timeperiod), C.double(nbdevup), C.double(nbdevdn), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamBbwidth{h: h}
+	runtime.SetFinalizer(s, (*StreamBbwidth).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamBbwidth) Update(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamBbwidth.Update")
+	}
+	if err := statusError("StreamBbwidth.Update", C.ft_stream_bbwidth_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamBbwidth) Peek(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamBbwidth.Peek")
+	}
+	if err := statusError("StreamBbwidth.Peek", C.ft_stream_bbwidth_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamBbwidth.
+func (s *StreamBbwidth) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamBbwidth.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_bbwidth_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamBbwidth.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_bbwidth_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamBbwidth.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamBbwidth restores a StreamBbwidth from a snapshot made by Save.
+func LoadStreamBbwidth(snapshot []byte) (*StreamBbwidth, error) {
+	var h *C.FtStreamBbwidth
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamBbwidth", C.ft_stream_bbwidth_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamBbwidth{h: h}
+	runtime.SetFinalizer(s, (*StreamBbwidth).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamBbwidth) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamBbwidth.Reset")
+	}
+	return statusError("StreamBbwidth.Reset", C.ft_stream_bbwidth_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamBbwidth) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_bbwidth_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamHistoricalVolatility is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming close-to-close historical volatility: population stddev of `timeperiod` log returns, annualised, in percent.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamHistoricalVolatility struct {
+	mu sync.Mutex
+	h  *C.FtStreamHistoricalVolatility
+}
+
+// NewStreamHistoricalVolatility creates a StreamHistoricalVolatility.
+func NewStreamHistoricalVolatility(timeperiod int, annual float64) (*StreamHistoricalVolatility, error) {
+	var h *C.FtStreamHistoricalVolatility
+	if err := statusError("NewStreamHistoricalVolatility", C.ft_stream_historical_volatility_new(C.int64_t(timeperiod), C.double(annual), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamHistoricalVolatility{h: h}
+	runtime.SetFinalizer(s, (*StreamHistoricalVolatility).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamHistoricalVolatility) Update(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamHistoricalVolatility.Update")
+	}
+	if err := statusError("StreamHistoricalVolatility.Update", C.ft_stream_historical_volatility_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamHistoricalVolatility) Peek(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamHistoricalVolatility.Peek")
+	}
+	if err := statusError("StreamHistoricalVolatility.Peek", C.ft_stream_historical_volatility_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamHistoricalVolatility.
+func (s *StreamHistoricalVolatility) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamHistoricalVolatility.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_historical_volatility_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamHistoricalVolatility.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_historical_volatility_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamHistoricalVolatility.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamHistoricalVolatility restores a StreamHistoricalVolatility from a snapshot made by Save.
+func LoadStreamHistoricalVolatility(snapshot []byte) (*StreamHistoricalVolatility, error) {
+	var h *C.FtStreamHistoricalVolatility
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamHistoricalVolatility", C.ft_stream_historical_volatility_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamHistoricalVolatility{h: h}
+	runtime.SetFinalizer(s, (*StreamHistoricalVolatility).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamHistoricalVolatility) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamHistoricalVolatility.Reset")
+	}
+	return statusError("StreamHistoricalVolatility.Reset", C.ft_stream_historical_volatility_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamHistoricalVolatility) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_historical_volatility_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamUlcerIndex is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Ulcer Index: RMS over `timeperiod` bars of the percent drawdown from the rolling `timeperiod`-bar high (the batch running sum is mirrored, so a rounding-negative mean square is NaN as in the batch function).
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamUlcerIndex struct {
+	mu sync.Mutex
+	h  *C.FtStreamUlcerIndex
+}
+
+// NewStreamUlcerIndex creates a StreamUlcerIndex.
+func NewStreamUlcerIndex(timeperiod int) (*StreamUlcerIndex, error) {
+	var h *C.FtStreamUlcerIndex
+	if err := statusError("NewStreamUlcerIndex", C.ft_stream_ulcer_index_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamUlcerIndex{h: h}
+	runtime.SetFinalizer(s, (*StreamUlcerIndex).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamUlcerIndex) Update(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamUlcerIndex.Update")
+	}
+	if err := statusError("StreamUlcerIndex.Update", C.ft_stream_ulcer_index_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamUlcerIndex) Peek(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamUlcerIndex.Peek")
+	}
+	if err := statusError("StreamUlcerIndex.Peek", C.ft_stream_ulcer_index_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamUlcerIndex.
+func (s *StreamUlcerIndex) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamUlcerIndex.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_ulcer_index_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamUlcerIndex.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_ulcer_index_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamUlcerIndex.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamUlcerIndex restores a StreamUlcerIndex from a snapshot made by Save.
+func LoadStreamUlcerIndex(snapshot []byte) (*StreamUlcerIndex, error) {
+	var h *C.FtStreamUlcerIndex
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamUlcerIndex", C.ft_stream_ulcer_index_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamUlcerIndex{h: h}
+	runtime.SetFinalizer(s, (*StreamUlcerIndex).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamUlcerIndex) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamUlcerIndex.Reset")
+	}
+	return statusError("StreamUlcerIndex.Reset", C.ft_stream_ulcer_index_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamUlcerIndex) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_ulcer_index_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamMedian is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming rolling median over `timeperiod` bars (even windows average the two central values).
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamMedian struct {
+	mu sync.Mutex
+	h  *C.FtStreamMedian
+}
+
+// NewStreamMedian creates a StreamMedian.
+func NewStreamMedian(timeperiod int) (*StreamMedian, error) {
+	var h *C.FtStreamMedian
+	if err := statusError("NewStreamMedian", C.ft_stream_median_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMedian{h: h}
+	runtime.SetFinalizer(s, (*StreamMedian).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamMedian) Update(real float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamMedian.Update")
+	}
+	if err := statusError("StreamMedian.Update", C.ft_stream_median_update(s.h, C.double(real), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamMedian) Peek(real float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamMedian.Peek")
+	}
+	if err := statusError("StreamMedian.Peek", C.ft_stream_median_peek(s.h, C.double(real), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamMedian.
+func (s *StreamMedian) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamMedian.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_median_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamMedian.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_median_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamMedian.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamMedian restores a StreamMedian from a snapshot made by Save.
+func LoadStreamMedian(snapshot []byte) (*StreamMedian, error) {
+	var h *C.FtStreamMedian
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamMedian", C.ft_stream_median_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMedian{h: h}
+	runtime.SetFinalizer(s, (*StreamMedian).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamMedian) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamMedian.Reset")
+	}
+	return statusError("StreamMedian.Reset", C.ft_stream_median_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamMedian) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_median_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamMode is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming rolling mode: centre of the most populous of `bins` equal-width bins over `timeperiod` bars.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamMode struct {
+	mu sync.Mutex
+	h  *C.FtStreamMode
+}
+
+// NewStreamMode creates a StreamMode.
+func NewStreamMode(timeperiod int, bins int) (*StreamMode, error) {
+	var h *C.FtStreamMode
+	if err := statusError("NewStreamMode", C.ft_stream_mode_new(C.int64_t(timeperiod), C.int64_t(bins), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMode{h: h}
+	runtime.SetFinalizer(s, (*StreamMode).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamMode) Update(real float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamMode.Update")
+	}
+	if err := statusError("StreamMode.Update", C.ft_stream_mode_update(s.h, C.double(real), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamMode) Peek(real float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamMode.Peek")
+	}
+	if err := statusError("StreamMode.Peek", C.ft_stream_mode_peek(s.h, C.double(real), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamMode.
+func (s *StreamMode) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamMode.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_mode_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamMode.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_mode_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamMode.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamMode restores a StreamMode from a snapshot made by Save.
+func LoadStreamMode(snapshot []byte) (*StreamMode, error) {
+	var h *C.FtStreamMode
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamMode", C.ft_stream_mode_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMode{h: h}
+	runtime.SetFinalizer(s, (*StreamMode).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamMode) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamMode.Reset")
+	}
+	return statusError("StreamMode.Reset", C.ft_stream_mode_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamMode) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_mode_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamKeltnerChannels is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Keltner channels: (upper, middle, lower) = EMA(close) +/- `multiplier` * ATR(`atr_period`); the middle EMA is emitted on its own once seeded.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamKeltnerChannels struct {
+	mu sync.Mutex
+	h  *C.FtStreamKeltnerChannels
+}
+
+// NewStreamKeltnerChannels creates a StreamKeltnerChannels.
+func NewStreamKeltnerChannels(timeperiod int, atrPeriod int, multiplier float64) (*StreamKeltnerChannels, error) {
+	var h *C.FtStreamKeltnerChannels
+	if err := statusError("NewStreamKeltnerChannels", C.ft_stream_keltner_channels_new(C.int64_t(timeperiod), C.int64_t(atrPeriod), C.double(multiplier), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamKeltnerChannels{h: h}
+	runtime.SetFinalizer(s, (*StreamKeltnerChannels).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamKeltnerChannels) Update(high float64, low float64, close float64) (upper float64, middle float64, lower float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, 0, closedError("StreamKeltnerChannels.Update")
+	}
+	if err := statusError("StreamKeltnerChannels.Update", C.ft_stream_keltner_channels_update(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&upper)), (*C.double)(unsafe.Pointer(&middle)), (*C.double)(unsafe.Pointer(&lower)))); err != nil {
+		return 0, 0, 0, err
+	}
+	return upper, middle, lower, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamKeltnerChannels) Peek(high float64, low float64, close float64) (upper float64, middle float64, lower float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, 0, closedError("StreamKeltnerChannels.Peek")
+	}
+	if err := statusError("StreamKeltnerChannels.Peek", C.ft_stream_keltner_channels_peek(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&upper)), (*C.double)(unsafe.Pointer(&middle)), (*C.double)(unsafe.Pointer(&lower)))); err != nil {
+		return 0, 0, 0, err
+	}
+	return upper, middle, lower, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamKeltnerChannels.
+func (s *StreamKeltnerChannels) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamKeltnerChannels.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_keltner_channels_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamKeltnerChannels.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_keltner_channels_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamKeltnerChannels.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamKeltnerChannels restores a StreamKeltnerChannels from a snapshot made by Save.
+func LoadStreamKeltnerChannels(snapshot []byte) (*StreamKeltnerChannels, error) {
+	var h *C.FtStreamKeltnerChannels
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamKeltnerChannels", C.ft_stream_keltner_channels_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamKeltnerChannels{h: h}
+	runtime.SetFinalizer(s, (*StreamKeltnerChannels).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamKeltnerChannels) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamKeltnerChannels.Reset")
+	}
+	return statusError("StreamKeltnerChannels.Reset", C.ft_stream_keltner_channels_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamKeltnerChannels) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_keltner_channels_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamChandelierExit is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Chandelier exit: (highest high - `multiplier` * ATR, lowest low + `multiplier` * ATR) over `timeperiod` bars.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamChandelierExit struct {
+	mu sync.Mutex
+	h  *C.FtStreamChandelierExit
+}
+
+// NewStreamChandelierExit creates a StreamChandelierExit.
+func NewStreamChandelierExit(timeperiod int, multiplier float64) (*StreamChandelierExit, error) {
+	var h *C.FtStreamChandelierExit
+	if err := statusError("NewStreamChandelierExit", C.ft_stream_chandelier_exit_new(C.int64_t(timeperiod), C.double(multiplier), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamChandelierExit{h: h}
+	runtime.SetFinalizer(s, (*StreamChandelierExit).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamChandelierExit) Update(high float64, low float64, close float64) (longExit float64, shortExit float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, closedError("StreamChandelierExit.Update")
+	}
+	if err := statusError("StreamChandelierExit.Update", C.ft_stream_chandelier_exit_update(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&longExit)), (*C.double)(unsafe.Pointer(&shortExit)))); err != nil {
+		return 0, 0, err
+	}
+	return longExit, shortExit, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamChandelierExit) Peek(high float64, low float64, close float64) (longExit float64, shortExit float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, closedError("StreamChandelierExit.Peek")
+	}
+	if err := statusError("StreamChandelierExit.Peek", C.ft_stream_chandelier_exit_peek(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&longExit)), (*C.double)(unsafe.Pointer(&shortExit)))); err != nil {
+		return 0, 0, err
+	}
+	return longExit, shortExit, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamChandelierExit.
+func (s *StreamChandelierExit) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamChandelierExit.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_chandelier_exit_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamChandelierExit.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_chandelier_exit_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamChandelierExit.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamChandelierExit restores a StreamChandelierExit from a snapshot made by Save.
+func LoadStreamChandelierExit(snapshot []byte) (*StreamChandelierExit, error) {
+	var h *C.FtStreamChandelierExit
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamChandelierExit", C.ft_stream_chandelier_exit_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamChandelierExit{h: h}
+	runtime.SetFinalizer(s, (*StreamChandelierExit).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamChandelierExit) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamChandelierExit.Reset")
+	}
+	return statusError("StreamChandelierExit.Reset", C.ft_stream_chandelier_exit_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamChandelierExit) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_chandelier_exit_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamStarc is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming STARC bands: (upper, middle, lower) = SMA(close) +/- `multiplier` * ATR(`atr_period`); the middle SMA is emitted on its own once full.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamStarc struct {
+	mu sync.Mutex
+	h  *C.FtStreamStarc
+}
+
+// NewStreamStarc creates a StreamStarc.
+func NewStreamStarc(timeperiod int, atrPeriod int, multiplier float64) (*StreamStarc, error) {
+	var h *C.FtStreamStarc
+	if err := statusError("NewStreamStarc", C.ft_stream_starc_new(C.int64_t(timeperiod), C.int64_t(atrPeriod), C.double(multiplier), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamStarc{h: h}
+	runtime.SetFinalizer(s, (*StreamStarc).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamStarc) Update(high float64, low float64, close float64) (upper float64, middle float64, lower float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, 0, closedError("StreamStarc.Update")
+	}
+	if err := statusError("StreamStarc.Update", C.ft_stream_starc_update(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&upper)), (*C.double)(unsafe.Pointer(&middle)), (*C.double)(unsafe.Pointer(&lower)))); err != nil {
+		return 0, 0, 0, err
+	}
+	return upper, middle, lower, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamStarc) Peek(high float64, low float64, close float64) (upper float64, middle float64, lower float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, 0, closedError("StreamStarc.Peek")
+	}
+	if err := statusError("StreamStarc.Peek", C.ft_stream_starc_peek(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&upper)), (*C.double)(unsafe.Pointer(&middle)), (*C.double)(unsafe.Pointer(&lower)))); err != nil {
+		return 0, 0, 0, err
+	}
+	return upper, middle, lower, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamStarc.
+func (s *StreamStarc) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamStarc.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_starc_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamStarc.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_starc_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamStarc.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamStarc restores a StreamStarc from a snapshot made by Save.
+func LoadStreamStarc(snapshot []byte) (*StreamStarc, error) {
+	var h *C.FtStreamStarc
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamStarc", C.ft_stream_starc_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamStarc{h: h}
+	runtime.SetFinalizer(s, (*StreamStarc).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamStarc) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamStarc.Reset")
+	}
+	return statusError("StreamStarc.Reset", C.ft_stream_starc_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamStarc) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_starc_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamMedianBands is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming median bands: (median, upper, lower, median EMA) from the rolling median of (high + low) / 2, ATR envelopes and an EMA of the median.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamMedianBands struct {
+	mu sync.Mutex
+	h  *C.FtStreamMedianBands
+}
+
+// NewStreamMedianBands creates a StreamMedianBands.
+func NewStreamMedianBands(timeperiod int, atrPeriod int, multiplier float64) (*StreamMedianBands, error) {
+	var h *C.FtStreamMedianBands
+	if err := statusError("NewStreamMedianBands", C.ft_stream_median_bands_new(C.int64_t(timeperiod), C.int64_t(atrPeriod), C.double(multiplier), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMedianBands{h: h}
+	runtime.SetFinalizer(s, (*StreamMedianBands).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamMedianBands) Update(high float64, low float64, close float64) (median float64, upper float64, lower float64, medianEma float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, 0, 0, closedError("StreamMedianBands.Update")
+	}
+	if err := statusError("StreamMedianBands.Update", C.ft_stream_median_bands_update(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&median)), (*C.double)(unsafe.Pointer(&upper)), (*C.double)(unsafe.Pointer(&lower)), (*C.double)(unsafe.Pointer(&medianEma)))); err != nil {
+		return 0, 0, 0, 0, err
+	}
+	return median, upper, lower, medianEma, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamMedianBands) Peek(high float64, low float64, close float64) (median float64, upper float64, lower float64, medianEma float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, 0, 0, closedError("StreamMedianBands.Peek")
+	}
+	if err := statusError("StreamMedianBands.Peek", C.ft_stream_median_bands_peek(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&median)), (*C.double)(unsafe.Pointer(&upper)), (*C.double)(unsafe.Pointer(&lower)), (*C.double)(unsafe.Pointer(&medianEma)))); err != nil {
+		return 0, 0, 0, 0, err
+	}
+	return median, upper, lower, medianEma, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamMedianBands.
+func (s *StreamMedianBands) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamMedianBands.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_median_bands_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamMedianBands.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_median_bands_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamMedianBands.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamMedianBands restores a StreamMedianBands from a snapshot made by Save.
+func LoadStreamMedianBands(snapshot []byte) (*StreamMedianBands, error) {
+	var h *C.FtStreamMedianBands
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamMedianBands", C.ft_stream_median_bands_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMedianBands{h: h}
+	runtime.SetFinalizer(s, (*StreamMedianBands).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamMedianBands) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamMedianBands.Reset")
+	}
+	return statusError("StreamMedianBands.Reset", C.ft_stream_median_bands_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamMedianBands) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_median_bands_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamChandeKrollStop is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Chande Kroll stop: rolling `stop_period` extremes of the ATR-offset `timeperiod` highest high / lowest low.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamChandeKrollStop struct {
+	mu sync.Mutex
+	h  *C.FtStreamChandeKrollStop
+}
+
+// NewStreamChandeKrollStop creates a StreamChandeKrollStop.
+func NewStreamChandeKrollStop(timeperiod int, multiplier float64, stopPeriod int) (*StreamChandeKrollStop, error) {
+	var h *C.FtStreamChandeKrollStop
+	if err := statusError("NewStreamChandeKrollStop", C.ft_stream_chande_kroll_stop_new(C.int64_t(timeperiod), C.double(multiplier), C.int64_t(stopPeriod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamChandeKrollStop{h: h}
+	runtime.SetFinalizer(s, (*StreamChandeKrollStop).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamChandeKrollStop) Update(high float64, low float64, close float64) (longStop float64, shortStop float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, closedError("StreamChandeKrollStop.Update")
+	}
+	if err := statusError("StreamChandeKrollStop.Update", C.ft_stream_chande_kroll_stop_update(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&longStop)), (*C.double)(unsafe.Pointer(&shortStop)))); err != nil {
+		return 0, 0, err
+	}
+	return longStop, shortStop, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamChandeKrollStop) Peek(high float64, low float64, close float64) (longStop float64, shortStop float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, closedError("StreamChandeKrollStop.Peek")
+	}
+	if err := statusError("StreamChandeKrollStop.Peek", C.ft_stream_chande_kroll_stop_peek(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&longStop)), (*C.double)(unsafe.Pointer(&shortStop)))); err != nil {
+		return 0, 0, err
+	}
+	return longStop, shortStop, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamChandeKrollStop.
+func (s *StreamChandeKrollStop) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamChandeKrollStop.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_chande_kroll_stop_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamChandeKrollStop.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_chande_kroll_stop_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamChandeKrollStop.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamChandeKrollStop restores a StreamChandeKrollStop from a snapshot made by Save.
+func LoadStreamChandeKrollStop(snapshot []byte) (*StreamChandeKrollStop, error) {
+	var h *C.FtStreamChandeKrollStop
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamChandeKrollStop", C.ft_stream_chande_kroll_stop_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamChandeKrollStop{h: h}
+	runtime.SetFinalizer(s, (*StreamChandeKrollStop).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamChandeKrollStop) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamChandeKrollStop.Reset")
+	}
+	return statusError("StreamChandeKrollStop.Reset", C.ft_stream_chande_kroll_stop_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamChandeKrollStop) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_chande_kroll_stop_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamMaEnvelopes is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming moving-average envelopes: (upper, middle, lower) = MA * (1 +/- `percent` / 100), MA of type `matype`.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamMaEnvelopes struct {
+	mu sync.Mutex
+	h  *C.FtStreamMaEnvelopes
+}
+
+// NewStreamMaEnvelopes creates a StreamMaEnvelopes.
+func NewStreamMaEnvelopes(timeperiod int, percent float64, matype MAType) (*StreamMaEnvelopes, error) {
+	var h *C.FtStreamMaEnvelopes
+	if err := statusError("NewStreamMaEnvelopes", C.ft_stream_ma_envelopes_new(C.int64_t(timeperiod), C.double(percent), C.int32_t(matype), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMaEnvelopes{h: h}
+	runtime.SetFinalizer(s, (*StreamMaEnvelopes).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamMaEnvelopes) Update(close float64) (upper float64, middle float64, lower float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, 0, closedError("StreamMaEnvelopes.Update")
+	}
+	if err := statusError("StreamMaEnvelopes.Update", C.ft_stream_ma_envelopes_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&upper)), (*C.double)(unsafe.Pointer(&middle)), (*C.double)(unsafe.Pointer(&lower)))); err != nil {
+		return 0, 0, 0, err
+	}
+	return upper, middle, lower, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamMaEnvelopes) Peek(close float64) (upper float64, middle float64, lower float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, 0, closedError("StreamMaEnvelopes.Peek")
+	}
+	if err := statusError("StreamMaEnvelopes.Peek", C.ft_stream_ma_envelopes_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&upper)), (*C.double)(unsafe.Pointer(&middle)), (*C.double)(unsafe.Pointer(&lower)))); err != nil {
+		return 0, 0, 0, err
+	}
+	return upper, middle, lower, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamMaEnvelopes.
+func (s *StreamMaEnvelopes) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamMaEnvelopes.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_ma_envelopes_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamMaEnvelopes.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_ma_envelopes_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamMaEnvelopes.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamMaEnvelopes restores a StreamMaEnvelopes from a snapshot made by Save.
+func LoadStreamMaEnvelopes(snapshot []byte) (*StreamMaEnvelopes, error) {
+	var h *C.FtStreamMaEnvelopes
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamMaEnvelopes", C.ft_stream_ma_envelopes_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMaEnvelopes{h: h}
+	runtime.SetFinalizer(s, (*StreamMaEnvelopes).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamMaEnvelopes) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamMaEnvelopes.Reset")
+	}
+	return statusError("StreamMaEnvelopes.Reset", C.ft_stream_ma_envelopes_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamMaEnvelopes) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_ma_envelopes_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamChaikinVol is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Chaikin volatility: `rocperiod`-bar percent rate of change of an EMA of the high-low range.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamChaikinVol struct {
+	mu sync.Mutex
+	h  *C.FtStreamChaikinVol
+}
+
+// NewStreamChaikinVol creates a StreamChaikinVol.
+func NewStreamChaikinVol(timeperiod int, rocperiod int) (*StreamChaikinVol, error) {
+	var h *C.FtStreamChaikinVol
+	if err := statusError("NewStreamChaikinVol", C.ft_stream_chaikin_vol_new(C.int64_t(timeperiod), C.int64_t(rocperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamChaikinVol{h: h}
+	runtime.SetFinalizer(s, (*StreamChaikinVol).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamChaikinVol) Update(high float64, low float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamChaikinVol.Update")
+	}
+	if err := statusError("StreamChaikinVol.Update", C.ft_stream_chaikin_vol_update(s.h, C.double(high), C.double(low), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamChaikinVol) Peek(high float64, low float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamChaikinVol.Peek")
+	}
+	if err := statusError("StreamChaikinVol.Peek", C.ft_stream_chaikin_vol_peek(s.h, C.double(high), C.double(low), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamChaikinVol.
+func (s *StreamChaikinVol) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamChaikinVol.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_chaikin_vol_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamChaikinVol.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_chaikin_vol_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamChaikinVol.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamChaikinVol restores a StreamChaikinVol from a snapshot made by Save.
+func LoadStreamChaikinVol(snapshot []byte) (*StreamChaikinVol, error) {
+	var h *C.FtStreamChaikinVol
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamChaikinVol", C.ft_stream_chaikin_vol_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamChaikinVol{h: h}
+	runtime.SetFinalizer(s, (*StreamChaikinVol).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamChaikinVol) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamChaikinVol.Reset")
+	}
+	return statusError("StreamChaikinVol.Reset", C.ft_stream_chaikin_vol_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamChaikinVol) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_chaikin_vol_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamMass is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Mass index: `sumperiod`-bar sum of EMA(range) / EMA(EMA(range)); the sum restarts after a non-finite ratio.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamMass struct {
+	mu sync.Mutex
+	h  *C.FtStreamMass
+}
+
+// NewStreamMass creates a StreamMass.
+func NewStreamMass(timeperiod int, sumperiod int) (*StreamMass, error) {
+	var h *C.FtStreamMass
+	if err := statusError("NewStreamMass", C.ft_stream_mass_new(C.int64_t(timeperiod), C.int64_t(sumperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMass{h: h}
+	runtime.SetFinalizer(s, (*StreamMass).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamMass) Update(high float64, low float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamMass.Update")
+	}
+	if err := statusError("StreamMass.Update", C.ft_stream_mass_update(s.h, C.double(high), C.double(low), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamMass) Peek(high float64, low float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamMass.Peek")
+	}
+	if err := statusError("StreamMass.Peek", C.ft_stream_mass_peek(s.h, C.double(high), C.double(low), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamMass.
+func (s *StreamMass) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamMass.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_mass_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamMass.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_mass_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamMass.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamMass restores a StreamMass from a snapshot made by Save.
+func LoadStreamMass(snapshot []byte) (*StreamMass, error) {
+	var h *C.FtStreamMass
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamMass", C.ft_stream_mass_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMass{h: h}
+	runtime.SetFinalizer(s, (*StreamMass).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamMass) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamMass.Reset")
+	}
+	return statusError("StreamMass.Reset", C.ft_stream_mass_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamMass) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_mass_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamRwi is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Random Walk Index: (high, low) maxima over lookbacks 2..=`timeperiod` of the range move per ATR * sqrt(lookback).
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamRwi struct {
+	mu sync.Mutex
+	h  *C.FtStreamRwi
+}
+
+// NewStreamRwi creates a StreamRwi.
+func NewStreamRwi(timeperiod int) (*StreamRwi, error) {
+	var h *C.FtStreamRwi
+	if err := statusError("NewStreamRwi", C.ft_stream_rwi_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamRwi{h: h}
+	runtime.SetFinalizer(s, (*StreamRwi).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamRwi) Update(high float64, low float64, close float64) (rwiHigh float64, rwiLow float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, closedError("StreamRwi.Update")
+	}
+	if err := statusError("StreamRwi.Update", C.ft_stream_rwi_update(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&rwiHigh)), (*C.double)(unsafe.Pointer(&rwiLow)))); err != nil {
+		return 0, 0, err
+	}
+	return rwiHigh, rwiLow, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamRwi) Peek(high float64, low float64, close float64) (rwiHigh float64, rwiLow float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, closedError("StreamRwi.Peek")
+	}
+	if err := statusError("StreamRwi.Peek", C.ft_stream_rwi_peek(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&rwiHigh)), (*C.double)(unsafe.Pointer(&rwiLow)))); err != nil {
+		return 0, 0, err
+	}
+	return rwiHigh, rwiLow, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamRwi.
+func (s *StreamRwi) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamRwi.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_rwi_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamRwi.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_rwi_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamRwi.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamRwi restores a StreamRwi from a snapshot made by Save.
+func LoadStreamRwi(snapshot []byte) (*StreamRwi, error) {
+	var h *C.FtStreamRwi
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamRwi", C.ft_stream_rwi_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamRwi{h: h}
+	runtime.SetFinalizer(s, (*StreamRwi).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamRwi) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamRwi.Reset")
+	}
+	return statusError("StreamRwi.Reset", C.ft_stream_rwi_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamRwi) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_rwi_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamAo is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Awesome Oscillator: SMA(median price, fast) - SMA(median price, slow).
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamAo struct {
+	mu sync.Mutex
+	h  *C.FtStreamAo
+}
+
+// NewStreamAo creates a StreamAo.
+func NewStreamAo(fastperiod int, slowperiod int) (*StreamAo, error) {
+	var h *C.FtStreamAo
+	if err := statusError("NewStreamAo", C.ft_stream_ao_new(C.int64_t(fastperiod), C.int64_t(slowperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamAo{h: h}
+	runtime.SetFinalizer(s, (*StreamAo).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamAo) Update(high float64, low float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamAo.Update")
+	}
+	if err := statusError("StreamAo.Update", C.ft_stream_ao_update(s.h, C.double(high), C.double(low), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamAo) Peek(high float64, low float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamAo.Peek")
+	}
+	if err := statusError("StreamAo.Peek", C.ft_stream_ao_peek(s.h, C.double(high), C.double(low), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamAo.
+func (s *StreamAo) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamAo.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_ao_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamAo.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_ao_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamAo.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamAo restores a StreamAo from a snapshot made by Save.
+func LoadStreamAo(snapshot []byte) (*StreamAo, error) {
+	var h *C.FtStreamAo
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamAo", C.ft_stream_ao_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamAo{h: h}
+	runtime.SetFinalizer(s, (*StreamAo).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamAo) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamAo.Reset")
+	}
+	return statusError("StreamAo.Reset", C.ft_stream_ao_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamAo) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_ao_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamAc is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Accelerator Oscillator: AO - SMA(AO, `timeperiod`).
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamAc struct {
+	mu sync.Mutex
+	h  *C.FtStreamAc
+}
+
+// NewStreamAc creates a StreamAc.
+func NewStreamAc(fastperiod int, slowperiod int, timeperiod int) (*StreamAc, error) {
+	var h *C.FtStreamAc
+	if err := statusError("NewStreamAc", C.ft_stream_ac_new(C.int64_t(fastperiod), C.int64_t(slowperiod), C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamAc{h: h}
+	runtime.SetFinalizer(s, (*StreamAc).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamAc) Update(high float64, low float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamAc.Update")
+	}
+	if err := statusError("StreamAc.Update", C.ft_stream_ac_update(s.h, C.double(high), C.double(low), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamAc) Peek(high float64, low float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamAc.Peek")
+	}
+	if err := statusError("StreamAc.Peek", C.ft_stream_ac_peek(s.h, C.double(high), C.double(low), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamAc.
+func (s *StreamAc) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamAc.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_ac_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamAc.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_ac_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamAc.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamAc restores a StreamAc from a snapshot made by Save.
+func LoadStreamAc(snapshot []byte) (*StreamAc, error) {
+	var h *C.FtStreamAc
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamAc", C.ft_stream_ac_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamAc{h: h}
+	runtime.SetFinalizer(s, (*StreamAc).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamAc) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamAc.Reset")
+	}
+	return statusError("StreamAc.Reset", C.ft_stream_ac_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamAc) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_ac_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamPo is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming price oscillator: SMA(close, fast) - SMA(close, slow).
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamPo struct {
+	mu sync.Mutex
+	h  *C.FtStreamPo
+}
+
+// NewStreamPo creates a StreamPo.
+func NewStreamPo(fastperiod int, slowperiod int) (*StreamPo, error) {
+	var h *C.FtStreamPo
+	if err := statusError("NewStreamPo", C.ft_stream_po_new(C.int64_t(fastperiod), C.int64_t(slowperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamPo{h: h}
+	runtime.SetFinalizer(s, (*StreamPo).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamPo) Update(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamPo.Update")
+	}
+	if err := statusError("StreamPo.Update", C.ft_stream_po_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamPo) Peek(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamPo.Peek")
+	}
+	if err := statusError("StreamPo.Peek", C.ft_stream_po_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamPo.
+func (s *StreamPo) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamPo.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_po_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamPo.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_po_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamPo.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamPo restores a StreamPo from a snapshot made by Save.
+func LoadStreamPo(snapshot []byte) (*StreamPo, error) {
+	var h *C.FtStreamPo
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamPo", C.ft_stream_po_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamPo{h: h}
+	runtime.SetFinalizer(s, (*StreamPo).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamPo) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamPo.Reset")
+	}
+	return statusError("StreamPo.Reset", C.ft_stream_po_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamPo) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_po_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamDpo is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming detrended price oscillator: close `timeperiod / 2 + 1` bars ago minus SMA(close, `timeperiod`).
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamDpo struct {
+	mu sync.Mutex
+	h  *C.FtStreamDpo
+}
+
+// NewStreamDpo creates a StreamDpo.
+func NewStreamDpo(timeperiod int) (*StreamDpo, error) {
+	var h *C.FtStreamDpo
+	if err := statusError("NewStreamDpo", C.ft_stream_dpo_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamDpo{h: h}
+	runtime.SetFinalizer(s, (*StreamDpo).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamDpo) Update(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamDpo.Update")
+	}
+	if err := statusError("StreamDpo.Update", C.ft_stream_dpo_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamDpo) Peek(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamDpo.Peek")
+	}
+	if err := statusError("StreamDpo.Peek", C.ft_stream_dpo_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamDpo.
+func (s *StreamDpo) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamDpo.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_dpo_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamDpo.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_dpo_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamDpo.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamDpo restores a StreamDpo from a snapshot made by Save.
+func LoadStreamDpo(snapshot []byte) (*StreamDpo, error) {
+	var h *C.FtStreamDpo
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamDpo", C.ft_stream_dpo_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamDpo{h: h}
+	runtime.SetFinalizer(s, (*StreamDpo).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamDpo) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamDpo.Reset")
+	}
+	return statusError("StreamDpo.Reset", C.ft_stream_dpo_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamDpo) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_dpo_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamRvi is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Relative Vigor Index and its 4-bar weighted signal (the batch running window sums are mirrored, so a flat window's zero denominator matches the batch function).
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamRvi struct {
+	mu sync.Mutex
+	h  *C.FtStreamRvi
+}
+
+// NewStreamRvi creates a StreamRvi.
+func NewStreamRvi(timeperiod int) (*StreamRvi, error) {
+	var h *C.FtStreamRvi
+	if err := statusError("NewStreamRvi", C.ft_stream_rvi_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamRvi{h: h}
+	runtime.SetFinalizer(s, (*StreamRvi).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamRvi) Update(open float64, high float64, low float64, close float64) (rvi float64, signal float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, closedError("StreamRvi.Update")
+	}
+	if err := statusError("StreamRvi.Update", C.ft_stream_rvi_update(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&rvi)), (*C.double)(unsafe.Pointer(&signal)))); err != nil {
+		return 0, 0, err
+	}
+	return rvi, signal, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamRvi) Peek(open float64, high float64, low float64, close float64) (rvi float64, signal float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, closedError("StreamRvi.Peek")
+	}
+	if err := statusError("StreamRvi.Peek", C.ft_stream_rvi_peek(s.h, C.double(open), C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&rvi)), (*C.double)(unsafe.Pointer(&signal)))); err != nil {
+		return 0, 0, err
+	}
+	return rvi, signal, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamRvi.
+func (s *StreamRvi) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamRvi.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_rvi_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamRvi.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_rvi_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamRvi.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamRvi restores a StreamRvi from a snapshot made by Save.
+func LoadStreamRvi(snapshot []byte) (*StreamRvi, error) {
+	var h *C.FtStreamRvi
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamRvi", C.ft_stream_rvi_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamRvi{h: h}
+	runtime.SetFinalizer(s, (*StreamRvi).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamRvi) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamRvi.Reset")
+	}
+	return statusError("StreamRvi.Reset", C.ft_stream_rvi_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamRvi) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_rvi_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamKst is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Know Sure Thing: weighted sum of four SMA-smoothed ROCs, plus an SMA signal.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamKst struct {
+	mu sync.Mutex
+	h  *C.FtStreamKst
+}
+
+// NewStreamKst creates a StreamKst.
+func NewStreamKst(roc1 int, roc2 int, roc3 int, roc4 int, sma1 int, sma2 int, sma3 int, sma4 int, signalperiod int) (*StreamKst, error) {
+	var h *C.FtStreamKst
+	if err := statusError("NewStreamKst", C.ft_stream_kst_new(C.int64_t(roc1), C.int64_t(roc2), C.int64_t(roc3), C.int64_t(roc4), C.int64_t(sma1), C.int64_t(sma2), C.int64_t(sma3), C.int64_t(sma4), C.int64_t(signalperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamKst{h: h}
+	runtime.SetFinalizer(s, (*StreamKst).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamKst) Update(close float64) (kst float64, signal float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, closedError("StreamKst.Update")
+	}
+	if err := statusError("StreamKst.Update", C.ft_stream_kst_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&kst)), (*C.double)(unsafe.Pointer(&signal)))); err != nil {
+		return 0, 0, err
+	}
+	return kst, signal, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamKst) Peek(close float64) (kst float64, signal float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, closedError("StreamKst.Peek")
+	}
+	if err := statusError("StreamKst.Peek", C.ft_stream_kst_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&kst)), (*C.double)(unsafe.Pointer(&signal)))); err != nil {
+		return 0, 0, err
+	}
+	return kst, signal, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamKst.
+func (s *StreamKst) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamKst.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_kst_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamKst.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_kst_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamKst.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamKst restores a StreamKst from a snapshot made by Save.
+func LoadStreamKst(snapshot []byte) (*StreamKst, error) {
+	var h *C.FtStreamKst
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamKst", C.ft_stream_kst_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamKst{h: h}
+	runtime.SetFinalizer(s, (*StreamKst).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamKst) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamKst.Reset")
+	}
+	return statusError("StreamKst.Reset", C.ft_stream_kst_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamKst) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_kst_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamVortex is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Vortex indicator: (+VI, -VI) over `timeperiod` bars; a non-finite true range counts as 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamVortex struct {
+	mu sync.Mutex
+	h  *C.FtStreamVortex
+}
+
+// NewStreamVortex creates a StreamVortex.
+func NewStreamVortex(timeperiod int) (*StreamVortex, error) {
+	var h *C.FtStreamVortex
+	if err := statusError("NewStreamVortex", C.ft_stream_vortex_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamVortex{h: h}
+	runtime.SetFinalizer(s, (*StreamVortex).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamVortex) Update(high float64, low float64, close float64) (plusVi float64, minusVi float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, closedError("StreamVortex.Update")
+	}
+	if err := statusError("StreamVortex.Update", C.ft_stream_vortex_update(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&plusVi)), (*C.double)(unsafe.Pointer(&minusVi)))); err != nil {
+		return 0, 0, err
+	}
+	return plusVi, minusVi, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamVortex) Peek(high float64, low float64, close float64) (plusVi float64, minusVi float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, closedError("StreamVortex.Peek")
+	}
+	if err := statusError("StreamVortex.Peek", C.ft_stream_vortex_peek(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&plusVi)), (*C.double)(unsafe.Pointer(&minusVi)))); err != nil {
+		return 0, 0, err
+	}
+	return plusVi, minusVi, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamVortex.
+func (s *StreamVortex) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamVortex.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_vortex_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamVortex.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_vortex_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamVortex.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamVortex restores a StreamVortex from a snapshot made by Save.
+func LoadStreamVortex(snapshot []byte) (*StreamVortex, error) {
+	var h *C.FtStreamVortex
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamVortex", C.ft_stream_vortex_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamVortex{h: h}
+	runtime.SetFinalizer(s, (*StreamVortex).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamVortex) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamVortex.Reset")
+	}
+	return statusError("StreamVortex.Reset", C.ft_stream_vortex_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamVortex) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_vortex_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCoppock is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Coppock curve: WMA(ROC(`roc1`) + ROC(`roc2`), `wma_period`).
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCoppock struct {
+	mu sync.Mutex
+	h  *C.FtStreamCoppock
+}
+
+// NewStreamCoppock creates a StreamCoppock.
+func NewStreamCoppock(wmaPeriod int, roc1 int, roc2 int) (*StreamCoppock, error) {
+	var h *C.FtStreamCoppock
+	if err := statusError("NewStreamCoppock", C.ft_stream_coppock_new(C.int64_t(wmaPeriod), C.int64_t(roc1), C.int64_t(roc2), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCoppock{h: h}
+	runtime.SetFinalizer(s, (*StreamCoppock).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCoppock) Update(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCoppock.Update")
+	}
+	if err := statusError("StreamCoppock.Update", C.ft_stream_coppock_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCoppock) Peek(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCoppock.Peek")
+	}
+	if err := statusError("StreamCoppock.Peek", C.ft_stream_coppock_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCoppock.
+func (s *StreamCoppock) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCoppock.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_coppock_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCoppock.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_coppock_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCoppock.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCoppock restores a StreamCoppock from a snapshot made by Save.
+func LoadStreamCoppock(snapshot []byte) (*StreamCoppock, error) {
+	var h *C.FtStreamCoppock
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCoppock", C.ft_stream_coppock_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCoppock{h: h}
+	runtime.SetFinalizer(s, (*StreamCoppock).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCoppock) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCoppock.Reset")
+	}
+	return statusError("StreamCoppock.Reset", C.ft_stream_coppock_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCoppock) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_coppock_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamDmi is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming directional movement index: (+DI, -DI, ADX) from one Wilder state.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamDmi struct {
+	mu sync.Mutex
+	h  *C.FtStreamDmi
+}
+
+// NewStreamDmi creates a StreamDmi.
+func NewStreamDmi(timeperiod int) (*StreamDmi, error) {
+	var h *C.FtStreamDmi
+	if err := statusError("NewStreamDmi", C.ft_stream_dmi_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamDmi{h: h}
+	runtime.SetFinalizer(s, (*StreamDmi).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamDmi) Update(high float64, low float64, close float64) (plusDi float64, minusDi float64, adx float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, 0, closedError("StreamDmi.Update")
+	}
+	if err := statusError("StreamDmi.Update", C.ft_stream_dmi_update(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&plusDi)), (*C.double)(unsafe.Pointer(&minusDi)), (*C.double)(unsafe.Pointer(&adx)))); err != nil {
+		return 0, 0, 0, err
+	}
+	return plusDi, minusDi, adx, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamDmi) Peek(high float64, low float64, close float64) (plusDi float64, minusDi float64, adx float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, 0, closedError("StreamDmi.Peek")
+	}
+	if err := statusError("StreamDmi.Peek", C.ft_stream_dmi_peek(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&plusDi)), (*C.double)(unsafe.Pointer(&minusDi)), (*C.double)(unsafe.Pointer(&adx)))); err != nil {
+		return 0, 0, 0, err
+	}
+	return plusDi, minusDi, adx, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamDmi.
+func (s *StreamDmi) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamDmi.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_dmi_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamDmi.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_dmi_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamDmi.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamDmi restores a StreamDmi from a snapshot made by Save.
+func LoadStreamDmi(snapshot []byte) (*StreamDmi, error) {
+	var h *C.FtStreamDmi
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamDmi", C.ft_stream_dmi_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamDmi{h: h}
+	runtime.SetFinalizer(s, (*StreamDmi).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamDmi) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamDmi.Reset")
+	}
+	return statusError("StreamDmi.Reset", C.ft_stream_dmi_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamDmi) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_dmi_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamElderRay is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Elder Ray: (bull, bear) = (high - EMA(close), low - EMA(close)).
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamElderRay struct {
+	mu sync.Mutex
+	h  *C.FtStreamElderRay
+}
+
+// NewStreamElderRay creates a StreamElderRay.
+func NewStreamElderRay(timeperiod int) (*StreamElderRay, error) {
+	var h *C.FtStreamElderRay
+	if err := statusError("NewStreamElderRay", C.ft_stream_elder_ray_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamElderRay{h: h}
+	runtime.SetFinalizer(s, (*StreamElderRay).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamElderRay) Update(high float64, low float64, close float64) (bull float64, bear float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, closedError("StreamElderRay.Update")
+	}
+	if err := statusError("StreamElderRay.Update", C.ft_stream_elder_ray_update(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&bull)), (*C.double)(unsafe.Pointer(&bear)))); err != nil {
+		return 0, 0, err
+	}
+	return bull, bear, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamElderRay) Peek(high float64, low float64, close float64) (bull float64, bear float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, closedError("StreamElderRay.Peek")
+	}
+	if err := statusError("StreamElderRay.Peek", C.ft_stream_elder_ray_peek(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&bull)), (*C.double)(unsafe.Pointer(&bear)))); err != nil {
+		return 0, 0, err
+	}
+	return bull, bear, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamElderRay.
+func (s *StreamElderRay) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamElderRay.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_elder_ray_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamElderRay.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_elder_ray_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamElderRay.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamElderRay restores a StreamElderRay from a snapshot made by Save.
+func LoadStreamElderRay(snapshot []byte) (*StreamElderRay, error) {
+	var h *C.FtStreamElderRay
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamElderRay", C.ft_stream_elder_ray_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamElderRay{h: h}
+	runtime.SetFinalizer(s, (*StreamElderRay).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamElderRay) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamElderRay.Reset")
+	}
+	return statusError("StreamElderRay.Reset", C.ft_stream_elder_ray_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamElderRay) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_elder_ray_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamFisher is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Ehlers Fisher transform of the median price over `timeperiod` bars, plus the previous value as signal.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamFisher struct {
+	mu sync.Mutex
+	h  *C.FtStreamFisher
+}
+
+// NewStreamFisher creates a StreamFisher.
+func NewStreamFisher(timeperiod int) (*StreamFisher, error) {
+	var h *C.FtStreamFisher
+	if err := statusError("NewStreamFisher", C.ft_stream_fisher_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamFisher{h: h}
+	runtime.SetFinalizer(s, (*StreamFisher).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamFisher) Update(high float64, low float64) (fisher float64, signal float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, closedError("StreamFisher.Update")
+	}
+	if err := statusError("StreamFisher.Update", C.ft_stream_fisher_update(s.h, C.double(high), C.double(low), (*C.double)(unsafe.Pointer(&fisher)), (*C.double)(unsafe.Pointer(&signal)))); err != nil {
+		return 0, 0, err
+	}
+	return fisher, signal, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamFisher) Peek(high float64, low float64) (fisher float64, signal float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, closedError("StreamFisher.Peek")
+	}
+	if err := statusError("StreamFisher.Peek", C.ft_stream_fisher_peek(s.h, C.double(high), C.double(low), (*C.double)(unsafe.Pointer(&fisher)), (*C.double)(unsafe.Pointer(&signal)))); err != nil {
+		return 0, 0, err
+	}
+	return fisher, signal, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamFisher.
+func (s *StreamFisher) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamFisher.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_fisher_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamFisher.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_fisher_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamFisher.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamFisher restores a StreamFisher from a snapshot made by Save.
+func LoadStreamFisher(snapshot []byte) (*StreamFisher, error) {
+	var h *C.FtStreamFisher
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamFisher", C.ft_stream_fisher_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamFisher{h: h}
+	runtime.SetFinalizer(s, (*StreamFisher).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamFisher) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamFisher.Reset")
+	}
+	return statusError("StreamFisher.Reset", C.ft_stream_fisher_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamFisher) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_fisher_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCrsi is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Connors RSI: mean of RSI(close), RSI(up/down streak) and the percent rank of the 1-bar ROC.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCrsi struct {
+	mu sync.Mutex
+	h  *C.FtStreamCrsi
+}
+
+// NewStreamCrsi creates a StreamCrsi.
+func NewStreamCrsi(timeperiod int, streakperiod int, rankperiod int) (*StreamCrsi, error) {
+	var h *C.FtStreamCrsi
+	if err := statusError("NewStreamCrsi", C.ft_stream_crsi_new(C.int64_t(timeperiod), C.int64_t(streakperiod), C.int64_t(rankperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCrsi{h: h}
+	runtime.SetFinalizer(s, (*StreamCrsi).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCrsi) Update(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCrsi.Update")
+	}
+	if err := statusError("StreamCrsi.Update", C.ft_stream_crsi_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCrsi) Peek(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCrsi.Peek")
+	}
+	if err := statusError("StreamCrsi.Peek", C.ft_stream_crsi_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCrsi.
+func (s *StreamCrsi) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCrsi.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_crsi_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCrsi.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_crsi_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCrsi.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCrsi restores a StreamCrsi from a snapshot made by Save.
+func LoadStreamCrsi(snapshot []byte) (*StreamCrsi, error) {
+	var h *C.FtStreamCrsi
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCrsi", C.ft_stream_crsi_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCrsi{h: h}
+	runtime.SetFinalizer(s, (*StreamCrsi).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCrsi) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCrsi.Reset")
+	}
+	return statusError("StreamCrsi.Reset", C.ft_stream_crsi_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCrsi) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_crsi_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamTsi is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming True Strength Index: 100 * double-EMA(momentum) / double-EMA(abs(momentum)), plus an EMA signal.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamTsi struct {
+	mu sync.Mutex
+	h  *C.FtStreamTsi
+}
+
+// NewStreamTsi creates a StreamTsi.
+func NewStreamTsi(longperiod int, shortperiod int, signalperiod int) (*StreamTsi, error) {
+	var h *C.FtStreamTsi
+	if err := statusError("NewStreamTsi", C.ft_stream_tsi_new(C.int64_t(longperiod), C.int64_t(shortperiod), C.int64_t(signalperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamTsi{h: h}
+	runtime.SetFinalizer(s, (*StreamTsi).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamTsi) Update(close float64) (tsi float64, signal float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, closedError("StreamTsi.Update")
+	}
+	if err := statusError("StreamTsi.Update", C.ft_stream_tsi_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&tsi)), (*C.double)(unsafe.Pointer(&signal)))); err != nil {
+		return 0, 0, err
+	}
+	return tsi, signal, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamTsi) Peek(close float64) (tsi float64, signal float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, closedError("StreamTsi.Peek")
+	}
+	if err := statusError("StreamTsi.Peek", C.ft_stream_tsi_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&tsi)), (*C.double)(unsafe.Pointer(&signal)))); err != nil {
+		return 0, 0, err
+	}
+	return tsi, signal, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamTsi.
+func (s *StreamTsi) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamTsi.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_tsi_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamTsi.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_tsi_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamTsi.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamTsi restores a StreamTsi from a snapshot made by Save.
+func LoadStreamTsi(snapshot []byte) (*StreamTsi, error) {
+	var h *C.FtStreamTsi
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamTsi", C.ft_stream_tsi_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamTsi{h: h}
+	runtime.SetFinalizer(s, (*StreamTsi).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamTsi) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamTsi.Reset")
+	}
+	return statusError("StreamTsi.Reset", C.ft_stream_tsi_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamTsi) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_tsi_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamStc is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Schaff Trend Cycle: stochastic of the EMA MACD, EMA-smoothed, stochastic again, EMA-smoothed, clamped to [0, 100].
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamStc struct {
+	mu sync.Mutex
+	h  *C.FtStreamStc
+}
+
+// NewStreamStc creates a StreamStc.
+func NewStreamStc(fastperiod int, slowperiod int, cycleperiod int, d1 int, d2 int) (*StreamStc, error) {
+	var h *C.FtStreamStc
+	if err := statusError("NewStreamStc", C.ft_stream_stc_new(C.int64_t(fastperiod), C.int64_t(slowperiod), C.int64_t(cycleperiod), C.int64_t(d1), C.int64_t(d2), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamStc{h: h}
+	runtime.SetFinalizer(s, (*StreamStc).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamStc) Update(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamStc.Update")
+	}
+	if err := statusError("StreamStc.Update", C.ft_stream_stc_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamStc) Peek(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamStc.Peek")
+	}
+	if err := statusError("StreamStc.Peek", C.ft_stream_stc_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamStc.
+func (s *StreamStc) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamStc.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_stc_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamStc.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_stc_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamStc.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamStc restores a StreamStc from a snapshot made by Save.
+func LoadStreamStc(snapshot []byte) (*StreamStc, error) {
+	var h *C.FtStreamStc
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamStc", C.ft_stream_stc_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamStc{h: h}
+	runtime.SetFinalizer(s, (*StreamStc).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamStc) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamStc.Reset")
+	}
+	return statusError("StreamStc.Reset", C.ft_stream_stc_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamStc) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_stc_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamHullMa is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Hull moving average: WMA(2 * WMA(n/2) - WMA(n), sqrt(n)).
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamHullMa struct {
+	mu sync.Mutex
+	h  *C.FtStreamHullMa
+}
+
+// NewStreamHullMa creates a StreamHullMa.
+func NewStreamHullMa(timeperiod int) (*StreamHullMa, error) {
+	var h *C.FtStreamHullMa
+	if err := statusError("NewStreamHullMa", C.ft_stream_hull_ma_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamHullMa{h: h}
+	runtime.SetFinalizer(s, (*StreamHullMa).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamHullMa) Update(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamHullMa.Update")
+	}
+	if err := statusError("StreamHullMa.Update", C.ft_stream_hull_ma_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamHullMa) Peek(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamHullMa.Peek")
+	}
+	if err := statusError("StreamHullMa.Peek", C.ft_stream_hull_ma_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamHullMa.
+func (s *StreamHullMa) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamHullMa.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_hull_ma_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamHullMa.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_hull_ma_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamHullMa.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamHullMa restores a StreamHullMa from a snapshot made by Save.
+func LoadStreamHullMa(snapshot []byte) (*StreamHullMa, error) {
+	var h *C.FtStreamHullMa
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamHullMa", C.ft_stream_hull_ma_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamHullMa{h: h}
+	runtime.SetFinalizer(s, (*StreamHullMa).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamHullMa) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamHullMa.Reset")
+	}
+	return statusError("StreamHullMa.Reset", C.ft_stream_hull_ma_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamHullMa) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_hull_ma_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamAlma is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Arnaud Legoux moving average: Gaussian-weighted mean of the last `timeperiod` closes.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamAlma struct {
+	mu sync.Mutex
+	h  *C.FtStreamAlma
+}
+
+// NewStreamAlma creates a StreamAlma.
+func NewStreamAlma(timeperiod int, offset float64, sigma float64) (*StreamAlma, error) {
+	var h *C.FtStreamAlma
+	if err := statusError("NewStreamAlma", C.ft_stream_alma_new(C.int64_t(timeperiod), C.double(offset), C.double(sigma), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamAlma{h: h}
+	runtime.SetFinalizer(s, (*StreamAlma).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamAlma) Update(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamAlma.Update")
+	}
+	if err := statusError("StreamAlma.Update", C.ft_stream_alma_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamAlma) Peek(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamAlma.Peek")
+	}
+	if err := statusError("StreamAlma.Peek", C.ft_stream_alma_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamAlma.
+func (s *StreamAlma) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamAlma.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_alma_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamAlma.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_alma_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamAlma.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamAlma restores a StreamAlma from a snapshot made by Save.
+func LoadStreamAlma(snapshot []byte) (*StreamAlma, error) {
+	var h *C.FtStreamAlma
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamAlma", C.ft_stream_alma_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamAlma{h: h}
+	runtime.SetFinalizer(s, (*StreamAlma).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamAlma) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamAlma.Reset")
+	}
+	return statusError("StreamAlma.Reset", C.ft_stream_alma_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamAlma) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_alma_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamAlligator is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Bill Williams Alligator: (jaw, teeth, lips) SMMAs of the median price, each shifted forward by its shift.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamAlligator struct {
+	mu sync.Mutex
+	h  *C.FtStreamAlligator
+}
+
+// NewStreamAlligator creates a StreamAlligator.
+func NewStreamAlligator(jawPeriod int, jawShift int, teethPeriod int, teethShift int, lipsPeriod int, lipsShift int) (*StreamAlligator, error) {
+	var h *C.FtStreamAlligator
+	if err := statusError("NewStreamAlligator", C.ft_stream_alligator_new(C.int64_t(jawPeriod), C.int64_t(jawShift), C.int64_t(teethPeriod), C.int64_t(teethShift), C.int64_t(lipsPeriod), C.int64_t(lipsShift), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamAlligator{h: h}
+	runtime.SetFinalizer(s, (*StreamAlligator).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamAlligator) Update(high float64, low float64) (jaw float64, teeth float64, lips float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, 0, closedError("StreamAlligator.Update")
+	}
+	if err := statusError("StreamAlligator.Update", C.ft_stream_alligator_update(s.h, C.double(high), C.double(low), (*C.double)(unsafe.Pointer(&jaw)), (*C.double)(unsafe.Pointer(&teeth)), (*C.double)(unsafe.Pointer(&lips)))); err != nil {
+		return 0, 0, 0, err
+	}
+	return jaw, teeth, lips, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamAlligator) Peek(high float64, low float64) (jaw float64, teeth float64, lips float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, 0, closedError("StreamAlligator.Peek")
+	}
+	if err := statusError("StreamAlligator.Peek", C.ft_stream_alligator_peek(s.h, C.double(high), C.double(low), (*C.double)(unsafe.Pointer(&jaw)), (*C.double)(unsafe.Pointer(&teeth)), (*C.double)(unsafe.Pointer(&lips)))); err != nil {
+		return 0, 0, 0, err
+	}
+	return jaw, teeth, lips, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamAlligator.
+func (s *StreamAlligator) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamAlligator.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_alligator_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamAlligator.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_alligator_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamAlligator.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamAlligator restores a StreamAlligator from a snapshot made by Save.
+func LoadStreamAlligator(snapshot []byte) (*StreamAlligator, error) {
+	var h *C.FtStreamAlligator
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamAlligator", C.ft_stream_alligator_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamAlligator{h: h}
+	runtime.SetFinalizer(s, (*StreamAlligator).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamAlligator) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamAlligator.Reset")
+	}
+	return statusError("StreamAlligator.Reset", C.ft_stream_alligator_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamAlligator) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_alligator_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamGator is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Gator oscillator: (abs(jaw - teeth), -abs(teeth - lips)) of the Alligator lines.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamGator struct {
+	mu sync.Mutex
+	h  *C.FtStreamGator
+}
+
+// NewStreamGator creates a StreamGator.
+func NewStreamGator(jawPeriod int, jawShift int, teethPeriod int, teethShift int, lipsPeriod int, lipsShift int) (*StreamGator, error) {
+	var h *C.FtStreamGator
+	if err := statusError("NewStreamGator", C.ft_stream_gator_new(C.int64_t(jawPeriod), C.int64_t(jawShift), C.int64_t(teethPeriod), C.int64_t(teethShift), C.int64_t(lipsPeriod), C.int64_t(lipsShift), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamGator{h: h}
+	runtime.SetFinalizer(s, (*StreamGator).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamGator) Update(high float64, low float64) (upper float64, lower float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, closedError("StreamGator.Update")
+	}
+	if err := statusError("StreamGator.Update", C.ft_stream_gator_update(s.h, C.double(high), C.double(low), (*C.double)(unsafe.Pointer(&upper)), (*C.double)(unsafe.Pointer(&lower)))); err != nil {
+		return 0, 0, err
+	}
+	return upper, lower, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamGator) Peek(high float64, low float64) (upper float64, lower float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, closedError("StreamGator.Peek")
+	}
+	if err := statusError("StreamGator.Peek", C.ft_stream_gator_peek(s.h, C.double(high), C.double(low), (*C.double)(unsafe.Pointer(&upper)), (*C.double)(unsafe.Pointer(&lower)))); err != nil {
+		return 0, 0, err
+	}
+	return upper, lower, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamGator.
+func (s *StreamGator) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamGator.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_gator_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamGator.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_gator_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamGator.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamGator restores a StreamGator from a snapshot made by Save.
+func LoadStreamGator(snapshot []byte) (*StreamGator, error) {
+	var h *C.FtStreamGator
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamGator", C.ft_stream_gator_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamGator{h: h}
+	runtime.SetFinalizer(s, (*StreamGator).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamGator) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamGator.Reset")
+	}
+	return statusError("StreamGator.Reset", C.ft_stream_gator_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamGator) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_gator_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamZlema is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming zero-lag EMA: EMA of close + (close - close `(timeperiod - 1) / 2` bars ago), seeded on the first full finite window.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamZlema struct {
+	mu sync.Mutex
+	h  *C.FtStreamZlema
+}
+
+// NewStreamZlema creates a StreamZlema.
+func NewStreamZlema(timeperiod int) (*StreamZlema, error) {
+	var h *C.FtStreamZlema
+	if err := statusError("NewStreamZlema", C.ft_stream_zlema_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamZlema{h: h}
+	runtime.SetFinalizer(s, (*StreamZlema).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamZlema) Update(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamZlema.Update")
+	}
+	if err := statusError("StreamZlema.Update", C.ft_stream_zlema_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamZlema) Peek(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamZlema.Peek")
+	}
+	if err := statusError("StreamZlema.Peek", C.ft_stream_zlema_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamZlema.
+func (s *StreamZlema) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamZlema.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_zlema_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamZlema.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_zlema_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamZlema.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamZlema restores a StreamZlema from a snapshot made by Save.
+func LoadStreamZlema(snapshot []byte) (*StreamZlema, error) {
+	var h *C.FtStreamZlema
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamZlema", C.ft_stream_zlema_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamZlema{h: h}
+	runtime.SetFinalizer(s, (*StreamZlema).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamZlema) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamZlema.Reset")
+	}
+	return statusError("StreamZlema.Reset", C.ft_stream_zlema_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamZlema) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_zlema_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamFrama is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Ehlers fractal adaptive moving average, seeded with the close at bar `timeperiod - 1`.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamFrama struct {
+	mu sync.Mutex
+	h  *C.FtStreamFrama
+}
+
+// NewStreamFrama creates a StreamFrama.
+func NewStreamFrama(timeperiod int) (*StreamFrama, error) {
+	var h *C.FtStreamFrama
+	if err := statusError("NewStreamFrama", C.ft_stream_frama_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamFrama{h: h}
+	runtime.SetFinalizer(s, (*StreamFrama).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamFrama) Update(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamFrama.Update")
+	}
+	if err := statusError("StreamFrama.Update", C.ft_stream_frama_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamFrama) Peek(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamFrama.Peek")
+	}
+	if err := statusError("StreamFrama.Peek", C.ft_stream_frama_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamFrama.
+func (s *StreamFrama) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamFrama.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_frama_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamFrama.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_frama_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamFrama.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamFrama restores a StreamFrama from a snapshot made by Save.
+func LoadStreamFrama(snapshot []byte) (*StreamFrama, error) {
+	var h *C.FtStreamFrama
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamFrama", C.ft_stream_frama_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamFrama{h: h}
+	runtime.SetFinalizer(s, (*StreamFrama).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamFrama) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamFrama.Reset")
+	}
+	return statusError("StreamFrama.Reset", C.ft_stream_frama_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamFrama) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_frama_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamMcginley is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming McGinley dynamic, seeded with the SMA of the first `timeperiod` closes.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamMcginley struct {
+	mu sync.Mutex
+	h  *C.FtStreamMcginley
+}
+
+// NewStreamMcginley creates a StreamMcginley.
+func NewStreamMcginley(timeperiod int) (*StreamMcginley, error) {
+	var h *C.FtStreamMcginley
+	if err := statusError("NewStreamMcginley", C.ft_stream_mcginley_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMcginley{h: h}
+	runtime.SetFinalizer(s, (*StreamMcginley).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamMcginley) Update(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamMcginley.Update")
+	}
+	if err := statusError("StreamMcginley.Update", C.ft_stream_mcginley_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamMcginley) Peek(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamMcginley.Peek")
+	}
+	if err := statusError("StreamMcginley.Peek", C.ft_stream_mcginley_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamMcginley.
+func (s *StreamMcginley) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamMcginley.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_mcginley_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamMcginley.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_mcginley_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamMcginley.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamMcginley restores a StreamMcginley from a snapshot made by Save.
+func LoadStreamMcginley(snapshot []byte) (*StreamMcginley, error) {
+	var h *C.FtStreamMcginley
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamMcginley", C.ft_stream_mcginley_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMcginley{h: h}
+	runtime.SetFinalizer(s, (*StreamMcginley).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamMcginley) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamMcginley.Reset")
+	}
+	return statusError("StreamMcginley.Reset", C.ft_stream_mcginley_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamMcginley) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_mcginley_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamVidya is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Chande VIDYA: an EMA whose factor is scaled by abs(CMO(`cmo_period`)) / 100, seeded with the close on the first CMO bar.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamVidya struct {
+	mu sync.Mutex
+	h  *C.FtStreamVidya
+}
+
+// NewStreamVidya creates a StreamVidya.
+func NewStreamVidya(timeperiod int, cmoPeriod int) (*StreamVidya, error) {
+	var h *C.FtStreamVidya
+	if err := statusError("NewStreamVidya", C.ft_stream_vidya_new(C.int64_t(timeperiod), C.int64_t(cmoPeriod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamVidya{h: h}
+	runtime.SetFinalizer(s, (*StreamVidya).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamVidya) Update(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamVidya.Update")
+	}
+	if err := statusError("StreamVidya.Update", C.ft_stream_vidya_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamVidya) Peek(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamVidya.Peek")
+	}
+	if err := statusError("StreamVidya.Peek", C.ft_stream_vidya_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamVidya.
+func (s *StreamVidya) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamVidya.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_vidya_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamVidya.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_vidya_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamVidya.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamVidya restores a StreamVidya from a snapshot made by Save.
+func LoadStreamVidya(snapshot []byte) (*StreamVidya, error) {
+	var h *C.FtStreamVidya
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamVidya", C.ft_stream_vidya_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamVidya{h: h}
+	runtime.SetFinalizer(s, (*StreamVidya).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamVidya) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamVidya.Reset")
+	}
+	return statusError("StreamVidya.Reset", C.ft_stream_vidya_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamVidya) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_vidya_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamIchimoku is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Ichimoku cloud: (tenkan, kijun, senkou_a, senkou_b); the senkou spans are the values computed `displacement` bars ago. Chikou (close `displacement` bars ahead) needs future bars and is not streamed.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamIchimoku struct {
+	mu sync.Mutex
+	h  *C.FtStreamIchimoku
+}
+
+// NewStreamIchimoku creates a StreamIchimoku.
+func NewStreamIchimoku(tenkanPeriod int, kijunPeriod int, senkouBPeriod int, displacement int) (*StreamIchimoku, error) {
+	var h *C.FtStreamIchimoku
+	if err := statusError("NewStreamIchimoku", C.ft_stream_ichimoku_new(C.int64_t(tenkanPeriod), C.int64_t(kijunPeriod), C.int64_t(senkouBPeriod), C.int64_t(displacement), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamIchimoku{h: h}
+	runtime.SetFinalizer(s, (*StreamIchimoku).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamIchimoku) Update(high float64, low float64, close float64) (tenkan float64, kijun float64, senkouA float64, senkouB float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, 0, 0, closedError("StreamIchimoku.Update")
+	}
+	if err := statusError("StreamIchimoku.Update", C.ft_stream_ichimoku_update(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&tenkan)), (*C.double)(unsafe.Pointer(&kijun)), (*C.double)(unsafe.Pointer(&senkouA)), (*C.double)(unsafe.Pointer(&senkouB)))); err != nil {
+		return 0, 0, 0, 0, err
+	}
+	return tenkan, kijun, senkouA, senkouB, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamIchimoku) Peek(high float64, low float64, close float64) (tenkan float64, kijun float64, senkouA float64, senkouB float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, 0, 0, closedError("StreamIchimoku.Peek")
+	}
+	if err := statusError("StreamIchimoku.Peek", C.ft_stream_ichimoku_peek(s.h, C.double(high), C.double(low), C.double(close), (*C.double)(unsafe.Pointer(&tenkan)), (*C.double)(unsafe.Pointer(&kijun)), (*C.double)(unsafe.Pointer(&senkouA)), (*C.double)(unsafe.Pointer(&senkouB)))); err != nil {
+		return 0, 0, 0, 0, err
+	}
+	return tenkan, kijun, senkouA, senkouB, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamIchimoku.
+func (s *StreamIchimoku) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamIchimoku.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_ichimoku_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamIchimoku.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_ichimoku_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamIchimoku.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamIchimoku restores a StreamIchimoku from a snapshot made by Save.
+func LoadStreamIchimoku(snapshot []byte) (*StreamIchimoku, error) {
+	var h *C.FtStreamIchimoku
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamIchimoku", C.ft_stream_ichimoku_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamIchimoku{h: h}
+	runtime.SetFinalizer(s, (*StreamIchimoku).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamIchimoku) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamIchimoku.Reset")
+	}
+	return statusError("StreamIchimoku.Reset", C.ft_stream_ichimoku_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamIchimoku) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_ichimoku_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCmf is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Chaikin money flow: `timeperiod`-bar sum of CLV * volume over the volume sum. Mirrors the batch zero-exact running volume sums, so an all-zero-volume window is NaN exactly as in the batch function.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCmf struct {
+	mu sync.Mutex
+	h  *C.FtStreamCmf
+}
+
+// NewStreamCmf creates a StreamCmf.
+func NewStreamCmf(timeperiod int) (*StreamCmf, error) {
+	var h *C.FtStreamCmf
+	if err := statusError("NewStreamCmf", C.ft_stream_cmf_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCmf{h: h}
+	runtime.SetFinalizer(s, (*StreamCmf).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCmf) Update(high float64, low float64, close float64, volume float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCmf.Update")
+	}
+	if err := statusError("StreamCmf.Update", C.ft_stream_cmf_update(s.h, C.double(high), C.double(low), C.double(close), C.double(volume), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCmf) Peek(high float64, low float64, close float64, volume float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCmf.Peek")
+	}
+	if err := statusError("StreamCmf.Peek", C.ft_stream_cmf_peek(s.h, C.double(high), C.double(low), C.double(close), C.double(volume), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCmf.
+func (s *StreamCmf) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCmf.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cmf_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCmf.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cmf_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCmf.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCmf restores a StreamCmf from a snapshot made by Save.
+func LoadStreamCmf(snapshot []byte) (*StreamCmf, error) {
+	var h *C.FtStreamCmf
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCmf", C.ft_stream_cmf_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCmf{h: h}
+	runtime.SetFinalizer(s, (*StreamCmf).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCmf) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCmf.Reset")
+	}
+	return statusError("StreamCmf.Reset", C.ft_stream_cmf_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCmf) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cmf_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamEmv is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming ease of movement: SMA over `timeperiod` bars of midpoint move * range * `scale` / volume (raw when `timeperiod` is 1).
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamEmv struct {
+	mu sync.Mutex
+	h  *C.FtStreamEmv
+}
+
+// NewStreamEmv creates a StreamEmv.
+func NewStreamEmv(timeperiod int, scale float64) (*StreamEmv, error) {
+	var h *C.FtStreamEmv
+	if err := statusError("NewStreamEmv", C.ft_stream_emv_new(C.int64_t(timeperiod), C.double(scale), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamEmv{h: h}
+	runtime.SetFinalizer(s, (*StreamEmv).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamEmv) Update(high float64, low float64, volume float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamEmv.Update")
+	}
+	if err := statusError("StreamEmv.Update", C.ft_stream_emv_update(s.h, C.double(high), C.double(low), C.double(volume), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamEmv) Peek(high float64, low float64, volume float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamEmv.Peek")
+	}
+	if err := statusError("StreamEmv.Peek", C.ft_stream_emv_peek(s.h, C.double(high), C.double(low), C.double(volume), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamEmv.
+func (s *StreamEmv) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamEmv.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_emv_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamEmv.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_emv_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamEmv.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamEmv restores a StreamEmv from a snapshot made by Save.
+func LoadStreamEmv(snapshot []byte) (*StreamEmv, error) {
+	var h *C.FtStreamEmv
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamEmv", C.ft_stream_emv_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamEmv{h: h}
+	runtime.SetFinalizer(s, (*StreamEmv).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamEmv) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamEmv.Reset")
+	}
+	return statusError("StreamEmv.Reset", C.ft_stream_emv_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamEmv) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_emv_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamVolosc is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming volume oscillator: 100 * (SMA(volume, fast) - SMA(volume, slow)) / SMA(volume, slow). Mirrors the batch zero-exact running volume sums, so an all-zero-volume window is NaN exactly as in the batch function.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamVolosc struct {
+	mu sync.Mutex
+	h  *C.FtStreamVolosc
+}
+
+// NewStreamVolosc creates a StreamVolosc.
+func NewStreamVolosc(fastperiod int, slowperiod int) (*StreamVolosc, error) {
+	var h *C.FtStreamVolosc
+	if err := statusError("NewStreamVolosc", C.ft_stream_volosc_new(C.int64_t(fastperiod), C.int64_t(slowperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamVolosc{h: h}
+	runtime.SetFinalizer(s, (*StreamVolosc).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamVolosc) Update(volume float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamVolosc.Update")
+	}
+	if err := statusError("StreamVolosc.Update", C.ft_stream_volosc_update(s.h, C.double(volume), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamVolosc) Peek(volume float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamVolosc.Peek")
+	}
+	if err := statusError("StreamVolosc.Peek", C.ft_stream_volosc_peek(s.h, C.double(volume), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamVolosc.
+func (s *StreamVolosc) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamVolosc.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_volosc_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamVolosc.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_volosc_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamVolosc.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamVolosc restores a StreamVolosc from a snapshot made by Save.
+func LoadStreamVolosc(snapshot []byte) (*StreamVolosc, error) {
+	var h *C.FtStreamVolosc
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamVolosc", C.ft_stream_volosc_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamVolosc{h: h}
+	runtime.SetFinalizer(s, (*StreamVolosc).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamVolosc) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamVolosc.Reset")
+	}
+	return statusError("StreamVolosc.Reset", C.ft_stream_volosc_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamVolosc) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_volosc_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamVroc is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming volume rate of change over `timeperiod` bars, in percent.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamVroc struct {
+	mu sync.Mutex
+	h  *C.FtStreamVroc
+}
+
+// NewStreamVroc creates a StreamVroc.
+func NewStreamVroc(timeperiod int) (*StreamVroc, error) {
+	var h *C.FtStreamVroc
+	if err := statusError("NewStreamVroc", C.ft_stream_vroc_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamVroc{h: h}
+	runtime.SetFinalizer(s, (*StreamVroc).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamVroc) Update(volume float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamVroc.Update")
+	}
+	if err := statusError("StreamVroc.Update", C.ft_stream_vroc_update(s.h, C.double(volume), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamVroc) Peek(volume float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamVroc.Peek")
+	}
+	if err := statusError("StreamVroc.Peek", C.ft_stream_vroc_peek(s.h, C.double(volume), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamVroc.
+func (s *StreamVroc) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamVroc.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_vroc_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamVroc.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_vroc_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamVroc.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamVroc restores a StreamVroc from a snapshot made by Save.
+func LoadStreamVroc(snapshot []byte) (*StreamVroc, error) {
+	var h *C.FtStreamVroc
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamVroc", C.ft_stream_vroc_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamVroc{h: h}
+	runtime.SetFinalizer(s, (*StreamVroc).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamVroc) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamVroc.Reset")
+	}
+	return statusError("StreamVroc.Reset", C.ft_stream_vroc_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamVroc) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_vroc_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamRvol is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming relative volume: volume / SMA(volume, `timeperiod`). Mirrors the batch zero-exact running volume sums, so an all-zero-volume window is NaN exactly as in the batch function.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamRvol struct {
+	mu sync.Mutex
+	h  *C.FtStreamRvol
+}
+
+// NewStreamRvol creates a StreamRvol.
+func NewStreamRvol(timeperiod int) (*StreamRvol, error) {
+	var h *C.FtStreamRvol
+	if err := statusError("NewStreamRvol", C.ft_stream_rvol_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamRvol{h: h}
+	runtime.SetFinalizer(s, (*StreamRvol).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamRvol) Update(volume float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamRvol.Update")
+	}
+	if err := statusError("StreamRvol.Update", C.ft_stream_rvol_update(s.h, C.double(volume), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamRvol) Peek(volume float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamRvol.Peek")
+	}
+	if err := statusError("StreamRvol.Peek", C.ft_stream_rvol_peek(s.h, C.double(volume), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamRvol.
+func (s *StreamRvol) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamRvol.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_rvol_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamRvol.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_rvol_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamRvol.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamRvol restores a StreamRvol from a snapshot made by Save.
+func LoadStreamRvol(snapshot []byte) (*StreamRvol, error) {
+	var h *C.FtStreamRvol
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamRvol", C.ft_stream_rvol_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamRvol{h: h}
+	runtime.SetFinalizer(s, (*StreamRvol).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamRvol) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamRvol.Reset")
+	}
+	return statusError("StreamRvol.Reset", C.ft_stream_rvol_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamRvol) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_rvol_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamVwma is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming volume-weighted moving average over `timeperiod` bars.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamVwma struct {
+	mu sync.Mutex
+	h  *C.FtStreamVwma
+}
+
+// NewStreamVwma creates a StreamVwma.
+func NewStreamVwma(timeperiod int) (*StreamVwma, error) {
+	var h *C.FtStreamVwma
+	if err := statusError("NewStreamVwma", C.ft_stream_vwma_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamVwma{h: h}
+	runtime.SetFinalizer(s, (*StreamVwma).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamVwma) Update(close float64, volume float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamVwma.Update")
+	}
+	if err := statusError("StreamVwma.Update", C.ft_stream_vwma_update(s.h, C.double(close), C.double(volume), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamVwma) Peek(close float64, volume float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamVwma.Peek")
+	}
+	if err := statusError("StreamVwma.Peek", C.ft_stream_vwma_peek(s.h, C.double(close), C.double(volume), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamVwma.
+func (s *StreamVwma) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamVwma.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_vwma_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamVwma.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_vwma_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamVwma.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamVwma restores a StreamVwma from a snapshot made by Save.
+func LoadStreamVwma(snapshot []byte) (*StreamVwma, error) {
+	var h *C.FtStreamVwma
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamVwma", C.ft_stream_vwma_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamVwma{h: h}
+	runtime.SetFinalizer(s, (*StreamVwma).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamVwma) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamVwma.Reset")
+	}
+	return statusError("StreamVwma.Reset", C.ft_stream_vwma_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamVwma) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_vwma_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamCho is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Chaikin oscillator: fast EMA - slow EMA of the A/D line, both seeded from its first value (same as ADOSC).
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamCho struct {
+	mu sync.Mutex
+	h  *C.FtStreamCho
+}
+
+// NewStreamCho creates a StreamCho.
+func NewStreamCho(fastperiod int, slowperiod int) (*StreamCho, error) {
+	var h *C.FtStreamCho
+	if err := statusError("NewStreamCho", C.ft_stream_cho_new(C.int64_t(fastperiod), C.int64_t(slowperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCho{h: h}
+	runtime.SetFinalizer(s, (*StreamCho).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamCho) Update(high float64, low float64, close float64, volume float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCho.Update")
+	}
+	if err := statusError("StreamCho.Update", C.ft_stream_cho_update(s.h, C.double(high), C.double(low), C.double(close), C.double(volume), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamCho) Peek(high float64, low float64, close float64, volume float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamCho.Peek")
+	}
+	if err := statusError("StreamCho.Peek", C.ft_stream_cho_peek(s.h, C.double(high), C.double(low), C.double(close), C.double(volume), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamCho.
+func (s *StreamCho) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamCho.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_cho_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamCho.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_cho_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamCho.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamCho restores a StreamCho from a snapshot made by Save.
+func LoadStreamCho(snapshot []byte) (*StreamCho, error) {
+	var h *C.FtStreamCho
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamCho", C.ft_stream_cho_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamCho{h: h}
+	runtime.SetFinalizer(s, (*StreamCho).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamCho) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamCho.Reset")
+	}
+	return statusError("StreamCho.Reset", C.ft_stream_cho_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamCho) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_cho_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamObvSmoothed is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming on-balance volume smoothed by a moving average of type `matype`.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamObvSmoothed struct {
+	mu sync.Mutex
+	h  *C.FtStreamObvSmoothed
+}
+
+// NewStreamObvSmoothed creates a StreamObvSmoothed.
+func NewStreamObvSmoothed(timeperiod int, matype MAType) (*StreamObvSmoothed, error) {
+	var h *C.FtStreamObvSmoothed
+	if err := statusError("NewStreamObvSmoothed", C.ft_stream_obv_smoothed_new(C.int64_t(timeperiod), C.int32_t(matype), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamObvSmoothed{h: h}
+	runtime.SetFinalizer(s, (*StreamObvSmoothed).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamObvSmoothed) Update(close float64, volume float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamObvSmoothed.Update")
+	}
+	if err := statusError("StreamObvSmoothed.Update", C.ft_stream_obv_smoothed_update(s.h, C.double(close), C.double(volume), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamObvSmoothed) Peek(close float64, volume float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamObvSmoothed.Peek")
+	}
+	if err := statusError("StreamObvSmoothed.Peek", C.ft_stream_obv_smoothed_peek(s.h, C.double(close), C.double(volume), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamObvSmoothed.
+func (s *StreamObvSmoothed) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamObvSmoothed.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_obv_smoothed_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamObvSmoothed.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_obv_smoothed_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamObvSmoothed.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamObvSmoothed restores a StreamObvSmoothed from a snapshot made by Save.
+func LoadStreamObvSmoothed(snapshot []byte) (*StreamObvSmoothed, error) {
+	var h *C.FtStreamObvSmoothed
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamObvSmoothed", C.ft_stream_obv_smoothed_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamObvSmoothed{h: h}
+	runtime.SetFinalizer(s, (*StreamObvSmoothed).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamObvSmoothed) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamObvSmoothed.Reset")
+	}
+	return statusError("StreamObvSmoothed.Reset", C.ft_stream_obv_smoothed_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamObvSmoothed) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_obv_smoothed_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamForceIndex is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming force index: EMA of (close - previous close) * volume (raw when `timeperiod` is 1).
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamForceIndex struct {
+	mu sync.Mutex
+	h  *C.FtStreamForceIndex
+}
+
+// NewStreamForceIndex creates a StreamForceIndex.
+func NewStreamForceIndex(timeperiod int) (*StreamForceIndex, error) {
+	var h *C.FtStreamForceIndex
+	if err := statusError("NewStreamForceIndex", C.ft_stream_force_index_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamForceIndex{h: h}
+	runtime.SetFinalizer(s, (*StreamForceIndex).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamForceIndex) Update(close float64, volume float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamForceIndex.Update")
+	}
+	if err := statusError("StreamForceIndex.Update", C.ft_stream_force_index_update(s.h, C.double(close), C.double(volume), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamForceIndex) Peek(close float64, volume float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamForceIndex.Peek")
+	}
+	if err := statusError("StreamForceIndex.Peek", C.ft_stream_force_index_peek(s.h, C.double(close), C.double(volume), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamForceIndex.
+func (s *StreamForceIndex) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamForceIndex.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_force_index_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamForceIndex.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_force_index_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamForceIndex.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamForceIndex restores a StreamForceIndex from a snapshot made by Save.
+func LoadStreamForceIndex(snapshot []byte) (*StreamForceIndex, error) {
+	var h *C.FtStreamForceIndex
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamForceIndex", C.ft_stream_force_index_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamForceIndex{h: h}
+	runtime.SetFinalizer(s, (*StreamForceIndex).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamForceIndex) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamForceIndex.Reset")
+	}
+	return statusError("StreamForceIndex.Reset", C.ft_stream_force_index_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamForceIndex) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_force_index_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamNvi is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming negative volume index from 1000: moves with the close only on bars whose volume falls.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamNvi struct {
+	mu sync.Mutex
+	h  *C.FtStreamNvi
+}
+
+// NewStreamNvi creates a StreamNvi.
+func NewStreamNvi() (*StreamNvi, error) {
+	var h *C.FtStreamNvi
+	if err := statusError("NewStreamNvi", C.ft_stream_nvi_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamNvi{h: h}
+	runtime.SetFinalizer(s, (*StreamNvi).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamNvi) Update(close float64, volume float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamNvi.Update")
+	}
+	if err := statusError("StreamNvi.Update", C.ft_stream_nvi_update(s.h, C.double(close), C.double(volume), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamNvi) Peek(close float64, volume float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamNvi.Peek")
+	}
+	if err := statusError("StreamNvi.Peek", C.ft_stream_nvi_peek(s.h, C.double(close), C.double(volume), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamNvi.
+func (s *StreamNvi) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamNvi.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_nvi_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamNvi.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_nvi_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamNvi.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamNvi restores a StreamNvi from a snapshot made by Save.
+func LoadStreamNvi(snapshot []byte) (*StreamNvi, error) {
+	var h *C.FtStreamNvi
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamNvi", C.ft_stream_nvi_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamNvi{h: h}
+	runtime.SetFinalizer(s, (*StreamNvi).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamNvi) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamNvi.Reset")
+	}
+	return statusError("StreamNvi.Reset", C.ft_stream_nvi_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamNvi) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_nvi_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamPvi is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming positive volume index from 1000: moves with the close only on bars whose volume rises.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamPvi struct {
+	mu sync.Mutex
+	h  *C.FtStreamPvi
+}
+
+// NewStreamPvi creates a StreamPvi.
+func NewStreamPvi() (*StreamPvi, error) {
+	var h *C.FtStreamPvi
+	if err := statusError("NewStreamPvi", C.ft_stream_pvi_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamPvi{h: h}
+	runtime.SetFinalizer(s, (*StreamPvi).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamPvi) Update(close float64, volume float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamPvi.Update")
+	}
+	if err := statusError("StreamPvi.Update", C.ft_stream_pvi_update(s.h, C.double(close), C.double(volume), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamPvi) Peek(close float64, volume float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamPvi.Peek")
+	}
+	if err := statusError("StreamPvi.Peek", C.ft_stream_pvi_peek(s.h, C.double(close), C.double(volume), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamPvi.
+func (s *StreamPvi) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamPvi.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_pvi_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamPvi.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_pvi_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamPvi.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamPvi restores a StreamPvi from a snapshot made by Save.
+func LoadStreamPvi(snapshot []byte) (*StreamPvi, error) {
+	var h *C.FtStreamPvi
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamPvi", C.ft_stream_pvi_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamPvi{h: h}
+	runtime.SetFinalizer(s, (*StreamPvi).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamPvi) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamPvi.Reset")
+	}
+	return statusError("StreamPvi.Reset", C.ft_stream_pvi_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamPvi) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_pvi_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamNviWithEma is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming negative volume index and an EMA signal of it.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamNviWithEma struct {
+	mu sync.Mutex
+	h  *C.FtStreamNviWithEma
+}
+
+// NewStreamNviWithEma creates a StreamNviWithEma.
+func NewStreamNviWithEma(timeperiod int) (*StreamNviWithEma, error) {
+	var h *C.FtStreamNviWithEma
+	if err := statusError("NewStreamNviWithEma", C.ft_stream_nvi_with_ema_new(C.int64_t(timeperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamNviWithEma{h: h}
+	runtime.SetFinalizer(s, (*StreamNviWithEma).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamNviWithEma) Update(close float64, volume float64) (nvi float64, signal float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, closedError("StreamNviWithEma.Update")
+	}
+	if err := statusError("StreamNviWithEma.Update", C.ft_stream_nvi_with_ema_update(s.h, C.double(close), C.double(volume), (*C.double)(unsafe.Pointer(&nvi)), (*C.double)(unsafe.Pointer(&signal)))); err != nil {
+		return 0, 0, err
+	}
+	return nvi, signal, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamNviWithEma) Peek(close float64, volume float64) (nvi float64, signal float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, closedError("StreamNviWithEma.Peek")
+	}
+	if err := statusError("StreamNviWithEma.Peek", C.ft_stream_nvi_with_ema_peek(s.h, C.double(close), C.double(volume), (*C.double)(unsafe.Pointer(&nvi)), (*C.double)(unsafe.Pointer(&signal)))); err != nil {
+		return 0, 0, err
+	}
+	return nvi, signal, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamNviWithEma.
+func (s *StreamNviWithEma) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamNviWithEma.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_nvi_with_ema_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamNviWithEma.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_nvi_with_ema_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamNviWithEma.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamNviWithEma restores a StreamNviWithEma from a snapshot made by Save.
+func LoadStreamNviWithEma(snapshot []byte) (*StreamNviWithEma, error) {
+	var h *C.FtStreamNviWithEma
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamNviWithEma", C.ft_stream_nvi_with_ema_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamNviWithEma{h: h}
+	runtime.SetFinalizer(s, (*StreamNviWithEma).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamNviWithEma) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamNviWithEma.Reset")
+	}
+	return statusError("StreamNviWithEma.Reset", C.ft_stream_nvi_with_ema_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamNviWithEma) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_nvi_with_ema_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamPviWithSignal is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming positive volume index and a moving-average signal of type `matype`.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamPviWithSignal struct {
+	mu sync.Mutex
+	h  *C.FtStreamPviWithSignal
+}
+
+// NewStreamPviWithSignal creates a StreamPviWithSignal.
+func NewStreamPviWithSignal(timeperiod int, matype MAType) (*StreamPviWithSignal, error) {
+	var h *C.FtStreamPviWithSignal
+	if err := statusError("NewStreamPviWithSignal", C.ft_stream_pvi_with_signal_new(C.int64_t(timeperiod), C.int32_t(matype), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamPviWithSignal{h: h}
+	runtime.SetFinalizer(s, (*StreamPviWithSignal).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamPviWithSignal) Update(close float64, volume float64) (pvi float64, signal float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, closedError("StreamPviWithSignal.Update")
+	}
+	if err := statusError("StreamPviWithSignal.Update", C.ft_stream_pvi_with_signal_update(s.h, C.double(close), C.double(volume), (*C.double)(unsafe.Pointer(&pvi)), (*C.double)(unsafe.Pointer(&signal)))); err != nil {
+		return 0, 0, err
+	}
+	return pvi, signal, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamPviWithSignal) Peek(close float64, volume float64) (pvi float64, signal float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, closedError("StreamPviWithSignal.Peek")
+	}
+	if err := statusError("StreamPviWithSignal.Peek", C.ft_stream_pvi_with_signal_peek(s.h, C.double(close), C.double(volume), (*C.double)(unsafe.Pointer(&pvi)), (*C.double)(unsafe.Pointer(&signal)))); err != nil {
+		return 0, 0, err
+	}
+	return pvi, signal, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamPviWithSignal.
+func (s *StreamPviWithSignal) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamPviWithSignal.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_pvi_with_signal_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamPviWithSignal.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_pvi_with_signal_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamPviWithSignal.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamPviWithSignal restores a StreamPviWithSignal from a snapshot made by Save.
+func LoadStreamPviWithSignal(snapshot []byte) (*StreamPviWithSignal, error) {
+	var h *C.FtStreamPviWithSignal
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamPviWithSignal", C.ft_stream_pvi_with_signal_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamPviWithSignal{h: h}
+	runtime.SetFinalizer(s, (*StreamPviWithSignal).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamPviWithSignal) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamPviWithSignal.Reset")
+	}
+	return statusError("StreamPviWithSignal.Reset", C.ft_stream_pvi_with_signal_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamPviWithSignal) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_pvi_with_signal_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamKvo is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Klinger volume oscillator: EMA(volume force, fast) - EMA(volume force, slow), plus an EMA signal.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamKvo struct {
+	mu sync.Mutex
+	h  *C.FtStreamKvo
+}
+
+// NewStreamKvo creates a StreamKvo.
+func NewStreamKvo(fastperiod int, slowperiod int, signalperiod int) (*StreamKvo, error) {
+	var h *C.FtStreamKvo
+	if err := statusError("NewStreamKvo", C.ft_stream_kvo_new(C.int64_t(fastperiod), C.int64_t(slowperiod), C.int64_t(signalperiod), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamKvo{h: h}
+	runtime.SetFinalizer(s, (*StreamKvo).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamKvo) Update(high float64, low float64, close float64, volume float64) (kvo float64, signal float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, closedError("StreamKvo.Update")
+	}
+	if err := statusError("StreamKvo.Update", C.ft_stream_kvo_update(s.h, C.double(high), C.double(low), C.double(close), C.double(volume), (*C.double)(unsafe.Pointer(&kvo)), (*C.double)(unsafe.Pointer(&signal)))); err != nil {
+		return 0, 0, err
+	}
+	return kvo, signal, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamKvo) Peek(high float64, low float64, close float64, volume float64) (kvo float64, signal float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, closedError("StreamKvo.Peek")
+	}
+	if err := statusError("StreamKvo.Peek", C.ft_stream_kvo_peek(s.h, C.double(high), C.double(low), C.double(close), C.double(volume), (*C.double)(unsafe.Pointer(&kvo)), (*C.double)(unsafe.Pointer(&signal)))); err != nil {
+		return 0, 0, err
+	}
+	return kvo, signal, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamKvo.
+func (s *StreamKvo) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamKvo.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_kvo_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamKvo.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_kvo_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamKvo.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamKvo restores a StreamKvo from a snapshot made by Save.
+func LoadStreamKvo(snapshot []byte) (*StreamKvo, error) {
+	var h *C.FtStreamKvo
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamKvo", C.ft_stream_kvo_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamKvo{h: h}
+	runtime.SetFinalizer(s, (*StreamKvo).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamKvo) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamKvo.Reset")
+	}
+	return statusError("StreamKvo.Reset", C.ft_stream_kvo_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamKvo) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_kvo_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamPvt is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming price volume trend: cumulative volume * (close - previous close) / previous close, from 0.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamPvt struct {
+	mu sync.Mutex
+	h  *C.FtStreamPvt
+}
+
+// NewStreamPvt creates a StreamPvt.
+func NewStreamPvt() (*StreamPvt, error) {
+	var h *C.FtStreamPvt
+	if err := statusError("NewStreamPvt", C.ft_stream_pvt_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamPvt{h: h}
+	runtime.SetFinalizer(s, (*StreamPvt).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamPvt) Update(close float64, volume float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamPvt.Update")
+	}
+	if err := statusError("StreamPvt.Update", C.ft_stream_pvt_update(s.h, C.double(close), C.double(volume), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamPvt) Peek(close float64, volume float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamPvt.Peek")
+	}
+	if err := statusError("StreamPvt.Peek", C.ft_stream_pvt_peek(s.h, C.double(close), C.double(volume), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamPvt.
+func (s *StreamPvt) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamPvt.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_pvt_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamPvt.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_pvt_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamPvt.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamPvt restores a StreamPvt from a snapshot made by Save.
+func LoadStreamPvt(snapshot []byte) (*StreamPvt, error) {
+	var h *C.FtStreamPvt
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamPvt", C.ft_stream_pvt_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamPvt{h: h}
+	runtime.SetFinalizer(s, (*StreamPvt).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamPvt) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamPvt.Reset")
+	}
+	return statusError("StreamPvt.Reset", C.ft_stream_pvt_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamPvt) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_pvt_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamSar is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming parabolic SAR; first value at bar 1, initial direction rising when `high[1] >= high[0]`.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamSar struct {
+	mu sync.Mutex
+	h  *C.FtStreamSar
+}
+
+// NewStreamSar creates a StreamSar.
+func NewStreamSar(acceleration float64, maximum float64) (*StreamSar, error) {
+	var h *C.FtStreamSar
+	if err := statusError("NewStreamSar", C.ft_stream_sar_new(C.double(acceleration), C.double(maximum), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamSar{h: h}
+	runtime.SetFinalizer(s, (*StreamSar).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamSar) Update(high float64, low float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamSar.Update")
+	}
+	if err := statusError("StreamSar.Update", C.ft_stream_sar_update(s.h, C.double(high), C.double(low), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamSar) Peek(high float64, low float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamSar.Peek")
+	}
+	if err := statusError("StreamSar.Peek", C.ft_stream_sar_peek(s.h, C.double(high), C.double(low), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamSar.
+func (s *StreamSar) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamSar.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_sar_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamSar.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_sar_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamSar.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamSar restores a StreamSar from a snapshot made by Save.
+func LoadStreamSar(snapshot []byte) (*StreamSar, error) {
+	var h *C.FtStreamSar
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamSar", C.ft_stream_sar_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamSar{h: h}
+	runtime.SetFinalizer(s, (*StreamSar).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamSar) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamSar.Reset")
+	}
+	return statusError("StreamSar.Reset", C.ft_stream_sar_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamSar) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_sar_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamSarext is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming extended parabolic SAR: signed start value, offset on reverse, separate long / short acceleration; first value at bar 1.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamSarext struct {
+	mu sync.Mutex
+	h  *C.FtStreamSarext
+}
+
+// NewStreamSarext creates a StreamSarext.
+func NewStreamSarext(startvalue float64, offsetonreverse float64, accelerationinitlong float64, accelerationlong float64, accelerationmaxlong float64, accelerationinitshort float64, accelerationshort float64, accelerationmaxshort float64) (*StreamSarext, error) {
+	var h *C.FtStreamSarext
+	if err := statusError("NewStreamSarext", C.ft_stream_sarext_new(C.double(startvalue), C.double(offsetonreverse), C.double(accelerationinitlong), C.double(accelerationlong), C.double(accelerationmaxlong), C.double(accelerationinitshort), C.double(accelerationshort), C.double(accelerationmaxshort), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamSarext{h: h}
+	runtime.SetFinalizer(s, (*StreamSarext).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamSarext) Update(high float64, low float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamSarext.Update")
+	}
+	if err := statusError("StreamSarext.Update", C.ft_stream_sarext_update(s.h, C.double(high), C.double(low), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamSarext) Peek(high float64, low float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamSarext.Peek")
+	}
+	if err := statusError("StreamSarext.Peek", C.ft_stream_sarext_peek(s.h, C.double(high), C.double(low), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamSarext.
+func (s *StreamSarext) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamSarext.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_sarext_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamSarext.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_sarext_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamSarext.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamSarext restores a StreamSarext from a snapshot made by Save.
+func LoadStreamSarext(snapshot []byte) (*StreamSarext, error) {
+	var h *C.FtStreamSarext
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamSarext", C.ft_stream_sarext_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamSarext{h: h}
+	runtime.SetFinalizer(s, (*StreamSarext).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamSarext) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamSarext.Reset")
+	}
+	return statusError("StreamSarext.Reset", C.ft_stream_sarext_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamSarext) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_sarext_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamHtTrendline is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Hilbert-transform instantaneous trendline: mean of the 4-bar smoothed price over the rounded dominant cycle period; first value at bar 63.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamHtTrendline struct {
+	mu sync.Mutex
+	h  *C.FtStreamHtTrendline
+}
+
+// NewStreamHtTrendline creates a StreamHtTrendline.
+func NewStreamHtTrendline() (*StreamHtTrendline, error) {
+	var h *C.FtStreamHtTrendline
+	if err := statusError("NewStreamHtTrendline", C.ft_stream_ht_trendline_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamHtTrendline{h: h}
+	runtime.SetFinalizer(s, (*StreamHtTrendline).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamHtTrendline) Update(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamHtTrendline.Update")
+	}
+	if err := statusError("StreamHtTrendline.Update", C.ft_stream_ht_trendline_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamHtTrendline) Peek(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamHtTrendline.Peek")
+	}
+	if err := statusError("StreamHtTrendline.Peek", C.ft_stream_ht_trendline_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamHtTrendline.
+func (s *StreamHtTrendline) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamHtTrendline.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_ht_trendline_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamHtTrendline.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_ht_trendline_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamHtTrendline.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamHtTrendline restores a StreamHtTrendline from a snapshot made by Save.
+func LoadStreamHtTrendline(snapshot []byte) (*StreamHtTrendline, error) {
+	var h *C.FtStreamHtTrendline
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamHtTrendline", C.ft_stream_ht_trendline_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamHtTrendline{h: h}
+	runtime.SetFinalizer(s, (*StreamHtTrendline).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamHtTrendline) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamHtTrendline.Reset")
+	}
+	return statusError("StreamHtTrendline.Reset", C.ft_stream_ht_trendline_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamHtTrendline) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_ht_trendline_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamHtDcperiod is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Hilbert-transform dominant cycle period in bars; first value at bar 63.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamHtDcperiod struct {
+	mu sync.Mutex
+	h  *C.FtStreamHtDcperiod
+}
+
+// NewStreamHtDcperiod creates a StreamHtDcperiod.
+func NewStreamHtDcperiod() (*StreamHtDcperiod, error) {
+	var h *C.FtStreamHtDcperiod
+	if err := statusError("NewStreamHtDcperiod", C.ft_stream_ht_dcperiod_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamHtDcperiod{h: h}
+	runtime.SetFinalizer(s, (*StreamHtDcperiod).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamHtDcperiod) Update(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamHtDcperiod.Update")
+	}
+	if err := statusError("StreamHtDcperiod.Update", C.ft_stream_ht_dcperiod_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamHtDcperiod) Peek(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamHtDcperiod.Peek")
+	}
+	if err := statusError("StreamHtDcperiod.Peek", C.ft_stream_ht_dcperiod_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamHtDcperiod.
+func (s *StreamHtDcperiod) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamHtDcperiod.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_ht_dcperiod_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamHtDcperiod.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_ht_dcperiod_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamHtDcperiod.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamHtDcperiod restores a StreamHtDcperiod from a snapshot made by Save.
+func LoadStreamHtDcperiod(snapshot []byte) (*StreamHtDcperiod, error) {
+	var h *C.FtStreamHtDcperiod
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamHtDcperiod", C.ft_stream_ht_dcperiod_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamHtDcperiod{h: h}
+	runtime.SetFinalizer(s, (*StreamHtDcperiod).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamHtDcperiod) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamHtDcperiod.Reset")
+	}
+	return statusError("StreamHtDcperiod.Reset", C.ft_stream_ht_dcperiod_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamHtDcperiod) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_ht_dcperiod_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamHtDcphase is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Hilbert-transform dominant cycle phase in degrees; first value at bar 63.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamHtDcphase struct {
+	mu sync.Mutex
+	h  *C.FtStreamHtDcphase
+}
+
+// NewStreamHtDcphase creates a StreamHtDcphase.
+func NewStreamHtDcphase() (*StreamHtDcphase, error) {
+	var h *C.FtStreamHtDcphase
+	if err := statusError("NewStreamHtDcphase", C.ft_stream_ht_dcphase_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamHtDcphase{h: h}
+	runtime.SetFinalizer(s, (*StreamHtDcphase).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamHtDcphase) Update(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamHtDcphase.Update")
+	}
+	if err := statusError("StreamHtDcphase.Update", C.ft_stream_ht_dcphase_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamHtDcphase) Peek(close float64) (float64, error) {
+	var out float64
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamHtDcphase.Peek")
+	}
+	if err := statusError("StreamHtDcphase.Peek", C.ft_stream_ht_dcphase_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamHtDcphase.
+func (s *StreamHtDcphase) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamHtDcphase.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_ht_dcphase_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamHtDcphase.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_ht_dcphase_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamHtDcphase.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamHtDcphase restores a StreamHtDcphase from a snapshot made by Save.
+func LoadStreamHtDcphase(snapshot []byte) (*StreamHtDcphase, error) {
+	var h *C.FtStreamHtDcphase
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamHtDcphase", C.ft_stream_ht_dcphase_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamHtDcphase{h: h}
+	runtime.SetFinalizer(s, (*StreamHtDcphase).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamHtDcphase) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamHtDcphase.Reset")
+	}
+	return statusError("StreamHtDcphase.Reset", C.ft_stream_ht_dcphase_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamHtDcphase) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_ht_dcphase_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamHtPhasor is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Hilbert-transform phasor components (inphase, quadrature); first value at bar 63.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamHtPhasor struct {
+	mu sync.Mutex
+	h  *C.FtStreamHtPhasor
+}
+
+// NewStreamHtPhasor creates a StreamHtPhasor.
+func NewStreamHtPhasor() (*StreamHtPhasor, error) {
+	var h *C.FtStreamHtPhasor
+	if err := statusError("NewStreamHtPhasor", C.ft_stream_ht_phasor_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamHtPhasor{h: h}
+	runtime.SetFinalizer(s, (*StreamHtPhasor).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamHtPhasor) Update(close float64) (inphase float64, quadrature float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, closedError("StreamHtPhasor.Update")
+	}
+	if err := statusError("StreamHtPhasor.Update", C.ft_stream_ht_phasor_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&inphase)), (*C.double)(unsafe.Pointer(&quadrature)))); err != nil {
+		return 0, 0, err
+	}
+	return inphase, quadrature, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamHtPhasor) Peek(close float64) (inphase float64, quadrature float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, closedError("StreamHtPhasor.Peek")
+	}
+	if err := statusError("StreamHtPhasor.Peek", C.ft_stream_ht_phasor_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&inphase)), (*C.double)(unsafe.Pointer(&quadrature)))); err != nil {
+		return 0, 0, err
+	}
+	return inphase, quadrature, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamHtPhasor.
+func (s *StreamHtPhasor) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamHtPhasor.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_ht_phasor_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamHtPhasor.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_ht_phasor_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamHtPhasor.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamHtPhasor restores a StreamHtPhasor from a snapshot made by Save.
+func LoadStreamHtPhasor(snapshot []byte) (*StreamHtPhasor, error) {
+	var h *C.FtStreamHtPhasor
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamHtPhasor", C.ft_stream_ht_phasor_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamHtPhasor{h: h}
+	runtime.SetFinalizer(s, (*StreamHtPhasor).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamHtPhasor) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamHtPhasor.Reset")
+	}
+	return statusError("StreamHtPhasor.Reset", C.ft_stream_ht_phasor_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamHtPhasor) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_ht_phasor_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamHtSine is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Hilbert-transform sine wave (sine, leadsine = sine 45 degrees ahead); first value at bar 63.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamHtSine struct {
+	mu sync.Mutex
+	h  *C.FtStreamHtSine
+}
+
+// NewStreamHtSine creates a StreamHtSine.
+func NewStreamHtSine() (*StreamHtSine, error) {
+	var h *C.FtStreamHtSine
+	if err := statusError("NewStreamHtSine", C.ft_stream_ht_sine_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamHtSine{h: h}
+	runtime.SetFinalizer(s, (*StreamHtSine).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamHtSine) Update(close float64) (sine float64, leadsine float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, closedError("StreamHtSine.Update")
+	}
+	if err := statusError("StreamHtSine.Update", C.ft_stream_ht_sine_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&sine)), (*C.double)(unsafe.Pointer(&leadsine)))); err != nil {
+		return 0, 0, err
+	}
+	return sine, leadsine, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamHtSine) Peek(close float64) (sine float64, leadsine float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, closedError("StreamHtSine.Peek")
+	}
+	if err := statusError("StreamHtSine.Peek", C.ft_stream_ht_sine_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&sine)), (*C.double)(unsafe.Pointer(&leadsine)))); err != nil {
+		return 0, 0, err
+	}
+	return sine, leadsine, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamHtSine.
+func (s *StreamHtSine) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamHtSine.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_ht_sine_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamHtSine.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_ht_sine_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamHtSine.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamHtSine restores a StreamHtSine from a snapshot made by Save.
+func LoadStreamHtSine(snapshot []byte) (*StreamHtSine, error) {
+	var h *C.FtStreamHtSine
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamHtSine", C.ft_stream_ht_sine_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamHtSine{h: h}
+	runtime.SetFinalizer(s, (*StreamHtSine).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamHtSine) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamHtSine.Reset")
+	}
+	return statusError("StreamHtSine.Reset", C.ft_stream_ht_sine_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamHtSine) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_ht_sine_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamHtTrendmode is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming Hilbert-transform trend mode: 1 while the smoothed dominant cycle period is below 20 bars, else 0; 0 before bar 63.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamHtTrendmode struct {
+	mu sync.Mutex
+	h  *C.FtStreamHtTrendmode
+}
+
+// NewStreamHtTrendmode creates a StreamHtTrendmode.
+func NewStreamHtTrendmode() (*StreamHtTrendmode, error) {
+	var h *C.FtStreamHtTrendmode
+	if err := statusError("NewStreamHtTrendmode", C.ft_stream_ht_trendmode_new(&h)); err != nil {
+		return nil, err
+	}
+	s := &StreamHtTrendmode{h: h}
+	runtime.SetFinalizer(s, (*StreamHtTrendmode).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamHtTrendmode) Update(close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamHtTrendmode.Update")
+	}
+	if err := statusError("StreamHtTrendmode.Update", C.ft_stream_ht_trendmode_update(s.h, C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamHtTrendmode) Peek(close float64) (int32, error) {
+	var out int32
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, closedError("StreamHtTrendmode.Peek")
+	}
+	if err := statusError("StreamHtTrendmode.Peek", C.ft_stream_ht_trendmode_peek(s.h, C.double(close), (*C.int32_t)(unsafe.Pointer(&out)))); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamHtTrendmode.
+func (s *StreamHtTrendmode) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamHtTrendmode.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_ht_trendmode_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamHtTrendmode.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_ht_trendmode_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamHtTrendmode.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamHtTrendmode restores a StreamHtTrendmode from a snapshot made by Save.
+func LoadStreamHtTrendmode(snapshot []byte) (*StreamHtTrendmode, error) {
+	var h *C.FtStreamHtTrendmode
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamHtTrendmode", C.ft_stream_ht_trendmode_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamHtTrendmode{h: h}
+	runtime.SetFinalizer(s, (*StreamHtTrendmode).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamHtTrendmode) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamHtTrendmode.Reset")
+	}
+	return statusError("StreamHtTrendmode.Reset", C.ft_stream_ht_trendmode_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamHtTrendmode) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_ht_trendmode_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}
+
+// StreamMama is a stateful, bar-by-bar indicator backed by a Rust handle.
+//
+// Streaming MESA adaptive moving average (mama, fama); first value at bar 32. Requires `slowlimit <= fastlimit`.
+//
+// Methods are safe for concurrent use. Call Close when done; a finalizer
+// releases the handle if Close is forgotten.
+type StreamMama struct {
+	mu sync.Mutex
+	h  *C.FtStreamMama
+}
+
+// NewStreamMama creates a StreamMama.
+func NewStreamMama(fastlimit float64, slowlimit float64) (*StreamMama, error) {
+	var h *C.FtStreamMama
+	if err := statusError("NewStreamMama", C.ft_stream_mama_new(C.double(fastlimit), C.double(slowlimit), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMama{h: h}
+	runtime.SetFinalizer(s, (*StreamMama).Close)
+	return s, nil
+}
+
+// Update commits one bar and returns its value(s); indicators return NaN
+// while they warm up. A tick with an input the stream cannot accept
+// (NaN/±inf, unless its doc gives NaN a meaning) returns NaN and
+// leaves state untouched.
+func (s *StreamMama) Update(close float64) (mama float64, fama float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, closedError("StreamMama.Update")
+	}
+	if err := statusError("StreamMama.Update", C.ft_stream_mama_update(s.h, C.double(close), (*C.double)(unsafe.Pointer(&mama)), (*C.double)(unsafe.Pointer(&fama)))); err != nil {
+		return 0, 0, err
+	}
+	return mama, fama, nil
+}
+
+// Peek previews the still-forming bar: it returns what Update would
+// return for these inputs, without changing state.
+func (s *StreamMama) Peek(close float64) (mama float64, fama float64, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return 0, 0, closedError("StreamMama.Peek")
+	}
+	if err := statusError("StreamMama.Peek", C.ft_stream_mama_peek(s.h, C.double(close), (*C.double)(unsafe.Pointer(&mama)), (*C.double)(unsafe.Pointer(&fama)))); err != nil {
+		return 0, 0, err
+	}
+	return mama, fama, nil
+}
+
+// Save returns a versioned JSON snapshot of the full state; restore it
+// with LoadStreamMama.
+func (s *StreamMama) Save() ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return nil, closedError("StreamMama.Save")
+	}
+	var n C.size_t
+	if rc := C.ft_stream_mama_save(s.h, nil, 0, &n); rc != C.FT_ERR_LENGTH_MISMATCH {
+		return nil, statusError("StreamMama.Save", rc)
+	}
+	buf := make([]byte, int(n))
+	rc := C.ft_stream_mama_save(s.h, (*C.char)(unsafe.Pointer(&buf[0])), n, &n)
+	if err := statusError("StreamMama.Save", rc); err != nil {
+		return nil, err
+	}
+	return buf[:int(n)], nil
+}
+
+// LoadStreamMama restores a StreamMama from a snapshot made by Save.
+func LoadStreamMama(snapshot []byte) (*StreamMama, error) {
+	var h *C.FtStreamMama
+	var p *C.char
+	if len(snapshot) > 0 {
+		p = (*C.char)(unsafe.Pointer(&snapshot[0]))
+	}
+	if err := statusError("LoadStreamMama", C.ft_stream_mama_load(p, C.size_t(len(snapshot)), &h)); err != nil {
+		return nil, err
+	}
+	s := &StreamMama{h: h}
+	runtime.SetFinalizer(s, (*StreamMama).Close)
+	return s, nil
+}
+
+// Reset clears all state; subsequent bars warm up again.
+func (s *StreamMama) Reset() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h == nil {
+		return closedError("StreamMama.Reset")
+	}
+	return statusError("StreamMama.Reset", C.ft_stream_mama_reset(s.h))
+}
+
+// Close releases the underlying handle. It is safe to call more than once.
+func (s *StreamMama) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.h != nil {
+		C.ft_stream_mama_free(s.h)
+		s.h = nil
+		runtime.SetFinalizer(s, nil)
+	}
+	return nil
+}

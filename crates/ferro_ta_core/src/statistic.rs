@@ -7,22 +7,23 @@ use crate::rolling::RollingVariance;
 ///
 /// This is the O(n) core shared by [`stddev`] and [`var`]. It replaces the
 /// previous O(n * timeperiod) shape — a mean pass plus a squared-deviation
-/// pass for *every* window — with one Welford accumulator advanced a single
-/// step per bar.
+/// pass for *every* window — with one anchored second-moment accumulator
+/// advanced a single step per bar.
 ///
 /// # Numerical notes
 ///
-/// [`RollingVariance`] is the rolling Welford (West's update) already vetted
-/// in-tree by `overlap::bbands`, deliberately **not** the naive
+/// [`RollingVariance`] (deviation sums about an anchor that is re-chosen
+/// with an exact recompute every few windows) is shared with
+/// `overlap::bbands`, and is deliberately **not** the naive
 /// `sum(x^2)/N - mean^2` form that TA-Lib's own `TA_VAR` uses. The naive
 /// form's relative error scales as `(mean / sigma)^2 * eps`: harmless at
 /// price 100 / sigma 0.05, but ~18% relative at index or crypto levels
 /// (price 1e5, sigma 0.01), where it can also drive the second moment
 /// negative and hand `sqrt` a negative argument.
 ///
-/// Welford removes that cancellation, but no *rolling* second moment is
+/// Anchoring removes that cancellation, but no *rolling* second moment is
 /// unconditionally accurate, and the second moment's `m2 < 0.0` clamp is not
-/// what makes it so. Two things a bare rolling Welford gets wrong, both from
+/// what makes it so. Two things a bare rolling recurrence gets wrong, both from
 /// entirely **finite** input, and what [`RollingVariance`] does about them:
 ///
 /// * **Non-finite accumulator.** `m2` can overflow to `+inf` on one bar and
@@ -37,10 +38,13 @@ use crate::rolling::RollingVariance;
 ///   and forces one when `m2` has collapsed by more than
 ///   `rolling::MAX_ACCUMULATOR_RANGE` from that peak.
 ///
-/// With both triggers plus the periodic reseed every
-/// `rolling::RESEED_INTERVAL` advances, the variance these kernels report stays
-/// within `2^-26` (~1.5e-8) relative of a two-pass recompute over the same
-/// window, independent of series length.
+/// With both triggers plus the periodic re-anchor every
+/// `rolling::anchor_interval(timeperiod)` advances, the variance these kernels
+/// report stays within `2^-26` (~1.5e-8) relative of a two-pass recompute over
+/// the same window, independent of series length — and on ordinary data far
+/// closer: ~1e-13 relative on a 50k-bar walk near price 50,000
+/// (`streaming::families::batch_exact_tests`), where the earlier rolling
+/// Welford drifted ~1e-8.
 ///
 /// # Non-finite input
 ///
@@ -99,47 +103,13 @@ pub fn var(real: &[f64], timeperiod: usize, nbdev: f64) -> Vec<f64> {
 // Linear regression helpers
 // ---------------------------------------------------------------------------
 
-fn rolling_linreg_apply<F>(prices: &[f64], timeperiod: usize, mut map: F) -> Vec<f64>
+/// Shared core of the LINEARREG family: see [`crate::window_sums::linreg_apply`]
+/// for the anchored running sums that keep it exact at any price level.
+fn rolling_linreg_apply<F>(prices: &[f64], timeperiod: usize, map: F) -> Vec<f64>
 where
     F: FnMut(f64, f64) -> f64,
 {
-    let n = prices.len();
-    if timeperiod == 0 || n < timeperiod {
-        return vec![f64::NAN; n];
-    }
-    // See the note in `rolling_population_var_apply`: pre-size and store by
-    // index; `push` costs more per bar than the NaN fill costs once.
-    let mut result = vec![f64::NAN; n];
-    let period = timeperiod as f64;
-    let last_x = (timeperiod - 1) as f64;
-    let sum_x = last_x * period / 2.0;
-    let sum_x2 = last_x * period * (2.0 * period - 1.0) / 6.0;
-    let denom = period * sum_x2 - sum_x * sum_x;
-
-    let mut sum_y: f64 = prices[..timeperiod].iter().sum();
-    let mut sum_xy: f64 = prices[..timeperiod]
-        .iter()
-        .enumerate()
-        .map(|(idx, &v)| idx as f64 * v)
-        .sum();
-
-    for end in (timeperiod - 1)..n {
-        let slope = if denom != 0.0 {
-            (period * sum_xy - sum_x * sum_y) / denom
-        } else {
-            0.0
-        };
-        let intercept = (sum_y - slope * sum_x) / period;
-        result[end] = map(slope, intercept);
-        if end + 1 < n {
-            let outgoing = prices[end + 1 - timeperiod];
-            let incoming = prices[end + 1];
-            let prev_sum_y = sum_y;
-            sum_y = prev_sum_y - outgoing + incoming;
-            sum_xy = sum_xy - (prev_sum_y - outgoing) + last_x * incoming;
-        }
-    }
-    result
+    crate::window_sums::linreg_apply(prices, timeperiod, map)
 }
 
 /// Linear regression fitted value at the last point of the window.
@@ -267,44 +237,15 @@ pub fn beta(real0: &[f64], real1: &[f64], timeperiod: usize) -> Vec<f64> {
 // ---------------------------------------------------------------------------
 
 /// Rolling Pearson correlation coefficient between two series.
+///
+/// `NaN` where either window has zero dispersion, or holds a non-finite
+/// value. Computed from co-moment sums about an anchor bar that is
+/// re-chosen with an exact recompute every few windows, so it matches a
+/// two-pass computation of each window to ~1e-12 at any price level (see
+/// `window_sums`); a raw `n Σxy - Σx Σy` running from bar 0 drifted up to
+/// 1e-1 near price 50,000.
 pub fn correl(real0: &[f64], real1: &[f64], timeperiod: usize) -> Vec<f64> {
-    let n = real0.len();
-    if timeperiod == 0 || n < timeperiod {
-        return vec![f64::NAN; n];
-    }
-    // Pre-size and store by index (see `rolling_population_var_apply`); a
-    // degenerate denominator leaves the slot at its initialized `NaN`.
-    let mut result = vec![f64::NAN; n];
-
-    let period = timeperiod as f64;
-    let mut sum_x: f64 = real0[..timeperiod].iter().sum();
-    let mut sum_y: f64 = real1[..timeperiod].iter().sum();
-    let mut sum_x2: f64 = real0[..timeperiod].iter().map(|v| v * v).sum();
-    let mut sum_y2: f64 = real1[..timeperiod].iter().map(|v| v * v).sum();
-    let mut sum_xy: f64 = real0[..timeperiod]
-        .iter()
-        .zip(real1[..timeperiod].iter())
-        .map(|(&a, &b)| a * b)
-        .sum();
-
-    for end in (timeperiod - 1)..n {
-        let denom_x = period * sum_x2 - sum_x * sum_x;
-        let denom_y = period * sum_y2 - sum_y * sum_y;
-        if denom_x > 0.0 && denom_y > 0.0 {
-            result[end] = (period * sum_xy - sum_x * sum_y) / (denom_x * denom_y).sqrt();
-        }
-
-        if end + 1 < n {
-            let out = end + 1 - timeperiod;
-            let inc = end + 1;
-            sum_x += real0[inc] - real0[out];
-            sum_y += real1[inc] - real1[out];
-            sum_x2 += real0[inc] * real0[inc] - real0[out] * real0[out];
-            sum_y2 += real1[inc] * real1[inc] - real1[out] * real1[out];
-            sum_xy += real0[inc] * real1[inc] - real0[out] * real1[out];
-        }
-    }
-    result
+    crate::window_sums::correl(real0, real1, timeperiod)
 }
 
 // ---------------------------------------------------------------------------

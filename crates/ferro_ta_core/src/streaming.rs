@@ -10,16 +10,27 @@ use std::collections::VecDeque;
 
 mod bars;
 mod conditions;
+mod families;
+#[cfg(test)]
+pub(crate) mod fixtures;
 mod live;
 mod option_greeks;
+pub(crate) mod primitives;
+mod registry;
 #[cfg(feature = "serde")]
 pub(crate) mod snapshot;
+mod windowed;
 pub use bars::{Bar, BarBuilder, BarSpec, TickStatus};
 pub use conditions::{StreamingCooldown, StreamingCross, StreamingStreak};
+pub use families::*;
 pub use live::{Live, StreamValue, StreamingIndicator};
 pub use option_greeks::StreamingOptionGreeks;
+pub use registry::MAX_STREAM_PERIOD;
 #[cfg(feature = "serde")]
 pub use snapshot::STATE_FORMAT_VERSION;
+pub use windowed::{
+    BatchOutput, KernelParams, WindowInput, WindowKernel, Windowed, MAX_WINDOW_INPUTS,
+};
 
 // ---------------------------------------------------------------------------
 // Error type

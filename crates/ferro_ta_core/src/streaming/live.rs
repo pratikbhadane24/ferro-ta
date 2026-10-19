@@ -150,6 +150,61 @@ impl StreamValue for i8 {
     }
 }
 
+/// Exact integer in `f64` back to `T` (snapshots of integer outputs).
+fn int_from<T: TryFrom<i64>>(v: f64) -> Option<T> {
+    let n = v as i64;
+    if n as f64 != v {
+        return None;
+    }
+    T::try_from(n).ok()
+}
+
+/// Candlestick / mode codes (`ht_trendmode`, `cdl*`): `0` = no signal, as in
+/// batch, so there is no NaN state.
+impl StreamValue for i32 {
+    fn has_nan(&self) -> bool {
+        false
+    }
+    fn all_finite(&self) -> bool {
+        true
+    }
+    fn nan() -> Self {
+        0
+    }
+    fn to_parts(&self) -> Vec<Option<f64>> {
+        vec![Some(f64::from(*self))]
+    }
+    fn from_parts(parts: &[Option<f64>]) -> Option<Self> {
+        match parts {
+            [Some(a)] => int_from(*a),
+            _ => None,
+        }
+    }
+}
+
+/// Bar indices (`rolling_maxindex` …): batch writes `-1` during warm-up, so
+/// `-1` is the "no value" sentinel and counts as not ready.
+impl StreamValue for i64 {
+    fn has_nan(&self) -> bool {
+        *self == -1
+    }
+    fn all_finite(&self) -> bool {
+        true
+    }
+    fn nan() -> Self {
+        -1
+    }
+    fn to_parts(&self) -> Vec<Option<f64>> {
+        vec![Some(*self as f64)]
+    }
+    fn from_parts(parts: &[Option<f64>]) -> Option<Self> {
+        match parts {
+            [Some(a)] => int_from(*a),
+            _ => None,
+        }
+    }
+}
+
 /// Option IV + greeks output: (iv, delta, gamma, vega, theta, rho).
 impl StreamValue for (f64, f64, f64, f64, f64, f64) {
     fn has_nan(&self) -> bool {
@@ -411,29 +466,10 @@ impl<T: StreamingIndicator> Live<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::streaming::fixtures::bars;
 
     const N_BARS: usize = 300;
     const TICKS_PER_BAR: usize = 4;
-
-    /// Deterministic OHLCV path (LCG) so tests need no RNG dependency.
-    fn bars(n: usize) -> Vec<(f64, f64, f64, f64)> {
-        let mut state: u64 = 0x9E37_79B9_7F4A_7C15;
-        let mut next = move || {
-            state = state
-                .wrapping_mul(6_364_136_223_846_793_005)
-                .wrapping_add(1_442_695_040_888_963_407);
-            (state >> 11) as f64 / (1u64 << 53) as f64
-        };
-        let mut close = 100.0;
-        (0..n)
-            .map(|_| {
-                close += next() - 0.5;
-                let high = close + next();
-                let low = close - next();
-                (high, low, close, 1.0 + 10.0 * next())
-            })
-            .collect()
-    }
 
     /// Same NaN-aware bitwise equality the batch parity tests rely on.
     fn same<O: std::fmt::Debug>(a: O, b: O) -> bool {

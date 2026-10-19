@@ -2,6 +2,8 @@
 name = "ferro_ta_wasm"
 version = "1.5.1"
 edition = "2021"
+# Same MSRV as the main workspace (this crate is its own workspace).
+rust-version = "1.88"
 description = "WebAssembly bindings for ferro-ta technical analysis indicators"
 license = "MIT"
 
@@ -14,6 +16,9 @@ crate-type = ["cdylib", "rlib"]
 wasm-bindgen = "0.2"
 js-sys = "0.3"
 ferro_ta_core = { path = "../crates/ferro_ta_core", default-features = false }
+# Compile-time only: builds `Wasm<Type>` class names for registry streams
+# (macro_rules cannot concatenate identifiers).
+pastey = "0.2"
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3"
