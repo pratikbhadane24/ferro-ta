@@ -5,6 +5,7 @@ use std::collections::VecDeque;
 
 use crate::streaming::primitives::Wilder;
 use crate::streaming::{validate_buffer_len, StreamingError};
+use crate::window_sums::ZeroExactSum;
 
 /// The last few values of a series, oldest first. The owner passes the cap on
 /// every push (it is a parameter of the owner, so it is not stored twice).
@@ -213,6 +214,31 @@ pub(crate) fn check_fast_below_slow(
     if fastperiod >= slowperiod {
         return Err(StreamingError(format!(
             "fastperiod must be < slowperiod, got {fastperiod} >= {slowperiod}"
+        )));
+    }
+    Ok(())
+}
+
+/// Sequential (`iter().sum()`) seed of a [`ZeroExactSum`] over a full ring,
+/// the batch CMF / MFI seed reduction.
+pub(crate) fn seed_sum(ring: &Ring) -> ZeroExactSum {
+    let window: Vec<f64> = ring.iter().copied().collect();
+    ZeroExactSum::seeded(window.iter().sum(), &window)
+}
+
+/// Snapshot check for a [`ZeroExactSum`] mirroring the full `ring` (`cap`
+/// values): its non-zero count must match the ring, and an all-zero ring
+/// must carry an exact `0.0` sum. A ring still filling is not checked (its
+/// sum is reseeded once full).
+pub(crate) fn check_zero_exact(
+    sum: &ZeroExactSum,
+    ring: &Ring,
+    cap: usize,
+    name: &str,
+) -> Result<(), StreamingError> {
+    if ring.len() == cap && !sum.matches(ring.iter()) {
+        return Err(StreamingError(format!(
+            "{name} running sum disagrees with its window's zero values"
         )));
     }
     Ok(())

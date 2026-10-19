@@ -2,11 +2,12 @@
 //! oscillator, relative volume, Chaikin oscillator, smoothed OBV, Force
 //! index, NVI / PVI (and their signals), Klinger and PVT (native).
 
-use super::extended_common::{check_fast_below_slow, Ring};
+use super::extended_common::{check_fast_below_slow, check_zero_exact, seed_sum, Ring};
 use super::{StreamingAdosc, StreamingMa, StreamingObv};
 use crate::streaming::primitives::EmaTa;
 use crate::streaming::registry::check_period;
 use crate::streaming::StreamingError;
+use crate::window_sums::ZeroExactSum;
 
 /// Registry entries for the extended volume streams.
 #[macro_export]
@@ -15,19 +16,19 @@ macro_rules! stream_family_extended_volume {
     ($($ctx:tt)*) => {
         $crate::__stream_chain! {
             [
-                cmf => StreamingCmf, doc "Streaming Chaikin money flow: `timeperiod`-bar sum of CLV * volume over the volume sum. Mirrors the batch running volume sums (not a fresh window sum), so an all-zero-volume window leaves the same residue and NaN mask as the batch function.",
+                cmf => StreamingCmf, doc "Streaming Chaikin money flow: `timeperiod`-bar sum of CLV * volume over the volume sum. Mirrors the batch zero-exact running volume sums, so an all-zero-volume window is NaN exactly as in the batch function.",
                     params(timeperiod: period = 20), inputs(high, low, close, volume), outputs(out: f64),
                     native(lookback = timeperiod, batch = $crate::extended::cmf(high, low, close, volume, timeperiod));
                 emv => StreamingEmv, doc "Streaming ease of movement: SMA over `timeperiod` bars of midpoint move * range * `scale` / volume (raw when `timeperiod` is 1).",
                     params(timeperiod: period = 14, scale: float = 10000.0), inputs(high, low, volume), outputs(out: f64),
                     windowed(lookback = timeperiod + 1, batch = $crate::extended::emv(high, low, volume, timeperiod, scale));
-                volosc => StreamingVolosc, doc "Streaming volume oscillator: 100 * (SMA(volume, fast) - SMA(volume, slow)) / SMA(volume, slow). Mirrors the batch running volume sums (not a fresh window sum), so an all-zero-volume window leaves the same residue and NaN mask as the batch function.",
+                volosc => StreamingVolosc, doc "Streaming volume oscillator: 100 * (SMA(volume, fast) - SMA(volume, slow)) / SMA(volume, slow). Mirrors the batch zero-exact running volume sums, so an all-zero-volume window is NaN exactly as in the batch function.",
                     params(fastperiod: period = 5, slowperiod: period = 10), inputs(volume), outputs(out: f64),
                     native(lookback = slowperiod, batch = $crate::extended::volosc(volume, fastperiod, slowperiod));
                 vroc => StreamingVroc, doc "Streaming volume rate of change over `timeperiod` bars, in percent.",
                     params(timeperiod: period = 25), inputs(volume), outputs(out: f64),
                     windowed(lookback = timeperiod + 1, batch = $crate::extended::vroc(volume, timeperiod));
-                rvol => StreamingRvol, doc "Streaming relative volume: volume / SMA(volume, `timeperiod`). Mirrors the batch running volume sums (not a fresh window sum), so an all-zero-volume window leaves the same residue and NaN mask as the batch function.",
+                rvol => StreamingRvol, doc "Streaming relative volume: volume / SMA(volume, `timeperiod`). Mirrors the batch zero-exact running volume sums, so an all-zero-volume window is NaN exactly as in the batch function.",
                     params(timeperiod: period = 20), inputs(volume), outputs(out: f64),
                     native(lookback = timeperiod, batch = $crate::extended::rvol(volume, timeperiod));
                 vwma => StreamingVwma, doc "Streaming volume-weighted moving average over `timeperiod` bars.",
@@ -591,22 +592,20 @@ impl StreamingPvt {
 // ---------------------------------------------------------------------------
 //
 // These kernels carry a window sum from the first full window (`sum += new
-// - old`, never reseeded). With fractional volumes an all-zero-volume window
-// leaves a rounding residue there, which a fresh window sum would make
-// exactly 0 — flipping a `!= 0` test. So the streams keep the batch sums.
+// - old`, never reseeded) as a `ZeroExactSum`, which reads exactly 0 when
+// the window holds only zeros. The streams keep the same sums, so they
+// match the batch bit for bit (a fresh window sum would differ in the last
+// ulps everywhere else).
 
-/// `overlap::sma`: `simd::sum` seed of the first `period` values (the same
-/// reduction, so the same bits), then `sum += new - old`, `sum / p`.
+/// `extended::volume`'s zero-exact SMA: `simd::sum` seed of the first
+/// `period` values (the same reduction, so the same bits), then a
+/// [`ZeroExactSum`] slide, `sum / p`.
 #[derive(Clone, Debug, Default)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 struct BatchSma {
     /// The last `period` values.
     window: Ring,
-    #[cfg_attr(
-        feature = "serde",
-        serde(with = "crate::streaming::snapshot::nan_as_null")
-    )]
-    sum: f64,
+    sum: ZeroExactSum,
 }
 
 impl BatchSma {
@@ -618,20 +617,21 @@ impl BatchSma {
                 return f64::NAN;
             }
             let seed: Vec<f64> = self.window.iter().copied().collect();
-            self.sum = crate::simd::sum(&seed);
+            self.sum = ZeroExactSum::seeded(crate::simd::sum(&seed), &seed);
         } else {
-            self.sum += x - old.unwrap_or(f64::NAN);
+            self.sum.slide(x, old.unwrap_or(f64::NAN));
         }
-        self.sum / period as f64
+        self.sum.value() / period as f64
     }
 
     fn validate(&self, period: usize) -> Result<(), StreamingError> {
-        self.window.validate(period, "sma window")
+        self.window.validate(period, "sma window")?;
+        check_zero_exact(&self.sum, &self.window, period, "sma")
     }
 }
 
 /// Streaming CMF (`extended::cmf`): sequential seed sums of the first
-/// `timeperiod` money-flow volumes and volumes, then `sum += new - old`;
+/// `timeperiod` money-flow volumes and volumes, then zero-exact slides;
 /// `mfv_sum / vol_sum` where the volume sum is non-zero.
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -639,16 +639,8 @@ pub struct StreamingCmf {
     timeperiod: usize,
     mfvs: Ring,
     volumes: Ring,
-    #[cfg_attr(
-        feature = "serde",
-        serde(with = "crate::streaming::snapshot::nan_as_null")
-    )]
-    mfv_sum: f64,
-    #[cfg_attr(
-        feature = "serde",
-        serde(with = "crate::streaming::snapshot::nan_as_null")
-    )]
-    vol_sum: f64,
+    mfv_sum: ZeroExactSum,
+    vol_sum: ZeroExactSum,
 }
 
 impl StreamingCmf {
@@ -658,8 +650,8 @@ impl StreamingCmf {
             timeperiod,
             mfvs: Ring::default(),
             volumes: Ring::default(),
-            mfv_sum: 0.0,
-            vol_sum: 0.0,
+            mfv_sum: ZeroExactSum::default(),
+            vol_sum: ZeroExactSum::default(),
         })
     }
 
@@ -677,17 +669,18 @@ impl StreamingCmf {
         let old_vol = self.volumes.push(volume, p);
         match (old_mfv, old_vol) {
             (Some(om), Some(ov)) => {
-                self.mfv_sum += mfv - om;
-                self.vol_sum += volume - ov;
+                self.mfv_sum.slide(mfv, om);
+                self.vol_sum.slide(volume, ov);
             }
             _ if self.mfvs.len() == p => {
-                self.mfv_sum = self.mfvs.iter().sum();
-                self.vol_sum = self.volumes.iter().sum();
+                self.mfv_sum = seed_sum(&self.mfvs);
+                self.vol_sum = seed_sum(&self.volumes);
             }
             _ => return f64::NAN,
         }
-        if self.vol_sum != 0.0 {
-            self.mfv_sum / self.vol_sum
+        let vol_sum = self.vol_sum.value();
+        if vol_sum != 0.0 {
+            self.mfv_sum.value() / vol_sum
         } else {
             f64::NAN
         }
@@ -696,8 +689,8 @@ impl StreamingCmf {
     pub fn reset(&mut self) {
         self.mfvs.clear();
         self.volumes.clear();
-        self.mfv_sum = 0.0;
-        self.vol_sum = 0.0;
+        self.mfv_sum = ZeroExactSum::default();
+        self.vol_sum = ZeroExactSum::default();
     }
 
     pub fn validate(&self) -> Result<(), StreamingError> {
@@ -711,7 +704,8 @@ impl StreamingCmf {
                 "cmf windows disagree on their length".to_string(),
             ));
         }
-        Ok(())
+        check_zero_exact(&self.mfv_sum, &self.mfvs, self.timeperiod, "cmf money-flow")?;
+        check_zero_exact(&self.vol_sum, &self.volumes, self.timeperiod, "cmf volume")
     }
 
     pub fn timeperiod(&self) -> usize {

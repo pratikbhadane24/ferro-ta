@@ -1,5 +1,7 @@
 //! Volume indicators.
 
+use crate::window_sums::ZeroExactSum;
+
 /// Compute On-Balance Volume (OBV).
 ///
 /// OBV is a cumulative indicator that adds volume on up-close bars and
@@ -62,7 +64,9 @@ pub fn obv(close: &[f64], volume: &[f64]) -> Vec<f64> {
 /// MFI is a volume-weighted RSI, returning values in `[0, 100]`.
 /// `typical_price = (H + L + C) / 3`; money flow is positive when
 /// typical price rises, negative when it falls. The first `timeperiod`
-/// values are `NaN`.
+/// values are `NaN`. A window with no money flow (all-zero volume, or a
+/// flat typical price) is `0`, as in TA-Lib; the flow sums are zero-exact,
+/// so that holds after fractional volumes too.
 ///
 /// # Arguments
 /// * `high` / `low` / `close` - OHLC price series (same length).
@@ -98,8 +102,15 @@ pub fn mfi(
 
     // Sliding window sum over timeperiod bars (indices i+1-timeperiod ..= i).
     // First valid window: indices 1..=timeperiod.
-    let mut pos_sum: f64 = pos_flow[1..=timeperiod].iter().sum();
-    let mut neg_sum: f64 = neg_flow[1..=timeperiod].iter().sum();
+    // Zero-exact running sums: a window with no positive (negative) flow —
+    // all-zero volume in particular — sums to exactly 0.0, not to the
+    // rounding residue of the flows that left it (see `ZeroExactSum`).
+    let first = 1..=timeperiod;
+    let mut pos_sum = ZeroExactSum::seeded(
+        pos_flow[first.clone()].iter().sum(),
+        &pos_flow[first.clone()],
+    );
+    let mut neg_sum = ZeroExactSum::seeded(neg_flow[first.clone()].iter().sum(), &neg_flow[first]);
     // TA-Lib convention: zero total money flow (flat window / zero volume)
     // yields 0, not 100. 100*p/(p+n) is algebraically 100 - 100/(1+p/n).
     // Clamp the documented [0, 100] range: pos/(pos+neg) is mathematically in
@@ -118,12 +129,12 @@ pub fn mfi(
     // one-time prologue for a kernel this light. The warm-up bars simply keep
     // their initialized `NaN`.
     let mut result = vec![f64::NAN; n];
-    result[timeperiod] = mfi_val(pos_sum, neg_sum);
+    result[timeperiod] = mfi_val(pos_sum.value(), neg_sum.value());
 
     for i in (timeperiod + 1)..n {
-        pos_sum += pos_flow[i] - pos_flow[i - timeperiod];
-        neg_sum += neg_flow[i] - neg_flow[i - timeperiod];
-        result[i] = mfi_val(pos_sum, neg_sum);
+        let pos = pos_sum.slide(pos_flow[i], pos_flow[i - timeperiod]);
+        let neg = neg_sum.slide(neg_flow[i], neg_flow[i - timeperiod]);
+        result[i] = mfi_val(pos, neg);
     }
     result
 }

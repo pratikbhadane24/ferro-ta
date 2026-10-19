@@ -3,6 +3,27 @@
 use crate::math_ops;
 use crate::overlap;
 use crate::volume;
+use crate::window_sums::ZeroExactSum;
+
+/// `overlap::sma` with a [`ZeroExactSum`] running sum: the same seed
+/// (`simd::sum`) and recurrence, except that a window of all-zero values
+/// averages to exactly `0.0` rather than the residue the fractional values
+/// that left it would otherwise leave behind.
+fn sma_zero_exact(src: &[f64], timeperiod: usize) -> Vec<f64> {
+    let n = src.len();
+    let mut out = vec![f64::NAN; n];
+    if timeperiod < 1 || n < timeperiod {
+        return out;
+    }
+    let p = timeperiod as f64;
+    let window = &src[..timeperiod];
+    let mut sum = ZeroExactSum::seeded(crate::simd::sum(window), window);
+    out[timeperiod - 1] = sum.value() / p;
+    for i in timeperiod..n {
+        out[i] = sum.slide(src[i], src[i - timeperiod]) / p;
+    }
+    out
+}
 
 fn sma_nan_aware(src: &[f64], timeperiod: usize) -> Vec<f64> {
     if timeperiod < 1 {
@@ -34,7 +55,10 @@ pub fn obv_smoothed(close: &[f64], volume: &[f64], timeperiod: usize, matype: u8
 /// Chaikin Money Flow: rolling sum of CLV × volume over rolling volume.
 ///
 /// `CLV = ((close - low) - (high - close)) / (high - low)`.
-/// First valid value is at `timeperiod - 1`.
+/// First valid value is at `timeperiod - 1`; `NaN` where the window's volume
+/// sums to zero — exactly when every volume in it is zero, as the running
+/// sums are [`ZeroExactSum`]s (no rounding residue after fractional
+/// volumes).
 pub fn cmf(
     high: &[f64],
     low: &[f64],
@@ -57,17 +81,15 @@ pub fn cmf(
         };
         mfv[i] = clv * volume[i];
     }
-    let mut mfv_sum: f64 = mfv[..timeperiod].iter().sum();
-    let mut vol_sum: f64 = volume[..timeperiod].iter().sum();
-    if vol_sum != 0.0 {
-        result[timeperiod - 1] = mfv_sum / vol_sum;
-    }
+    let window = ..timeperiod;
+    let mut mfv_sum = ZeroExactSum::seeded(mfv[window].iter().sum(), &mfv[window]);
+    let mut vol_sum = ZeroExactSum::seeded(volume[window].iter().sum(), &volume[window]);
+    let ratio = |m: f64, v: f64| if v != 0.0 { m / v } else { f64::NAN };
+    result[timeperiod - 1] = ratio(mfv_sum.value(), vol_sum.value());
     for i in timeperiod..n {
-        mfv_sum += mfv[i] - mfv[i - timeperiod];
-        vol_sum += volume[i] - volume[i - timeperiod];
-        if vol_sum != 0.0 {
-            result[i] = mfv_sum / vol_sum;
-        }
+        let m = mfv_sum.slide(mfv[i], mfv[i - timeperiod]);
+        let v = vol_sum.slide(volume[i], volume[i - timeperiod]);
+        result[i] = ratio(m, v);
     }
     result
 }
@@ -182,14 +204,18 @@ fn volume_index(close: &[f64], volume: &[f64], positive: bool) -> Vec<f64> {
 }
 
 /// Volume oscillator: `100 * (SMA(vol, fast) - SMA(vol, slow)) / SMA(vol, slow)`.
+///
+/// `NaN` where the slow average is zero — exactly when its window holds only
+/// zero volume (the averages keep zero-exact running sums, see
+/// [`ZeroExactSum`]); an all-zero fast window gives exactly `-100`.
 pub fn volosc(volume: &[f64], fastperiod: usize, slowperiod: usize) -> Vec<f64> {
     let n = volume.len();
     let mut result = vec![f64::NAN; n];
     if fastperiod < 1 || slowperiod < 1 || n == 0 {
         return result;
     }
-    let fast = overlap::sma(volume, fastperiod);
-    let slow = overlap::sma(volume, slowperiod);
+    let fast = sma_zero_exact(volume, fastperiod);
+    let slow = sma_zero_exact(volume, slowperiod);
     for i in 0..n {
         if fast[i].is_finite() && slow[i].is_finite() && slow[i] != 0.0 {
             result[i] = 100.0 * (fast[i] - slow[i]) / slow[i];
@@ -295,13 +321,16 @@ pub fn pvt(close: &[f64], volume: &[f64]) -> Vec<f64> {
 }
 
 /// Relative volume: `volume / SMA(volume, timeperiod)`.
+///
+/// `NaN` where the average is zero — exactly when the window holds only zero
+/// volume (zero-exact running sum, see [`ZeroExactSum`]).
 pub fn rvol(volume: &[f64], timeperiod: usize) -> Vec<f64> {
     let n = volume.len();
     let mut result = vec![f64::NAN; n];
     if timeperiod < 1 || n == 0 {
         return result;
     }
-    let avg = overlap::sma(volume, timeperiod);
+    let avg = sma_zero_exact(volume, timeperiod);
     for i in 0..n {
         if avg[i].is_finite() && avg[i] != 0.0 {
             result[i] = volume[i] / avg[i];

@@ -23,7 +23,12 @@ pub(super) struct Data {
 
 impl Data {
     pub(super) fn new() -> Self {
-        let rows = bars_seeded(12345, LONG_BARS);
+        Self::with_len(LONG_BARS)
+    }
+
+    /// The same seeded walk, `bars` long.
+    pub(super) fn with_len(bars: usize) -> Self {
+        let rows = bars_seeded(12345, bars);
         let shift = START_PRICE - 100.0;
         let col = |f: fn(&(f64, f64, f64, f64)) -> f64| -> Vec<f64> {
             rows.iter().map(|r| f(r) + shift).collect()
@@ -248,16 +253,14 @@ fn windowed_streams_equal_batch_on_trailing_window_long_series() {
     check!("cci", 14, StreamingCci::new(14), |i| (
         d.high[i], d.low[i], d.close[i]
     ));
-    // Measured (max rel diff vs batch, 20k bars near 50,000): correl 1.1e-3 /
-    // 3.3e-5 (p=5 / 30), linearreg_slope 3.9e-8, linearreg_angle 2.2e-6,
-    // stddev 1.7e-8, var 5.0e-9; every other windowed kernel here is <= 2e-12.
-    for name in [
-        "correl",
-        "linearreg_slope",
-        "linearreg_angle",
-        "stddev",
-        "var",
-    ] {
-        assert!(BATCH_DRIFT_KERNELS.contains(&name), "{name}");
+    // These batch kernels used to drift (max rel diff vs batch on the
+    // trailing window, 20k bars near 50,000: correl 1.1e-3 / 3.3e-5 at
+    // p=5 / 30, linearreg_slope 3.9e-8, linearreg_angle 2.2e-6, stddev
+    // 1.7e-8, var 5.0e-9). Their anchored sums now hold the full-series batch
+    // to the trailing-window batch as well.
+    assert!(BATCH_DRIFT_KERNELS.is_empty());
+    for (name, lb, batch) in &cands {
+        let gap = worst_gap(&d, *lb, batch);
+        assert!(gap <= REL_TOL, "{name} lookback={lb}: batch drifts {gap:e}");
     }
 }

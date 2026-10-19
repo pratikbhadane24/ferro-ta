@@ -9,22 +9,22 @@ macro_rules! stream_family_stats {
     ($($ctx:tt)*) => {
         $crate::__stream_chain! {
             [
-                stddev => StreamingStddev, doc "Streaming rolling population standard deviation over `timeperiod` bars, scaled by `nbdev`. Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).",
+                stddev => StreamingStddev, doc "Streaming rolling population standard deviation over `timeperiod` bars, scaled by `nbdev`.",
                     params(timeperiod: period = 5, nbdev: float = 1.0), inputs(real), outputs(out: f64),
                     windowed(lookback = timeperiod, batch = $crate::statistic::stddev(real, timeperiod, nbdev));
-                var => StreamingVar, doc "Streaming rolling population variance over `timeperiod` bars, scaled by `nbdev**2`. Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).",
+                var => StreamingVar, doc "Streaming rolling population variance over `timeperiod` bars, scaled by `nbdev**2`.",
                     params(timeperiod: period = 5, nbdev: float = 1.0), inputs(real), outputs(out: f64),
                     windowed(lookback = timeperiod, batch = $crate::statistic::var(real, timeperiod, nbdev));
                 linearreg => StreamingLinearreg, doc "Streaming linear regression fitted value at the last bar of the window.",
                     params(timeperiod: period = 14), inputs(close), outputs(out: f64),
                     windowed(lookback = timeperiod, batch = $crate::statistic::linearreg(close, timeperiod));
-                linearreg_slope => StreamingLinearregSlope, doc "Streaming slope of the rolling linear regression line. Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).",
+                linearreg_slope => StreamingLinearregSlope, doc "Streaming slope of the rolling linear regression line.",
                     params(timeperiod: period = 14), inputs(close), outputs(out: f64),
                     windowed(lookback = timeperiod, batch = $crate::statistic::linearreg_slope(close, timeperiod));
                 linearreg_intercept => StreamingLinearregIntercept, doc "Streaming intercept of the rolling linear regression line.",
                     params(timeperiod: period = 14), inputs(close), outputs(out: f64),
                     windowed(lookback = timeperiod, batch = $crate::statistic::linearreg_intercept(close, timeperiod));
-                linearreg_angle => StreamingLinearregAngle, doc "Streaming angle of the rolling regression line in degrees. Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).",
+                linearreg_angle => StreamingLinearregAngle, doc "Streaming angle of the rolling regression line in degrees.",
                     params(timeperiod: period = 14), inputs(close), outputs(out: f64),
                     windowed(lookback = timeperiod, batch = $crate::statistic::linearreg_angle(close, timeperiod));
                 tsf => StreamingTsf, doc "Streaming time series forecast: the regression line extrapolated one bar ahead.",
@@ -33,7 +33,7 @@ macro_rules! stream_family_stats {
                 beta => StreamingBeta, doc "Streaming rolling beta of `real1` returns on `real0` returns over `timeperiod` returns.",
                     params(timeperiod: period = 5), inputs(real0, real1), outputs(out: f64),
                     windowed(lookback = timeperiod + 1, batch = $crate::statistic::beta(real0, real1, timeperiod));
-                correl => StreamingCorrel, doc "Streaming rolling Pearson correlation of two series over `timeperiod` bars. Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).",
+                correl => StreamingCorrel, doc "Streaming rolling Pearson correlation of two series over `timeperiod` bars.",
                     params(timeperiod: period = 30), inputs(real0, real1), outputs(out: f64),
                     windowed(lookback = timeperiod, batch = $crate::statistic::correl(real0, real1, timeperiod));
                 iv_rank => StreamingIvRank, doc "Streaming IV rank: position of the latest IV between the window's min and max.",

@@ -24,7 +24,7 @@ macro_rules! stream_family_extended_bands {
                 choppiness_index => StreamingChoppinessIndex, doc "Streaming Choppiness Index over `timeperiod` bars (first value at bar `timeperiod`).",
                     params(timeperiod: period = 14), inputs(high, low, close), outputs(out: f64),
                     windowed(lookback = timeperiod + 1, batch = $crate::extended::choppiness_index(high, low, close, timeperiod));
-                bbpercent => StreamingBbpercent, doc "Streaming Bollinger %B: (close - lower) / (upper - lower) of SMA bands (NaN on a zero-width band). Recomputes each window exactly; on long series the batch function accumulates rounding drift, so values can differ beyond 1e-9 (the stream is the exact one).",
+                bbpercent => StreamingBbpercent, doc "Streaming Bollinger %B: (close - lower) / (upper - lower) of SMA bands (NaN on a zero-width band).",
                     params(timeperiod: period = 5, nbdevup: float = 2.0, nbdevdn: float = 2.0), inputs(close), outputs(out: f64),
                     windowed(lookback = timeperiod, batch = $crate::extended::bbpercent(close, timeperiod, nbdevup, nbdevdn));
                 bbwidth => StreamingBbwidth, doc "Streaming Bollinger bandwidth: (upper - lower) / middle of SMA bands (NaN on a zero middle).",

@@ -13,6 +13,7 @@ use crate::price_transform;
 use crate::rolling;
 use crate::volatility as vol;
 use crate::volume;
+use crate::window_sums;
 
 /// Running window sum with `math_ops::rolling_sum`'s exact semantics,
 /// usable *inside* another kernel's traversal.
@@ -105,6 +106,13 @@ fn wma_from_first_finite(src: &[f64], timeperiod: usize) -> Vec<f64> {
     out
 }
 
+/// `SMA(src, fast) − SMA(src, slow)` from anchored window sums, so the
+/// difference never rounds at the price level (see `window_sums`). `NaN`
+/// until both windows are full and while either holds a non-finite bar.
+fn sma_difference(src: &[f64], fastperiod: usize, slowperiod: usize) -> Vec<f64> {
+    window_sums::anchored_window_means(src, [fastperiod, slowperiod], |_, _, m| m[0] - m[1])
+}
+
 /// Awesome Oscillator: `SMA(median, fast) − SMA(median, slow)`.
 pub fn ao(high: &[f64], low: &[f64], fastperiod: usize, slowperiod: usize) -> Vec<f64> {
     let n = high.len();
@@ -112,18 +120,7 @@ pub fn ao(high: &[f64], low: &[f64], fastperiod: usize, slowperiod: usize) -> Ve
         return vec![f64::NAN; n];
     }
     let median = price_transform::medprice(high, low);
-    // The difference lands in the fast buffer: reusing it drops a full-length
-    // NaN-filled output allocation.
-    let mut fast = overlap::sma(&median, fastperiod);
-    let slow = overlap::sma(&median, slowperiod);
-    for (f, &s) in fast.iter_mut().zip(slow.iter()) {
-        *f = if f.is_finite() && s.is_finite() {
-            *f - s
-        } else {
-            f64::NAN
-        };
-    }
-    fast
+    sma_difference(&median, fastperiod, slowperiod)
 }
 
 /// Accelerator Oscillator: `AO − SMA(AO, timeperiod)`.
@@ -158,39 +155,29 @@ pub fn ac(
 
 /// Price Oscillator (SMA): `SMA(close, fast) − SMA(close, slow)`.
 pub fn po(close: &[f64], fastperiod: usize, slowperiod: usize) -> Vec<f64> {
-    let n = close.len();
-    if fastperiod < 1 || slowperiod < 1 || n == 0 {
-        return vec![f64::NAN; n];
+    if fastperiod < 1 || slowperiod < 1 || close.is_empty() {
+        return vec![f64::NAN; close.len()];
     }
-    let mut fast = overlap::sma(close, fastperiod);
-    let slow = overlap::sma(close, slowperiod);
-    for (f, &s) in fast.iter_mut().zip(slow.iter()) {
-        *f = if f.is_finite() && s.is_finite() {
-            *f - s
-        } else {
-            f64::NAN
-        };
-    }
-    fast
+    sma_difference(close, fastperiod, slowperiod)
 }
 
 /// Detrended Price Oscillator: `close[i − shift] − SMA(close, timeperiod)`,
 /// where `shift = timeperiod / 2 + 1`.
+///
+/// Both terms are taken about the same anchor (see `window_sums`), so the
+/// difference never rounds at the price level.
 pub fn dpo(close: &[f64], timeperiod: usize) -> Vec<f64> {
-    let n = close.len();
-    if timeperiod < 1 || n == 0 {
-        return vec![f64::NAN; n];
+    if timeperiod < 1 || close.is_empty() {
+        return vec![f64::NAN; close.len()];
     }
     let shift = timeperiod / 2 + 1;
-    let mut sma = overlap::sma(close, timeperiod);
-    for i in 0..n {
-        sma[i] = if i >= shift && sma[i].is_finite() {
-            close[i - shift] - sma[i]
+    window_sums::anchored_window_means(close, [timeperiod], |i, anchor, m| {
+        if i >= shift {
+            (close[i - shift] - anchor) - m[0]
         } else {
             f64::NAN
-        };
-    }
-    sma
+        }
+    })
 }
 
 /// One `(C−O)`-style 4-bar weighted RVI term at bar `i`, or `NaN` before the
@@ -670,6 +657,18 @@ mod tests {
         }
     }
 
+    /// Same NaN mask and values within `1e-9 * max(1, |want|)`: for AO, AC,
+    /// PO and DPO, whose SMA differences now come from anchored window sums
+    /// (see `window_sums`) and so agree with the plain-SMA originals to
+    /// rounding, not to the bit.
+    fn assert_close(got: &[f64], want: &[f64], label: &str) {
+        assert_eq!(got.len(), want.len(), "{label}: length mismatch");
+        for (i, (&g, &w)) in got.iter().zip(want.iter()).enumerate() {
+            let ok = (g.is_nan() && w.is_nan()) || (g - w).abs() <= 1e-9 * w.abs().max(1.0);
+            assert!(ok, "{label}[{i}]: got {g} want {w}");
+        }
+    }
+
     // -----------------------------------------------------------------------
     // Pre-optimization implementations, kept verbatim as the bit-for-bit
     // oracle for the fused rewrites above.
@@ -1037,10 +1036,10 @@ mod tests {
         for n in [0usize, 1, 3, 4, 9, 41, 137, 512] {
             let (o, h, l, c) = synthetic(n);
 
-            assert_bits(&ao(&h, &l, 5, 34), &reference_ao(&h, &l, 5, 34), "ao");
-            assert_bits(&ac(&h, &l, 5, 34, 5), &reference_ac(&h, &l, 5, 34, 5), "ac");
-            assert_bits(&po(&c, 10, 21), &reference_po(&c, 10, 21), "po");
-            assert_bits(&dpo(&c, 20), &reference_dpo(&c, 20), "dpo");
+            assert_close(&ao(&h, &l, 5, 34), &reference_ao(&h, &l, 5, 34), "ao");
+            assert_close(&ac(&h, &l, 5, 34, 5), &reference_ac(&h, &l, 5, 34, 5), "ac");
+            assert_close(&po(&c, 10, 21), &reference_po(&c, 10, 21), "po");
+            assert_close(&dpo(&c, 20), &reference_dpo(&c, 20), "dpo");
             assert_bits(
                 &coppock(&c, 10, 14, 11),
                 &reference_coppock(&c, 10, 14, 11),
@@ -1103,7 +1102,7 @@ mod tests {
         assert_bits(&got.0, &want.0, "vortex plus 20k");
         assert_bits(&got.1, &want.1, "vortex minus 20k");
 
-        assert_bits(
+        assert_close(
             &ac(&h, &l, 5, 34, 5),
             &reference_ac(&h, &l, 5, 34, 5),
             "ac 20k",

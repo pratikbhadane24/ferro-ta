@@ -1,9 +1,10 @@
 //! Volume and volatility streams: MFI, TRANGE, NATR, OBV, AD and ADOSC.
 
-use super::extended_common::Ring;
+use super::extended_common::{check_zero_exact, seed_sum, Ring};
 use crate::streaming::primitives::Wilder;
 use crate::streaming::registry::check_period;
 use crate::streaming::StreamingError;
+use crate::window_sums::ZeroExactSum;
 
 /// Registry entries for the volume and volatility streams.
 #[macro_export]
@@ -12,7 +13,7 @@ macro_rules! stream_family_volume {
     ($($ctx:tt)*) => {
         $crate::__stream_chain! {
             [
-                mfi => StreamingMfi, doc "Streaming money flow index over `timeperiod` bars of typical-price money flow. Mirrors the batch running flow sums (not a fresh window sum), so an all-zero-volume window leaves the same residue as the batch function.",
+                mfi => StreamingMfi, doc "Streaming money flow index over `timeperiod` bars of typical-price money flow. Mirrors the batch zero-exact running flow sums, so a window without money flow (e.g. all-zero volume) is 0 exactly as in the batch function.",
                     params(timeperiod: period = 14), inputs(high, low, close, volume), outputs(out: f64),
                     native(lookback = timeperiod + 1, batch = $crate::volume::mfi(high, low, close, volume, timeperiod));
                 trange => StreamingTrange, doc "Streaming true range (NaN on the first bar: no previous close).",
@@ -298,10 +299,10 @@ impl StreamingAdosc {
 // ---------------------------------------------------------------------------
 
 /// Streaming MFI (`volume::mfi`): positive / negative typical-price money
-/// flow from bar 1, sequential seed sums over flows `1..=p`, then
-/// `sum += new - old` (never reseeded). Native, not windowed: with
-/// fractional volumes an all-zero-volume window leaves a rounding residue in
-/// those sums, and the batch ratio of residues is what must be reproduced.
+/// flow from bar 1, sequential seed sums over flows `1..=p`, then zero-exact
+/// slides (`ZeroExactSum`: `sum += new - old`, read as exactly 0 while the
+/// window holds no flow of that sign). Native, not windowed, so the running sums —
+/// and their last ulps — are the batch function's own.
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct StreamingMfi {
@@ -314,16 +315,8 @@ pub struct StreamingMfi {
     has_prev: bool,
     pos_flows: Ring,
     neg_flows: Ring,
-    #[cfg_attr(
-        feature = "serde",
-        serde(with = "crate::streaming::snapshot::nan_as_null")
-    )]
-    pos_sum: f64,
-    #[cfg_attr(
-        feature = "serde",
-        serde(with = "crate::streaming::snapshot::nan_as_null")
-    )]
-    neg_sum: f64,
+    pos_sum: ZeroExactSum,
+    neg_sum: ZeroExactSum,
 }
 
 impl StreamingMfi {
@@ -335,8 +328,8 @@ impl StreamingMfi {
             has_prev: false,
             pos_flows: Ring::default(),
             neg_flows: Ring::default(),
-            pos_sum: 0.0,
-            neg_sum: 0.0,
+            pos_sum: ZeroExactSum::default(),
+            neg_sum: ZeroExactSum::default(),
         })
     }
 
@@ -360,20 +353,21 @@ impl StreamingMfi {
         let old_neg = self.neg_flows.push(neg, p);
         match (old_pos, old_neg) {
             (Some(op), Some(on)) => {
-                self.pos_sum += pos - op;
-                self.neg_sum += neg - on;
+                self.pos_sum.slide(pos, op);
+                self.neg_sum.slide(neg, on);
             }
             _ if self.pos_flows.len() == p => {
-                self.pos_sum = self.pos_flows.iter().sum();
-                self.neg_sum = self.neg_flows.iter().sum();
+                self.pos_sum = seed_sum(&self.pos_flows);
+                self.neg_sum = seed_sum(&self.neg_flows);
             }
             _ => return f64::NAN,
         }
-        let denom = self.pos_sum + self.neg_sum;
+        let (pos_sum, neg_sum) = (self.pos_sum.value(), self.neg_sum.value());
+        let denom = pos_sum + neg_sum;
         if denom == 0.0 {
             0.0
         } else {
-            (100.0 * self.pos_sum / denom).clamp(0.0, 100.0)
+            (100.0 * pos_sum / denom).clamp(0.0, 100.0)
         }
     }
 
@@ -382,8 +376,8 @@ impl StreamingMfi {
         self.has_prev = false;
         self.pos_flows.clear();
         self.neg_flows.clear();
-        self.pos_sum = 0.0;
-        self.neg_sum = 0.0;
+        self.pos_sum = ZeroExactSum::default();
+        self.neg_sum = ZeroExactSum::default();
     }
 
     pub fn validate(&self) -> Result<(), StreamingError> {
@@ -397,7 +391,18 @@ impl StreamingMfi {
                 "mfi flow windows disagree on their length".to_string(),
             ));
         }
-        Ok(())
+        check_zero_exact(
+            &self.pos_sum,
+            &self.pos_flows,
+            self.timeperiod,
+            "mfi positive flow",
+        )?;
+        check_zero_exact(
+            &self.neg_sum,
+            &self.neg_flows,
+            self.timeperiod,
+            "mfi negative flow",
+        )
     }
 
     pub fn timeperiod(&self) -> usize {

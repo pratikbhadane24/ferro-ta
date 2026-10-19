@@ -4,6 +4,7 @@
 use crate::math;
 use crate::momentum;
 use crate::overlap;
+use crate::rolling::RollingVariance;
 use crate::volatility;
 
 /// Chaikin Volatility: rate of change of an EMA of the high–low range.
@@ -56,18 +57,40 @@ pub fn mass(high: &[f64], low: &[f64], timeperiod: usize, sumperiod: usize) -> V
     sum_finite(&ratio, sumperiod)
 }
 
-/// Bollinger %B: `(close - lower) / (upper - lower)` from [`overlap::bbands`].
+/// Bollinger %B: `(close - lower) / (upper - lower)` of the SMA-centred
+/// [`overlap::bbands`].
 ///
-/// `NaN` when the band range is zero.
+/// `NaN` when the band range is zero (or non-finite).
+///
+/// Evaluated as `(dev + nbdevdn * sigma) / ((nbdevup + nbdevdn) * sigma)`
+/// with `dev = close - mean` taken from the window accumulator's deviation
+/// sums. Algebraically the band formula, but it never forms `upper` / `lower`
+/// at the price level: near price 50,000 with a narrow band, rounding those
+/// to their ulp and subtracting cost up to ~1e-8 relative.
 pub fn bbpercent(close: &[f64], timeperiod: usize, nbdevup: f64, nbdevdn: f64) -> Vec<f64> {
-    let (upper, _middle, lower) = overlap::bbands(close, timeperiod, nbdevup, nbdevdn, 0);
     let n = close.len();
     let mut result = vec![f64::NAN; n];
-    for i in 0..n {
-        let span = upper[i] - lower[i];
-        if span != 0.0 && upper[i].is_finite() && lower[i].is_finite() {
-            result[i] = (close[i] - lower[i]) / span;
+    if timeperiod < 1 || n < timeperiod {
+        return result;
+    }
+    let percent_b = |acc: &RollingVariance, x: f64| {
+        let sigma = acc.population_var().sqrt();
+        let span = (nbdevup + nbdevdn) * sigma;
+        if span != 0.0 && span.is_finite() {
+            (acc.deviation(x) + nbdevdn * sigma) / span
+        } else {
+            f64::NAN
         }
+    };
+    let mut acc = RollingVariance::new(&close[..timeperiod]);
+    result[timeperiod - 1] = percent_b(&acc, close[timeperiod - 1]);
+    for i in timeperiod..n {
+        acc.advance(
+            close[i],
+            close[i - timeperiod],
+            &close[i + 1 - timeperiod..=i],
+        );
+        result[i] = percent_b(&acc, close[i]);
     }
     result
 }
