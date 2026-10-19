@@ -247,7 +247,6 @@ mod tests {
         (upper, middle, lower)
     }
 
-    /// Exact two-pass population standard deviation over `window`.
     /// Two-pass `(upper, middle, lower)` of every full window.
     fn exact_bands(close: &[f64], p: usize, up: f64, dn: f64) -> Bands {
         let n = close.len();
@@ -263,6 +262,7 @@ mod tests {
         out
     }
 
+    /// Exact two-pass population standard deviation over `window`.
     fn exact_std(window: &[f64]) -> f64 {
         let p = window.len() as f64;
         let mean = window.iter().sum::<f64>() / p;

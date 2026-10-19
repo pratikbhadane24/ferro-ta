@@ -1,6 +1,5 @@
 //! Registry-driven tests: every entry is checked against its batch reference.
 use crate::streaming::fixtures::{input_column, pattern_fixture, PATTERN_BARS};
-use crate::streaming::registry::BATCH_DRIFT_KERNELS;
 use crate::streaming::{Live, StreamValue, StreamingIndicator};
 use std::time::{Duration, Instant};
 
@@ -119,8 +118,7 @@ struct Case {
     elems: &'static [&'static str],
     /// Has a `matype`-kind parameter (swept over `0..=8`).
     has_matype: bool,
-    /// `windowed` or `native`; only the benchmark reads it.
-    #[allow(dead_code)]
+    /// `windowed` or `native`.
     imp: &'static str,
     /// Snapshot save points; only the `serde` tests read it.
     #[cfg_attr(not(feature = "serde"), allow(dead_code))]
@@ -286,7 +284,7 @@ fn pattern_columns(case: &Case) -> Vec<Vec<f64>> {
 }
 
 /// Every registry stream matches its batch function at every bar (NaN
-/// mask included), on [`N_BARS`] and (except the [`BATCH_DRIFT_KERNELS`]) [`LONG_BARS`] bars, with default params, with every period doubled — which
+/// mask included), on [`N_BARS`] and [`LONG_BARS`] bars, with default params, with every period doubled — which
 /// catches a lookback that is one bar short — and, for streams with a
 /// `matype` param, with every `matype` in `0..=8`. Every `i32` stream (the
 /// candlestick codes, which a random walk almost never fires) also runs on
@@ -303,12 +301,10 @@ fn registry_parity_all_streams() {
         };
         let mut variants = case.variants();
         variants.insert(1, doubled);
-        let mut datasets = vec![(columns(case), N_BARS)];
-        // Drift kernels differ from their batch function by the batch's own
-        // rolling-sum rounding on long series; `drift_tests` bounds that gap.
-        if !BATCH_DRIFT_KERNELS.contains(&case.name) {
-            datasets.push((columns_n(case, LONG_BARS), LONG_BARS));
-        }
+        let mut datasets = vec![
+            (columns(case), N_BARS),
+            (columns_n(case, LONG_BARS), LONG_BARS),
+        ];
         if case.elems.contains(&"i32") {
             datasets.push((pattern_columns(case), PATTERN_BARS));
         }
@@ -472,6 +468,9 @@ fn snapshot_round_trip_all_streams() {
 #[cfg(feature = "serde")]
 mod snapshot_fuzz;
 
+#[cfg(feature = "serde")]
+mod golden_snapshots;
+
 mod flat_parity;
 
 mod bench;
@@ -586,32 +585,110 @@ const RESERVED_PARAMS: &[&str] = &[
     "out",
     "self",
 ];
-/// Modules glob re-exported into `streaming`, which a stream's
-/// `#[doc(hidden)] pub mod <name>` would clash with.
-const STREAMING_MODULES: &[&str] = &[
-    "bars",
-    "live",
-    "windowed",
-    "registry",
-    "fixtures",
-    "families",
-    "snapshot",
-    "conditions",
-    "option_greeks",
-    "primitives",
-    "math",
-    "overlap",
-    "ma_osc",
-];
+/// Module names declared (`mod <name>;`, any visibility) in a source file.
+fn declared_modules(source: &'static str) -> Vec<&'static str> {
+    source
+        .lines()
+        .filter_map(|line| {
+            let line = line.trim();
+            let rest = line
+                .strip_prefix("pub(crate) mod ")
+                .or_else(|| line.strip_prefix("pub mod "))
+                .or_else(|| line.strip_prefix("mod "))?;
+            rest.strip_suffix(';')
+        })
+        .collect()
+}
+
+/// Modules of `streaming` and of `streaming::families` (glob re-exported
+/// into `streaming`), which a stream's `#[doc(hidden)] pub mod <name>` would
+/// clash with. Read from the sources, so a new module is covered as soon as
+/// it is declared.
+fn streaming_modules() -> Vec<&'static str> {
+    let mut modules = declared_modules(include_str!("../../streaming.rs"));
+    modules.extend(declared_modules(include_str!("../families/mod.rs")));
+    modules
+}
+
+/// Snapshot kinds of the hand-written streams (core legacy types, plus the
+/// C ABI's `backtest` handle and `BarBuilder`'s fixture key).
+fn legacy_kinds() -> Vec<&'static str> {
+    use crate::streaming::*;
+    vec![
+        <StreamingSMA as StreamingIndicator>::KIND,
+        <StreamingEMA as StreamingIndicator>::KIND,
+        <StreamingRSI as StreamingIndicator>::KIND,
+        <StreamingBBands as StreamingIndicator>::KIND,
+        <StreamingMACD as StreamingIndicator>::KIND,
+        <StreamingATR as StreamingIndicator>::KIND,
+        <StreamingStoch as StreamingIndicator>::KIND,
+        <StreamingSupertrend as StreamingIndicator>::KIND,
+        <StreamingVWAP as StreamingIndicator>::KIND,
+        <StreamingCross as StreamingIndicator>::KIND,
+        <StreamingStreak as StreamingIndicator>::KIND,
+        <StreamingCooldown as StreamingIndicator>::KIND,
+        <StreamingOptionGreeks as StreamingIndicator>::KIND,
+        "backtest",
+        "bar_builder",
+    ]
+}
+
+#[test]
+fn module_list_is_complete() {
+    let modules = streaming_modules();
+    // Every family module and the top-level ones the old hand list named.
+    for m in [
+        "bars",
+        "live",
+        "windowed",
+        "registry",
+        "families",
+        "snapshot",
+        "conditions",
+        "option_greeks",
+        "primitives",
+        "fixtures",
+        "math",
+        "overlap",
+        "ma_osc",
+        "momentum",
+        "directional",
+        "volume",
+        "pattern",
+        "stats",
+        "markets",
+        "extended_bands",
+        "extended_osc",
+        "extended_trend",
+        "extended_volume",
+        "sar",
+        "cycle",
+    ] {
+        assert!(modules.contains(&m), "module {m} not parsed: {modules:?}");
+    }
+}
+
+#[test]
+fn registry_kinds_avoid_legacy_kinds() {
+    let legacy = legacy_kinds();
+    for case in &cases() {
+        assert!(
+            !legacy.contains(&case.kind),
+            "registry kind {} collides with a legacy stream",
+            case.kind
+        );
+    }
+}
 
 #[test]
 fn registry_names_do_not_collide() {
+    let modules = streaming_modules();
     for case in &cases() {
-        assert!(
-            !STREAMING_MODULES.contains(&case.name),
-            "stream name {}",
-            case.name
-        );
+        // Only windowed entries generate `pub mod <name>` (natives such as
+        // `sar` are a plain struct, so sharing a family module's name is fine).
+        if case.imp == "windowed" {
+            assert!(!modules.contains(&case.name), "stream name {}", case.name);
+        }
         let mut seen = std::collections::BTreeSet::new();
         for p in case.params {
             assert!(

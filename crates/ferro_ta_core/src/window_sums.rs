@@ -318,20 +318,6 @@ pub(crate) fn anchored_window_means<const K: usize>(
 // Zero-exact running sums (volume kernels)
 // ---------------------------------------------------------------------------
 
-/// A running window sum that is exactly `0.0` whenever every value in the
-/// window is zero.
-///
-/// `sum += new - old` over fractional values leaves a rounding residue once
-/// they have all left: a window of all-zero volume then reads as, e.g.,
-/// `-2e-16` instead of `0`, and a kernel's `!= 0` / `== 0` denominator rule
-/// emits finite garbage (CMF `-0.14`, VOLOSC `-21.7`) where its own rule says
-/// `NaN`. Tracking the run of trailing zeros (`NaN` breaks a run) and
-/// resetting the sum to `0.0` on the bar the run first covers the window is
-/// an exact recompute of the all-zero window at O(1) cost; while the run
-/// lasts, `0.0 + (0 - 0)` stays exactly `0.0`. Otherwise the recurrence —
-/// operation for operation — is the plain one, so every other output is
-/// unchanged bit for bit, and the reset sits behind a cold branch so the
-/// loop-carried `sum` chain is not lengthened.
 /// A running window sum that reads exactly `0.0` whenever every value in
 /// the window is zero.
 ///

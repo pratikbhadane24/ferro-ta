@@ -67,8 +67,10 @@
 
 use super::StreamingError;
 
-/// Call `$gen! { <every registry entry> }` once.
+/// Call `$gen! { <every registry entry> }` once. Exported only for the
+/// in-repo bindings (Python, WASM, C ABI); not a stable API.
 #[macro_export]
+#[doc(hidden)]
 macro_rules! for_each_stream {
     ($gen:path) => {
         $crate::__stream_chain! {
@@ -318,16 +320,6 @@ macro_rules! __stream_define_one {
     };
 }
 
-/// Windowed streams whose batch kernel accumulates rolling-sum rounding drift
-/// from bar 0. The stream recomputes each window exactly, so on long series
-/// it could differ from the batch function beyond the 1e-9 contract. Empty:
-/// the batch kernels once listed here (correl, linearreg_slope / _angle,
-/// stddev, var, bbpercent, ao, po, dpo) now keep anchored sums with periodic
-/// exact recomputes (`crate::window_sums`), pinned against a two-pass
-/// computation of every window by `families/batch_exact_tests.rs`.
-#[allow(dead_code)] // cited by docs and pinned by tests
-pub const BATCH_DRIFT_KERNELS: &[&str] = &[];
-
 /// Largest `period` / `count` a registry stream accepts — the C ABI's
 /// `MAX_PERIOD`. Checked at construction *and* on snapshot restore, so an
 /// edited snapshot cannot smuggle in a window no constructor would allow.
@@ -349,19 +341,16 @@ pub(crate) fn check_period(value: usize, name: &str, min: usize) -> Result<(), S
 }
 
 /// `value <= MAX_STREAM_PERIOD` for a `count` param.
-#[allow(dead_code)] // first `count` param arrives with a later family
 pub(crate) fn check_count(value: usize, name: &str) -> Result<(), StreamingError> {
     check_cap(value, name)
 }
 
 /// Finite `float` param.
-#[allow(dead_code)] // first `float` param arrives with a later family
 pub(crate) fn check_float(value: f64, name: &str) -> Result<(), StreamingError> {
     super::validate_finite(value, name)
 }
 
 /// `matype` param in `0..=8`.
-#[allow(dead_code)] // first `matype` param arrives with a later family
 pub(crate) fn check_matype(value: u8, name: &str) -> Result<(), StreamingError> {
     const MAX_MATYPE: u8 = 8;
     if value > MAX_MATYPE {

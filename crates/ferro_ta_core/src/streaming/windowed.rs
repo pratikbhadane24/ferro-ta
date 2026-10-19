@@ -14,8 +14,9 @@
 use super::{validate_buffer_len, StreamValue, StreamingError, StreamingIndicator};
 use std::marker::PhantomData;
 
-/// Most inputs a windowed stream may take.
-pub const MAX_WINDOW_INPUTS: usize = 8;
+/// Most inputs a windowed stream may take: the widest [`WindowInput`] tuple
+/// implemented below (checked at compile time).
+pub const MAX_WINDOW_INPUTS: usize = 4;
 
 /// A streaming input that splits into one `f64` per buffer column.
 pub trait WindowInput: StreamValue {
@@ -58,6 +59,7 @@ macro_rules! impl_window_input_tuple {
 impl_window_input_tuple!(2: a 0, b 1);
 impl_window_input_tuple!(3: a 0, b 1, c 2);
 impl_window_input_tuple!(4: a 0, b 1, c 2, d 3);
+const _: () = assert!(<(f64, f64, f64, f64) as WindowInput>::WIDTH == MAX_WINDOW_INPUTS);
 
 /// A batch result read bar by bar as a streaming output `O`.
 pub trait BatchOutput<O> {

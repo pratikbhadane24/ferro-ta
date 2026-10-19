@@ -227,9 +227,9 @@ pub(crate) fn seed_sum(ring: &Ring) -> ZeroExactSum {
 }
 
 /// Snapshot check for a [`ZeroExactSum`] mirroring the full `ring` (`cap`
-/// values): its non-zero count must match the ring, and an all-zero ring
-/// must carry an exact `0.0` sum. A ring still filling is not checked (its
-/// sum is reseeded once full).
+/// values): the sum's window length must equal the ring's, and its
+/// trailing-zero run must match the ring's trailing run of exact zeros. A
+/// ring still filling is not checked (its sum is reseeded once full).
 pub(crate) fn check_zero_exact(
     sum: &ZeroExactSum,
     ring: &Ring,

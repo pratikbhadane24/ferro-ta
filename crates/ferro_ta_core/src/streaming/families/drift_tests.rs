@@ -4,7 +4,6 @@
 //! the stream side and measures the gap (`cargo test ... -- --ignored --nocapture`).
 use super::*;
 use crate::streaming::fixtures::bars_seeded;
-use crate::streaming::registry::BATCH_DRIFT_KERNELS;
 use crate::streaming::{Live, StreamingIndicator};
 
 pub(super) const LONG_BARS: usize = 20_000;
@@ -258,7 +257,6 @@ fn windowed_streams_equal_batch_on_trailing_window_long_series() {
     // p=5 / 30, linearreg_slope 3.9e-8, linearreg_angle 2.2e-6, stddev
     // 1.7e-8, var 5.0e-9). Their anchored sums now hold the full-series batch
     // to the trailing-window batch as well.
-    assert!(BATCH_DRIFT_KERNELS.is_empty());
     for (name, lb, batch) in &cands {
         let gap = worst_gap(&d, *lb, batch);
         assert!(gap <= REL_TOL, "{name} lookback={lb}: batch drifts {gap:e}");

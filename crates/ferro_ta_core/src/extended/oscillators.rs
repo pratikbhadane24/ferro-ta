@@ -1211,6 +1211,62 @@ mod tests {
         assert!(means[n - 1].is_finite(), "smoother did not recover");
     }
 
+    /// `got` (computed with one NaN input at `j`) is NaN exactly on
+    /// `j..=last` and, everywhere else past `warmup`, equals `clean` (the
+    /// same kernel on the NaN-free input) within `1e-9 * max(1, |clean|)`.
+    fn assert_nan_run_then_recovers(
+        got: &[f64],
+        clean: &[f64],
+        warmup: usize,
+        j: usize,
+        last: usize,
+        label: &str,
+    ) {
+        let nan_bars: Vec<usize> = (warmup..got.len()).filter(|&i| got[i].is_nan()).collect();
+        assert_eq!(nan_bars, (j..=last).collect::<Vec<_>>(), "{label}: NaN run");
+        for i in (warmup..got.len()).filter(|i| !(j..=last).contains(i)) {
+            let tol = 1e-9 * clean[i].abs().max(1.0);
+            assert!(
+                (got[i] - clean[i]).abs() <= tol,
+                "{label} bar {i}: {} vs clean {}",
+                got[i],
+                clean[i]
+            );
+        }
+    }
+
+    /// One NaN in the anchored-sum wrappers poisons exactly the windows that
+    /// hold it; once it leaves, every output is the NaN-free series' again.
+    #[test]
+    fn ao_po_dpo_nan_corrupts_one_window_then_recovers() {
+        let (n, j) = (300usize, 120usize);
+        let (_, h, l, c) = synthetic(n);
+        let (mut h_nan, mut c_nan) = (h.clone(), c.clone());
+        h_nan[j] = f64::NAN;
+        c_nan[j] = f64::NAN;
+
+        let (fast, slow) = (5, 34);
+        assert_nan_run_then_recovers(
+            &ao(&h_nan, &l, fast, slow),
+            &ao(&h, &l, fast, slow),
+            slow - 1,
+            j,
+            j + slow - 1,
+            "ao",
+        );
+        let (fast, slow) = (10, 21);
+        assert_nan_run_then_recovers(
+            &po(&c_nan, fast, slow),
+            &po(&c, fast, slow),
+            slow - 1,
+            j,
+            j + slow - 1,
+            "po",
+        );
+        let p = 20;
+        assert_nan_run_then_recovers(&dpo(&c_nan, p), &dpo(&c, p), p - 1, j, j + p - 1, "dpo");
+    }
+
     // -----------------------------------------------------------------------
     // Pre-existing behavioural tests
     // -----------------------------------------------------------------------

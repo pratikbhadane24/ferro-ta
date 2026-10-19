@@ -5,7 +5,6 @@
 //! drifts from that (`cargo test ... -- --ignored --nocapture`).
 use super::drift_tests::{assert_exact_window, run, worst_gap, Batch, Data};
 use super::*;
-use crate::streaming::registry::BATCH_DRIFT_KERNELS;
 
 /// `(name, lookback, batch over bars lo..hi)` at the Python defaults; one
 /// entry per output (`name.k` for output `k` of a multi-output kernel).
@@ -184,7 +183,6 @@ fn extended_windowed_streams_equal_batch_on_trailing_window_long_series() {
             (d.close[i], d.volume[i])
         }),
     );
-    assert!(BATCH_DRIFT_KERNELS.is_empty());
     for (name, lb, batch) in &cands {
         let gap = worst_gap(&d, *lb, batch);
         assert!(gap <= 1e-9, "{name} lookback={lb}: batch drifts {gap:e}");
