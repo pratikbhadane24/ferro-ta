@@ -4738,6 +4738,24 @@ mod tests {
     }
 
     // -----------------------------------------------------------------------
+    // MAMA: inverted limits must not trap
+    // -----------------------------------------------------------------------
+
+    /// `slowlimit > fastlimit` used to panic in the core clamp past bar 32
+    /// (a WASM trap); it now returns all-NaN like any invalid parameter.
+    #[wasm_bindgen_test]
+    fn test_mama_inverted_limits_return_nan() {
+        let v: Vec<f64> = (0..64).map(|i| 100.0 + (i as f64 * 0.3).sin()).collect();
+        let out = mama(&make_arr(&v), 0.05, 0.5);
+        assert_eq!(out.length(), 2);
+        for k in 0..2 {
+            let arr: Float64Array = out.get(k).into();
+            assert_eq!(arr.length(), 64);
+            assert!(get_finite(&arr).is_empty());
+        }
+    }
+
+    // -----------------------------------------------------------------------
     // SMA tests
     // -----------------------------------------------------------------------
 

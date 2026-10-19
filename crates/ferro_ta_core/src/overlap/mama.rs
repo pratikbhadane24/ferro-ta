@@ -4,13 +4,25 @@
 // MAMA — MESA Adaptive Moving Average
 // ---------------------------------------------------------------------------
 
+/// True for limits the adaptive-alpha clamp `[slowlimit, fastlimit]` accepts:
+/// both finite and `slowlimit <= fastlimit` (the rule `StreamingMama` and the
+/// bindings enforce).
+fn mama_limits_valid(fastlimit: f64, slowlimit: f64) -> bool {
+    fastlimit.is_finite() && slowlimit.is_finite() && slowlimit <= fastlimit
+}
+
 /// MESA Adaptive Moving Average. Returns `(mama, fama)`.
+///
+/// Both outputs are all-`NaN` for invalid limits — a non-finite limit, or
+/// `slowlimit > fastlimit` — as for any other invalid parameter: the adaptive alpha is clamped to
+/// `[slowlimit, fastlimit]`, and `f64::clamp` panics on an inverted or `NaN`
+/// range.
 pub fn mama(close: &[f64], fastlimit: f64, slowlimit: f64) -> (Vec<f64>, Vec<f64>) {
     let n = close.len();
     let lookback = 32;
     let mut mama_arr = vec![f64::NAN; n];
     let mut fama_arr = vec![f64::NAN; n];
-    if n <= lookback {
+    if n <= lookback || !mama_limits_valid(fastlimit, slowlimit) {
         return (mama_arr, fama_arr);
     }
 
@@ -101,4 +113,42 @@ pub fn mama(close: &[f64], fastlimit: f64, slowlimit: f64) -> (Vec<f64>, Vec<f64
         }
     }
     (mama_arr, fama_arr)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn close(n: usize) -> Vec<f64> {
+        (0..n)
+            .map(|i| 100.0 + (i as f64 * 0.3).sin() * 5.0)
+            .collect()
+    }
+
+    /// `slowlimit > fastlimit` (or a non-finite limit) used to reach
+    /// `f64::clamp(min, max)` with `min > max` / NaN bounds past bar 32 and
+    /// panic; it now yields all-`NaN`, like every other invalid parameter.
+    #[test]
+    fn invalid_limits_yield_nan_instead_of_panicking() {
+        let c = close(64);
+        for (fast, slow) in [
+            (0.05, 0.5),
+            (f64::NAN, 0.05),
+            (0.5, f64::NAN),
+            (f64::INFINITY, 0.05),
+        ] {
+            let (m, f) = mama(&c, fast, slow);
+            assert_eq!(m.len(), 64);
+            assert!(
+                m.iter().chain(&f).all(|v| v.is_nan()),
+                "fast={fast} slow={slow}"
+            );
+        }
+    }
+
+    #[test]
+    fn equal_limits_are_valid() {
+        let (m, f) = mama(&close(64), 0.3, 0.3);
+        assert!(m[40].is_finite() && f[40].is_finite());
+    }
 }
