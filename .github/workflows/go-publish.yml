@@ -193,7 +193,7 @@ jobs:
         with:
           ref: ${{ needs.version.outputs.tag }}
           fetch-depth: 0
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           pattern: ffi-*
           path: artifacts
